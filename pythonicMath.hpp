@@ -301,7 +301,7 @@ namespace pythonic
             int min_i = static_cast<int>(to_numeric(min_val));
             int max_i = static_cast<int>(to_numeric(max_val));
             std::uniform_int_distribution<int> dist(min_i, max_i);
-            
+
             for (size_t i = 0; i < count; ++i)
             {
                 result.push_back(var(dist(get_random_engine())));
@@ -317,7 +317,7 @@ namespace pythonic
             double min_d = to_numeric(min_val);
             double max_d = to_numeric(max_val);
             std::uniform_real_distribution<double> dist(min_d, max_d);
-            
+
             for (size_t i = 0; i < count; ++i)
             {
                 result.push_back(var(dist(get_random_engine())));
@@ -333,7 +333,7 @@ namespace pythonic
             double mean_d = to_numeric(mean);
             double stddev_d = to_numeric(stddev);
             std::normal_distribution<double> dist(mean_d, stddev_d);
-            
+
             for (size_t i = 0; i < count; ++i)
             {
                 result.push_back(var(dist(get_random_engine())));
@@ -347,14 +347,14 @@ namespace pythonic
             Set result;
             int min_i = static_cast<int>(to_numeric(min_val));
             int max_i = static_cast<int>(to_numeric(max_val));
-            
+
             if (max_i - min_i + 1 < static_cast<int>(count))
             {
                 throw std::runtime_error("fill_random_set(): range too small for unique count");
             }
-            
+
             std::uniform_int_distribution<int> dist(min_i, max_i);
-            
+
             while (result.size() < count)
             {
                 result.insert(var(dist(get_random_engine())));
@@ -369,7 +369,7 @@ namespace pythonic
             double min_d = to_numeric(min_val);
             double max_d = to_numeric(max_val);
             std::uniform_real_distribution<double> dist(min_d, max_d);
-            
+
             while (result.size() < count)
             {
                 result.insert(var(dist(get_random_engine())));
@@ -384,7 +384,7 @@ namespace pythonic
             double mean_d = to_numeric(mean);
             double stddev_d = to_numeric(stddev);
             std::normal_distribution<double> dist(mean_d, stddev_d);
-            
+
             while (result.size() < count)
             {
                 result.insert(var(dist(get_random_engine())));
