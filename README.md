@@ -6,6 +6,8 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
 
 ## Table of Contents
 
+- [Installation & Build](#installation--build)
+
 - [Quick Start](#quick-start)
   - [The Easy Way (Recommended)](#the-easy-way-recommended)
   - [The Manual Way](#the-manual-way)
@@ -52,6 +54,77 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
 - [Tips & Tricks](#tips--tricks)
 - [Common Pitfalls](#common-pitfalls)
 
+## Installation & Build
+
+### Build and Install with CMake
+
+1. **Clone or download this repository.**
+2. **Create a build directory and run CMake:**
+   ```bash
+   mkdir build
+   cd build
+   cmake ..
+   cmake --build .
+   # Optionally, install to your system (requires sudo):
+   sudo cmake --install .
+   ```
+
+This will build the header-only library and install the headers to your system (if you run the install step).
+
+### Use in Your Own Project (with CMake)
+
+After installing, you can use the library in your own CMake project. Here’s a complete example:
+
+#### Example Project Structure
+
+```
+myapp/
+├── CMakeLists.txt
+└── main.cpp
+```
+
+#### Example CMakeLists.txt
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(myapp)
+
+find_package(pythonic REQUIRED)  # Finds your installed library
+
+add_executable(myapp main.cpp)
+target_link_libraries(myapp PRIVATE pythonic)  # Links your header-only lib
+```
+
+#### Example main.cpp
+
+```cpp
+#include <pythonic/pythonic.hpp>
+//or include just what you need
+#include <pythonic/pythonicVars.hpp>
+// But it is recommanded to include all headers as there are dependencies which will break if headers are missing.
+using namespace pythonic::vars;
+using namespace pythonic::print;
+
+int main() {
+    var x = 42;
+    print("The answer is:", x);
+    return 0;
+}
+```
+
+#### Build and Run
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+./myapp
+# Output: The answer is: 42
+```
+
+**Note:** If you don't want to install, you can simply add the `include/pythonic` directory to your project's include path and use `target_include_directories` in your CMakeLists.txt.
+
 ## Quick Start
 
 ### The Easy Way (Recommended)
@@ -59,7 +132,7 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
 Just include the main header - it pulls in everything:
 
 ```cpp
-#include "pythonic.hpp"
+#include "pythonic/pythonic.hpp"
 
 using namespace pythonic::vars;
 using namespace pythonic::print;
@@ -88,6 +161,8 @@ using namespace pythonic::file;
 using namespace pythonic::math;
 ```
 
+**Caution:** If you use namespaces and import them globally, be careful with using std names and other namespaces, as they might clash or cause ambiguity and multiple definition errors. We recommend using std:: explicitly if you make the pythonic namespace global.
+
 **About Namespaces:**
 
 - `pythonic::vars` - Core `var` type, containers, type conversion
@@ -98,12 +173,6 @@ using namespace pythonic::math;
 - `pythonic::math` - Comprehensive math library (trig, logarithms, random, etc.)
 
 You can use them all with `using namespace` or be selective and qualify names like `pythonic::vars::sorted()`.
-
-**Compile with C++17:**
-
-```bash
-g++ -std=c++17 your_code.cpp -o your_app
-```
 
 ## The `var` Type
 
@@ -154,12 +223,19 @@ nums[0] = 100;          // modify
 
 // Methods you'd expect
 nums.append(6);
-nums.extend(list(7, 8, 9));
+nums.extend(list(7, 8, 9));  // Add multiple elements
 nums.insert(0, -1);
 nums.pop();
 nums.remove(100);
 nums.clear();
 print(nums.len());      // or len(nums)
+
+// List operators
+var l1 = list(1, 2, 3);
+var l2 = list(2, 3, 4);
+var concat = l1 | l2;     // [1, 2, 3, 2, 3, 4]  - Concatenation
+var common = l1 & l2;     // [2, 3]              - Intersection
+var diff = l1 - l2;       // [1]                 - Difference
 ```
 
 ### Slicing (finally!)
@@ -174,12 +250,16 @@ var b = lst.slice(0, 10, 2);  // [0, 2, 4, 6, 8]  (every 2nd)
 var c = lst.slice(-3);        // [7, 8, 9]  (last 3)
 var d = lst(1, 4);            // [1, 2, 3]  (operator() works too)
 
-// Reverse with negative step
-var rev = lst.slice(pythonic::vars::None, pythonic::vars::None, -1);  // reverse!
+// Use None for Python-style slicing!
+using pythonic::vars::None;
+var rev = lst.slice(None, None, var(-1));  // [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] - reverse!
+var first_half = lst.slice(None, 5);       // [0, 1, 2, 3, 4]
+var last_half = lst.slice(5, None);        // [5, 6, 7, 8, 9]
 
 // Strings too!
 var s = "Hello, World!";
 print(s.slice(0, 5));         // Hello
+print(s.slice(None, None, var(-1)));  // !dlroW ,olleH (reversed)
 ```
 
 ### Dicts
@@ -218,13 +298,17 @@ if (s.has(3)) {
     print("3 is in the set");
 }
 
-// Set operations
+// Set operations using Python-style operators
 var a = set(1, 2, 3);
 var b = set(3, 4, 5);
 
-var union_set = a | b;          // {1, 2, 3, 4, 5}
-var intersect = a & b;          // {3}
-var diff = a - b;               // {1, 2}
+var union_set = a | b;          // {1, 2, 3, 4, 5}  - Union
+var intersect = a & b;          // {3}              - Intersection
+var diff = a - b;               // {1, 2}           - Difference
+var sym_diff = a ^ b;           // {1, 2, 4, 5}     - Symmetric difference
+
+// extend() to add multiple elements (like Python's update())
+s.update(set(7, 8, 9));  // Add multiple elements from another set
 ```
 
 ### Truthiness (Python-style Boolean Context)
@@ -1106,17 +1190,20 @@ The `var` type supports all the operators you'd expect:
 ```cpp
 var a = 10, b = 5;
 
-// Arithmetic
+// Arithmetic (implicit conversion works!)
 print(a + b);    // 15
+print(a + 5);    // 15 - no need for var(5)!
 print(a - b);    // 5
 print(a * b);    // 50
 print(a / b);    // 2
 print(a % b);    // 0
 
-// Comparison
+// Comparison (implicit conversion works!)
 print(a == b);   // False
+print(a == 10);  // True - no need for var(10)!
 print(a != b);   // True
 print(a > b);    // True
+print(a > 5);    // True - works directly with literals!
 print(a < b);    // False
 print(a >= b);   // True
 print(a <= b);   // False
@@ -1131,9 +1218,30 @@ print(!x);       // False
 var s1 = "Hello", s2 = "World";
 print(s1 + " " + s2);  // "Hello World"
 
-// List concatenation
+// List concatenation (+ operator)
 var l1 = list(1, 2), l2 = list(3, 4);
 print(l1 + l2);  // [1, 2, 3, 4]
+
+// Container operators (|, &, -, ^)
+var set1 = set(1, 2, 3);
+var set2 = set(2, 3, 4);
+print(set1 | set2);  // {1, 2, 3, 4}  - Union
+print(set1 & set2);  // {2, 3}        - Intersection
+print(set1 - set2);  // {1}           - Difference
+print(set1 ^ set2);  // {1, 4}        - Symmetric difference
+
+// Works for lists and dicts too!
+var list1 = list(1, 2, 3);
+var list2 = list(2, 3, 4);
+print(list1 | list2);  // [1, 2, 3, 2, 3, 4]  - Concatenation
+print(list1 & list2);  // [2, 3]              - Intersection
+print(list1 - list2);  // [1]                 - Difference
+
+var d1 = dict(); d1["a"] = 1; d1["b"] = 2;
+var d2 = dict(); d2["b"] = 3; d2["c"] = 4;
+print(d1 | d2);  // {"a": 1, "b": 3, "c": 4}  - Merge (right overwrites)
+print(d1 & d2);  // {"b": 2}                  - Common keys
+print(d1 - d2);  // {"a": 1}                  - Keys only in d1
 ```
 
 ## What's Under the Hood?
@@ -1173,10 +1281,10 @@ int main() {
     print("You'll be 100 in", years_to_100, "years.");
 
     // Show some numbers
-    var nums = range(1, age + 1);
-    var squares = list_comp(nums, lambda_(x, x * x));
+    var nums = range(1, age + var(1));
+    var squares = list_comp(lambda_(x, x * x), nums);
 
-    print("Squares from 1 to", age + ":");
+    print("Squares from 1 to", age, ":");
     pprint(squares);
 
     return 0;
@@ -1193,31 +1301,44 @@ using namespace pythonic::print;
 using namespace pythonic::func;
 
 int main() {
-    // Sample data
-    var students = list(
-        dict().set("name", "Alice").set("score", 85),
-        dict().set("name", "Bob").set("score", 92),
-        dict().set("name", "Charlie").set("score", 78),
-        dict().set("name", "Diana").set("score", 95)
+    // Sample data - creating dicts with [] operator
+    var alice = dict();
+    alice["name"] = "Alice";
+    alice["score"] = 85;
+
+    var bob = dict();
+    bob["name"] = "Bob";
+    bob["score"] = 92;
+
+    var charlie = dict();
+    charlie["name"] = "Charlie";
+    charlie["score"] = 78;
+
+    var diana = dict();
+    diana["name"] = "Diana";
+    diana["score"] = 95;
+
+    var students = list(alice, bob, charlie, diana);
+
+    // Filter high scorers (function first, iterable second)
+    auto high_scorers = filter(
+        lambda_(s, s["score"] > var(80)),
+        students
     );
 
-    // Filter high scorers
-    auto high_scorers = filter(students,
-        lambda_(s, s["score"] > 80)
-    );
-
-    // Get names
-    auto names = map(high_scorers,
-        lambda_(s, s["name"])
+    // Get names (function first, iterable second)
+    auto names = map(
+        lambda_(s, s["name"]),
+        high_scorers
     );
 
     print("Students with score > 80:");
     pprint(names);
 
     // Calculate average
-    auto scores = map(students, lambda_(s, s["score"]));
-    auto total = reduce(scores, 0, lambda2_(a, b, a + b));
-    var avg = total / len(scores);
+    auto scores = map(lambda_(s, s["score"]), students);
+    auto total = reduce(lambda2_(a, b, a + b), scores, var(0));
+    var avg = total / var(len(scores));
 
     print("Average score:", avg);
 
@@ -1236,16 +1357,148 @@ int main() {
 7. **Comprehensions** - More concise than manual loops for transforming data
 8. **The central header** - `#include "pythonic.hpp"` gives you everything
 
+## API Notes & Gotchas
+
+### Working with var and Literals
+
+Implicit conversion now works for most arithmetic and comparison operators:
+
+```cpp
+// ✓ These all work now!
+var x = var(10);
+var y = x + 2;      // Works! Implicit conversion
+var z = x * 3;      // Works!
+var cmp = x > 5;    // Works!
+var eq = x == 10;   // Works!
+
+// String concatenation with literals also works:
+var s = "Hello" + var(" ") + "World";  // Works!
+
+// Note: When ambiguity occurs (rare), wrap in var():
+var result = var(2) + x;  // If left operand is literal
+```
+
+### List Operations
+
+```cpp
+// ✓ append() works
+nums.append(6);
+
+// ✓ extend() now works!
+nums.extend(list(7, 8, 9));  // Add multiple elements
+nums.extend("abc");          // Add characters from string
+```
+
+### Slicing with None
+
+Use `None` for Python-style full-range slicing:
+
+```cpp
+using pythonic::vars::None;
+var lst = list(1, 2, 3, 4, 5);
+
+// ✓ None now works!
+var reversed = lst.slice(None, None, var(-1));  // Reverse!
+var first_three = lst.slice(None, 3);           // [1, 2, 3]
+var last_three = lst.slice(-3, None);           // [3, 4, 5]
+
+// Note: Wrap step in var() to avoid overload ambiguity
+lst.slice(None, None, var(-1));  // Correct
+```
+
+### Tuple Access
+
+Use `get()` helper for runtime tuple element access, or `unpack()` to convert to list:
+
+```cpp
+for (auto pair : zip(names, ages)) {
+    // ✓ Use get<>() helper for runtime access
+    print(get<0>(pair), get<1>(pair));
+
+    // ✓ Or use std::get<>
+    print(std::get<0>(pair), std::get<1>(pair));
+}
+
+// ✓ Or use unpack() to convert tuple to list
+for (auto pair : zip(names, ages)) {
+    var lst = unpack(pair);
+    print(lst[size_t(0)], lst[size_t(1)]);
+}
+```
+
+### DynamicVar (let macro) Printing
+
+`DynamicVar` from `let()` **can be printed directly**:
+
+```cpp
+let(x) = 100;
+let(name) = "Alice";
+
+// ✓ Direct printing now works!
+print("Value:", let(x));       // Output: Value: 100
+print("Name:", let(name));     // Output: Name: Alice
+
+// ✓ You can also convert to var if needed
+var val = let(x);
+print(val);  // This also works
+```
+
+**Note:** For arithmetic operations, convert to `var` first:
+
+```cpp
+let(x) = 100;
+var x_val = let(x);
+let(x) = x_val + 50;  // Increment by 50
+print("New value:", let(x));  // Output: New value: 150
+```
+
+### File I/O
+
+For simple file operations, prefer `read_file()` and `write_file()`:
+
+```cpp
+// ✓ Simple and clear
+write_file("data.txt", "Hello\\nWorld\\n");
+var content = read_file("data.txt");
+print(content);
+
+// Note: with_open macro can have issues with structured bindings
+// in some contexts - use the simple functions above instead
+```
+
+### Function Parameter Orders
+
+Be aware that parameter orders follow the library's conventions:
+
+```cpp
+// Functional programming: function first, iterable second
+auto evens = filter(lambda_(x, x % var(2) == var(0)), nums);
+auto doubled = map(lambda_(x, x * var(2)), nums);
+
+// Comprehensions: expression first, iterable second, optional filter third
+auto result = list_comp(
+    lambda_(x, x * var(2)),     // Expression
+    range(10),                   // Iterable
+    lambda_(x, x % var(2) == var(0))  // Filter (optional)
+);
+
+// Reduce: function first, iterable second, initial value third
+auto sum = reduce(lambda2_(acc, x, acc + x), nums, var(0));
+```
+
 ## Common Pitfalls
 
 - **C++17 required** - Won't compile with older standards
-- **No automatic conversions** - Use `Int()`, `Float()`, etc. when converting from strings
+- **No automatic conversions from strings** - Use `Int()`, `Float()`, etc. when converting from strings
 - **Dictionary keys** - Currently only support string keys
 - **Index checking** - Out of bounds returns None instead of throwing
 - **Comparison** - Different types compare as not equal (no implicit conversion)
+- **Operator ambiguity with slicing** - When using `slice()` with `None`, wrap numeric literals in `var()`: `slice(None, None, var(-1))`
+- **Index ambiguity** - Use `size_t` for list indices when 0 might be ambiguous: `lst[size_t(0)]`
+- **DynamicVar arithmetic** - Convert `let()` variables to `var` first for arithmetic: `var v = let(x); let(x) = v + 50;`
 
-## That's It!
+## That's It! Now getout
 
-You've got dynamic typing, easy containers, slicing, comprehensions, functional programming, math functions, file I/O, and more. Write Python-style code that compiles to fast C++.
-
-Happy coding! 🚀
+**AUTHOR:** MD. NASIF SADIK PRITHU  
+**EMAIL:** nasifsadik9@gmail.com  
+**GITHUB:** [Creamy-pie-96](https://github.com/Creamy-pie-96)
