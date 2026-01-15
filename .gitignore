@@ -1,0 +1,74 @@
+# =========================
+# Backup / temp files
+# =========================
+*.backup
+*.bak
+*~
+*.tmp
+*.swp
+*.swo
+
+# =========================
+# OS junk
+# =========================
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# =========================
+# Editor / IDE files
+# =========================
+.vscode/
+.idea/
+*.iml
+*.code-workspace
+
+# =========================
+# Build artifacts
+# =========================
+build/
+dist/
+out/
+bin/
+obj/
+*.o
+*.a
+*.so
+*.exe
+
+# =========================
+# TEST files
+# =========================
+test/
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+ENV/
+env/
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# =========================
+# CMake (if you ever touch it)
+# =========================
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+
+# =========================
+# Misc
+# =========================
+.cache/
+*.zip
+*.tar
+*.tar.gz
