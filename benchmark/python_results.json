@@ -1,0 +1,20 @@
+{
+  "Integer Addition": 32.418251037597656,
+  "Integer Multiplication": 36.53550148010254,
+  "Double Addition": 25.10666847229004,
+  "Integer Comparison": 42.4039363861084,
+  "String Concatenation": 0.16546249389648438,
+  "String Comparison": 20.549297332763672,
+  "List Creation (10 elements)": 0.545501708984375,
+  "Set Creation (10 elements)": 1.3885498046875,
+  "List Append": 0.05364418029785156,
+  "List Access (indexed)": 0.04792213439941406,
+  "Set Insertion": 0.07486343383789062,
+  "Dict Insertion": 0.22673606872558594,
+  "Set Union (|)": 16.9832706451416,
+  "List Concatenation (|)": 3.2253265380859375,
+  "Loop Iteration (for_in + range)": 44.11458969116211,
+  "Loop over Container (for_in)": 0.03314018249511719,
+  "Map (transform)": 0.055789947509765625,
+  "Filter": 0.07414817810058594
+}
