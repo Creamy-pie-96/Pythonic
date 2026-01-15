@@ -4,9 +4,9 @@ import sys
 import json
 
 # Benchmark configuration
-ITERATIONS = 1000000
+ITERATIONS = 10000000
 CONTAINER_SIZE = 1000
-SMALL_ITERATIONS = 10000
+SMALL_ITERATIONS = 100000
 
 results = {}
 
