@@ -8,11 +8,11 @@ using namespace pythonic::math;
 using namespace pythonic::print;
 
 #define TEST(name) std::cout << "Testing: " << name << "... "
-#define ASSERT(condition, msg)                     \
-    if (!(condition))                              \
-    {                                              \
+#define ASSERT(condition, msg)                       \
+    if (!(condition))                                \
+    {                                                \
         std::cout << "FAILED: " << msg << std::endl; \
-        return false;                              \
+        return false;                                \
     }
 #define PASS() std::cout << "PASSED" << std::endl
 
@@ -239,7 +239,7 @@ bool test_random()
     PASS();
 
     TEST("fill_randomn() - list of random floats (Gaussian)");
-    var rand_gauss = fill_randomn(10, var(0.0), var(1.0));  // mean=0, stddev=1
+    var rand_gauss = fill_randomn(10, var(0.0), var(1.0)); // mean=0, stddev=1
     ASSERT(rand_gauss.type() == "list", "Should return a list");
     ASSERT(rand_gauss.len() == 10, "Should have 10 elements");
     // Can't test range strictly for Gaussian, just verify it's a list of doubles
