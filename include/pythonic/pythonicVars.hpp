@@ -72,8 +72,17 @@ namespace pythonic
             }
         }
 
+        // NoneType for Python-like None
+        struct NoneType
+        {
+            bool operator<(const NoneType &) const { return false; }
+            bool operator==(const NoneType &) const { return true; }
+            bool operator!=(const NoneType &) const { return false; }
+        };
+
         // The main variant type (primitives only, containers added after var is defined)
         using varType = std::variant<
+            NoneType,
             int, float, std::string, bool, double,
             long, long long, long double,
             unsigned int, unsigned long, unsigned long long,
@@ -89,10 +98,14 @@ namespace pythonic
             var() : value(0) {}
             var(const varType &v) : value(v) {}
             var(const char *s) : value(std::string(s)) {}
+            var(NoneType) : value(NoneType{}) {} // Constructor for None
 
             // Template constructor for arithmetic types
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var(T v) : value(v) {}
+
+            // Check if this var is None
+            bool isNone() const { return std::holds_alternative<NoneType>(value); }
 
             // Accessors
             const varType &getValue() const { return value; }
@@ -105,13 +118,15 @@ namespace pythonic
                 return std::holds_alternative<T>(value);
             }
 
-            // Type name - returns string like "int", "str", "list", "dict", etc.
+            // Type name - returns string like "int", "str", "list", "dict", "NoneType" etc.
             std::string type() const
             {
                 return std::visit([](auto &&arg) -> std::string
                                   {
                     using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::string>) {
+                    if constexpr (std::is_same_v<T, NoneType>) {
+                        return "NoneType";
+                    } else if constexpr (std::is_same_v<T, std::string>) {
                         return "str";
                     } else if constexpr (std::is_same_v<T, bool>) {
                         return "bool";
@@ -163,7 +178,9 @@ namespace pythonic
                 return std::visit([](auto &&arg) -> std::string
                                   {
                     using T = std::decay_t<decltype(arg)>;
-                    if constexpr (std::is_same_v<T, std::string>) {
+                    if constexpr (std::is_same_v<T, NoneType>) {
+                        return "None";
+                    } else if constexpr (std::is_same_v<T, std::string>) {
                         return arg;
                     } else if constexpr (std::is_same_v<T, bool>) {
                         return arg ? "True" : "False";
@@ -335,10 +352,43 @@ namespace pythonic
                                   {
                     using A = std::decay_t<decltype(a)>;
                     using B = std::decay_t<decltype(b)>;
+                    // Arithmetic subtraction
                     if constexpr (std::is_arithmetic_v<A> && std::is_arithmetic_v<B>) {
                         return var(a - b);
-                    } else {
-                        throw std::runtime_error("Unsupported types for subtraction");
+                    }
+                    // Set difference
+                    else if constexpr (std::is_same_v<A, Set> && std::is_same_v<B, Set>) {
+                        Set result;
+                        for (const auto& item : a) {
+                            if (b.find(item) == b.end()) {
+                                result.insert(item);
+                            }
+                        }
+                        return var(result);
+                    }
+                    // List difference (remove all occurrences of items in second list)
+                    else if constexpr (std::is_same_v<A, List> && std::is_same_v<B, List>) {
+                        List result;
+                        Set b_set(b.begin(), b.end());
+                        for (const auto& item : a) {
+                            if (b_set.find(item) == b_set.end()) {
+                                result.push_back(item);
+                            }
+                        }
+                        return var(result);
+                    }
+                    // Dict difference (keys in first but not in second)
+                    else if constexpr (std::is_same_v<A, Dict> && std::is_same_v<B, Dict>) {
+                        Dict result;
+                        for (const auto& [key, value] : a) {
+                            if (b.find(key) == b.end()) {
+                                result[key] = value;
+                            }
+                        }
+                        return var(result);
+                    }
+                    else {
+                        throw std::runtime_error("operator- requires arithmetic types or containers (difference)");
                     } }, value, other.getValue());
             }
 
@@ -509,6 +559,121 @@ namespace pythonic
                 return *this;
             }
 
+            // ============ Implicit Conversion Operators for Arithmetic Types ============
+            // These eliminate the need to wrap literals in var() - e.g., var(x) + 2 just works
+
+            // Addition: supports arithmetic and string concatenation
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator+(T other) const { return *this + var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator+(T lhs, const var &rhs) { return var(lhs) + rhs; }
+
+            // String concatenation with const char*
+            var operator+(const char *other) const { return *this + var(other); }
+            friend var operator+(const char *lhs, const var &rhs) { return var(lhs) + rhs; }
+
+            // Subtraction: arithmetic only
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator-(T other) const { return *this - var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator-(T lhs, const var &rhs) { return var(lhs) - rhs; }
+
+            // Multiplication: arithmetic and string/list repetition with integers
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator*(T other) const { return *this * var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator*(T lhs, const var &rhs) { return var(lhs) * rhs; }
+
+            // Division: arithmetic only
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator/(T other) const { return *this / var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator/(T lhs, const var &rhs) { return var(lhs) / rhs; }
+
+            // Modulo: integral only
+            template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+            var operator%(T other) const { return *this % var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+            friend var operator%(T lhs, const var &rhs) { return var(lhs) % rhs; }
+
+            // Comparison operators with implicit conversion
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator==(T other) const { return *this == var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator==(T lhs, const var &rhs) { return var(lhs) == rhs; }
+
+            var operator==(const char *other) const { return *this == var(other); }
+            friend var operator==(const char *lhs, const var &rhs) { return var(lhs) == rhs; }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator!=(T other) const { return *this != var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator!=(T lhs, const var &rhs) { return var(lhs) != rhs; }
+
+            var operator!=(const char *other) const { return *this != var(other); }
+            friend var operator!=(const char *lhs, const var &rhs) { return var(lhs) != rhs; }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator>(T other) const { return *this > var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator>(T lhs, const var &rhs) { return var(lhs) > rhs; }
+
+            var operator>(const char *other) const { return *this > var(other); }
+            friend var operator>(const char *lhs, const var &rhs) { return var(lhs) > rhs; }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator>=(T other) const { return *this >= var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator>=(T lhs, const var &rhs) { return var(lhs) >= rhs; }
+
+            var operator>=(const char *other) const { return *this >= var(other); }
+            friend var operator>=(const char *lhs, const var &rhs) { return var(lhs) >= rhs; }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator<(T other) const { return *this < var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator<(T lhs, const var &rhs) { return var(lhs) < rhs; }
+
+            var operator<(const char *other) const { return *this < var(other); }
+            friend var operator<(const char *lhs, const var &rhs) { return var(lhs) < rhs; }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var operator<=(T other) const { return *this <= var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            friend var operator<=(T lhs, const var &rhs) { return var(lhs) <= rhs; }
+
+            var operator<=(const char *other) const { return *this <= var(other); }
+            friend var operator<=(const char *lhs, const var &rhs) { return var(lhs) <= rhs; }
+
+            // Compound assignment with implicit conversion
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator+=(T other) { return *this += var(other); }
+
+            var &operator+=(const char *other) { return *this += var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator-=(T other) { return *this -= var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator*=(T other) { return *this *= var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator/=(T other) { return *this /= var(other); }
+
+            template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
+            var &operator%=(T other) { return *this %= var(other); }
+
             // Logical operators
             var operator&&(const var &other) const
             {
@@ -544,11 +709,44 @@ namespace pythonic
                                   {
                     using A = std::decay_t<decltype(a)>;
                     using B = std::decay_t<decltype(b)>;
+                    // Bitwise AND for integers
                     if constexpr (std::is_integral_v<A> && std::is_integral_v<B> && 
                                   !std::is_same_v<A, bool> && !std::is_same_v<B, bool>) {
                         return var(a & b);
-                    } else {
-                        throw std::runtime_error("Bitwise AND requires integral types");
+                    }
+                    // Set intersection
+                    else if constexpr (std::is_same_v<A, Set> && std::is_same_v<B, Set>) {
+                        Set result;
+                        for (const auto& item : a) {
+                            if (b.find(item) != b.end()) {
+                                result.insert(item);
+                            }
+                        }
+                        return var(result);
+                    }
+                    // List intersection (preserves order from first list)
+                    else if constexpr (std::is_same_v<A, List> && std::is_same_v<B, List>) {
+                        List result;
+                        Set b_set(b.begin(), b.end());
+                        for (const auto& item : a) {
+                            if (b_set.find(item) != b_set.end()) {
+                                result.push_back(item);
+                            }
+                        }
+                        return var(result);
+                    }
+                    // Dict intersection (keys present in both, values from first)
+                    else if constexpr (std::is_same_v<A, Dict> && std::is_same_v<B, Dict>) {
+                        Dict result;
+                        for (const auto& [key, value] : a) {
+                            if (b.find(key) != b.end()) {
+                                result[key] = value;
+                            }
+                        }
+                        return var(result);
+                    }
+                    else {
+                        throw std::runtime_error("operator& requires integral types (bitwise) or containers (intersection)");
                     } }, value, other.getValue());
             }
 
@@ -558,11 +756,33 @@ namespace pythonic
                                   {
                     using A = std::decay_t<decltype(a)>;
                     using B = std::decay_t<decltype(b)>;
+                    // Bitwise OR for integers
                     if constexpr (std::is_integral_v<A> && std::is_integral_v<B> && 
                                   !std::is_same_v<A, bool> && !std::is_same_v<B, bool>) {
                         return var(a | b);
-                    } else {
-                        throw std::runtime_error("Bitwise OR requires integral types");
+                    }
+                    // Set union
+                    else if constexpr (std::is_same_v<A, Set> && std::is_same_v<B, Set>) {
+                        Set result = a;
+                        result.insert(b.begin(), b.end());
+                        return var(result);
+                    }
+                    // List concatenation
+                    else if constexpr (std::is_same_v<A, List> && std::is_same_v<B, List>) {
+                        List result = a;
+                        result.insert(result.end(), b.begin(), b.end());
+                        return var(result);
+                    }
+                    // Dict merge (right overwrites left for same keys)
+                    else if constexpr (std::is_same_v<A, Dict> && std::is_same_v<B, Dict>) {
+                        Dict result = a;
+                        for (const auto& [key, value] : b) {
+                            result[key] = value;
+                        }
+                        return var(result);
+                    }
+                    else {
+                        throw std::runtime_error("operator| requires integral types (bitwise) or containers (union/merge)");
                     } }, value, other.getValue());
             }
 
@@ -572,11 +792,49 @@ namespace pythonic
                                   {
                     using A = std::decay_t<decltype(a)>;
                     using B = std::decay_t<decltype(b)>;
+                    // Bitwise XOR for integers
                     if constexpr (std::is_integral_v<A> && std::is_integral_v<B> && 
                                   !std::is_same_v<A, bool> && !std::is_same_v<B, bool>) {
                         return var(a ^ b);
-                    } else {
-                        throw std::runtime_error("Bitwise XOR requires integral types");
+                    }
+                    // Set symmetric difference (elements in either but not both)
+                    else if constexpr (std::is_same_v<A, Set> && std::is_same_v<B, Set>) {
+                        Set result;
+                        // Items in a but not b
+                        for (const auto& item : a) {
+                            if (b.find(item) == b.end()) {
+                                result.insert(item);
+                            }
+                        }
+                        // Items in b but not a
+                        for (const auto& item : b) {
+                            if (a.find(item) == a.end()) {
+                                result.insert(item);
+                            }
+                        }
+                        return var(result);
+                    }
+                    // List symmetric difference
+                    else if constexpr (std::is_same_v<A, List> && std::is_same_v<B, List>) {
+                        List result;
+                        Set a_set(a.begin(), a.end());
+                        Set b_set(b.begin(), b.end());
+                        // Items in a but not b
+                        for (const auto& item : a) {
+                            if (b_set.find(item) == b_set.end()) {
+                                result.push_back(item);
+                            }
+                        }
+                        // Items in b but not a
+                        for (const auto& item : b) {
+                            if (a_set.find(item) == a_set.end()) {
+                                result.push_back(item);
+                            }
+                        }
+                        return var(result);
+                    }
+                    else {
+                        throw std::runtime_error("operator^ requires integral types (bitwise) or sets/lists (symmetric difference)");
                     } }, value, other.getValue());
             }
 
@@ -678,6 +936,68 @@ namespace pythonic
                 else
                 {
                     throw std::runtime_error("add() requires a set");
+                }
+            }
+
+            // extend for list - adds all elements from another iterable
+            void extend(const var &other)
+            {
+                if (auto *lst = std::get_if<List>(&value))
+                {
+                    if (auto *other_lst = std::get_if<List>(&other.getValue()))
+                    {
+                        lst->insert(lst->end(), other_lst->begin(), other_lst->end());
+                    }
+                    else if (auto *other_set = std::get_if<Set>(&other.getValue()))
+                    {
+                        for (const auto &item : *other_set)
+                        {
+                            lst->push_back(item);
+                        }
+                    }
+                    else if (auto *other_str = std::get_if<std::string>(&other.getValue()))
+                    {
+                        // Extend list with characters from string
+                        for (char c : *other_str)
+                        {
+                            lst->push_back(var(std::string(1, c)));
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("extend() requires an iterable (list, set, or string)");
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("extend() requires a list");
+                }
+            }
+
+            // update for set - adds all elements from another iterable (like Python's set.update())
+            void update(const var &other)
+            {
+                if (auto *st = std::get_if<Set>(&value))
+                {
+                    if (auto *other_set = std::get_if<Set>(&other.getValue()))
+                    {
+                        st->insert(other_set->begin(), other_set->end());
+                    }
+                    else if (auto *other_lst = std::get_if<List>(&other.getValue()))
+                    {
+                        for (const auto &item : *other_lst)
+                        {
+                            st->insert(item);
+                        }
+                    }
+                    else
+                    {
+                        throw std::runtime_error("update() requires an iterable (set or list)");
+                    }
+                }
+                else
+                {
+                    throw std::runtime_error("update() requires a set");
                 }
             }
 
@@ -1115,10 +1435,183 @@ namespace pythonic
                 throw std::runtime_error("slice() requires a list or string");
             }
 
+            // Slice overload that accepts var parameters (supports None)
+            // Python: lst[None:None:-1] to reverse, lst[:None] = lst[:], etc.
+            var slice(const var &start_var, const var &end_var, const var &step_var = var(1)) const
+            {
+                // Convert None to appropriate defaults based on step direction
+                long long step = 1;
+                if (!step_var.isNone())
+                {
+                    step = step_var.is<int>() ? step_var.get<int>() : step_var.is<long long>() ? step_var.get<long long>()
+                                                                                               : 1;
+                }
+
+                long long start, end;
+                if (step > 0)
+                {
+                    start = start_var.isNone() ? 0 : (start_var.is<int>() ? start_var.get<int>() : start_var.is<long long>() ? start_var.get<long long>()
+                                                                                                                             : 0);
+                    end = end_var.isNone() ? LLONG_MAX : (end_var.is<int>() ? end_var.get<int>() : end_var.is<long long>() ? end_var.get<long long>()
+                                                                                                                           : LLONG_MAX);
+                }
+                else
+                {
+                    // For negative step, Python uses -1 as end (before beginning)
+                    start = start_var.isNone() ? LLONG_MAX : (start_var.is<int>() ? start_var.get<int>() : start_var.is<long long>() ? start_var.get<long long>()
+                                                                                                                                     : LLONG_MAX);
+                    end = end_var.isNone() ? LLONG_MIN : (end_var.is<int>() ? end_var.get<int>() : end_var.is<long long>() ? end_var.get<long long>()
+                                                                                                                           : LLONG_MIN);
+                }
+
+                return slice_impl(start, end, step, start_var.isNone(), end_var.isNone());
+            }
+
+        private:
+            // Internal slice implementation with flags for None handling
+            var slice_impl(long long start, long long end, long long step, bool start_is_none, bool end_is_none) const
+            {
+                if (step == 0)
+                {
+                    throw std::invalid_argument("slice step cannot be zero");
+                }
+
+                // For List
+                if (auto *lst = std::get_if<List>(&value))
+                {
+                    long long size = static_cast<long long>(lst->size());
+
+                    if (step > 0)
+                    {
+                        if (start_is_none)
+                            start = 0;
+                        if (end_is_none)
+                            end = size;
+
+                        // Handle negative indices
+                        if (start < 0)
+                            start = std::max(0LL, size + start);
+                        if (end < 0)
+                            end = std::max(0LL, size + end);
+
+                        // Clamp to valid range
+                        start = std::max(0LL, std::min(start, size));
+                        end = std::max(0LL, std::min(end, size));
+                    }
+                    else
+                    {
+                        // Negative step
+                        if (start_is_none)
+                            start = size - 1;
+                        if (end_is_none)
+                            end = -1; // Python: means "go to before beginning"
+
+                        // Handle negative indices
+                        if (start < 0 && !start_is_none)
+                            start = std::max(-1LL, size + start);
+                        if (end < -1 && !end_is_none)
+                            end = std::max(-1LL, size + end);
+
+                        // Clamp start to valid range (can be size-1 to -1)
+                        start = std::min(start, size - 1);
+                    }
+
+                    List result;
+                    if (step > 0)
+                    {
+                        for (long long i = start; i < end; i += step)
+                        {
+                            result.push_back((*lst)[static_cast<size_t>(i)]);
+                        }
+                    }
+                    else
+                    {
+                        for (long long i = start; i > end; i += step)
+                        {
+                            if (i >= 0 && i < size)
+                            {
+                                result.push_back((*lst)[static_cast<size_t>(i)]);
+                            }
+                        }
+                    }
+                    return var(result);
+                }
+
+                // For String
+                if (auto *s = std::get_if<std::string>(&value))
+                {
+                    long long size = static_cast<long long>(s->size());
+
+                    if (step > 0)
+                    {
+                        if (start_is_none)
+                            start = 0;
+                        if (end_is_none)
+                            end = size;
+
+                        // Handle negative indices
+                        if (start < 0)
+                            start = std::max(0LL, size + start);
+                        if (end < 0)
+                            end = std::max(0LL, size + end);
+
+                        // Clamp to valid range
+                        start = std::max(0LL, std::min(start, size));
+                        end = std::max(0LL, std::min(end, size));
+                    }
+                    else
+                    {
+                        // Negative step
+                        if (start_is_none)
+                            start = size - 1;
+                        if (end_is_none)
+                            end = -1;
+
+                        // Handle negative indices
+                        if (start < 0 && !start_is_none)
+                            start = std::max(-1LL, size + start);
+                        if (end < -1 && !end_is_none)
+                            end = std::max(-1LL, size + end);
+
+                        // Clamp start
+                        start = std::min(start, size - 1);
+                    }
+
+                    std::string result;
+                    if (step > 0)
+                    {
+                        for (long long i = start; i < end; i += step)
+                        {
+                            result += (*s)[static_cast<size_t>(i)];
+                        }
+                    }
+                    else
+                    {
+                        for (long long i = start; i > end; i += step)
+                        {
+                            if (i >= 0 && i < size)
+                            {
+                                result += (*s)[static_cast<size_t>(i)];
+                            }
+                        }
+                    }
+                    return var(result);
+                }
+
+                throw std::runtime_error("slice() requires a list or string");
+            }
+
+        public:
             // operator() for slice-like access: var(1, 5) or var(1, 5, 2)
             var operator()(long long start, long long end = LLONG_MAX, long long step = 1) const
             {
                 return slice(start, end, step);
+            }
+
+            // operator() overload for var parameters (supports None)
+            var operator()(const var &start_var, const var &end_var, const var &step_var = var(1)) const
+            {
+                return slice(start_var, end_var, step_var);
             }
 
             // ============ String Methods ============
@@ -1561,6 +2054,9 @@ namespace pythonic
         inline var set() { return var(Set{}); }
         inline var dict() { return var(Dict{}); }
 
+        // None constant - Python's None equivalent
+        inline const var None = var(NoneType{});
+
         // len() free function
         inline size_t len(const var &v)
         {
@@ -1606,6 +2102,24 @@ namespace pythonic
             var &operator[](const char *key)
             {
                 return _vars[name][std::string(key)];
+            }
+
+            // String conversion for printing
+            std::string str() const
+            {
+                auto it = _vars.find(name);
+                if (it != _vars.end())
+                {
+                    return it->second.str();
+                }
+                return "None";
+            }
+
+            // Enable printing via operator<<
+            friend std::ostream &operator<<(std::ostream &os, const DynamicVar &dv)
+            {
+                os << dv.str();
+                return os;
             }
         };
 
@@ -2015,6 +2529,49 @@ namespace pythonic
         inline var input(const char *prompt)
         {
             return input(var(prompt));
+        }
+
+        // ============ Tuple Access Helper ============
+        // Provides Python-like tuple[0], tuple[1] access via function call syntax
+        // Usage: get(pair, 0) instead of std::get<0>(pair)
+
+        template <typename Tuple>
+        auto get(const Tuple &t, size_t index)
+            -> std::enable_if_t<(std::tuple_size_v<std::decay_t<Tuple>> > 0), var>
+        {
+            constexpr size_t size = std::tuple_size_v<std::decay_t<Tuple>>;
+            return get_impl(t, index, std::make_index_sequence<size>{});
+        }
+
+        template <typename Tuple, size_t... Is>
+        var get_impl(const Tuple &t, size_t index, std::index_sequence<Is...>)
+        {
+            var result;
+            bool found = false;
+            // Use fold expression to find the right index at runtime
+            ((Is == index ? (result = var(std::get<Is>(t)), found = true) : false), ...);
+            if (!found)
+            {
+                throw std::out_of_range("Tuple index out of range");
+            }
+            return result;
+        }
+
+        // Tuple to list conversion for easier iteration
+        template <typename... Ts>
+        var tuple_to_list(const std::tuple<Ts...> &t)
+        {
+            List result;
+            std::apply([&result](auto &&...args)
+                       { (result.push_back(var(args)), ...); }, t);
+            return var(result);
+        }
+
+        // Unpack helper - converts tuple to list for var-based processing
+        template <typename Tuple>
+        var unpack(const Tuple &t)
+        {
+            return tuple_to_list(t);
         }
 
 // Pythonic variables declaration
