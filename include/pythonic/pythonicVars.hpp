@@ -22,6 +22,8 @@
 #include <memory>
 #include <optional>
 
+#include "pythonicError.hpp"
+
 namespace pythonic
 {
     namespace vars
@@ -629,7 +631,7 @@ namespace pythonic
                 // String subtraction doesn't make sense, throw error
                 if (resultType == TypeTag::STRING)
                 {
-                    throw std::runtime_error("Cannot subtract strings");
+                    throw PythonicTypeError("Cannot subtract strings");
                 }
 
                 switch (resultType)
@@ -729,14 +731,14 @@ namespace pythonic
                 {
                     long double divisor = other.toLongDouble();
                     if (divisor == 0.0L)
-                        throw std::runtime_error("Division by zero");
+                        throw PythonicZeroDivisionError("Division by zero");
                     return var(toLongDouble() / divisor);
                 }
 
                 // All other cases use double for safety
                 double divisor = other.toDouble();
                 if (divisor == 0.0)
-                    throw std::runtime_error("Division by zero");
+                    throw PythonicZeroDivisionError("Division by zero");
                 return var(toDouble() / divisor);
             }
 
@@ -755,7 +757,7 @@ namespace pythonic
                 {
                     double divisor = other.toDouble();
                     if (divisor == 0.0)
-                        throw std::runtime_error("Modulo by zero");
+                        throw PythonicZeroDivisionError("Modulo by zero");
                     return var(std::fmod(toDouble(), divisor));
                 }
 
@@ -766,28 +768,28 @@ namespace pythonic
                 {
                     auto divisor = other.toULongLong();
                     if (divisor == 0)
-                        throw std::runtime_error("Modulo by zero");
+                        throw PythonicZeroDivisionError("Modulo by zero");
                     return var(toULongLong() % divisor);
                 }
                 case TypeTag::LONG_LONG:
                 {
                     auto divisor = other.toLongLong();
                     if (divisor == 0)
-                        throw std::runtime_error("Modulo by zero");
+                        throw PythonicZeroDivisionError("Modulo by zero");
                     return var(toLongLong() % divisor);
                 }
                 case TypeTag::ULONG:
                 {
                     auto divisor = other.toULong();
                     if (divisor == 0)
-                        throw std::runtime_error("Modulo by zero");
+                        throw PythonicZeroDivisionError("Modulo by zero");
                     return var(toULong() % divisor);
                 }
                 case TypeTag::LONG:
                 {
                     auto divisor = other.toLong();
                     if (divisor == 0)
-                        throw std::runtime_error("Modulo by zero");
+                        throw PythonicZeroDivisionError("Modulo by zero");
                     return var(toLong() % divisor);
                 }
                 case TypeTag::UINT:
@@ -801,7 +803,7 @@ namespace pythonic
                 {
                     auto divisor = other.toInt();
                     if (divisor == 0)
-                        throw std::runtime_error("Modulo by zero");
+                        throw PythonicZeroDivisionError("Modulo by zero");
                     return var(toInt() % divisor);
                 }
                 }
