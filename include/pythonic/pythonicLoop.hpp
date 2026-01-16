@@ -5,12 +5,262 @@
 #include <vector>
 #include <utility>
 #include <stdexcept>
+#include "pythonicError.hpp"
 #include <type_traits>
 #include <algorithm>
+#include <concepts>
+#include <ranges>
 #include "pythonicVars.hpp"
 
 namespace pythonic
 {
+    // ============================================================================
+    // C++20 Concepts for Pythonic Containers and Iterables
+    // ============================================================================
+    // These concepts enable user-defined containers to work seamlessly with
+    // pythonic functions like map(), filter(), reduce(), enumerate(), zip().
+    //
+    // Concept Hierarchy:
+    //   Iterable      - Has begin()/end(), can be iterated
+    //   Sized         - Has size(), can query length
+    //   Container     - Iterable + Sized
+    //   Reversible    - Has rbegin()/rend(), can iterate backwards
+    //   RandomAccess  - Has operator[], supports index access
+    //
+    // Also provides std::ranges integration for C++20 range adaptors.
+    // ============================================================================
+
+    namespace traits
+    {
+        // ============ Core Iteration Concepts ============
+
+        /**
+         * @brief Concept for types that can be iterated with begin()/end()
+         *
+         * This uses ADL-friendly std::begin/std::end to support:
+         * - Standard containers (vector, list, set, map, etc.)
+         * - C-style arrays
+         * - User-defined types with begin()/end() methods
+         * - Types with free-function begin()/end() via ADL
+         */
+        template <typename T>
+        concept Iterable = requires(T &t) {
+            { std::begin(t) } -> std::input_or_output_iterator;
+            { std::end(t) } -> std::sentinel_for<decltype(std::begin(t))>;
+        };
+
+        /**
+         * @brief Concept for types that have a size() method
+         *
+         * Separate from Iterable because some iterables (generators, views)
+         * may not have a knowable size.
+         */
+        template <typename T>
+        concept Sized = requires(T &t) {
+            { t.size() } -> std::integral;
+        };
+
+        /**
+         * @brief Concept for full containers (Iterable + Sized)
+         *
+         * This is the most common case for standard containers.
+         */
+        template <typename T>
+        concept Container = Iterable<T> && Sized<T>;
+
+        /**
+         * @brief Concept for types that can be iterated in reverse
+         *
+         * Supports reversed() function and reverse iteration patterns.
+         */
+        template <typename T>
+        concept Reversible = requires(T &t) {
+            { std::rbegin(t) } -> std::bidirectional_iterator;
+            { std::rend(t) } -> std::sentinel_for<decltype(std::rbegin(t))>;
+        };
+
+        /**
+         * @brief Concept for types supporting index access
+         */
+        template <typename T>
+        concept RandomAccess = requires(T &t, size_t i) {
+            { t[i] };
+        };
+
+        /**
+         * @brief Full-featured container: Iterable + Sized + Reversible + RandomAccess
+         */
+        template <typename T>
+        concept FullContainer = Container<T> && Reversible<T> && RandomAccess<T>;
+
+        // ============ Numeric Concepts ============
+
+        /**
+         * @brief Concept for numeric types (integral or floating point)
+         */
+        template <typename T>
+        concept Numeric = std::integral<T> || std::floating_point<T>;
+
+        /**
+         * @brief Concept for signed numeric types
+         */
+        template <typename T>
+        concept SignedNumeric = Numeric<T> && std::is_signed_v<T>;
+
+        /**
+         * @brief Concept for unsigned numeric types
+         */
+        template <typename T>
+        concept UnsignedNumeric = Numeric<T> && std::is_unsigned_v<T>;
+
+        // ============ Callable Concepts ============
+
+        /**
+         * @brief Concept for nullary callables (no arguments)
+         */
+        template <typename T>
+        concept Callable = requires(T &&t) {
+            { t() };
+        };
+
+        /**
+         * @brief Concept for unary callables (one argument)
+         */
+        template <typename F, typename Arg>
+        concept UnaryCallable = requires(F &&f, Arg &&arg) {
+            { f(std::forward<Arg>(arg)) };
+        };
+
+        /**
+         * @brief Concept for binary callables (two arguments)
+         */
+        template <typename F, typename Arg1, typename Arg2>
+        concept BinaryCallable = requires(F &&f, Arg1 &&a1, Arg2 &&a2) {
+            { f(std::forward<Arg1>(a1), std::forward<Arg2>(a2)) };
+        };
+
+        /**
+         * @brief Concept for predicates (returns bool-convertible)
+         */
+        template <typename F, typename... Args>
+        concept Predicate = requires(F &&f, Args &&...args) {
+            { f(std::forward<Args>(args)...) } -> std::convertible_to<bool>;
+        };
+
+        // ============ std::ranges Integration ============
+
+        /**
+         * @brief Concept for C++20 ranges (std::ranges::range)
+         */
+        template <typename T>
+        concept Range = std::ranges::range<T>;
+
+        /**
+         * @brief Concept for sized ranges
+         */
+        template <typename T>
+        concept SizedRange = std::ranges::sized_range<T>;
+
+        /**
+         * @brief Concept for bidirectional ranges
+         */
+        template <typename T>
+        concept BidirectionalRange = std::ranges::bidirectional_range<T>;
+
+        /**
+         * @brief Concept for random access ranges
+         */
+        template <typename T>
+        concept RandomAccessRange = std::ranges::random_access_range<T>;
+
+        /**
+         * @brief Concept for contiguous ranges (like std::vector, std::array, std::span)
+         */
+        template <typename T>
+        concept ContiguousRange = std::ranges::contiguous_range<T>;
+
+        /**
+         * @brief Concept for viewable ranges (can be converted to a view)
+         */
+        template <typename T>
+        concept ViewableRange = std::ranges::viewable_range<T>;
+
+    } // namespace traits
+
+    // ============================================================================
+    // Range Adaptor Helpers (using std::views)
+    // ============================================================================
+    // These provide pythonic-style wrappers around C++20 range adaptors
+
+    namespace views
+    {
+        using namespace std::views;
+
+        /**
+         * @brief Create a view that takes the first n elements
+         *
+         * Usage: for (auto x : pythonic::views::take_n(container, 5)) { ... }
+         */
+        template <traits::Range R>
+        auto take_n(R &&r, size_t n)
+        {
+            return std::forward<R>(r) | std::views::take(n);
+        }
+
+        /**
+         * @brief Create a view that drops the first n elements
+         */
+        template <traits::Range R>
+        auto drop_n(R &&r, size_t n)
+        {
+            return std::forward<R>(r) | std::views::drop(n);
+        }
+
+        /**
+         * @brief Create a filtered view
+         */
+        template <traits::Range R, typename Pred>
+        auto filter_view(R &&r, Pred &&pred)
+        {
+            return std::forward<R>(r) | std::views::filter(std::forward<Pred>(pred));
+        }
+
+        /**
+         * @brief Create a transformed view
+         */
+        template <traits::Range R, typename Func>
+        auto transform_view(R &&r, Func &&func)
+        {
+            return std::forward<R>(r) | std::views::transform(std::forward<Func>(func));
+        }
+
+        /**
+         * @brief Reverse a range (lazy view, no copy)
+         */
+        template <traits::BidirectionalRange R>
+        auto reverse_view(R &&r)
+        {
+            return std::forward<R>(r) | std::views::reverse;
+        }
+
+        // Note: enumerate_view is defined after the loop namespace (see below)
+        // because it depends on pythonic::loop::enumerate
+
+        /**
+         * @brief Create a view over a range of integers (like Python's range)
+         */
+        inline auto iota_view(int start, int end)
+        {
+            return std::views::iota(start, end);
+        }
+
+        inline auto iota_view(int end)
+        {
+            return std::views::iota(0, end);
+        }
+
+    } // namespace views
+
     namespace loop
     {
 
@@ -42,7 +292,7 @@ namespace pythonic
             {
                 if (step == 0)
                 {
-                    throw std::invalid_argument("range() step argument must not be zero");
+                    throw pythonic::PythonicValueError("range() step argument must not be zero");
                 }
             }
 
@@ -61,6 +311,7 @@ namespace pythonic
                 value_type step_;
 
             public:
+                iterator() : current_(0), step_(1) {}
                 iterator(value_type current, value_type step, value_type /*end*/)
                     : current_(current), step_(step) {}
 
@@ -172,10 +423,17 @@ namespace pythonic
             {
             private:
                 using ContainerIter = decltype(std::declval<Container>().begin());
+                using difference_type = std::ptrdiff_t;
+                using value_type = std::pair<size_t, typename std::iterator_traits<ContainerIter>::value_type>;
+                using pointer = void; // Input iterator
+                using reference = value_type;
+                using iterator_category = std::input_iterator_tag;
+
                 ContainerIter it_;
                 size_t index_;
 
             public:
+                iterator() : index_(0) {}
                 iterator(ContainerIter it, size_t index) : it_(it), index_(index) {}
 
                 auto operator*() const
@@ -228,10 +486,17 @@ namespace pythonic
             {
             private:
                 using ContainerIter = decltype(std::declval<const Container>().begin());
+                using difference_type = std::ptrdiff_t;
+                using value_type = std::pair<size_t, typename std::iterator_traits<ContainerIter>::value_type>;
+                using pointer = void;
+                using reference = value_type;
+                using iterator_category = std::input_iterator_tag;
+
                 ContainerIter it_;
                 size_t index_;
 
             public:
+                iterator() : index_(0) {}
                 iterator(ContainerIter it, size_t index) : it_(it), index_(index) {}
 
                 auto operator*() const
@@ -282,6 +547,13 @@ namespace pythonic
 
             class iterator
             {
+            public:
+                using difference_type = std::ptrdiff_t;
+                using value_type = std::tuple<typename std::iterator_traits<decltype(std::declval<Containers>().begin())>::value_type...>;
+                using pointer = void;
+                using reference = value_type;
+                using iterator_category = std::input_iterator_tag;
+
             private:
                 std::tuple<decltype(std::declval<Containers>().begin())...> iterators_;
 
@@ -298,6 +570,7 @@ namespace pythonic
                 }
 
             public:
+                iterator() = default;
                 iterator(decltype(std::declval<Containers>().begin())... its)
                     : iterators_(its...) {}
 
@@ -476,7 +749,7 @@ namespace pythonic
             auto it = iterable.begin();
             if (it == iterable.end())
             {
-                throw std::runtime_error("min() arg is an empty sequence");
+                throw pythonic::PythonicValueError("min() arg is an empty sequence");
             }
             vars::var result = *it;
             ++it;
@@ -497,7 +770,7 @@ namespace pythonic
             auto it = iterable.begin();
             if (it == iterable.end())
             {
-                throw std::runtime_error("max() arg is an empty sequence");
+                throw pythonic::PythonicValueError("max() arg is an empty sequence");
             }
             vars::var result = *it;
             ++it;
@@ -562,4 +835,22 @@ namespace pythonic
         }
 
     } // namespace loop
+
+    // ============================================================================
+    // enumerate_view (must be defined after loop::enumerate)
+    // ============================================================================
+    namespace views
+    {
+        /**
+         * @brief Create an enumerated view (index, value pairs)
+         *
+         * Note: std::views::enumerate is C++23, so we provide our own for C++20
+         */
+        template <traits::Range R>
+        auto enumerate_view(R &&r, size_t start = 0)
+        {
+            return pythonic::loop::enumerate(std::forward<R>(r), start);
+        }
+    } // namespace views
+
 } // namespace pythonic

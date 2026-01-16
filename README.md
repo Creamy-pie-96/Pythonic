@@ -2,7 +2,7 @@
 
 Hey there! So you love Python's clean syntax but need C++'s performance? You're in the right place.
 
-This library brings Python's most beloved features to C++ - dynamic typing, easy containers, slicing, string methods, comprehensions, and tons more. No weird hacks, just modern C++17 that feels surprisingly Pythonic.
+This library brings Python's most beloved features to C++ - dynamic typing, easy containers, slicing, string methods, comprehensions, and tons more. No weird hacks, just modern C++20 that feels surprisingly Pythonic.
 
 ## Table of Contents
 
@@ -61,6 +61,14 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
 - [User Input](#user-input)
 - [File I/O](#file-io)
 - [Operator Overloading](#operator-overloading)
+- [C++20 Features](#c20-features)
+  - [Concepts](#concepts)
+  - [Ranges Integration](#ranges-integration)
+  - [Fast Path Cache](#fast-path-cache-hot-loop-optimization)
+- [Error Handling](#error-handling)
+  - [Exception Hierarchy](#exception-hierarchy)
+  - [Using Exceptions](#using-exceptions)
+- [Checked Arithmetic](#checked-arithmetic)
 - [What's Under the Hood?](#whats-under-the-hood)
 - [Examples](#examples)
 - [Tips & Tricks](#tips--tricks)
@@ -459,6 +467,14 @@ var empty = graph(0);
 if (!empty) {
     print("Empty graph is falsy");
 }
+
+// Add nodes dynamically
+var g2 = graph(3);           // Start with 3 nodes
+size_t new_node = g2.add_node();        // Add a node, returns its index (3)
+size_t labeled = g2.add_node("Label");  // Add a node with data
+
+// Get graph size (number of nodes)
+print(g2.node_count());  // 5
 ```
 
 ### Adding Edges
@@ -557,6 +573,10 @@ print(g.out_degree(0));  // Number of edges leaving node 0
 
 // in_degree(node) - Number of incoming edges to a node
 print(g.in_degree(0));   // Number of edges pointing to node 0
+
+// neighbors(node) - Get neighbor node indices as a list
+var nbrs = g.neighbors(0);
+print("Neighbors of 0:", nbrs);  // [1, 4] (connected nodes)
 
 // get_edges(node) - Get all edges from a node as a list of dicts
 var edges = g.get_edges(0);
@@ -1677,6 +1697,263 @@ print(d1 & d2);  // {"b": 2}                  - Common keys
 print(d1 - d2);  // {"a": 1}                  - Keys only in d1
 ```
 
+## C++20 Features
+
+This library leverages modern C++20 features to provide type-safe, flexible, and performant abstractions.
+
+### Concepts
+
+The library defines a rich set of concepts in `pythonic::loop::traits` for generic programming:
+
+```cpp
+#include "pythonic/pythonic.hpp"
+
+using namespace pythonic::loop::traits;
+
+// Core container concepts
+static_assert(Iterable<std::vector<int>>);    // Has begin()/end()
+static_assert(Container<std::vector<int>>);   // Iterable + size()
+static_assert(Sized<std::vector<int>>);       // Has size() returning integral
+static_assert(Reversible<std::vector<int>>);  // Has rbegin()/rend()
+static_assert(RandomAccess<std::vector<int>>);// Has operator[]
+
+// Numeric concepts
+static_assert(Numeric<int>);
+static_assert(Numeric<double>);
+static_assert(SignedNumeric<int>);
+static_assert(UnsignedNumeric<unsigned int>);
+static_assert(!Numeric<std::string>);
+
+// Callable concepts
+auto square = [](int x) { return x * x; };
+static_assert(Callable<decltype(square), int>);
+static_assert(UnaryCallable<decltype(square), int>);
+
+auto add = [](int a, int b) { return a + b; };
+static_assert(BinaryCallable<decltype(add), int, int>);
+
+auto is_even = [](int x) { return x % 2 == 0; };
+static_assert(Predicate<decltype(is_even), int>);
+```
+
+#### Using Concepts in Your Code
+
+```cpp
+// Write generic functions that work with any iterable
+template <Iterable T>
+void process_items(T& container) {
+    for (auto& item : container) {
+        // Process each item
+    }
+}
+
+// Require containers with size
+template <Container T>
+auto get_middle(T& container) {
+    return container[container.size() / 2];
+}
+
+// Use FullContainer for maximum capabilities
+template <FullContainer T>
+void full_access(T& container) {
+    // Forward iteration
+    for (auto& item : container) { }
+    // Reverse iteration
+    for (auto it = container.rbegin(); it != container.rend(); ++it) { }
+    // Random access
+    auto first = container[0];
+}
+```
+
+### Ranges Integration
+
+The library integrates with C++20 `std::ranges` through the `pythonic::loop::views` namespace:
+
+```cpp
+#include "pythonic/pythonic.hpp"
+
+using namespace pythonic::loop;
+using namespace pythonic::loop::views;
+
+// Take first N elements
+auto first_five = take_n(range(1, 100), 5);  // [1, 2, 3, 4, 5]
+
+// Drop first N elements
+auto after_five = drop_n(range(1, 10), 5);   // [6, 7, 8, 9]
+
+// Filter with predicate
+auto evens = filter_view(range(1, 20), [](int x) { return x % 2 == 0; });
+
+// Transform elements
+auto squares = transform_view(range(1, 10), [](int x) { return x * x; });
+
+// Reverse iteration
+std::vector<int> v = {1, 2, 3, 4, 5};
+for (int x : reverse_view(v)) {
+    print(x);  // 5, 4, 3, 2, 1
+}
+
+// Generate sequences
+for (int x : iota_view(1, 10)) {
+    print(x);  // 1, 2, 3, ..., 9
+}
+```
+
+### Fast Path Cache (Hot-Loop Optimization)
+
+For performance-critical code with repeated operations on the same types, use the cached operation system:
+
+```cpp
+#include "pythonic/pythonic.hpp"
+
+using namespace pythonic::vars;
+using namespace pythonic::fastpath;
+
+// Create cached operations (caches function pointers by type pair)
+CachedAdd add_op;
+CachedMul mul_op;
+
+var a = 10, b = 20;
+
+// First call: looks up and caches the operation
+var sum = add_op(a, b);  // 30
+
+// Subsequent calls with same types: O(1) dispatch
+for (int i = 0; i < 1000000; ++i) {
+    sum = add_op(sum, b);  // No type checking overhead!
+}
+
+// Works with mixed types too (double + int, etc.)
+var x = 3.14, y = 2;
+var result = mul_op(x, y);  // 6.28
+
+// Convenient helper functions for common patterns
+std::vector<var> numbers = {1, 2, 3, 4, 5};
+var total = fast_sum(numbers);      // 15
+var product = fast_product(numbers); // 120
+
+// Dot product
+std::vector<var> a_vec = {1, 2, 3};
+std::vector<var> b_vec = {4, 5, 6};
+var dot = fast_dot(a_vec, b_vec);   // 1*4 + 2*5 + 3*6 = 32
+
+// Cached accumulator for reduction operations
+CachedAccumulator<CachedAdd> summer(var(0));
+for (auto& n : numbers) {
+    summer.accumulate(n);
+}
+var result = summer.get();  // 15
+```
+
+#### When to Use Fast Path Cache
+
+- **Hot loops** with repeated arithmetic on `var` types
+- **Numerical algorithms** where type stability can be assumed
+- **Large data processing** where function dispatch overhead matters
+
+For simple one-off operations, regular `var` arithmetic is perfectly fine.
+
+## Error Handling
+
+The library provides a Python-style exception hierarchy for graceful error handling.
+
+### Exception Hierarchy
+
+```
+PythonicError (base class)
+├── PythonicTypeError      - Type mismatch errors
+├── PythonicValueError     - Invalid values
+├── PythonicIndexError     - Index out of bounds
+├── PythonicKeyError       - Key not found in dict
+├── PythonicAttributeError - Invalid attribute access
+├── PythonicOverflowError  - Arithmetic overflow
+├── PythonicZeroDivisionError - Division by zero
+├── PythonicFileError      - File I/O errors
+├── PythonicGraphError     - Graph operation errors
+├── PythonicIterationError - Iteration errors
+├── PythonicRuntimeError   - General runtime errors
+├── PythonicNotImplementedError - Unimplemented features
+└── PythonicStopIteration  - Iterator exhaustion
+```
+
+### Using Exceptions
+
+```cpp
+#include "pythonic/pythonic.hpp"
+
+using namespace pythonic;
+using namespace pythonic::vars;
+
+try {
+    var mylist = list(1, 2, 3);
+    var item = mylist[10];  // Throws PythonicIndexError
+}
+catch (const PythonicIndexError& e) {
+    print("Index error:", e.what());
+    // "list index 10 out of range for size 3"
+}
+
+try {
+    var d = dict();
+    d["key"] = "value";
+    var missing = d.at("nonexistent");  // Throws PythonicKeyError
+}
+catch (const PythonicKeyError& e) {
+    print("Key not found:", e.what());
+}
+
+try {
+    var s = "hello";
+    var num = s.toInt();  // Throws PythonicTypeError
+}
+catch (const PythonicTypeError& e) {
+    print("Type error:", e.what());
+}
+
+// Catch any pythonic error
+try {
+    // ... operations that might fail
+}
+catch (const PythonicError& e) {
+    print("Something went wrong:", e.what());
+}
+```
+
+## Checked Arithmetic
+
+The library provides overflow-checked arithmetic operations:
+
+```cpp
+#include "pythonic/pythonic.hpp"
+
+using namespace pythonic::overflow;
+
+// Safe arithmetic that throws on overflow
+int a = std::numeric_limits<int>::max();
+try {
+    int result = add(a, 1);  // Throws PythonicOverflowError
+}
+catch (const PythonicOverflowError& e) {
+    print("Overflow detected!");
+}
+
+// Available operations:
+// add(a, b)  - Safe addition
+// sub(a, b)  - Safe subtraction
+// mul(a, b)  - Safe multiplication
+// div(a, b)  - Safe division (checks for zero and overflow)
+// mod(a, b)  - Safe modulo (checks for zero)
+
+// Works with all numeric types
+long long big_a = 9223372036854775807LL;
+try {
+    auto result = add(big_a, 1LL);
+}
+catch (const PythonicOverflowError&) {
+    print("Long long overflow!");
+}
+```
+
 ## What's Under the Hood?
 
 Just so you know what you're working with:
@@ -1684,7 +1961,7 @@ Just so you know what you're working with:
 - **`var`** - A `std::variant` wrapper that can hold `int`, `double`, `std::string`, `bool`, `List`, `Dict`, `Set`, `None`
 - **Containers** - Internally use `std::vector`, `std::map`, `std::set`
 - **Performance** - Comparable to standard containers with minimal overhead
-- **C++17 Required** - Uses `std::variant`, `std::visit`, `std::optional`, structured bindings
+- **C++20 Required** - Uses `std::variant`, `std::visit`, `std::span`, `concepts`
 - **No exceptions** - Returns sensible defaults on errors (empty var, None, etc.)
 - **Move semantics** - Optimized for modern C++ performance
 
@@ -1921,7 +2198,7 @@ auto sum = reduce(lambda2_(acc, x, acc + x), nums, var(0));
 
 ## Common Pitfalls
 
-- **C++17 required** - Won't compile with older standards
+- **C++20 required** - Won't compile with older standards
 - **No automatic conversions from strings** - Use `Int()`, `Float()`, etc. when converting from strings
 - **Dictionary keys** - Currently only support string keys
 - **Index checking** - Out of bounds returns None instead of throwing
@@ -1929,6 +2206,12 @@ auto sum = reduce(lambda2_(acc, x, acc + x), nums, var(0));
 - **Operator ambiguity with slicing** - When using `slice()` with `None`, wrap numeric literals in `var()`: `slice(None, None, var(-1))`
 - **Index ambiguity** - Use `size_t` for list indices when 0 might be ambiguous: `lst[size_t(0)]`
 - **DynamicVar arithmetic** - Convert `let()` variables to `var` first for arithmetic: `var v = let(x); let(x) = v + 50;`
+
+## Safety Features
+
+- **Overflow Detection** - Integer arithmetic operations (+, -, \*, /) are checked for overflow and throw `PythonicOverflowError`
+- **Zero Division** - Division/Modulo by zero throws `PythonicZeroDivisionError`
+- **Safe Iteration** - `as_span()` provides safe views of list data
 
 ## That's It! Now getout
 

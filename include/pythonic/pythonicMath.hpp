@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <random>
+#include "pythonicError.hpp"
 #include <algorithm>
 #include "pythonicVars.hpp"
 
@@ -71,7 +72,7 @@ namespace pythonic
 
         inline var pow(const var &base, const var &exponent)
         {
-            // Fast path: int ^ int (common case)
+            // Fast path: int ^ int (common case) - returns int for memory efficiency
             if (base.is_int() && exponent.is_int())
             {
                 int b = base.as_int_unchecked();
@@ -84,7 +85,7 @@ namespace pythonic
                     return var(result);
                 }
             }
-            // Fast path: long long ^ int
+            // Fast path: long long ^ int - returns long long
             if (base.is_long_long() && exponent.is_int())
             {
                 long long b = base.as_long_long_unchecked();
@@ -97,7 +98,7 @@ namespace pythonic
                     return var(result);
                 }
             }
-            // Fast path: double ^ int or double ^ double
+            // Fast path: double ^ int or double ^ double - returns double
             if (base.is_double())
             {
                 if (exponent.is_int())
@@ -105,14 +106,15 @@ namespace pythonic
                 if (exponent.is_double())
                     return var(std::pow(base.as_double_unchecked(), exponent.as_double_unchecked()));
             }
-            // Fast path: float ^ int or float ^ float
+            // Fast path: float ^ int or float ^ float - returns double for precision
             if (base.is_float())
             {
                 if (exponent.is_int())
-                    return var(std::pow(base.as_float_unchecked(), exponent.as_int_unchecked()));
+                    return var(std::pow(static_cast<double>(base.as_float_unchecked()), exponent.as_int_unchecked()));
                 if (exponent.is_float())
-                    return var(std::pow(base.as_float_unchecked(), exponent.as_float_unchecked()));
+                    return var(std::pow(static_cast<double>(base.as_float_unchecked()), static_cast<double>(exponent.as_float_unchecked())));
             }
+            // Fallback: convert to double - returns double
             return var(std::pow(to_numeric(base), to_numeric(exponent)));
         }
 
@@ -472,11 +474,11 @@ namespace pythonic
         inline var random_choice(const var &lst)
         {
             if (lst.type() != "list")
-                throw std::runtime_error("random_choice() requires a list");
+                throw pythonic::PythonicTypeError("random_choice() requires a list");
 
             const auto &l = lst.get<List>();
             if (l.empty())
-                throw std::runtime_error("random_choice() from empty list");
+                throw pythonic::PythonicValueError("random_choice() from empty list");
 
             std::uniform_int_distribution<size_t> dist(0, l.size() - 1);
             return l[dist(get_random_engine())];
@@ -486,11 +488,11 @@ namespace pythonic
         inline var random_choice_set(const var &s)
         {
             if (s.type() != "set")
-                throw std::runtime_error("random_choice_set() requires a set");
+                throw pythonic::PythonicTypeError("random_choice_set() requires a set");
 
             const auto &set_val = s.get<Set>();
             if (set_val.empty())
-                throw std::runtime_error("random_choice_set() from empty set");
+                throw pythonic::PythonicValueError("random_choice_set() from empty set");
 
             std::uniform_int_distribution<size_t> dist(0, set_val.size() - 1);
             size_t idx = dist(get_random_engine());
@@ -557,7 +559,7 @@ namespace pythonic
 
             if (max_i - min_i + 1 < static_cast<int>(count))
             {
-                throw std::runtime_error("fill_random_set(): range too small for unique count");
+                throw pythonic::PythonicValueError("fill_random_set(): range too small for unique count");
             }
 
             std::uniform_int_distribution<int> dist(min_i, max_i);
@@ -623,7 +625,7 @@ namespace pythonic
             }
             else
             {
-                throw std::runtime_error("product() requires a list or set");
+                throw pythonic::PythonicTypeError("product() requires a list or set");
             }
 
             return result;
@@ -659,7 +661,7 @@ namespace pythonic
         {
             int num = static_cast<int>(to_numeric(n));
             if (num < 0)
-                throw std::runtime_error("factorial() not defined for negative values");
+                throw pythonic::PythonicValueError("factorial() not defined for negative values");
 
             long long result = 1;
             for (int i = 2; i <= num; ++i)

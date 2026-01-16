@@ -7,3 +7,4 @@
 #include "pythonicFile.hpp"
 #include "pythonicMath.hpp"
 #include "pythonicError.hpp"
+#include "pythonicFastPath.hpp"
