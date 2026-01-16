@@ -11,45 +11,123 @@ namespace pythonic
     {
         using namespace pythonic::vars;
 
-        // Helper to extract numeric value from var
+        // Helper to extract numeric value from var - OPTIMIZED with fast type checks
+        // Handles ALL numeric types with fast paths before falling back to toDouble()
         inline double to_numeric(const var &v)
         {
-            if (v.is<int>())
-                return static_cast<double>(v.get<int>());
-            else if (v.is<float>())
-                return static_cast<double>(v.get<float>());
-            else if (v.is<double>())
-                return v.get<double>();
-            else if (v.is<long>())
-                return static_cast<double>(v.get<long>());
-            else if (v.is<long long>())
-                return static_cast<double>(v.get<long long>());
-            else if (v.is<long double>())
-                return static_cast<double>(v.get<long double>());
-            else if (v.is<unsigned int>())
-                return static_cast<double>(v.get<unsigned int>());
-            else if (v.is<unsigned long>())
-                return static_cast<double>(v.get<unsigned long>());
-            else if (v.is<unsigned long long>())
-                return static_cast<double>(v.get<unsigned long long>());
-            else
-                throw std::runtime_error("Math function requires numeric type");
+            // Fast paths for all numeric types using is_* methods and unchecked accessors
+            // Ordered by expected frequency of use
+            if (v.is_int())
+                return static_cast<double>(v.as_int_unchecked());
+            if (v.is_double())
+                return v.as_double_unchecked();
+            if (v.is_float())
+                return static_cast<double>(v.as_float_unchecked());
+            if (v.is_long())
+                return static_cast<double>(v.as_long_unchecked());
+            if (v.is_long_long())
+                return static_cast<double>(v.as_long_long_unchecked());
+            if (v.is_long_double())
+                return static_cast<double>(v.as_long_double_unchecked());
+            if (v.is_uint())
+                return static_cast<double>(v.as_uint_unchecked());
+            if (v.is_ulong())
+                return static_cast<double>(v.as_ulong_unchecked());
+            if (v.is_ulong_long())
+                return static_cast<double>(v.as_ulong_long_unchecked());
+            if (v.is_bool())
+                return v.as_bool_unchecked() ? 1.0 : 0.0;
+            // This should not be reached for numeric types, but fallback to toDouble()
+            return v.toDouble();
         }
 
         // ============ Basic Math Functions ============
+        // OPTIMIZED: Fast paths for common int/double/float cases
 
         inline var round(const var &v)
         {
+            // Integral types are already rounded
+            if (v.is_int())
+                return v;
+            if (v.is_long())
+                return v;
+            if (v.is_long_long())
+                return v;
+            if (v.is_uint())
+                return v;
+            if (v.is_ulong())
+                return v;
+            if (v.is_ulong_long())
+                return v;
+            // Floating point types need rounding
+            if (v.is_double())
+                return var(std::round(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(std::round(v.as_float_unchecked()));
+            if (v.is_long_double())
+                return var(std::round(static_cast<double>(v.as_long_double_unchecked())));
             return var(std::round(to_numeric(v)));
         }
 
         inline var pow(const var &base, const var &exponent)
         {
+            // Fast path: int ^ int (common case)
+            if (base.is_int() && exponent.is_int())
+            {
+                int b = base.as_int_unchecked();
+                int e = exponent.as_int_unchecked();
+                if (e >= 0 && e < 31)
+                { // Avoid overflow for small exponents
+                    int result = 1;
+                    for (int i = 0; i < e; ++i)
+                        result *= b;
+                    return var(result);
+                }
+            }
+            // Fast path: long long ^ int
+            if (base.is_long_long() && exponent.is_int())
+            {
+                long long b = base.as_long_long_unchecked();
+                int e = exponent.as_int_unchecked();
+                if (e >= 0 && e < 63)
+                {
+                    long long result = 1;
+                    for (int i = 0; i < e; ++i)
+                        result *= b;
+                    return var(result);
+                }
+            }
+            // Fast path: double ^ int or double ^ double
+            if (base.is_double())
+            {
+                if (exponent.is_int())
+                    return var(std::pow(base.as_double_unchecked(), exponent.as_int_unchecked()));
+                if (exponent.is_double())
+                    return var(std::pow(base.as_double_unchecked(), exponent.as_double_unchecked()));
+            }
+            // Fast path: float ^ int or float ^ float
+            if (base.is_float())
+            {
+                if (exponent.is_int())
+                    return var(std::pow(base.as_float_unchecked(), exponent.as_int_unchecked()));
+                if (exponent.is_float())
+                    return var(std::pow(base.as_float_unchecked(), exponent.as_float_unchecked()));
+            }
             return var(std::pow(to_numeric(base), to_numeric(exponent)));
         }
 
         inline var sqrt(const var &v)
         {
+            if (v.is_double())
+                return var(std::sqrt(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::sqrt(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::sqrt(static_cast<double>(v.as_int_unchecked())));
+            if (v.is_long())
+                return var(std::sqrt(static_cast<double>(v.as_long_unchecked())));
+            if (v.is_long_long())
+                return var(std::sqrt(static_cast<double>(v.as_long_long_unchecked())));
             return var(std::sqrt(to_numeric(v)));
         }
 
@@ -60,21 +138,45 @@ namespace pythonic
 
         inline var exp(const var &v)
         {
+            if (v.is_double())
+                return var(std::exp(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::exp(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::exp(static_cast<double>(v.as_int_unchecked())));
             return var(std::exp(to_numeric(v)));
         }
 
         inline var log(const var &v)
         {
+            if (v.is_double())
+                return var(std::log(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::log(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::log(static_cast<double>(v.as_int_unchecked())));
             return var(std::log(to_numeric(v)));
         }
 
         inline var log10(const var &v)
         {
+            if (v.is_double())
+                return var(std::log10(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::log10(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::log10(static_cast<double>(v.as_int_unchecked())));
             return var(std::log10(to_numeric(v)));
         }
 
         inline var log2(const var &v)
         {
+            if (v.is_double())
+                return var(std::log2(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::log2(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::log2(static_cast<double>(v.as_int_unchecked())));
             return var(std::log2(to_numeric(v)));
         }
 
@@ -82,21 +184,45 @@ namespace pythonic
 
         inline var sin(const var &v)
         {
+            if (v.is_double())
+                return var(std::sin(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::sin(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::sin(static_cast<double>(v.as_int_unchecked())));
             return var(std::sin(to_numeric(v)));
         }
 
         inline var cos(const var &v)
         {
+            if (v.is_double())
+                return var(std::cos(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::cos(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::cos(static_cast<double>(v.as_int_unchecked())));
             return var(std::cos(to_numeric(v)));
         }
 
         inline var tan(const var &v)
         {
+            if (v.is_double())
+                return var(std::tan(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(static_cast<double>(std::tan(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::tan(static_cast<double>(v.as_int_unchecked())));
             return var(std::tan(to_numeric(v)));
         }
 
         inline var cot(const var &v)
         {
+            if (v.is_double())
+                return var(1.0 / std::tan(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(1.0 / std::tan(static_cast<double>(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(1.0 / std::tan(static_cast<double>(v.as_int_unchecked())));
             return var(1.0 / std::tan(to_numeric(v)));
         }
 
@@ -186,19 +312,80 @@ namespace pythonic
         }
 
         // ============ Additional Math Functions ============
+        // OPTIMIZED: Fast paths for all numeric types
 
         inline var floor(const var &v)
         {
+            // All integral types are already floored
+            if (v.is_int())
+                return v;
+            if (v.is_long())
+                return v;
+            if (v.is_long_long())
+                return v;
+            if (v.is_uint())
+                return v;
+            if (v.is_ulong())
+                return v;
+            if (v.is_ulong_long())
+                return v;
+            // Floating point types need flooring
+            if (v.is_double())
+                return var(std::floor(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(std::floor(static_cast<double>(v.as_float_unchecked())));
+            if (v.is_long_double())
+                return var(std::floor(static_cast<double>(v.as_long_double_unchecked())));
             return var(std::floor(to_numeric(v)));
         }
 
         inline var ceil(const var &v)
         {
+            // All integral types are already ceiled
+            if (v.is_int())
+                return v;
+            if (v.is_long())
+                return v;
+            if (v.is_long_long())
+                return v;
+            if (v.is_uint())
+                return v;
+            if (v.is_ulong())
+                return v;
+            if (v.is_ulong_long())
+                return v;
+            // Floating point types need ceiling
+            if (v.is_double())
+                return var(std::ceil(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(std::ceil(static_cast<double>(v.as_float_unchecked())));
+            if (v.is_long_double())
+                return var(std::ceil(static_cast<double>(v.as_long_double_unchecked())));
             return var(std::ceil(to_numeric(v)));
         }
 
         inline var trunc(const var &v)
         {
+            // All integral types are already truncated
+            if (v.is_int())
+                return v;
+            if (v.is_long())
+                return v;
+            if (v.is_long_long())
+                return v;
+            if (v.is_uint())
+                return v;
+            if (v.is_ulong())
+                return v;
+            if (v.is_ulong_long())
+                return v;
+            // Floating point types need truncation
+            if (v.is_double())
+                return var(std::trunc(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(std::trunc(static_cast<double>(v.as_float_unchecked())));
+            if (v.is_long_double())
+                return var(std::trunc(static_cast<double>(v.as_long_double_unchecked())));
             return var(std::trunc(to_numeric(v)));
         }
 
@@ -214,6 +401,26 @@ namespace pythonic
 
         inline var fabs(const var &v)
         {
+            // Fast paths for all numeric types
+            if (v.is_double())
+                return var(std::fabs(v.as_double_unchecked()));
+            if (v.is_float())
+                return var(std::fabs(static_cast<double>(v.as_float_unchecked())));
+            if (v.is_int())
+                return var(std::abs(v.as_int_unchecked()));
+            if (v.is_long())
+                return var(std::abs(v.as_long_unchecked()));
+            if (v.is_long_long())
+                return var(std::abs(v.as_long_long_unchecked()));
+            if (v.is_long_double())
+                return var(std::fabs(static_cast<double>(v.as_long_double_unchecked())));
+            // Unsigned types are always positive
+            if (v.is_uint())
+                return v;
+            if (v.is_ulong())
+                return v;
+            if (v.is_ulong_long())
+                return v;
             return var(std::fabs(to_numeric(v)));
         }
 
