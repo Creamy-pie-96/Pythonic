@@ -1,6 +1,7 @@
 #pragma once
 
 #include <fstream>
+#include "pythonicError.hpp"
 #include <sstream>
 #include <string>
 #include <vector>
@@ -161,7 +162,7 @@ namespace pythonic
                 stream_.open(filename_, get_openmode());
                 if (!stream_.is_open())
                 {
-                    throw std::runtime_error("Could not open file: " + filename_);
+                    throw pythonic::PythonicFileError::cannot_open(filename_);
                 }
                 is_open_ = true;
             }
@@ -187,7 +188,7 @@ namespace pythonic
             {
                 if (!is_open_)
                 {
-                    throw std::runtime_error("File is not open");
+                    throw pythonic::PythonicFileError::not_open();
                 }
 
                 // Seek to beginning
@@ -203,7 +204,7 @@ namespace pythonic
             {
                 if (!is_open_)
                 {
-                    throw std::runtime_error("File is not open");
+                    throw pythonic::PythonicFileError::not_open();
                 }
 
                 std::string buffer(n, '\0');
@@ -217,7 +218,7 @@ namespace pythonic
             {
                 if (!is_open_)
                 {
-                    throw std::runtime_error("File is not open");
+                    throw pythonic::PythonicFileError::not_open();
                 }
 
                 std::string line;
@@ -233,7 +234,7 @@ namespace pythonic
             {
                 if (!is_open_)
                 {
-                    throw std::runtime_error("File is not open");
+                    throw pythonic::PythonicFileError::not_open();
                 }
 
                 // Seek to beginning
@@ -253,7 +254,7 @@ namespace pythonic
             {
                 if (!is_open_)
                 {
-                    throw std::runtime_error("File is not open");
+                    throw pythonic::PythonicFileError::not_open();
                 }
 
                 stream_ << content.get<std::string>();
@@ -271,7 +272,7 @@ namespace pythonic
             {
                 if (!is_open_)
                 {
-                    throw std::runtime_error("File is not open");
+                    throw pythonic::PythonicFileError::not_open();
                 }
 
                 if (auto *lst = lines.var_get_if<List>())
@@ -283,7 +284,7 @@ namespace pythonic
                 }
                 else
                 {
-                    throw std::runtime_error("writelines() requires a list");
+                    throw pythonic::PythonicTypeError("writelines() requires a list");
                 }
             }
 

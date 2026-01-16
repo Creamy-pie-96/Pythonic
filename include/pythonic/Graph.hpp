@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include "pythonicError.hpp"
 #include <limits>
 #include <algorithm>
 #include <functional>
@@ -205,7 +206,7 @@ namespace pythonic
             std::pair<std::vector<size_t>, double> bfs_shortest_path(size_t start, size_t goal)
             {
                 if (start >= nodes || goal >= nodes)
-                    throw std::runtime_error("Invalid start or goal");
+                    throw pythonic::PythonicGraphError("invalid start or goal");
 
                 std::vector<bool> visited(nodes, false);
                 std::vector<size_t> parent(nodes, (size_t)-1);
@@ -261,16 +262,70 @@ namespace pythonic
             }
 
             /**
+             * @brief Add a new node to the graph.
+             * @return Index of the newly added node.
+             *
+             * Usage:
+             *   size_t new_node = graph.add_node();
+             *   graph.add_edge(new_node, 0);
+             */
+            size_t add_node()
+            {
+                edges.emplace_back();
+                return nodes++;
+            }
+
+            /**
+             * @brief Add a new node with metadata.
+             * @param data Initial metadata for the node.
+             * @return Index of the newly added node.
+             */
+            size_t add_node(const T &data)
+            {
+                size_t idx = add_node();
+                set_node_data(idx, data);
+                return idx;
+            }
+
+            /**
+             * @brief Get number of nodes (Python-like len() / size()).
+             * @return Number of nodes in the graph.
+             */
+            size_t size() const { return nodes; }
+
+            /**
+             * @brief Get neighbor node indices for a given node.
+             * @param node Node index.
+             * @return Vector of neighbor node indices.
+             * @throws PythonicGraphError if node is invalid.
+             *
+             * Usage:
+             *   for (size_t neighbor : graph.neighbors(0)) { ... }
+             */
+            std::vector<size_t> neighbors(size_t node) const
+            {
+                if (node >= nodes)
+                    throw pythonic::PythonicGraphError("invalid node index: " + std::to_string(node));
+                std::vector<size_t> result;
+                result.reserve(edges[node].size());
+                for (const auto &e : edges[node])
+                {
+                    result.push_back(e.id);
+                }
+                return result;
+            }
+
+            /**
              * @brief Assign metadata for a node.
              * @param node Node index.
              * @param data Metadata value to set.
-             * @throws std::runtime_error if node is out of range.
+             * @throws PythonicError if node is out of range.
              */
             void set_node_data(size_t node, const T &data)
             {
                 if (node >= this->nodes)
                 {
-                    throw std::runtime_error("Invalid node");
+                    throw pythonic::PythonicGraphError("invalid node");
                 }
                 meta_data[node] = NODE_data<T>(data);
             }
@@ -296,8 +351,37 @@ namespace pythonic
             }
 
             /**
+             * @brief Subscript operator for accessing node's adjacency list.
+             * @param node Node index.
+             * @return Reference to vector of edges from this node.
+             * @throws PythonicGraphError if node is out of range.
+             *
+             * Usage:
+             *   for (auto& edge : graph[0]) { ... }  // iterate edges from node 0
+             */
+            std::vector<Edge> &operator[](size_t node)
+            {
+                if (node >= nodes)
+                    throw pythonic::PythonicGraphError("invalid node index: " + std::to_string(node));
+                return edges[node];
+            }
+
+            /**
+             * @brief Const subscript operator for accessing node's adjacency list.
+             * @param node Node index.
+             * @return Const reference to vector of edges from this node.
+             * @throws PythonicGraphError if node is out of range.
+             */
+            const std::vector<Edge> &operator[](size_t node) const
+            {
+                if (node >= nodes)
+                    throw pythonic::PythonicGraphError("invalid node index: " + std::to_string(node));
+                return edges[node];
+            }
+
+            /**
              * @brief Change weight of edge (from -> to).
-             * @throws std::runtime_error if edge is not found.
+             * @throws PythonicError if edge is not found.
              */
             void set_edge_weight(size_t from, size_t to, double weight)
             {
@@ -336,7 +420,7 @@ namespace pythonic
                         return;
                     }
                 }
-                throw std::runtime_error("Edge not found");
+                throw pythonic::PythonicGraphError::edge_not_found(from, to);
             }
 
             /**
@@ -379,12 +463,12 @@ namespace pythonic
 
             /**
              * @brief Return a copy of the adjacency list for `node`.
-             * @throws std::runtime_error if node is invalid.
+             * @throws PythonicError if node is invalid.
              */
             std::vector<Edge> get_edges(size_t node)
             {
                 if (node >= nodes)
-                    throw std::runtime_error("Invalid node");
+                    throw pythonic::PythonicGraphError("invalid node");
                 return edges[node];
             }
 
@@ -401,7 +485,7 @@ namespace pythonic
             {
                 std::ofstream out(filename);
                 if (!out)
-                    throw std::runtime_error("Unable to open file for writing DOT");
+                    throw pythonic::PythonicFileError("unable to open file for writing DOT");
 
                 // Determine whether we need a directed graph header. If the graph
                 // contains any directed edges we use `digraph` and emit all edges
@@ -511,7 +595,7 @@ namespace pythonic
             {
                 if (src >= nodes || (dest != (size_t)-1 && dest >= nodes))
                 {
-                    throw std::runtime_error("invalid nodes");
+                    throw pythonic::PythonicGraphError("invalid nodes");
                 }
                 // will use bfs if weighted is false
                 // will use dikjtra if weighted is true but has_negative is false
@@ -522,7 +606,7 @@ namespace pythonic
                 if (!is_weighted)
                 {
                     if (dest == (size_t)-1)
-                        throw std::runtime_error("get_shortest_path: dest==-1 (all-dest) not implemented for unweighted graphs");
+                        throw pythonic::PythonicGraphError::not_implemented("all-destination shortest path for unweighted graphs");
                     result = bfs_shortest_path(src, dest);
                     return result;
                 }
@@ -530,13 +614,13 @@ namespace pythonic
                 // weighted
                 if (has_negative_weight)
                 {
-                    throw std::runtime_error("get_shortest_path: negative weights present; Bellman-Ford not implemented");
+                    throw pythonic::PythonicGraphError::not_implemented("Bellman-Ford for negative weights");
                 }
 
                 // weighted and non-negative: Dijkstra
                 if (dest == (size_t)-1)
                 {
-                    throw std::runtime_error("get_shortest_path: dest==-1 (all-dest) not implemented for weighted graphs");
+                    throw pythonic::PythonicGraphError::not_implemented("all-destination shortest path for weighted graphs");
                 }
 
                 auto r = dijkstra_all(src, dest, true);
@@ -561,7 +645,7 @@ namespace pythonic
             {
                 if (start >= nodes)
                 {
-                    throw std::runtime_error("Invalid node " + std::to_string(start));
+                    throw pythonic::PythonicGraphError::invalid_node(start);
                 }
                 std::vector<size_t> result;
                 std::vector<bool> visited(nodes, false);
@@ -585,7 +669,7 @@ namespace pythonic
             {
                 if (node >= nodes)
                 {
-                    throw std::runtime_error("Invalid node " + std::to_string(node));
+                    throw pythonic::PythonicGraphError::invalid_node(node);
                 }
                 std::queue<size_t> q;
                 std::vector<size_t> result;
@@ -622,7 +706,7 @@ namespace pythonic
             void reserve_edges_by_counts(const std::vector<size_t> &counts)
             {
                 if (counts.size() != edges.size())
-                    throw std::runtime_error("reserve_edges_by_counts: counts size mismatch");
+                    throw pythonic::PythonicGraphError("reserve_edges_by_counts: counts size mismatch");
                 for (size_t i = 0; i < edges.size(); ++i)
                     edges[i].reserve(counts[i]);
             }
@@ -641,7 +725,7 @@ namespace pythonic
             std::pair<std::vector<double>, std::vector<size_t>> bellman_ford(size_t src) const
             {
                 if (src >= nodes)
-                    throw std::runtime_error("bellman_ford: invalid source node");
+                    throw pythonic::PythonicGraphError("bellman_ford: invalid source node");
 
                 std::vector<double> dist(nodes, INF);
                 std::vector<size_t> prev(nodes, (size_t)-1);
@@ -796,7 +880,7 @@ namespace pythonic
              * B appears before A in the result).
              *
              * @return Vector of node indices in topological order.
-             * @throws std::runtime_error if graph contains a cycle.
+             * @throws PythonicError if graph contains a cycle.
              */
             std::vector<size_t> topological_sort() const
             {
@@ -841,7 +925,7 @@ namespace pythonic
                 }
 
                 if (result.size() != nodes)
-                    throw std::runtime_error("topological_sort: graph contains a cycle");
+                    throw pythonic::PythonicGraphError::has_cycle();
 
                 return result;
             }
@@ -1087,7 +1171,7 @@ namespace pythonic
             size_t out_degree(size_t node) const
             {
                 if (node >= nodes)
-                    throw std::runtime_error("out_degree: invalid node");
+                    throw pythonic::PythonicGraphError("out_degree: invalid node");
                 return edges[node].size();
             }
 
@@ -1099,7 +1183,7 @@ namespace pythonic
             size_t in_degree(size_t node) const
             {
                 if (node >= nodes)
-                    throw std::runtime_error("in_degree: invalid node");
+                    throw pythonic::PythonicGraphError("in_degree: invalid node");
 
                 size_t count = 0;
                 for (size_t u = 0; u < nodes; ++u)
@@ -1206,7 +1290,7 @@ namespace pythonic
             {
                 std::ofstream out(filename);
                 if (!out)
-                    throw std::runtime_error("save: unable to open file");
+                    throw pythonic::PythonicFileError("unable to open file for saving");
 
                 out << nodes << "\n";
                 for (size_t u = 0; u < nodes; ++u)
@@ -1232,7 +1316,7 @@ namespace pythonic
             {
                 std::ifstream in(filename);
                 if (!in)
-                    throw std::runtime_error("load: unable to open file");
+                    throw pythonic::PythonicFileError("unable to open file for loading");
 
                 size_t n;
                 in >> n;

@@ -1,12 +1,13 @@
 #pragma once
 
 #include <functional>
+#include "pythonicError.hpp"
+#include "pythonicLoop.hpp"
+#include "pythonicVars.hpp"
 #include <type_traits>
 #include <utility>
 #include <optional>
 #include <tuple>
-#include "pythonicVars.hpp"
-#include "pythonicLoop.hpp"
 
 namespace pythonic
 {
@@ -66,10 +67,9 @@ namespace pythonic
             return var(std::move(result));
         }
 
-        // Generic overload for non-var iterables
-        template <typename Func, typename Iterable,
-                  typename = std::enable_if_t<!std::is_same_v<std::decay_t<Iterable>, var>>>
-        var map(Func &&func, Iterable &&iterable)
+        // Generic overload for non-var iterables (using C++20 concepts)
+        template <typename Func, traits::Iterable Iterable>
+        var map(Func &&func, Iterable &&iterable) requires (!std::is_same_v<std::decay_t<Iterable>, var>)
         {
             List result;
             for (auto &&item : iterable)
@@ -167,10 +167,9 @@ namespace pythonic
             return var(std::move(result));
         }
 
-        // Generic overload for non-var iterables
-        template <typename Func, typename Iterable,
-                  typename = std::enable_if_t<!std::is_same_v<std::decay_t<Iterable>, var>>>
-        var filter(Func &&func, Iterable &&iterable)
+        // Generic overload for non-var iterables (using C++20 concepts)
+        template <typename Func, traits::Iterable Iterable>
+        var filter(Func &&func, Iterable &&iterable) requires (!std::is_same_v<std::decay_t<Iterable>, var>)
         {
             List result;
             for (auto &&item : iterable)
@@ -204,7 +203,7 @@ namespace pythonic
                 List &lst = container.as_list_unchecked();
                 if (lst.empty())
                 {
-                    throw std::runtime_error("reduce() of empty sequence with no initial value");
+                    throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
                 }
                 auto it = lst.begin();
                 var result = *it;
@@ -219,7 +218,7 @@ namespace pythonic
             auto it = container.begin();
             if (it == container.end())
             {
-                throw std::runtime_error("reduce() of empty sequence with no initial value");
+                throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
             }
             var result = *it;
             ++it;
@@ -238,7 +237,7 @@ namespace pythonic
                 const List &lst = container.as_list_unchecked();
                 if (lst.empty())
                 {
-                    throw std::runtime_error("reduce() of empty sequence with no initial value");
+                    throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
                 }
                 auto it = lst.begin();
                 var result = *it;
@@ -253,7 +252,7 @@ namespace pythonic
             auto it = container.begin();
             if (it == container.end())
             {
-                throw std::runtime_error("reduce() of empty sequence with no initial value");
+                throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
             }
             var result = *it;
             ++it;
@@ -263,16 +262,14 @@ namespace pythonic
             }
             return result;
         }
-
-        // Generic overload for non-var iterables
-        template <typename Func, typename Iterable,
-                  typename = std::enable_if_t<!std::is_same_v<std::decay_t<Iterable>, var>>>
-        var reduce(Func &&func, Iterable &&iterable)
+        // Generic overload for non-var iterables (using C++20 concepts)
+        template <typename Func, traits::Iterable Iterable>
+        var reduce(Func &&func, Iterable &&iterable) requires (!std::is_same_v<std::decay_t<Iterable>, var>)
         {
             auto it = iterable.begin();
             if (it == iterable.end())
             {
-                throw std::runtime_error("reduce() of empty sequence with no initial value");
+                throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
             }
             var result = *it;
             ++it;
@@ -305,13 +302,13 @@ namespace pythonic
         // list_comp(expression, iterable) - [expr(x) for x in iterable]
         // list_comp(expression, iterable, condition) - [expr(x) for x in iterable if cond(x)]
 
-        template <typename Expr, typename Iterable>
+        template <typename Expr, traits::Iterable Iterable>
         var list_comp(Expr &&expr, Iterable &&iterable)
         {
             return map(std::forward<Expr>(expr), std::forward<Iterable>(iterable));
         }
 
-        template <typename Expr, typename Iterable, typename Cond>
+        template <typename Expr, traits::Iterable Iterable, typename Cond>
         var list_comp(Expr &&expr, Iterable &&iterable, Cond &&cond)
         {
             List result;
@@ -340,7 +337,7 @@ namespace pythonic
         // set_comp(expression, iterable) - {expr(x) for x in iterable}
         // set_comp(expression, iterable, condition) - {expr(x) for x in iterable if cond(x)}
 
-        template <typename Expr, typename Iterable>
+        template <typename Expr, traits::Iterable Iterable>
         var set_comp(Expr &&expr, Iterable &&iterable)
         {
             Set result;
@@ -358,7 +355,7 @@ namespace pythonic
             return var(result);
         }
 
-        template <typename Expr, typename Iterable, typename Cond>
+        template <typename Expr, traits::Iterable Iterable, typename Cond>
         var set_comp(Expr &&expr, Iterable &&iterable, Cond &&cond)
         {
             Set result;
@@ -387,7 +384,7 @@ namespace pythonic
         // dict_comp(key_expr, value_expr, iterable) - {key(x): val(x) for x in iterable}
         // dict_comp(key_expr, value_expr, iterable, condition) - {key(x): val(x) for x in iterable if cond(x)}
 
-        template <typename KeyExpr, typename ValExpr, typename Iterable>
+        template <typename KeyExpr, typename ValExpr, traits::Iterable Iterable>
         var dict_comp(KeyExpr &&key_expr, ValExpr &&val_expr, Iterable &&iterable)
         {
             Dict result;
@@ -408,7 +405,7 @@ namespace pythonic
             return var(result);
         }
 
-        template <typename KeyExpr, typename ValExpr, typename Iterable, typename Cond>
+        template <typename KeyExpr, typename ValExpr, traits::Iterable Iterable, typename Cond>
         var dict_comp(KeyExpr &&key_expr, ValExpr &&val_expr, Iterable &&iterable, Cond &&cond)
         {
             Dict result;
@@ -505,7 +502,7 @@ namespace pythonic
         {
             if (!args.is<List>())
             {
-                throw std::runtime_error("apply() requires a list of arguments");
+                throw pythonic::PythonicTypeError("apply() requires a list of arguments");
             }
             const auto &list = args.get<List>();
             switch (list.size())
@@ -523,7 +520,7 @@ namespace pythonic
             case 5:
                 return var(func(list[0], list[1], list[2], list[3], list[4]));
             default:
-                throw std::runtime_error("apply() supports up to 5 arguments");
+                throw pythonic::PythonicValueError("apply() supports up to 5 arguments");
             }
         }
 
@@ -626,7 +623,7 @@ namespace pythonic
             return count;
         }
 
-        template <typename Iterable>
+        template <traits::Iterable Iterable>
         size_t count(Iterable &&iterable, const var &value)
         {
             return count_if(std::forward<Iterable>(iterable), [&value](const var &v)
@@ -636,7 +633,7 @@ namespace pythonic
         // ============ Take / Drop ============
         // OPTIMIZED: reserve + emplace_back
 
-        template <typename Iterable>
+        template <traits::Iterable Iterable>
         var take(size_t n, Iterable &&iterable)
         {
             List result;
@@ -660,7 +657,7 @@ namespace pythonic
         }
 
         // OPTIMIZED: use emplace_back
-        template <typename Iterable>
+        template <traits::Iterable Iterable>
         var drop(size_t n, Iterable &&iterable)
         {
             List result;
@@ -686,7 +683,7 @@ namespace pythonic
         // ============ TakeWhile / DropWhile ============
         // OPTIMIZED: use emplace_back
 
-        template <typename Iterable, typename Pred>
+        template <traits::Iterable Iterable, typename Pred>
         var take_while(Pred &&pred, Iterable &&iterable)
         {
             List result;
@@ -709,7 +706,7 @@ namespace pythonic
             return var(result);
         }
 
-        template <typename Iterable, typename Pred>
+        template <traits::Iterable Iterable, typename Pred>
         var drop_while(Pred &&pred, Iterable &&iterable)
         {
             List result;
@@ -805,7 +802,7 @@ namespace pythonic
         {
             if (!container.is<List>() && !container.is<std::string>())
             {
-                throw std::runtime_error("slice() requires a list or string");
+                throw pythonic::PythonicTypeError("slice() requires a list or string");
             }
 
             List result;
@@ -825,7 +822,7 @@ namespace pythonic
 
             if (step == 0)
             {
-                throw std::runtime_error("slice step cannot be zero");
+                throw pythonic::PythonicValueError("slice step cannot be zero");
             }
 
             if (container.is<List>())

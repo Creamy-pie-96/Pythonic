@@ -12,6 +12,7 @@
 #include <initializer_list>
 #include <stdexcept>
 #include <type_traits>
+#include <span>
 #include <functional>
 #include <algorithm>
 #include <climits>
@@ -23,6 +24,7 @@
 #include <optional>
 
 #include "pythonicError.hpp"
+#include "pythonicOverflow.hpp"
 
 namespace pythonic
 {
@@ -598,28 +600,28 @@ namespace pythonic
 
                 switch (resultType)
                 {
-                case TypeTag::STRING:
-                    return var(toString() + other.toString());
-                case TypeTag::LONG_DOUBLE:
-                    return var(toLongDouble() + other.toLongDouble());
-                case TypeTag::DOUBLE:
-                    return var(toDouble() + other.toDouble());
-                case TypeTag::FLOAT:
-                    return var(toFloat() + other.toFloat());
-                case TypeTag::ULONG_LONG:
-                    return var(toULongLong() + other.toULongLong());
-                case TypeTag::LONG_LONG:
-                    return var(toLongLong() + other.toLongLong());
-                case TypeTag::ULONG:
-                    return var(toULong() + other.toULong());
-                case TypeTag::LONG:
-                    return var(toLong() + other.toLong());
-                case TypeTag::UINT:
-                    return var(toUInt() + other.toUInt());
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(toInt() + other.toInt());
+                    return var(pythonic::overflow::add(toInt(), other.toInt()));
+                case TypeTag::LONG_LONG:
+                    return var(pythonic::overflow::add(toLongLong(), other.toLongLong()));
+                case TypeTag::DOUBLE:
+                    return var(pythonic::overflow::add(toDouble(), other.toDouble()));
+                case TypeTag::STRING:
+                    return var(toString() + other.toString());
+                case TypeTag::LONG_DOUBLE:
+                    return var(pythonic::overflow::add(toLongDouble(), other.toLongDouble()));
+                case TypeTag::FLOAT:
+                    return var(pythonic::overflow::add(toFloat(), other.toFloat()));
+                case TypeTag::LONG:
+                    return var(pythonic::overflow::add(toLong(), other.toLong()));
+                case TypeTag::UINT:
+                    return var(pythonic::overflow::add(toUInt(), other.toUInt()));
+                case TypeTag::ULONG:
+                    return var(pythonic::overflow::add(toULong(), other.toULong()));
+                case TypeTag::ULONG_LONG:
+                    return var(pythonic::overflow::add(toULongLong(), other.toULongLong()));
                 }
             }
 
@@ -637,25 +639,25 @@ namespace pythonic
                 switch (resultType)
                 {
                 case TypeTag::LONG_DOUBLE:
-                    return var(toLongDouble() - other.toLongDouble());
+                    return var(pythonic::overflow::sub(toLongDouble(), other.toLongDouble()));
                 case TypeTag::DOUBLE:
-                    return var(toDouble() - other.toDouble());
+                    return var(pythonic::overflow::sub(toDouble(), other.toDouble()));
                 case TypeTag::FLOAT:
-                    return var(toFloat() - other.toFloat());
+                    return var(pythonic::overflow::sub(toFloat(), other.toFloat()));
                 case TypeTag::ULONG_LONG:
-                    return var(toULongLong() - other.toULongLong());
+                    return var(pythonic::overflow::sub(toULongLong(), other.toULongLong()));
                 case TypeTag::LONG_LONG:
-                    return var(toLongLong() - other.toLongLong());
+                    return var(pythonic::overflow::sub(toLongLong(), other.toLongLong()));
                 case TypeTag::ULONG:
-                    return var(toULong() - other.toULong());
+                    return var(pythonic::overflow::sub(toULong(), other.toULong()));
                 case TypeTag::LONG:
-                    return var(toLong() - other.toLong());
+                    return var(pythonic::overflow::sub(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                    return var(toUInt() - other.toUInt());
+                    return var(pythonic::overflow::sub(toUInt(), other.toUInt()));
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(toInt() - other.toInt());
+                    return var(pythonic::overflow::sub(toInt(), other.toInt()));
                 }
             }
 
@@ -687,31 +689,31 @@ namespace pythonic
                 }
                 if (resultType == TypeTag::STRING)
                 {
-                    throw std::runtime_error("Cannot multiply two strings");
+                    throw pythonic::PythonicTypeError("cannot multiply two strings");
                 }
 
                 switch (resultType)
                 {
                 case TypeTag::LONG_DOUBLE:
-                    return var(toLongDouble() * other.toLongDouble());
+                    return var(pythonic::overflow::mul(toLongDouble(), other.toLongDouble()));
                 case TypeTag::DOUBLE:
-                    return var(toDouble() * other.toDouble());
+                    return var(pythonic::overflow::mul(toDouble(), other.toDouble()));
                 case TypeTag::FLOAT:
-                    return var(toFloat() * other.toFloat());
+                    return var(pythonic::overflow::mul(toFloat(), other.toFloat()));
                 case TypeTag::ULONG_LONG:
-                    return var(toULongLong() * other.toULongLong());
+                    return var(pythonic::overflow::mul(toULongLong(), other.toULongLong()));
                 case TypeTag::LONG_LONG:
-                    return var(toLongLong() * other.toLongLong());
+                    return var(pythonic::overflow::mul(toLongLong(), other.toLongLong()));
                 case TypeTag::ULONG:
-                    return var(toULong() * other.toULong());
+                    return var(pythonic::overflow::mul(toULong(), other.toULong()));
                 case TypeTag::LONG:
-                    return var(toLong() * other.toLong());
+                    return var(pythonic::overflow::mul(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                    return var(toUInt() * other.toUInt());
+                    return var(pythonic::overflow::mul(toUInt(), other.toUInt()));
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(toInt() * other.toInt());
+                    return var(pythonic::overflow::mul(toInt(), other.toInt()));
                 }
             }
 
@@ -722,24 +724,18 @@ namespace pythonic
 
                 if (resultType == TypeTag::STRING)
                 {
-                    throw std::runtime_error("Cannot divide strings");
+                    throw pythonic::PythonicTypeError("cannot divide strings");
                 }
 
                 // For division, promote to at least double for precision
                 // unless one operand is long double
                 if (resultType == TypeTag::LONG_DOUBLE)
                 {
-                    long double divisor = other.toLongDouble();
-                    if (divisor == 0.0L)
-                        throw PythonicZeroDivisionError("Division by zero");
-                    return var(toLongDouble() / divisor);
+                    return var(pythonic::overflow::div(toLongDouble(), other.toLongDouble()));
                 }
 
                 // All other cases use double for safety
-                double divisor = other.toDouble();
-                if (divisor == 0.0)
-                    throw PythonicZeroDivisionError("Division by zero");
-                return var(toDouble() / divisor);
+                return var(pythonic::overflow::div(toDouble(), other.toDouble()));
             }
 
             // Perform modulo with proper type promotion
@@ -749,7 +745,7 @@ namespace pythonic
 
                 if (resultType == TypeTag::STRING)
                 {
-                    throw std::runtime_error("Cannot perform modulo on strings");
+                    throw pythonic::PythonicTypeError("cannot perform modulo on strings");
                 }
 
                 // For floating point, use fmod
@@ -765,47 +761,19 @@ namespace pythonic
                 switch (resultType)
                 {
                 case TypeTag::ULONG_LONG:
-                {
-                    auto divisor = other.toULongLong();
-                    if (divisor == 0)
-                        throw PythonicZeroDivisionError("Modulo by zero");
-                    return var(toULongLong() % divisor);
-                }
+                    return var(pythonic::overflow::mod(toULongLong(), other.toULongLong()));
                 case TypeTag::LONG_LONG:
-                {
-                    auto divisor = other.toLongLong();
-                    if (divisor == 0)
-                        throw PythonicZeroDivisionError("Modulo by zero");
-                    return var(toLongLong() % divisor);
-                }
+                    return var(pythonic::overflow::mod(toLongLong(), other.toLongLong()));
                 case TypeTag::ULONG:
-                {
-                    auto divisor = other.toULong();
-                    if (divisor == 0)
-                        throw PythonicZeroDivisionError("Modulo by zero");
-                    return var(toULong() % divisor);
-                }
+                    return var(pythonic::overflow::mod(toULong(), other.toULong()));
                 case TypeTag::LONG:
-                {
-                    auto divisor = other.toLong();
-                    if (divisor == 0)
-                        throw PythonicZeroDivisionError("Modulo by zero");
-                    return var(toLong() % divisor);
-                }
+                    return var(pythonic::overflow::mod(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                {
-                    auto divisor = other.toUInt();
-                    if (divisor == 0)
-                        throw std::runtime_error("Modulo by zero");
-                    return var(toUInt() % divisor);
-                }
+                    return var(pythonic::overflow::mod(toUInt(), other.toUInt()));
+                case TypeTag::INT:
+                case TypeTag::BOOL:
                 default:
-                {
-                    auto divisor = other.toInt();
-                    if (divisor == 0)
-                        throw PythonicZeroDivisionError("Modulo by zero");
-                    return var(toInt() % divisor);
-                }
+                    return var(pythonic::overflow::mod(toInt(), other.toInt()));
                 }
             }
 
@@ -1007,6 +975,10 @@ namespace pythonic
 
             // ============ Fast Type Checking Methods ============
             // These provide O(1) type checks without variant overhead
+
+            // Get the internal type tag (for fast path caching)
+            TypeTag getTag() const noexcept { return tag_; }
+
             bool is_list() const noexcept { return tag_ == TypeTag::LIST; }
             bool is_dict() const noexcept { return tag_ == TypeTag::DICT; }
             bool is_set() const noexcept { return tag_ == TypeTag::SET; }
@@ -1083,137 +1055,151 @@ namespace pythonic
             List &as_list()
             {
                 if (tag_ != TypeTag::LIST)
-                    throw std::runtime_error("as_list() requires a list");
+                    throw pythonic::PythonicTypeError("as_list() requires a list");
                 return var_get<List>();
             }
             const List &as_list() const
             {
                 if (tag_ != TypeTag::LIST)
-                    throw std::runtime_error("as_list() requires a list");
+                    throw pythonic::PythonicTypeError("as_list() requires a list");
                 return var_get<List>();
             }
+            // C++20 span view support
+            std::span<var> as_span()
+            {
+                if (tag_ != TypeTag::LIST)
+                    throw pythonic::PythonicTypeError("as_span() requires a list");
+                return std::span<var>(var_get<List>());
+            }
+            std::span<const var> as_span() const
+            {
+                if (tag_ != TypeTag::LIST)
+                    throw pythonic::PythonicTypeError("as_span() requires a list");
+                return std::span<const var>(var_get<List>());
+            }
+
             Dict &as_dict()
             {
                 if (tag_ != TypeTag::DICT)
-                    throw std::runtime_error("as_dict() requires a dict");
+                    throw pythonic::PythonicTypeError("as_dict() requires a dict");
                 return var_get<Dict>();
             }
             const Dict &as_dict() const
             {
                 if (tag_ != TypeTag::DICT)
-                    throw std::runtime_error("as_dict() requires a dict");
+                    throw pythonic::PythonicTypeError("as_dict() requires a dict");
                 return var_get<Dict>();
             }
             Set &as_set()
             {
                 if (tag_ != TypeTag::SET)
-                    throw std::runtime_error("as_set() requires a set");
+                    throw pythonic::PythonicTypeError("as_set() requires a set");
                 return var_get<Set>();
             }
             const Set &as_set() const
             {
                 if (tag_ != TypeTag::SET)
-                    throw std::runtime_error("as_set() requires a set");
+                    throw pythonic::PythonicTypeError("as_set() requires a set");
                 return var_get<Set>();
             }
             OrderedDict &as_ordered_dict()
             {
                 if (tag_ != TypeTag::ORDEREDDICT)
-                    throw std::runtime_error("as_ordered_dict() requires an ordered dict");
+                    throw pythonic::PythonicTypeError("as_ordered_dict() requires an ordered dict");
                 return var_get<OrderedDict>();
             }
             const OrderedDict &as_ordered_dict() const
             {
                 if (tag_ != TypeTag::ORDEREDDICT)
-                    throw std::runtime_error("as_ordered_dict() requires an ordered dict");
+                    throw pythonic::PythonicTypeError("as_ordered_dict() requires an ordered dict");
                 return var_get<OrderedDict>();
             }
             OrderedSet &as_ordered_set()
             {
                 if (tag_ != TypeTag::ORDEREDSET)
-                    throw std::runtime_error("as_ordered_set() requires an ordered set");
+                    throw pythonic::PythonicTypeError("as_ordered_set() requires an ordered set");
                 return var_get<OrderedSet>();
             }
             const OrderedSet &as_ordered_set() const
             {
                 if (tag_ != TypeTag::ORDEREDSET)
-                    throw std::runtime_error("as_ordered_set() requires an ordered set");
+                    throw pythonic::PythonicTypeError("as_ordered_set() requires an ordered set");
                 return var_get<OrderedSet>();
             }
             // String type
             std::string &as_string()
             {
                 if (tag_ != TypeTag::STRING)
-                    throw std::runtime_error("as_string() requires a string");
+                    throw pythonic::PythonicTypeError("as_string() requires a string");
                 return var_get<std::string>();
             }
             const std::string &as_string() const
             {
                 if (tag_ != TypeTag::STRING)
-                    throw std::runtime_error("as_string() requires a string");
+                    throw pythonic::PythonicTypeError("as_string() requires a string");
                 return var_get<std::string>();
             }
             // Basic numeric types
             int as_int() const
             {
                 if (tag_ != TypeTag::INT)
-                    throw std::runtime_error("as_int() requires an int");
+                    throw pythonic::PythonicTypeError("as_int() requires an int");
                 return var_get<int>();
             }
             double as_double() const
             {
                 if (tag_ != TypeTag::DOUBLE)
-                    throw std::runtime_error("as_double() requires a double");
+                    throw pythonic::PythonicTypeError("as_double() requires a double");
                 return var_get<double>();
             }
             float as_float() const
             {
                 if (tag_ != TypeTag::FLOAT)
-                    throw std::runtime_error("as_float() requires a float");
+                    throw pythonic::PythonicTypeError("as_float() requires a float");
                 return var_get<float>();
             }
             bool as_bool() const
             {
                 if (tag_ != TypeTag::BOOL)
-                    throw std::runtime_error("as_bool() requires a bool");
+                    throw pythonic::PythonicTypeError("as_bool() requires a bool");
                 return var_get<bool>();
             }
             // Extended numeric types
             long as_long() const
             {
                 if (tag_ != TypeTag::LONG)
-                    throw std::runtime_error("as_long() requires a long");
+                    throw pythonic::PythonicTypeError("as_long() requires a long");
                 return var_get<long>();
             }
             long long as_long_long() const
             {
                 if (tag_ != TypeTag::LONG_LONG)
-                    throw std::runtime_error("as_long_long() requires a long long");
+                    throw pythonic::PythonicTypeError("as_long_long() requires a long long");
                 return var_get<long long>();
             }
             long double as_long_double() const
             {
                 if (tag_ != TypeTag::LONG_DOUBLE)
-                    throw std::runtime_error("as_long_double() requires a long double");
+                    throw pythonic::PythonicTypeError("as_long_double() requires a long double");
                 return var_get<long double>();
             }
             // Unsigned types
             unsigned int as_uint() const
             {
                 if (tag_ != TypeTag::UINT)
-                    throw std::runtime_error("as_uint() requires an unsigned int");
+                    throw pythonic::PythonicTypeError("as_uint() requires an unsigned int");
                 return var_get<unsigned int>();
             }
             unsigned long as_ulong() const
             {
                 if (tag_ != TypeTag::ULONG)
-                    throw std::runtime_error("as_ulong() requires an unsigned long");
+                    throw pythonic::PythonicTypeError("as_ulong() requires an unsigned long");
                 return var_get<unsigned long>();
             }
             unsigned long long as_ulong_long() const
             {
                 if (tag_ != TypeTag::ULONG_LONG)
-                    throw std::runtime_error("as_ulong_long() requires an unsigned long long");
+                    throw pythonic::PythonicTypeError("as_ulong_long() requires an unsigned long long");
                 return var_get<unsigned long long>();
             }
 
@@ -1247,7 +1233,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1 : 0;
                 default:
-                    throw std::runtime_error("Cannot convert to int");
+                    throw pythonic::PythonicTypeError("cannot convert to int");
                 }
             }
 
@@ -1277,7 +1263,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1U : 0U;
                 default:
-                    throw std::runtime_error("Cannot convert to unsigned int");
+                    throw pythonic::PythonicTypeError("cannot convert to unsigned int");
                 }
             }
 
@@ -1307,7 +1293,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1L : 0L;
                 default:
-                    throw std::runtime_error("Cannot convert to long");
+                    throw pythonic::PythonicTypeError("cannot convert to long");
                 }
             }
 
@@ -1337,7 +1323,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1UL : 0UL;
                 default:
-                    throw std::runtime_error("Cannot convert to unsigned long");
+                    throw pythonic::PythonicTypeError("cannot convert to unsigned long");
                 }
             }
 
@@ -1367,7 +1353,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1LL : 0LL;
                 default:
-                    throw std::runtime_error("Cannot convert to long long");
+                    throw pythonic::PythonicTypeError("cannot convert to long long");
                 }
             }
 
@@ -1397,7 +1383,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1ULL : 0ULL;
                 default:
-                    throw std::runtime_error("Cannot convert to unsigned long long");
+                    throw pythonic::PythonicTypeError("cannot convert to unsigned long long");
                 }
             }
 
@@ -1427,7 +1413,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1.0f : 0.0f;
                 default:
-                    throw std::runtime_error("Cannot convert to float");
+                    throw pythonic::PythonicTypeError("cannot convert to float");
                 }
             }
 
@@ -1457,7 +1443,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1.0 : 0.0;
                 default:
-                    throw std::runtime_error("Cannot convert to double");
+                    throw pythonic::PythonicTypeError("cannot convert to double");
                 }
             }
 
@@ -1487,7 +1473,7 @@ namespace pythonic
                 case TypeTag::BOOL:
                     return var_get<bool>() ? 1.0L : 0.0L;
                 default:
-                    throw std::runtime_error("Cannot convert to long double");
+                    throw pythonic::PythonicTypeError("cannot convert to long double");
                 }
             }
 
@@ -1930,25 +1916,25 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(var_get<int>() + other.var_get<int>());
+                        [[likely]] return var(pythonic::overflow::add(var_get<int>(), other.var_get<int>()));
                     case TypeTag::DOUBLE:
-                        return var(var_get<double>() + other.var_get<double>());
+                        [[likely]] return var(pythonic::overflow::add(var_get<double>(), other.var_get<double>()));
                     case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() + other.var_get<long long>());
+                        return var(pythonic::overflow::add(var_get<long long>(), other.var_get<long long>()));
                     case TypeTag::STRING:
-                        return var(var_get<std::string>() + other.var_get<std::string>());
+                        [[likely]] return var(var_get<std::string>() + other.var_get<std::string>());
                     case TypeTag::FLOAT:
-                        return var(var_get<float>() + other.var_get<float>());
+                        return var(pythonic::overflow::add(var_get<float>(), other.var_get<float>()));
                     case TypeTag::LONG:
-                        return var(var_get<long>() + other.var_get<long>());
+                        return var(pythonic::overflow::add(var_get<long>(), other.var_get<long>()));
                     case TypeTag::UINT:
-                        return var(var_get<unsigned int>() + other.var_get<unsigned int>());
+                        return var(pythonic::overflow::add(var_get<unsigned int>(), other.var_get<unsigned int>()));
                     case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() + other.var_get<unsigned long>());
+                        return var(pythonic::overflow::add(var_get<unsigned long>(), other.var_get<unsigned long>()));
                     case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() + other.var_get<unsigned long long>());
+                        return var(pythonic::overflow::add(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
                     case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() + other.var_get<long double>());
+                        return var(pythonic::overflow::add(var_get<long double>(), other.var_get<long double>()));
                     case TypeTag::LIST:
                     {
                         const auto &a = var_get<List>();
@@ -1975,23 +1961,23 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(var_get<int>() - other.var_get<int>());
+                        [[likely]] return var(pythonic::overflow::sub(var_get<int>(), other.var_get<int>()));
                     case TypeTag::DOUBLE:
-                        return var(var_get<double>() - other.var_get<double>());
+                        [[likely]] return var(pythonic::overflow::sub(var_get<double>(), other.var_get<double>()));
                     case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() - other.var_get<long long>());
+                        return var(pythonic::overflow::sub(var_get<long long>(), other.var_get<long long>()));
                     case TypeTag::FLOAT:
-                        return var(var_get<float>() - other.var_get<float>());
+                        return var(pythonic::overflow::sub(var_get<float>(), other.var_get<float>()));
                     case TypeTag::LONG:
-                        return var(var_get<long>() - other.var_get<long>());
+                        return var(pythonic::overflow::sub(var_get<long>(), other.var_get<long>()));
                     case TypeTag::UINT:
-                        return var(var_get<unsigned int>() - other.var_get<unsigned int>());
+                        return var(pythonic::overflow::sub(var_get<unsigned int>(), other.var_get<unsigned int>()));
                     case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() - other.var_get<unsigned long>());
+                        return var(pythonic::overflow::sub(var_get<unsigned long>(), other.var_get<unsigned long>()));
                     case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() - other.var_get<unsigned long long>());
+                        return var(pythonic::overflow::sub(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
                     case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() - other.var_get<long double>());
+                        return var(pythonic::overflow::sub(var_get<long double>(), other.var_get<long double>()));
                     case TypeTag::SET:
                     {
                         const auto &a = var_get<Set>();
@@ -2044,7 +2030,7 @@ namespace pythonic
                 {
                     return subPromoted(other);
                 }
-                throw std::runtime_error("operator- requires arithmetic types or containers (difference)");
+                throw pythonic::PythonicTypeError("operator- requires arithmetic types or containers");
             }
 
             var operator*(const var &other) const
@@ -2055,23 +2041,23 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(var_get<int>() * other.var_get<int>());
+                        [[likely]] return var(pythonic::overflow::mul(var_get<int>(), other.var_get<int>()));
                     case TypeTag::DOUBLE:
-                        return var(var_get<double>() * other.var_get<double>());
+                        [[likely]] return var(pythonic::overflow::mul(var_get<double>(), other.var_get<double>()));
                     case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() * other.var_get<long long>());
+                        return var(pythonic::overflow::mul(var_get<long long>(), other.var_get<long long>()));
                     case TypeTag::FLOAT:
-                        return var(var_get<float>() * other.var_get<float>());
+                        return var(pythonic::overflow::mul(var_get<float>(), other.var_get<float>()));
                     case TypeTag::LONG:
-                        return var(var_get<long>() * other.var_get<long>());
+                        return var(pythonic::overflow::mul(var_get<long>(), other.var_get<long>()));
                     case TypeTag::UINT:
-                        return var(var_get<unsigned int>() * other.var_get<unsigned int>());
+                        return var(pythonic::overflow::mul(var_get<unsigned int>(), other.var_get<unsigned int>()));
                     case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() * other.var_get<unsigned long>());
+                        return var(pythonic::overflow::mul(var_get<unsigned long>(), other.var_get<unsigned long>()));
                     case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() * other.var_get<unsigned long long>());
+                        return var(pythonic::overflow::mul(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
                     case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() * other.var_get<long double>());
+                        return var(pythonic::overflow::mul(var_get<long double>(), other.var_get<long double>()));
                     default:
                         break;
                     }
@@ -2122,7 +2108,7 @@ namespace pythonic
                     }
                     return var(std::move(result));
                 }
-                throw std::runtime_error("Unsupported types for multiplication");
+                throw pythonic::PythonicTypeError("unsupported types for multiplication");
             }
 
             var operator/(const var &other) const
@@ -2133,46 +2119,69 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                    {
-                        int b = other.var_get<int>();
-                        if (b == 0)
-                            throw std::runtime_error("Division by zero");
-                        return var(var_get<int>() / b);
-                    }
+                        [[likely]]
+                        {
+                            int b = other.var_get<int>();
+                            if (b == 0)
+                                throw pythonic::PythonicZeroDivisionError::division();
+                            return var(pythonic::overflow::div(var_get<int>(), b));
+                        }
                     case TypeTag::DOUBLE:
-                    {
-                        double b = other.var_get<double>();
-                        if (b == 0.0)
-                            throw std::runtime_error("Division by zero");
-                        return var(var_get<double>() / b);
-                    }
+                        [[likely]]
+                        {
+                            double b = other.var_get<double>();
+                            if (b == 0.0)
+                                throw pythonic::PythonicZeroDivisionError::division();
+                            return var(pythonic::overflow::div(var_get<double>(), b));
+                        }
                     case TypeTag::LONG_LONG:
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
-                            throw std::runtime_error("Division by zero");
-                        return var(var_get<long long>() / b);
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<long long>(), b));
                     }
                     case TypeTag::FLOAT:
                     {
                         float b = other.var_get<float>();
                         if (b == 0.0f)
-                            throw std::runtime_error("Division by zero");
-                        return var(var_get<float>() / b);
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<float>(), b));
                     }
                     case TypeTag::LONG:
                     {
                         long b = other.var_get<long>();
                         if (b == 0)
-                            throw std::runtime_error("Division by zero");
-                        return var(var_get<long>() / b);
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<long>(), b));
+                    }
+                    case TypeTag::UINT:
+                    {
+                        unsigned int b = other.var_get<unsigned int>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<unsigned int>(), b));
+                    }
+                    case TypeTag::ULONG:
+                    {
+                        unsigned long b = other.var_get<unsigned long>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<unsigned long>(), b));
+                    }
+                    case TypeTag::ULONG_LONG:
+                    {
+                        unsigned long long b = other.var_get<unsigned long long>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<unsigned long long>(), b));
                     }
                     case TypeTag::LONG_DOUBLE:
                     {
                         long double b = other.var_get<long double>();
                         if (b == 0.0L)
-                            throw std::runtime_error("Division by zero");
-                        return var(var_get<long double>() / b);
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        return var(pythonic::overflow::div(var_get<long double>(), b));
                     }
                     default:
                         break;
@@ -2183,7 +2192,7 @@ namespace pythonic
                 {
                     return divPromoted(other);
                 }
-                throw std::runtime_error("Unsupported types for division");
+                throw pythonic::PythonicTypeError("unsupported types for division");
             }
 
             var operator%(const var &other) const
@@ -2194,46 +2203,47 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                    {
-                        int b = other.var_get<int>();
-                        if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        return var(var_get<int>() % b);
-                    }
+                        [[likely]]
+                        {
+                            int b = other.var_get<int>();
+                            if (b == 0)
+                                throw pythonic::PythonicZeroDivisionError::modulo();
+                            return var(pythonic::overflow::mod(var_get<int>(), b));
+                        }
                     case TypeTag::LONG_LONG:
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        return var(var_get<long long>() % b);
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        return var(pythonic::overflow::mod(var_get<long long>(), b));
                     }
                     case TypeTag::LONG:
                     {
                         long b = other.var_get<long>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        return var(var_get<long>() % b);
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        return var(pythonic::overflow::mod(var_get<long>(), b));
                     }
                     case TypeTag::UINT:
                     {
                         unsigned int b = other.var_get<unsigned int>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        return var(var_get<unsigned int>() % b);
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        return var(pythonic::overflow::mod(var_get<unsigned int>(), b));
                     }
                     case TypeTag::ULONG:
                     {
                         unsigned long b = other.var_get<unsigned long>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        return var(var_get<unsigned long>() % b);
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        return var(pythonic::overflow::mod(var_get<unsigned long>(), b));
                     }
                     case TypeTag::ULONG_LONG:
                     {
                         unsigned long long b = other.var_get<unsigned long long>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        return var(var_get<unsigned long long>() % b);
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        return var(pythonic::overflow::mod(var_get<unsigned long long>(), b));
                     }
                     default:
                         break;
@@ -2249,7 +2259,7 @@ namespace pythonic
                 {
                     return modPromoted(other);
                 }
-                throw std::runtime_error("Unsupported types for modulo");
+                throw pythonic::PythonicTypeError("unsupported types for modulo");
             }
 
             // ============ In-Place Arithmetic Operators ============
@@ -2363,7 +2373,7 @@ namespace pythonic
                     {
                         int b = other.var_get<int>();
                         if (b == 0)
-                            throw std::runtime_error("Division by zero");
+                            throw pythonic::PythonicZeroDivisionError::division();
                         var_get<int>() /= b;
                         return *this;
                     }
@@ -2371,7 +2381,7 @@ namespace pythonic
                     {
                         double b = other.var_get<double>();
                         if (b == 0.0)
-                            throw std::runtime_error("Division by zero");
+                            throw pythonic::PythonicZeroDivisionError::division();
                         var_get<double>() /= b;
                         return *this;
                     }
@@ -2379,7 +2389,7 @@ namespace pythonic
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
-                            throw std::runtime_error("Division by zero");
+                            throw pythonic::PythonicZeroDivisionError::division();
                         var_get<long long>() /= b;
                         return *this;
                     }
@@ -2387,7 +2397,7 @@ namespace pythonic
                     {
                         float b = other.var_get<float>();
                         if (b == 0.0f)
-                            throw std::runtime_error("Division by zero");
+                            throw pythonic::PythonicZeroDivisionError::division();
                         var_get<float>() /= b;
                         return *this;
                     }
@@ -2411,7 +2421,7 @@ namespace pythonic
                     {
                         int b = other.var_get<int>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
+                            throw pythonic::PythonicZeroDivisionError::modulo();
                         var_get<int>() %= b;
                         return *this;
                     }
@@ -2419,7 +2429,7 @@ namespace pythonic
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
+                            throw pythonic::PythonicZeroDivisionError::modulo();
                         var_get<long long>() %= b;
                         return *this;
                     }
@@ -2582,7 +2592,7 @@ namespace pythonic
                 {
                     return var(toDouble() > other.toDouble());
                 }
-                throw std::runtime_error("Unsupported types for comparison");
+                throw pythonic::PythonicTypeError("unsupported types for comparison");
             }
 
             var operator>=(const var &other) const
@@ -2607,7 +2617,7 @@ namespace pythonic
                 {
                     return var(toDouble() >= other.toDouble());
                 }
-                throw std::runtime_error("Unsupported types for comparison");
+                throw pythonic::PythonicTypeError("unsupported types for comparison");
             }
 
             var operator<=(const var &other) const
@@ -2632,7 +2642,7 @@ namespace pythonic
                 {
                     return var(toDouble() <= other.toDouble());
                 }
-                throw std::runtime_error("Unsupported types for comparison");
+                throw pythonic::PythonicTypeError("unsupported types for comparison");
             }
 
             // ============ OPTIMIZED Implicit Conversion Operators for Arithmetic Types ============
@@ -2778,7 +2788,7 @@ namespace pythonic
             var operator/(T other) const
             {
                 if (other == 0)
-                    throw std::runtime_error("Division by zero");
+                    throw pythonic::PythonicZeroDivisionError::division();
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
@@ -2803,7 +2813,7 @@ namespace pythonic
                     {
                         int b = rhs.var_get<int>();
                         if (b == 0)
-                            throw std::runtime_error("Division by zero");
+                            throw pythonic::PythonicZeroDivisionError::division();
                         return var(lhs / b);
                     }
                 }
@@ -2815,7 +2825,7 @@ namespace pythonic
             var operator%(T other) const
             {
                 if (other == 0)
-                    throw std::runtime_error("Modulo by zero");
+                    throw pythonic::PythonicZeroDivisionError::modulo();
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
@@ -2840,7 +2850,7 @@ namespace pythonic
                     {
                         int b = rhs.var_get<int>();
                         if (b == 0)
-                            throw std::runtime_error("Modulo by zero");
+                            throw pythonic::PythonicZeroDivisionError::modulo();
                         return var(lhs % b);
                     }
                 }
@@ -2867,10 +2877,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend var operator==(T lhs, const var &rhs) { return rhs == lhs; }
-
-            var operator==(const char *other) const { return *this == var(other); }
-            friend var operator==(const char *lhs, const var &rhs) { return var(lhs) == rhs; }
+            friend bool operator==(T lhs, const var &rhs) { return static_cast<bool>(rhs == var(lhs)); }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator!=(T other) const
@@ -2884,10 +2891,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend var operator!=(T lhs, const var &rhs) { return rhs != lhs; }
-
-            var operator!=(const char *other) const { return *this != var(other); }
-            friend var operator!=(const char *lhs, const var &rhs) { return var(lhs) != rhs; }
+            friend bool operator!=(T lhs, const var &rhs) { return static_cast<bool>(rhs != var(lhs)); }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator>(T other) const
@@ -2901,10 +2905,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend var operator>(T lhs, const var &rhs) { return var(lhs) > rhs; }
-
-            var operator>(const char *other) const { return *this > var(other); }
-            friend var operator>(const char *lhs, const var &rhs) { return var(lhs) > rhs; }
+            friend bool operator>(T lhs, const var &rhs) { return var(lhs) > rhs; }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator>=(T other) const
@@ -2918,10 +2919,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend var operator>=(T lhs, const var &rhs) { return var(lhs) >= rhs; }
-
-            var operator>=(const char *other) const { return *this >= var(other); }
-            friend var operator>=(const char *lhs, const var &rhs) { return var(lhs) >= rhs; }
+            friend bool operator>=(T lhs, const var &rhs) { return var(lhs) >= rhs; }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator<(T other) const
@@ -2931,14 +2929,12 @@ namespace pythonic
                     if (tag_ == TypeTag::INT)
                         return var(var_get<int>() < other);
                 }
-                return var(static_cast<int>(tag_)) < var(static_cast<int>(TypeTag::INT)); // type ordering fallback
+                // Convert both to common numeric type for comparison
+                return *this < var(other);
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend var operator<(T lhs, const var &rhs) { return var(lhs) > rhs; }
-
-            var operator<(const char *other) const { return var(false); }
-            friend var operator<(const char *lhs, const var &rhs) { return var(false); }
+            friend bool operator<(T lhs, const var &rhs) { return var(lhs) < rhs; }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator<=(T other) const
@@ -2952,10 +2948,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend var operator<=(T lhs, const var &rhs) { return var(lhs) <= rhs; }
-
-            var operator<=(const char *other) const { return *this <= var(other); }
-            friend var operator<=(const char *lhs, const var &rhs) { return var(lhs) <= rhs; }
+            friend bool operator<=(T lhs, const var &rhs) { return var(lhs) <= rhs; }
 
             // Logical operators
             var operator&&(const var &other) const
@@ -2992,7 +2985,7 @@ namespace pythonic
                 case TypeTag::ULONG_LONG:
                     return var(~var_get<unsigned long long>());
                 default:
-                    throw std::runtime_error("Bitwise NOT requires integral type");
+                    throw pythonic::PythonicTypeError("bitwise NOT requires integral type");
                 }
             }
 
@@ -3096,7 +3089,7 @@ namespace pythonic
                 {
                     return var(toLongLong() & other.toLongLong());
                 }
-                throw std::runtime_error("operator& requires integral types (bitwise) or containers (intersection)");
+                throw pythonic::PythonicTypeError("operator& requires integral types or containers");
             }
 
             var operator|(const var &other) const
@@ -3175,7 +3168,7 @@ namespace pythonic
                 {
                     return var(toLongLong() | other.toLongLong());
                 }
-                throw std::runtime_error("operator| requires integral types (bitwise) or containers (union/merge)");
+                throw pythonic::PythonicTypeError("operator| requires integral types or containers");
             }
 
             // OPTIMIZED: Uses TypeTag for fast dispatch
@@ -3272,7 +3265,7 @@ namespace pythonic
                 {
                     return var(toLongLong() ^ other.toLongLong());
                 }
-                throw std::runtime_error("operator^ requires integral types (bitwise) or sets/lists (symmetric difference)");
+                throw pythonic::PythonicTypeError("operator^ requires integral types or sets/lists");
             }
 
             // Bool conversion
@@ -3334,11 +3327,11 @@ namespace pythonic
                     auto &lst = var_get<List>();
                     if (index >= lst.size())
                     {
-                        throw std::out_of_range("List index out of range");
+                        throw PythonicIndexError("list", static_cast<long long>(index), lst.size());
                     }
                     return lst[index];
                 }
-                throw std::runtime_error("operator[size_t] requires a list");
+                throw pythonic::PythonicTypeError("operator[] requires a list");
             }
 
             const var &operator[](size_t index) const
@@ -3348,11 +3341,11 @@ namespace pythonic
                     const auto &lst = var_get<List>();
                     if (index >= lst.size())
                     {
-                        throw std::out_of_range("List index out of range");
+                        throw PythonicIndexError("list", static_cast<long long>(index), lst.size());
                     }
                     return lst[index];
                 }
-                throw std::runtime_error("operator[size_t] requires a list");
+                throw pythonic::PythonicTypeError("operator[] requires a list");
             }
 
             var &operator[](const std::string &key)
@@ -3365,7 +3358,7 @@ namespace pythonic
                 {
                     return var_get<OrderedDict>()[key];
                 }
-                throw std::runtime_error("operator[string] requires a dict or ordered_dict");
+                throw pythonic::PythonicTypeError("operator[] requires a dict or ordered_dict");
             }
 
             var &operator[](const char *key)
@@ -3392,7 +3385,7 @@ namespace pythonic
                 case TypeTag::ORDEREDDICT:
                     return var_get<OrderedDict>().size();
                 default:
-                    throw std::runtime_error("len() not supported for this type");
+                    throw pythonic::PythonicTypeError("object has no len()");
                 }
             }
 
@@ -3406,7 +3399,7 @@ namespace pythonic
                 }
                 else
                 {
-                    throw std::runtime_error("append() requires a list");
+                    throw pythonic::PythonicAttributeError("append() requires a list");
                 }
             }
 
@@ -3420,7 +3413,7 @@ namespace pythonic
                 }
                 else
                 {
-                    throw std::runtime_error("append() requires a list");
+                    throw pythonic::PythonicAttributeError("append() requires a list");
                 }
             }
 
@@ -3438,7 +3431,7 @@ namespace pythonic
                 }
                 else
                 {
-                    throw std::runtime_error("add() requires a set or ordered_set");
+                    throw pythonic::PythonicAttributeError("add() requires a set");
                 }
             }
 
@@ -3456,7 +3449,7 @@ namespace pythonic
                 }
                 else
                 {
-                    throw std::runtime_error("add() requires a set or ordered_set");
+                    throw pythonic::PythonicAttributeError("add() requires a set");
                 }
             }
 
@@ -3466,7 +3459,7 @@ namespace pythonic
             {
                 if (tag_ != TypeTag::LIST)
                 {
-                    throw std::runtime_error("extend() requires a list");
+                    throw pythonic::PythonicAttributeError("extend() requires a list");
                 }
                 auto &lst = var_get<List>();
                 switch (other.tag_)
@@ -3496,7 +3489,7 @@ namespace pythonic
                     break;
                 }
                 default:
-                    throw std::runtime_error("extend() requires an iterable (list, set, or string)");
+                    throw pythonic::PythonicTypeError("extend() requires an iterable");
                 }
             }
 
@@ -3506,7 +3499,7 @@ namespace pythonic
             {
                 if (tag_ != TypeTag::SET)
                 {
-                    throw std::runtime_error("update() requires a set");
+                    throw pythonic::PythonicAttributeError("update() requires a set");
                 }
                 auto &st = var_get<Set>();
                 switch (other.tag_)
@@ -3527,7 +3520,7 @@ namespace pythonic
                     break;
                 }
                 default:
-                    throw std::runtime_error("update() requires an iterable (set or list)");
+                    throw pythonic::PythonicTypeError("update() requires an iterable");
                 }
             }
 
@@ -3837,7 +3830,7 @@ namespace pythonic
                 case TypeTag::ORDEREDDICT:
                     return iterator(var_get<OrderedDict>().begin());
                 default:
-                    throw std::runtime_error("Type is not iterable");
+                    throw pythonic::PythonicIterationError("type is not iterable");
                 }
             }
 
@@ -3858,7 +3851,7 @@ namespace pythonic
                 case TypeTag::ORDEREDDICT:
                     return iterator(var_get<OrderedDict>().end());
                 default:
-                    throw std::runtime_error("Type is not iterable");
+                    throw pythonic::PythonicIterationError("type is not iterable");
                 }
             }
 
@@ -3879,7 +3872,7 @@ namespace pythonic
                 case TypeTag::ORDEREDDICT:
                     return const_iterator(var_get<OrderedDict>().begin());
                 default:
-                    throw std::runtime_error("Type is not iterable");
+                    throw pythonic::PythonicIterationError("type is not iterable");
                 }
             }
 
@@ -3900,7 +3893,7 @@ namespace pythonic
                 case TypeTag::ORDEREDDICT:
                     return const_iterator(var_get<OrderedDict>().end());
                 default:
-                    throw std::runtime_error("Type is not iterable");
+                    throw pythonic::PythonicIterationError("type is not iterable");
                 }
             }
 
@@ -3924,7 +3917,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("items() requires a dict");
+                throw pythonic::PythonicAttributeError("items() requires a dict");
             }
 
             // keys() for dict
@@ -3940,7 +3933,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("keys() requires a dict");
+                throw pythonic::PythonicAttributeError("keys() requires a dict");
             }
 
             // values() for dict
@@ -3956,7 +3949,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("values() requires a dict");
+                throw pythonic::PythonicAttributeError("values() requires a dict");
             }
 
             // ============ Slicing Support ============
@@ -4058,7 +4051,7 @@ namespace pythonic
                     return var(result);
                 }
 
-                throw std::runtime_error("slice() requires a list or string");
+                throw pythonic::PythonicTypeError("slice() requires a list or string");
             }
 
             // Slice overload that accepts var parameters (supports None)
@@ -4224,7 +4217,7 @@ namespace pythonic
                     return var(result);
                 }
 
-                throw std::runtime_error("slice() requires a list or string");
+                throw pythonic::PythonicTypeError("slice() requires a list or string");
             }
 
         public:
@@ -4254,7 +4247,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("upper() requires a string");
+                throw pythonic::PythonicAttributeError("upper() requires a string");
             }
 
             // lower() - convert to lowercase
@@ -4269,7 +4262,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("lower() requires a string");
+                throw pythonic::PythonicAttributeError("lower() requires a string");
             }
 
             // strip() - remove leading/trailing whitespace
@@ -4290,7 +4283,7 @@ namespace pythonic
                                  result.end());
                     return var(result);
                 }
-                throw std::runtime_error("strip() requires a string");
+                throw pythonic::PythonicAttributeError("strip() requires a string");
             }
 
             // lstrip() - remove leading whitespace
@@ -4304,7 +4297,7 @@ namespace pythonic
                                                               { return !std::isspace(ch); }));
                     return var(result);
                 }
-                throw std::runtime_error("lstrip() requires a string");
+                throw pythonic::PythonicAttributeError("lstrip() requires a string");
             }
 
             // rstrip() - remove trailing whitespace
@@ -4320,7 +4313,7 @@ namespace pythonic
                                  result.end());
                     return var(result);
                 }
-                throw std::runtime_error("rstrip() requires a string");
+                throw pythonic::PythonicAttributeError("rstrip() requires a string");
             }
 
             // replace(old, new) - replace all occurrences
@@ -4339,7 +4332,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("replace() requires a string");
+                throw pythonic::PythonicAttributeError("replace() requires a string");
             }
 
             // find(substring) - find position of substring (-1 if not found)
@@ -4355,7 +4348,7 @@ namespace pythonic
                     }
                     return var(static_cast<long long>(pos));
                 }
-                throw std::runtime_error("find() requires a string");
+                throw pythonic::PythonicAttributeError("find() requires a string");
             }
 
             // startswith(prefix) - check if string starts with prefix
@@ -4366,7 +4359,7 @@ namespace pythonic
                     std::string pre = prefix.get<std::string>();
                     return var(s->substr(0, pre.length()) == pre);
                 }
-                throw std::runtime_error("startswith() requires a string");
+                throw pythonic::PythonicAttributeError("startswith() requires a string");
             }
 
             // endswith(suffix) - check if string ends with suffix
@@ -4381,7 +4374,7 @@ namespace pythonic
                     }
                     return var(s->substr(s->length() - suf.length()) == suf);
                 }
-                throw std::runtime_error("endswith() requires a string");
+                throw pythonic::PythonicAttributeError("endswith() requires a string");
             }
 
             // isdigit() - check if all characters are digits
@@ -4400,7 +4393,7 @@ namespace pythonic
                     }
                     return var(true);
                 }
-                throw std::runtime_error("isdigit() requires a string");
+                throw pythonic::PythonicAttributeError("isdigit() requires a string");
             }
 
             // isalpha() - check if all characters are alphabetic
@@ -4419,7 +4412,7 @@ namespace pythonic
                     }
                     return var(true);
                 }
-                throw std::runtime_error("isalpha() requires a string");
+                throw pythonic::PythonicAttributeError("isalpha() requires a string");
             }
 
             // isalnum() - check if all characters are alphanumeric
@@ -4438,7 +4431,7 @@ namespace pythonic
                     }
                     return var(true);
                 }
-                throw std::runtime_error("isalnum() requires a string");
+                throw pythonic::PythonicAttributeError("isalnum() requires a string");
             }
 
             // isspace() - check if all characters are whitespace
@@ -4457,7 +4450,7 @@ namespace pythonic
                     }
                     return var(true);
                 }
-                throw std::runtime_error("isspace() requires a string");
+                throw pythonic::PythonicAttributeError("isspace() requires a string");
             }
 
             // capitalize() - capitalize first character
@@ -4475,7 +4468,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("capitalize() requires a string");
+                throw pythonic::PythonicAttributeError("capitalize() requires a string");
             }
 
             // title() - title case (first letter of each word capitalized)
@@ -4503,7 +4496,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("title() requires a string");
+                throw pythonic::PythonicAttributeError("title() requires a string");
             }
 
             // count(substring) - count occurrences of substring
@@ -4534,7 +4527,7 @@ namespace pythonic
                     }
                     return var(count);
                 }
-                throw std::runtime_error("count() requires a string or list");
+                throw pythonic::PythonicTypeError("count() requires a string or list");
             }
 
             // reverse() - reverse string or list (returns new var)
@@ -4552,7 +4545,7 @@ namespace pythonic
                     std::reverse(result.begin(), result.end());
                     return var(result);
                 }
-                throw std::runtime_error("reverse() requires a string or list");
+                throw pythonic::PythonicTypeError("reverse() requires a string or list");
             }
 
             // split() - split string by delimiter (default: whitespace)
@@ -4588,7 +4581,7 @@ namespace pythonic
                     }
                     return var(result);
                 }
-                throw std::runtime_error("split() requires a string");
+                throw pythonic::PythonicAttributeError("split() requires a string");
             }
 
             // join(list) - join list elements with this string as separator
@@ -4608,7 +4601,7 @@ namespace pythonic
                         return var(result);
                     }
                 }
-                throw std::runtime_error("join() requires a string separator and a list");
+                throw pythonic::PythonicTypeError("join() requires a string separator and a list");
             }
 
             // center(width, fillchar) - center string in field of given width
@@ -4626,7 +4619,7 @@ namespace pythonic
                     int right_pad = total_pad - left_pad;
                     return var(std::string(left_pad, fc) + *s + std::string(right_pad, fc));
                 }
-                throw std::runtime_error("center() requires a string");
+                throw pythonic::PythonicAttributeError("center() requires a string");
             }
 
             // zfill(width) - pad string with zeros on the left
@@ -4639,7 +4632,7 @@ namespace pythonic
                         return var(*s);
                     return var(std::string(width - len, '0') + *s);
                 }
-                throw std::runtime_error("zfill() requires a string");
+                throw pythonic::PythonicAttributeError("zfill() requires a string");
             }
 
             // Hash function for var - enables use in unordered containers
@@ -4762,6 +4755,11 @@ namespace pythonic
             std::optional<double> get_edge_weight(size_t from, size_t to) const;
             size_t out_degree(size_t node) const;
             size_t in_degree(size_t node) const;
+
+            // ===== Node Manipulation =====
+            size_t add_node();
+            size_t add_node(const var &data);
+            var neighbors(size_t node) const;
 
             // ===== Graph Modification =====
             void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directed = false);
@@ -4906,12 +4904,18 @@ namespace pythonic
             // ===== Graph Properties =====
             size_t node_count() const { return impl.node_count(); }
             size_t edge_count() const { return impl.edge_count(); }
+            size_t size() const { return impl.size(); } // Pythonic alias for node_count
             bool is_connected() const { return impl.is_connected(); }
             bool has_cycle() const { return impl.has_cycle(); }
             bool has_edge(size_t from, size_t to) const { return impl.has_edge(from, to); }
             std::optional<double> get_edge_weight(size_t from, size_t to) const { return impl.get_edge_weight(from, to); }
             size_t out_degree(size_t node) const { return impl.out_degree(node); }
             size_t in_degree(size_t node) const { return impl.in_degree(node); }
+
+            // ===== Node Manipulation =====
+            size_t add_node() { return impl.add_node(); }
+            size_t add_node(const var &data) { return impl.add_node(data); }
+            std::vector<size_t> neighbors(size_t node) const { return impl.neighbors(node); }
 
             // ===== Graph Modification =====
             void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directed = false)
@@ -5036,20 +5040,20 @@ namespace pythonic
         inline VarGraphWrapper &var::graph_ref()
         {
             if (tag_ != TypeTag::GRAPH)
-                throw std::runtime_error("Operation requires a graph");
+                throw pythonic::PythonicGraphError("operation requires a graph");
             auto &ptr = var_get<GraphPtr>();
             if (!ptr)
-                throw std::runtime_error("Graph is null");
+                throw pythonic::PythonicGraphError("graph is null");
             return *ptr;
         }
 
         inline const VarGraphWrapper &var::graph_ref() const
         {
             if (tag_ != TypeTag::GRAPH)
-                throw std::runtime_error("Operation requires a graph");
+                throw pythonic::PythonicGraphError("operation requires a graph");
             const auto &ptr = var_get<GraphPtr>();
             if (!ptr)
-                throw std::runtime_error("Graph is null");
+                throw pythonic::PythonicGraphError("graph is null");
             return *ptr;
         }
 
@@ -5073,6 +5077,21 @@ namespace pythonic
         inline std::optional<double> var::get_edge_weight(size_t from, size_t to) const { return graph_ref().get_edge_weight(from, to); }
         inline size_t var::out_degree(size_t node) const { return graph_ref().out_degree(node); }
         inline size_t var::in_degree(size_t node) const { return graph_ref().in_degree(node); }
+
+        // ===== Node Manipulation =====
+        inline size_t var::add_node() { return graph_ref().add_node(); }
+        inline size_t var::add_node(const var &data) { return graph_ref().add_node(data); }
+        inline var var::neighbors(size_t node) const
+        {
+            auto nbrs = graph_ref().neighbors(node);
+            List result;
+            result.reserve(nbrs.size());
+            for (size_t n : nbrs)
+            {
+                result.emplace_back(var(static_cast<long long>(n)));
+            }
+            return var(std::move(result));
+        }
 
         // ===== Graph Modification =====
         inline void var::add_edge(size_t u, size_t v, double w1, double w2, bool directed)
@@ -5099,7 +5118,7 @@ namespace pythonic
         inline void var::reserve_edges_by_counts(const var &counts)
         {
             if (!counts.is<List>())
-                throw std::runtime_error("reserve_edges_by_counts requires a list of counts");
+                throw pythonic::PythonicGraphError("reserve_edges_by_counts requires a list of counts");
             const auto &lst = counts.get<List>();
             std::vector<size_t> vec;
             vec.reserve(lst.size());
@@ -5498,10 +5517,10 @@ namespace pythonic
                 }
                 catch (...)
                 {
-                    throw std::runtime_error("invalid literal for int(): '" + v.get<std::string>() + "'");
+                    throw pythonic::PythonicValueError("invalid literal for int(): '" + v.get<std::string>() + "'");
                 }
             }
-            throw std::runtime_error("cannot convert " + t + " to int");
+            throw pythonic::PythonicValueError("cannot convert " + t + " to int");
         }
 
         // float() - convert to float/double
@@ -5526,10 +5545,10 @@ namespace pythonic
                 }
                 catch (...)
                 {
-                    throw std::runtime_error("could not convert string to float: '" + v.get<std::string>() + "'");
+                    throw pythonic::PythonicValueError("could not convert string to float: '" + v.get<std::string>() + "'");
                 }
             }
-            throw std::runtime_error("cannot convert " + t + " to float");
+            throw pythonic::PythonicValueError("cannot convert " + t + " to float");
         }
 
         // abs() - absolute value
@@ -5546,7 +5565,7 @@ namespace pythonic
                 return var(std::abs(v.get<long>()));
             if (t == "long long")
                 return var(std::abs(v.get<long long>()));
-            throw std::runtime_error("abs() requires numeric type, got " + t);
+            throw pythonic::PythonicTypeError("abs() requires numeric type, got " + t);
         }
 
         // min() - minimum of list or two values
@@ -5561,11 +5580,11 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("min() expects a list or two arguments");
+                throw pythonic::PythonicTypeError("min() expects a list or two arguments");
             }
             const auto &l = lst.get<List>();
             if (l.empty())
-                throw std::runtime_error("min() arg is an empty sequence");
+                throw pythonic::PythonicValueError("min() arg is an empty sequence");
             var result = l[0];
             for (size_t i = 1; i < l.size(); ++i)
             {
@@ -5587,11 +5606,11 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("max() expects a list or two arguments");
+                throw pythonic::PythonicTypeError("max() expects a list or two arguments");
             }
             const auto &l = lst.get<List>();
             if (l.empty())
-                throw std::runtime_error("max() arg is an empty sequence");
+                throw pythonic::PythonicValueError("max() arg is an empty sequence");
             var result = l[0];
             for (size_t i = 1; i < l.size(); ++i)
             {
@@ -5606,7 +5625,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("sum() expects a list");
+                throw pythonic::PythonicTypeError("sum() expects a list");
             }
             var result = start;
             const auto &l = lst.get<List>();
@@ -5622,7 +5641,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("sorted() expects a list");
+                throw pythonic::PythonicTypeError("sorted() expects a list");
             }
             List result = lst.get<List>();
             if (reverse_order)
@@ -5654,7 +5673,7 @@ namespace pythonic
                 std::reverse(s.begin(), s.end());
                 return var(s);
             }
-            throw std::runtime_error("reversed_var() expects list or string");
+            throw pythonic::PythonicTypeError("reversed_var() expects list or string");
         }
 
         // all_var() - return True if all elements are truthy (var version)
@@ -5662,7 +5681,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("all_var() expects a list");
+                throw pythonic::PythonicTypeError("all_var() expects a list");
             }
             const auto &l = lst.get<List>();
             for (const auto &item : l)
@@ -5678,7 +5697,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("any_var() expects a list");
+                throw pythonic::PythonicTypeError("any_var() expects a list");
             }
             const auto &l = lst.get<List>();
             for (const auto &item : l)
@@ -5695,7 +5714,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("map() expects a list");
+                throw pythonic::PythonicTypeError("map() expects a list");
             }
             List result;
             const auto &l = lst.get<List>();
@@ -5712,7 +5731,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("filter() expects a list");
+                throw pythonic::PythonicTypeError("filter() expects a list");
             }
             List result;
             const auto &l = lst.get<List>();
@@ -5732,7 +5751,7 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("reduce() expects a list");
+                throw pythonic::PythonicTypeError("reduce() expects a list");
             }
             var result = initial;
             const auto &l = lst.get<List>();
@@ -5748,11 +5767,11 @@ namespace pythonic
         {
             if (lst.type() != "list")
             {
-                throw std::runtime_error("reduce() expects a list");
+                throw pythonic::PythonicTypeError("reduce() expects a list");
             }
             const auto &l = lst.get<List>();
             if (l.empty())
-                throw std::runtime_error("reduce() of empty sequence with no initial value");
+                throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
             var result = l[0];
             for (size_t i = 1; i < l.size(); ++i)
             {
@@ -5809,7 +5828,7 @@ namespace pythonic
             ((Is == index ? (result = var(std::get<Is>(t)), found = true) : false), ...);
             if (!found)
             {
-                throw std::out_of_range("Tuple index out of range");
+                throw PythonicIndexError("tuple", static_cast<long long>(index), sizeof...(Is));
             }
             return result;
         }
