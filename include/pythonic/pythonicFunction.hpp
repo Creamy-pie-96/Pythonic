@@ -19,7 +19,56 @@ namespace pythonic
         // ============ Map ============
         // Python-like map(function, iterable) - OPTIMIZED
 
-        template <typename Func, typename Iterable>
+        // Specialized overload for var containers - uses direct list access
+        template <typename Func>
+        var map(Func &&func, var &container)
+        {
+            if (container.is_list())
+            {
+                List &lst = container.as_list_unchecked();
+                List result;
+                result.reserve(lst.size());
+                for (var &item : lst)
+                {
+                    result.emplace_back(func(item));
+                }
+                return var(std::move(result));
+            }
+            // Fallback for other container types
+            List result;
+            for (auto &&item : container)
+            {
+                result.emplace_back(func(item));
+            }
+            return var(std::move(result));
+        }
+
+        template <typename Func>
+        var map(Func &&func, const var &container)
+        {
+            if (container.is_list())
+            {
+                const List &lst = container.as_list_unchecked();
+                List result;
+                result.reserve(lst.size());
+                for (const var &item : lst)
+                {
+                    result.emplace_back(func(item));
+                }
+                return var(std::move(result));
+            }
+            // Fallback for other container types
+            List result;
+            for (auto &&item : container)
+            {
+                result.emplace_back(func(item));
+            }
+            return var(std::move(result));
+        }
+
+        // Generic overload for non-var iterables
+        template <typename Func, typename Iterable,
+                  typename = std::enable_if_t<!std::is_same_v<std::decay_t<Iterable>, var>>>
         var map(Func &&func, Iterable &&iterable)
         {
             List result;
@@ -34,7 +83,7 @@ namespace pythonic
                     result.emplace_back(func(var(item)));
                 }
             }
-            return var(result);
+            return var(std::move(result));
         }
 
         // Map with index (like enumerate + map) - OPTIMIZED
@@ -55,13 +104,72 @@ namespace pythonic
                 }
                 ++idx;
             }
-            return var(result);
+            return var(std::move(result));
         }
 
         // ============ Filter ============
         // Python-like filter(function, iterable) - OPTIMIZED
 
-        template <typename Func, typename Iterable>
+        // Specialized overload for var containers
+        template <typename Func>
+        var filter(Func &&func, var &container)
+        {
+            if (container.is_list())
+            {
+                List &lst = container.as_list_unchecked();
+                List result;
+                for (var &item : lst)
+                {
+                    if (static_cast<bool>(func(item)))
+                    {
+                        result.emplace_back(item);
+                    }
+                }
+                return var(std::move(result));
+            }
+            // Fallback for other container types
+            List result;
+            for (auto &&item : container)
+            {
+                if (static_cast<bool>(func(item)))
+                {
+                    result.emplace_back(item);
+                }
+            }
+            return var(std::move(result));
+        }
+
+        template <typename Func>
+        var filter(Func &&func, const var &container)
+        {
+            if (container.is_list())
+            {
+                const List &lst = container.as_list_unchecked();
+                List result;
+                for (const var &item : lst)
+                {
+                    if (static_cast<bool>(func(item)))
+                    {
+                        result.emplace_back(item);
+                    }
+                }
+                return var(std::move(result));
+            }
+            // Fallback for other container types
+            List result;
+            for (auto &&item : container)
+            {
+                if (static_cast<bool>(func(item)))
+                {
+                    result.emplace_back(item);
+                }
+            }
+            return var(std::move(result));
+        }
+
+        // Generic overload for non-var iterables
+        template <typename Func, typename Iterable,
+                  typename = std::enable_if_t<!std::is_same_v<std::decay_t<Iterable>, var>>>
         var filter(Func &&func, Iterable &&iterable)
         {
             List result;
@@ -81,13 +189,84 @@ namespace pythonic
                         result.emplace_back(item);
                 }
             }
-            return var(result);
+            return var(std::move(result));
         }
 
         // ============ Reduce ============
-        // Python-like reduce(function, iterable, initializer)
+        // Python-like reduce(function, iterable, initializer) - OPTIMIZED
 
-        template <typename Func, typename Iterable>
+        // Specialized overload for var containers
+        template <typename Func>
+        var reduce(Func &&func, var &container)
+        {
+            if (container.is_list())
+            {
+                List &lst = container.as_list_unchecked();
+                if (lst.empty())
+                {
+                    throw std::runtime_error("reduce() of empty sequence with no initial value");
+                }
+                auto it = lst.begin();
+                var result = *it;
+                ++it;
+                for (; it != lst.end(); ++it)
+                {
+                    result = func(result, *it);
+                }
+                return result;
+            }
+            // Fallback
+            auto it = container.begin();
+            if (it == container.end())
+            {
+                throw std::runtime_error("reduce() of empty sequence with no initial value");
+            }
+            var result = *it;
+            ++it;
+            for (; it != container.end(); ++it)
+            {
+                result = func(result, *it);
+            }
+            return result;
+        }
+
+        template <typename Func>
+        var reduce(Func &&func, const var &container)
+        {
+            if (container.is_list())
+            {
+                const List &lst = container.as_list_unchecked();
+                if (lst.empty())
+                {
+                    throw std::runtime_error("reduce() of empty sequence with no initial value");
+                }
+                auto it = lst.begin();
+                var result = *it;
+                ++it;
+                for (; it != lst.end(); ++it)
+                {
+                    result = func(result, *it);
+                }
+                return result;
+            }
+            // Fallback
+            auto it = container.begin();
+            if (it == container.end())
+            {
+                throw std::runtime_error("reduce() of empty sequence with no initial value");
+            }
+            var result = *it;
+            ++it;
+            for (; it != container.end(); ++it)
+            {
+                result = func(result, *it);
+            }
+            return result;
+        }
+
+        // Generic overload for non-var iterables
+        template <typename Func, typename Iterable,
+                  typename = std::enable_if_t<!std::is_same_v<std::decay_t<Iterable>, var>>>
         var reduce(Func &&func, Iterable &&iterable)
         {
             auto it = iterable.begin();

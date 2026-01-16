@@ -159,6 +159,262 @@ namespace pythonic
                 return static_cast<TypeTag>(v.index());
             }
 
+            // Type promotion helpers
+            // Returns the TypeTag that should be used for mixed-type operations
+            // STRING has highest rank - any operation with string converts other to string
+            // For numeric types: bool < int < uint < long < ulong < long long < ulong long < float < double < long double
+
+            // Get promotion rank for a type tag (higher = wider type)
+            static int getTypeRank(TypeTag t) noexcept
+            {
+                switch (t)
+                {
+                case TypeTag::BOOL:
+                    return 0;
+                case TypeTag::INT:
+                    return 1;
+                case TypeTag::UINT:
+                    return 2;
+                case TypeTag::LONG:
+                    return 3;
+                case TypeTag::ULONG:
+                    return 4;
+                case TypeTag::LONG_LONG:
+                    return 5;
+                case TypeTag::ULONG_LONG:
+                    return 6;
+                case TypeTag::FLOAT:
+                    return 7;
+                case TypeTag::DOUBLE:
+                    return 8;
+                case TypeTag::LONG_DOUBLE:
+                    return 9;
+                case TypeTag::STRING:
+                    return 100; // Highest rank - forces string concatenation
+                default:
+                    return -1; // Non-promotable types (containers, None, etc.)
+                }
+            }
+
+            // Type promoted operation helpers
+            // Perform addition with proper type promotion
+            var addPromoted(const var &other) const
+            {
+                TypeTag resultType = getPromotedType(tag_, other.tag_);
+
+                switch (resultType)
+                {
+                case TypeTag::STRING:
+                    return var(toString() + other.toString());
+                case TypeTag::LONG_DOUBLE:
+                    return var(toLongDouble() + other.toLongDouble());
+                case TypeTag::DOUBLE:
+                    return var(toDouble() + other.toDouble());
+                case TypeTag::FLOAT:
+                    return var(toFloat() + other.toFloat());
+                case TypeTag::ULONG_LONG:
+                    return var(toULongLong() + other.toULongLong());
+                case TypeTag::LONG_LONG:
+                    return var(toLongLong() + other.toLongLong());
+                case TypeTag::ULONG:
+                    return var(toULong() + other.toULong());
+                case TypeTag::LONG:
+                    return var(toLong() + other.toLong());
+                case TypeTag::UINT:
+                    return var(toUInt() + other.toUInt());
+                case TypeTag::INT:
+                case TypeTag::BOOL:
+                default:
+                    return var(toInt() + other.toInt());
+                }
+            }
+
+            // Perform subtraction with proper type promotion
+            var subPromoted(const var &other) const
+            {
+                TypeTag resultType = getPromotedType(tag_, other.tag_);
+
+                // String subtraction doesn't make sense, throw error
+                if (resultType == TypeTag::STRING)
+                {
+                    throw std::runtime_error("Cannot subtract strings");
+                }
+
+                switch (resultType)
+                {
+                case TypeTag::LONG_DOUBLE:
+                    return var(toLongDouble() - other.toLongDouble());
+                case TypeTag::DOUBLE:
+                    return var(toDouble() - other.toDouble());
+                case TypeTag::FLOAT:
+                    return var(toFloat() - other.toFloat());
+                case TypeTag::ULONG_LONG:
+                    return var(toULongLong() - other.toULongLong());
+                case TypeTag::LONG_LONG:
+                    return var(toLongLong() - other.toLongLong());
+                case TypeTag::ULONG:
+                    return var(toULong() - other.toULong());
+                case TypeTag::LONG:
+                    return var(toLong() - other.toLong());
+                case TypeTag::UINT:
+                    return var(toUInt() - other.toUInt());
+                case TypeTag::INT:
+                case TypeTag::BOOL:
+                default:
+                    return var(toInt() - other.toInt());
+                }
+            }
+
+            // Perform multiplication with proper type promotion
+            var mulPromoted(const var &other) const
+            {
+                TypeTag resultType = getPromotedType(tag_, other.tag_);
+
+                // String multiplication: "ab" * 3 = "ababab"
+                if (tag_ == TypeTag::STRING && other.isIntegral())
+                {
+                    std::string result;
+                    std::string s = std::get<std::string>(value);
+                    int count = other.toInt();
+                    result.reserve(s.size() * count);
+                    for (int i = 0; i < count; ++i)
+                        result += s;
+                    return var(result);
+                }
+                if (other.tag_ == TypeTag::STRING && isIntegral())
+                {
+                    std::string result;
+                    std::string s = std::get<std::string>(other.value);
+                    int count = toInt();
+                    result.reserve(s.size() * count);
+                    for (int i = 0; i < count; ++i)
+                        result += s;
+                    return var(result);
+                }
+                if (resultType == TypeTag::STRING)
+                {
+                    throw std::runtime_error("Cannot multiply two strings");
+                }
+
+                switch (resultType)
+                {
+                case TypeTag::LONG_DOUBLE:
+                    return var(toLongDouble() * other.toLongDouble());
+                case TypeTag::DOUBLE:
+                    return var(toDouble() * other.toDouble());
+                case TypeTag::FLOAT:
+                    return var(toFloat() * other.toFloat());
+                case TypeTag::ULONG_LONG:
+                    return var(toULongLong() * other.toULongLong());
+                case TypeTag::LONG_LONG:
+                    return var(toLongLong() * other.toLongLong());
+                case TypeTag::ULONG:
+                    return var(toULong() * other.toULong());
+                case TypeTag::LONG:
+                    return var(toLong() * other.toLong());
+                case TypeTag::UINT:
+                    return var(toUInt() * other.toUInt());
+                case TypeTag::INT:
+                case TypeTag::BOOL:
+                default:
+                    return var(toInt() * other.toInt());
+                }
+            }
+
+            // Perform division with proper type promotion (always returns floating point for safety)
+            var divPromoted(const var &other) const
+            {
+                TypeTag resultType = getPromotedType(tag_, other.tag_);
+
+                if (resultType == TypeTag::STRING)
+                {
+                    throw std::runtime_error("Cannot divide strings");
+                }
+
+                // For division, promote to at least double for precision
+                // unless one operand is long double
+                if (resultType == TypeTag::LONG_DOUBLE)
+                {
+                    long double divisor = other.toLongDouble();
+                    if (divisor == 0.0L)
+                        throw std::runtime_error("Division by zero");
+                    return var(toLongDouble() / divisor);
+                }
+
+                // All other cases use double for safety
+                double divisor = other.toDouble();
+                if (divisor == 0.0)
+                    throw std::runtime_error("Division by zero");
+                return var(toDouble() / divisor);
+            }
+
+            // Perform modulo with proper type promotion
+            var modPromoted(const var &other) const
+            {
+                TypeTag resultType = getPromotedType(tag_, other.tag_);
+
+                if (resultType == TypeTag::STRING)
+                {
+                    throw std::runtime_error("Cannot perform modulo on strings");
+                }
+
+                // For floating point, use fmod
+                if (resultType == TypeTag::LONG_DOUBLE || resultType == TypeTag::DOUBLE || resultType == TypeTag::FLOAT)
+                {
+                    double divisor = other.toDouble();
+                    if (divisor == 0.0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(std::fmod(toDouble(), divisor));
+                }
+
+                // For integers, use integer modulo
+                switch (resultType)
+                {
+                case TypeTag::ULONG_LONG:
+                {
+                    auto divisor = other.toULongLong();
+                    if (divisor == 0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(toULongLong() % divisor);
+                }
+                case TypeTag::LONG_LONG:
+                {
+                    auto divisor = other.toLongLong();
+                    if (divisor == 0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(toLongLong() % divisor);
+                }
+                case TypeTag::ULONG:
+                {
+                    auto divisor = other.toULong();
+                    if (divisor == 0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(toULong() % divisor);
+                }
+                case TypeTag::LONG:
+                {
+                    auto divisor = other.toLong();
+                    if (divisor == 0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(toLong() % divisor);
+                }
+                case TypeTag::UINT:
+                {
+                    auto divisor = other.toUInt();
+                    if (divisor == 0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(toUInt() % divisor);
+                }
+                default:
+                {
+                    auto divisor = other.toInt();
+                    if (divisor == 0)
+                        throw std::runtime_error("Modulo by zero");
+                    return var(toInt() % divisor);
+                }
+                }
+            }
+
         public:
             // Fast type tag accessor
             TypeTag tag() const { return tag_; }
@@ -276,7 +532,433 @@ namespace pythonic
                 }
             }
 
-            // Helper: Convert any numeric type to double (for mixed-type arithmetic)
+            // ============ Fast Type Checking Methods ============
+            // These provide O(1) type checks without variant overhead
+            bool is_list() const noexcept { return tag_ == TypeTag::LIST; }
+            bool is_dict() const noexcept { return tag_ == TypeTag::DICT; }
+            bool is_set() const noexcept { return tag_ == TypeTag::SET; }
+            bool is_string() const noexcept { return tag_ == TypeTag::STRING; }
+            bool is_int() const noexcept { return tag_ == TypeTag::INT; }
+            bool is_double() const noexcept { return tag_ == TypeTag::DOUBLE; }
+            bool is_float() const noexcept { return tag_ == TypeTag::FLOAT; }
+            bool is_bool() const noexcept { return tag_ == TypeTag::BOOL; }
+            bool is_none() const noexcept { return tag_ == TypeTag::NONE; }
+            bool is_ordered_dict() const noexcept { return tag_ == TypeTag::ORDEREDDICT; }
+            bool is_ordered_set() const noexcept { return tag_ == TypeTag::ORDEREDSET; }
+            bool is_long() const noexcept { return tag_ == TypeTag::LONG; }
+            bool is_long_long() const noexcept { return tag_ == TypeTag::LONG_LONG; }
+            bool is_long_double() const noexcept { return tag_ == TypeTag::LONG_DOUBLE; }
+            bool is_uint() const noexcept { return tag_ == TypeTag::UINT; }
+            bool is_ulong() const noexcept { return tag_ == TypeTag::ULONG; }
+            bool is_ulong_long() const noexcept { return tag_ == TypeTag::ULONG_LONG; }
+            bool is_graph() const noexcept { return tag_ == TypeTag::GRAPH; }
+            // Aggregate checks for common patterns
+            bool is_any_integral() const noexcept { return isIntegral(); }
+            bool is_any_floating() const noexcept
+            {
+                return tag_ == TypeTag::FLOAT || tag_ == TypeTag::DOUBLE || tag_ == TypeTag::LONG_DOUBLE;
+            }
+            bool is_any_numeric() const noexcept { return isNumeric(); }
+
+            // ============ Fast Typed Accessors (Unchecked) ============
+            // These skip type checking for maximum performance in hot paths
+            // IMPORTANT: Caller must verify type first using is_list(), etc.
+            // Container types
+            List &as_list_unchecked() noexcept { return std::get<List>(value); }
+            const List &as_list_unchecked() const noexcept { return std::get<List>(value); }
+            Dict &as_dict_unchecked() noexcept { return std::get<Dict>(value); }
+            const Dict &as_dict_unchecked() const noexcept { return std::get<Dict>(value); }
+            Set &as_set_unchecked() noexcept { return std::get<Set>(value); }
+            const Set &as_set_unchecked() const noexcept { return std::get<Set>(value); }
+            OrderedDict &as_ordered_dict_unchecked() noexcept { return std::get<OrderedDict>(value); }
+            const OrderedDict &as_ordered_dict_unchecked() const noexcept { return std::get<OrderedDict>(value); }
+            OrderedSet &as_ordered_set_unchecked() noexcept { return std::get<OrderedSet>(value); }
+            const OrderedSet &as_ordered_set_unchecked() const noexcept { return std::get<OrderedSet>(value); }
+            // String type
+            std::string &as_string_unchecked() noexcept { return std::get<std::string>(value); }
+            const std::string &as_string_unchecked() const noexcept { return std::get<std::string>(value); }
+            // Basic numeric types
+            int &as_int_unchecked() noexcept { return std::get<int>(value); }
+            int as_int_unchecked() const noexcept { return std::get<int>(value); }
+            double &as_double_unchecked() noexcept { return std::get<double>(value); }
+            double as_double_unchecked() const noexcept { return std::get<double>(value); }
+            float &as_float_unchecked() noexcept { return std::get<float>(value); }
+            float as_float_unchecked() const noexcept { return std::get<float>(value); }
+            bool &as_bool_unchecked() noexcept { return std::get<bool>(value); }
+            bool as_bool_unchecked() const noexcept { return std::get<bool>(value); }
+            // Extended numeric types
+            long &as_long_unchecked() noexcept { return std::get<long>(value); }
+            long as_long_unchecked() const noexcept { return std::get<long>(value); }
+            long long &as_long_long_unchecked() noexcept { return std::get<long long>(value); }
+            long long as_long_long_unchecked() const noexcept { return std::get<long long>(value); }
+            long double &as_long_double_unchecked() noexcept { return std::get<long double>(value); }
+            long double as_long_double_unchecked() const noexcept { return std::get<long double>(value); }
+            // Unsigned types
+            unsigned int &as_uint_unchecked() noexcept { return std::get<unsigned int>(value); }
+            unsigned int as_uint_unchecked() const noexcept { return std::get<unsigned int>(value); }
+            unsigned long &as_ulong_unchecked() noexcept { return std::get<unsigned long>(value); }
+            unsigned long as_ulong_unchecked() const noexcept { return std::get<unsigned long>(value); }
+            unsigned long long &as_ulong_long_unchecked() noexcept { return std::get<unsigned long long>(value); }
+            unsigned long long as_ulong_long_unchecked() const noexcept { return std::get<unsigned long long>(value); }
+            // Graph type
+            GraphPtr &as_graph_unchecked() noexcept { return std::get<GraphPtr>(value); }
+            const GraphPtr &as_graph_unchecked() const noexcept { return std::get<GraphPtr>(value); }
+
+            // ============ Safe Typed Accessors ============
+            // These check type and throw if mismatched
+            // Container types
+            List &as_list()
+            {
+                if (tag_ != TypeTag::LIST)
+                    throw std::runtime_error("as_list() requires a list");
+                return std::get<List>(value);
+            }
+            const List &as_list() const
+            {
+                if (tag_ != TypeTag::LIST)
+                    throw std::runtime_error("as_list() requires a list");
+                return std::get<List>(value);
+            }
+            Dict &as_dict()
+            {
+                if (tag_ != TypeTag::DICT)
+                    throw std::runtime_error("as_dict() requires a dict");
+                return std::get<Dict>(value);
+            }
+            const Dict &as_dict() const
+            {
+                if (tag_ != TypeTag::DICT)
+                    throw std::runtime_error("as_dict() requires a dict");
+                return std::get<Dict>(value);
+            }
+            Set &as_set()
+            {
+                if (tag_ != TypeTag::SET)
+                    throw std::runtime_error("as_set() requires a set");
+                return std::get<Set>(value);
+            }
+            const Set &as_set() const
+            {
+                if (tag_ != TypeTag::SET)
+                    throw std::runtime_error("as_set() requires a set");
+                return std::get<Set>(value);
+            }
+            OrderedDict &as_ordered_dict()
+            {
+                if (tag_ != TypeTag::ORDEREDDICT)
+                    throw std::runtime_error("as_ordered_dict() requires an ordered dict");
+                return std::get<OrderedDict>(value);
+            }
+            const OrderedDict &as_ordered_dict() const
+            {
+                if (tag_ != TypeTag::ORDEREDDICT)
+                    throw std::runtime_error("as_ordered_dict() requires an ordered dict");
+                return std::get<OrderedDict>(value);
+            }
+            OrderedSet &as_ordered_set()
+            {
+                if (tag_ != TypeTag::ORDEREDSET)
+                    throw std::runtime_error("as_ordered_set() requires an ordered set");
+                return std::get<OrderedSet>(value);
+            }
+            const OrderedSet &as_ordered_set() const
+            {
+                if (tag_ != TypeTag::ORDEREDSET)
+                    throw std::runtime_error("as_ordered_set() requires an ordered set");
+                return std::get<OrderedSet>(value);
+            }
+            // String type
+            std::string &as_string()
+            {
+                if (tag_ != TypeTag::STRING)
+                    throw std::runtime_error("as_string() requires a string");
+                return std::get<std::string>(value);
+            }
+            const std::string &as_string() const
+            {
+                if (tag_ != TypeTag::STRING)
+                    throw std::runtime_error("as_string() requires a string");
+                return std::get<std::string>(value);
+            }
+            // Basic numeric types
+            int as_int() const
+            {
+                if (tag_ != TypeTag::INT)
+                    throw std::runtime_error("as_int() requires an int");
+                return std::get<int>(value);
+            }
+            double as_double() const
+            {
+                if (tag_ != TypeTag::DOUBLE)
+                    throw std::runtime_error("as_double() requires a double");
+                return std::get<double>(value);
+            }
+            float as_float() const
+            {
+                if (tag_ != TypeTag::FLOAT)
+                    throw std::runtime_error("as_float() requires a float");
+                return std::get<float>(value);
+            }
+            bool as_bool() const
+            {
+                if (tag_ != TypeTag::BOOL)
+                    throw std::runtime_error("as_bool() requires a bool");
+                return std::get<bool>(value);
+            }
+            // Extended numeric types
+            long as_long() const
+            {
+                if (tag_ != TypeTag::LONG)
+                    throw std::runtime_error("as_long() requires a long");
+                return std::get<long>(value);
+            }
+            long long as_long_long() const
+            {
+                if (tag_ != TypeTag::LONG_LONG)
+                    throw std::runtime_error("as_long_long() requires a long long");
+                return std::get<long long>(value);
+            }
+            long double as_long_double() const
+            {
+                if (tag_ != TypeTag::LONG_DOUBLE)
+                    throw std::runtime_error("as_long_double() requires a long double");
+                return std::get<long double>(value);
+            }
+            // Unsigned types
+            unsigned int as_uint() const
+            {
+                if (tag_ != TypeTag::UINT)
+                    throw std::runtime_error("as_uint() requires an unsigned int");
+                return std::get<unsigned int>(value);
+            }
+            unsigned long as_ulong() const
+            {
+                if (tag_ != TypeTag::ULONG)
+                    throw std::runtime_error("as_ulong() requires an unsigned long");
+                return std::get<unsigned long>(value);
+            }
+            unsigned long long as_ulong_long() const
+            {
+                if (tag_ != TypeTag::ULONG_LONG)
+                    throw std::runtime_error("as_ulong_long() requires an unsigned long long");
+                return std::get<unsigned long long>(value);
+            }
+
+            // ============ Type Conversion Methods ============
+            // These convert any numeric type to a specific type for mixed-type arithmetic
+            // The result type is determined by type promotion rules
+
+            // Convert to int (widest narrow conversion, may lose precision)
+            int toInt() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return std::get<int>(value);
+                case TypeTag::FLOAT:
+                    return static_cast<int>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<int>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return static_cast<int>(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return static_cast<int>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<int>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return static_cast<int>(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return static_cast<int>(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return static_cast<int>(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1 : 0;
+                default:
+                    throw std::runtime_error("Cannot convert to int");
+                }
+            }
+
+            // Convert to unsigned int
+            unsigned int toUInt() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<unsigned int>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return static_cast<unsigned int>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<unsigned int>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return static_cast<unsigned int>(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return static_cast<unsigned int>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<unsigned int>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return std::get<unsigned int>(value);
+                case TypeTag::ULONG:
+                    return static_cast<unsigned int>(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return static_cast<unsigned int>(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1U : 0U;
+                default:
+                    throw std::runtime_error("Cannot convert to unsigned int");
+                }
+            }
+
+            // Convert to long
+            long toLong() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<long>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return static_cast<long>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<long>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return std::get<long>(value);
+                case TypeTag::LONG_LONG:
+                    return static_cast<long>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<long>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return static_cast<long>(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return static_cast<long>(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return static_cast<long>(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1L : 0L;
+                default:
+                    throw std::runtime_error("Cannot convert to long");
+                }
+            }
+
+            // Convert to unsigned long
+            unsigned long toULong() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<unsigned long>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return static_cast<unsigned long>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<unsigned long>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return static_cast<unsigned long>(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return static_cast<unsigned long>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<unsigned long>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return static_cast<unsigned long>(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return std::get<unsigned long>(value);
+                case TypeTag::ULONG_LONG:
+                    return static_cast<unsigned long>(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1UL : 0UL;
+                default:
+                    throw std::runtime_error("Cannot convert to unsigned long");
+                }
+            }
+
+            // Convert to long long (for integer arithmetic that needs range)
+            long long toLongLong() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<long long>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return static_cast<long long>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<long long>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return static_cast<long long>(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return std::get<long long>(value);
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<long long>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return static_cast<long long>(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return static_cast<long long>(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return static_cast<long long>(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1LL : 0LL;
+                default:
+                    throw std::runtime_error("Cannot convert to long long");
+                }
+            }
+
+            // Convert to unsigned long long
+            unsigned long long toULongLong() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<unsigned long long>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return static_cast<unsigned long long>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<unsigned long long>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return static_cast<unsigned long long>(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return static_cast<unsigned long long>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<unsigned long long>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return static_cast<unsigned long long>(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return static_cast<unsigned long long>(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return std::get<unsigned long long>(value);
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1ULL : 0ULL;
+                default:
+                    throw std::runtime_error("Cannot convert to unsigned long long");
+                }
+            }
+
+            // Convert to float
+            float toFloat() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<float>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return std::get<float>(value);
+                case TypeTag::DOUBLE:
+                    return static_cast<float>(std::get<double>(value));
+                case TypeTag::LONG:
+                    return static_cast<float>(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return static_cast<float>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return static_cast<float>(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return static_cast<float>(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return static_cast<float>(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return static_cast<float>(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? 1.0f : 0.0f;
+                default:
+                    throw std::runtime_error("Cannot convert to float");
+                }
+            }
+
+            // Convert to double (most common floating point conversion)
             double toDouble() const
             {
                 switch (tag_)
@@ -306,28 +988,90 @@ namespace pythonic
                 }
             }
 
-            // Helper: Convert any numeric type to long long (for integer arithmetic)
-            long long toLongLong() const
+            // Convert to long double (highest precision floating point)
+            long double toLongDouble() const
             {
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<long long>(std::get<int>(value));
+                    return static_cast<long double>(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return static_cast<long double>(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return static_cast<long double>(std::get<double>(value));
                 case TypeTag::LONG:
-                    return static_cast<long long>(std::get<long>(value));
+                    return static_cast<long double>(std::get<long>(value));
                 case TypeTag::LONG_LONG:
-                    return std::get<long long>(value);
+                    return static_cast<long double>(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return std::get<long double>(value);
                 case TypeTag::UINT:
-                    return static_cast<long long>(std::get<unsigned int>(value));
+                    return static_cast<long double>(std::get<unsigned int>(value));
                 case TypeTag::ULONG:
-                    return static_cast<long long>(std::get<unsigned long>(value));
+                    return static_cast<long double>(std::get<unsigned long>(value));
                 case TypeTag::ULONG_LONG:
-                    return static_cast<long long>(std::get<unsigned long long>(value));
+                    return static_cast<long double>(std::get<unsigned long long>(value));
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1LL : 0LL;
+                    return std::get<bool>(value) ? 1.0L : 0.0L;
                 default:
-                    throw std::runtime_error("Cannot convert to long long");
+                    throw std::runtime_error("Cannot convert to long double");
                 }
+            }
+
+            // Convert to string (for string concatenation)
+            std::string toString() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::NONE:
+                    return "None";
+                case TypeTag::INT:
+                    return std::to_string(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return std::to_string(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return std::to_string(std::get<double>(value));
+                case TypeTag::LONG:
+                    return std::to_string(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return std::to_string(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return std::to_string(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return std::to_string(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return std::to_string(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return std::to_string(std::get<unsigned long long>(value));
+                case TypeTag::BOOL:
+                    return std::get<bool>(value) ? "True" : "False";
+                case TypeTag::STRING:
+                    return std::get<std::string>(value);
+                default:
+                    return "[" + type() + "]";
+                }
+            }
+
+            // ============ Type Promotion System ============
+
+            // Get promoted type for binary operations
+            static TypeTag getPromotedType(TypeTag a, TypeTag b) noexcept
+            {
+                int rankA = getTypeRank(a);
+                int rankB = getTypeRank(b);
+
+                // If either is STRING, result is STRING
+                if (a == TypeTag::STRING || b == TypeTag::STRING)
+                    return TypeTag::STRING;
+
+                // If either is non-promotable, return the one that is promotable
+                if (rankA < 0)
+                    return (rankB >= 0) ? b : TypeTag::NONE;
+                if (rankB < 0)
+                    return a;
+
+                // Return the higher rank type
+                return (rankA >= rankB) ? a : b;
             }
 
             // Type name - returns string like "int", "str", "list", "dict", "NoneType" etc.
@@ -746,21 +1490,8 @@ namespace pythonic
                         break;
                     }
                 }
-                // Mixed numeric types - promote to double for precision
-                if (isNumeric() && other.isNumeric())
-                {
-                    return var(toDouble() + other.toDouble());
-                }
-                // String + anything = concatenation
-                if (tag_ == TypeTag::STRING)
-                {
-                    return var(std::get<std::string>(value) + other.str());
-                }
-                if (other.tag_ == TypeTag::STRING)
-                {
-                    return var(str() + std::get<std::string>(other.value));
-                }
-                throw std::runtime_error("Unsupported types for addition");
+                // Mixed types - use type promotion (handles numeric + numeric, string + anything, etc.)
+                return addPromoted(other);
             }
 
             var operator-(const var &other) const
@@ -835,10 +1566,10 @@ namespace pythonic
                         break;
                     }
                 }
-                // Mixed numeric types - promote to double
+                // Mixed numeric types - use proper type promotion
                 if (isNumeric() && other.isNumeric())
                 {
-                    return var(toDouble() - other.toDouble());
+                    return subPromoted(other);
                 }
                 throw std::runtime_error("operator- requires arithmetic types or containers (difference)");
             }
@@ -872,16 +1603,29 @@ namespace pythonic
                         break;
                     }
                 }
-                // Mixed numeric types - promote to double
+                // Mixed numeric types - use proper type promotion
                 if (isNumeric() && other.isNumeric())
                 {
-                    return var(toDouble() * other.toDouble());
+                    return mulPromoted(other);
                 }
                 // String * int = repetition
                 if (tag_ == TypeTag::STRING && other.isIntegral())
                 {
                     const auto &s = std::get<std::string>(value);
                     long long n = other.toLongLong();
+                    if (n <= 0)
+                        return var(std::string(""));
+                    std::string result;
+                    result.reserve(s.size() * n);
+                    for (long long i = 0; i < n; ++i)
+                        result += s;
+                    return var(std::move(result));
+                }
+                // int * String = repetition (commutative)
+                if (isIntegral() && other.tag_ == TypeTag::STRING)
+                {
+                    const auto &s = std::get<std::string>(other.value);
+                    long long n = toLongLong();
                     if (n <= 0)
                         return var(std::string(""));
                     std::string result;
@@ -961,13 +1705,10 @@ namespace pythonic
                         break;
                     }
                 }
-                // Mixed numeric types - promote to double
+                // Mixed numeric types - use proper type promotion
                 if (isNumeric() && other.isNumeric())
                 {
-                    double b = other.toDouble();
-                    if (b == 0.0)
-                        throw std::runtime_error("Division by zero");
-                    return var(toDouble() / b);
+                    return divPromoted(other);
                 }
                 throw std::runtime_error("Unsupported types for division");
             }
@@ -1025,15 +1766,264 @@ namespace pythonic
                         break;
                     }
                 }
-                // Mixed integer types - promote to long long
+                // Mixed integer types - use proper type promotion
                 if (isIntegral() && other.isIntegral())
                 {
-                    long long b = other.toLongLong();
-                    if (b == 0)
-                        throw std::runtime_error("Modulo by zero");
-                    return var(toLongLong() % b);
+                    return modPromoted(other);
+                }
+                // Mixed with floating point
+                if (isNumeric() && other.isNumeric())
+                {
+                    return modPromoted(other);
                 }
                 throw std::runtime_error("Unsupported types for modulo");
+            }
+
+            // ============ In-Place Arithmetic Operators ============
+            // These modify the value in-place for better performance
+            // Avoids creating new var objects in hot loops
+
+            var &operator+=(const var &other)
+            {
+                // Fast-path: same type, modify in-place
+                if (tag_ == other.tag_)
+                {
+                    switch (tag_)
+                    {
+                    case TypeTag::INT:
+                        std::get<int>(value) += std::get<int>(other.value);
+                        return *this;
+                    case TypeTag::DOUBLE:
+                        std::get<double>(value) += std::get<double>(other.value);
+                        return *this;
+                    case TypeTag::LONG_LONG:
+                        std::get<long long>(value) += std::get<long long>(other.value);
+                        return *this;
+                    case TypeTag::FLOAT:
+                        std::get<float>(value) += std::get<float>(other.value);
+                        return *this;
+                    case TypeTag::LONG:
+                        std::get<long>(value) += std::get<long>(other.value);
+                        return *this;
+                    case TypeTag::STRING:
+                        std::get<std::string>(value) += std::get<std::string>(other.value);
+                        return *this;
+                    default:
+                        break;
+                    }
+                }
+                // Fallback to operator+ (creates new var then assigns)
+                *this = *this + other;
+                return *this;
+            }
+
+            var &operator-=(const var &other)
+            {
+                // Fast-path: same type, modify in-place
+                if (tag_ == other.tag_)
+                {
+                    switch (tag_)
+                    {
+                    case TypeTag::INT:
+                        std::get<int>(value) -= std::get<int>(other.value);
+                        return *this;
+                    case TypeTag::DOUBLE:
+                        std::get<double>(value) -= std::get<double>(other.value);
+                        return *this;
+                    case TypeTag::LONG_LONG:
+                        std::get<long long>(value) -= std::get<long long>(other.value);
+                        return *this;
+                    case TypeTag::FLOAT:
+                        std::get<float>(value) -= std::get<float>(other.value);
+                        return *this;
+                    case TypeTag::LONG:
+                        std::get<long>(value) -= std::get<long>(other.value);
+                        return *this;
+                    default:
+                        break;
+                    }
+                }
+                // Fallback
+                *this = *this - other;
+                return *this;
+            }
+
+            var &operator*=(const var &other)
+            {
+                // Fast-path: same type, modify in-place
+                if (tag_ == other.tag_)
+                {
+                    switch (tag_)
+                    {
+                    case TypeTag::INT:
+                        std::get<int>(value) *= std::get<int>(other.value);
+                        return *this;
+                    case TypeTag::DOUBLE:
+                        std::get<double>(value) *= std::get<double>(other.value);
+                        return *this;
+                    case TypeTag::LONG_LONG:
+                        std::get<long long>(value) *= std::get<long long>(other.value);
+                        return *this;
+                    case TypeTag::FLOAT:
+                        std::get<float>(value) *= std::get<float>(other.value);
+                        return *this;
+                    case TypeTag::LONG:
+                        std::get<long>(value) *= std::get<long>(other.value);
+                        return *this;
+                    default:
+                        break;
+                    }
+                }
+                // Fallback
+                *this = *this * other;
+                return *this;
+            }
+
+            var &operator/=(const var &other)
+            {
+                // Fast-path: same type, modify in-place
+                if (tag_ == other.tag_)
+                {
+                    switch (tag_)
+                    {
+                    case TypeTag::INT:
+                    {
+                        int b = std::get<int>(other.value);
+                        if (b == 0)
+                            throw std::runtime_error("Division by zero");
+                        std::get<int>(value) /= b;
+                        return *this;
+                    }
+                    case TypeTag::DOUBLE:
+                    {
+                        double b = std::get<double>(other.value);
+                        if (b == 0.0)
+                            throw std::runtime_error("Division by zero");
+                        std::get<double>(value) /= b;
+                        return *this;
+                    }
+                    case TypeTag::LONG_LONG:
+                    {
+                        long long b = std::get<long long>(other.value);
+                        if (b == 0)
+                            throw std::runtime_error("Division by zero");
+                        std::get<long long>(value) /= b;
+                        return *this;
+                    }
+                    case TypeTag::FLOAT:
+                    {
+                        float b = std::get<float>(other.value);
+                        if (b == 0.0f)
+                            throw std::runtime_error("Division by zero");
+                        std::get<float>(value) /= b;
+                        return *this;
+                    }
+                    default:
+                        break;
+                    }
+                }
+                // Fallback
+                *this = *this / other;
+                return *this;
+            }
+
+            var &operator%=(const var &other)
+            {
+                // Fast-path: same type, modify in-place
+                if (tag_ == other.tag_)
+                {
+                    switch (tag_)
+                    {
+                    case TypeTag::INT:
+                    {
+                        int b = std::get<int>(other.value);
+                        if (b == 0)
+                            throw std::runtime_error("Modulo by zero");
+                        std::get<int>(value) %= b;
+                        return *this;
+                    }
+                    case TypeTag::LONG_LONG:
+                    {
+                        long long b = std::get<long long>(other.value);
+                        if (b == 0)
+                            throw std::runtime_error("Modulo by zero");
+                        std::get<long long>(value) %= b;
+                        return *this;
+                    }
+                    default:
+                        break;
+                    }
+                }
+                // Fallback
+                *this = *this % other;
+                return *this;
+            }
+
+            // In-place operators with native types
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator+=(T other)
+            {
+                if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
+                {
+                    std::get<int>(value) += other;
+                }
+                else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
+                {
+                    std::get<double>(value) += static_cast<double>(other);
+                }
+                else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
+                {
+                    std::get<long long>(value) += static_cast<long long>(other);
+                }
+                else
+                {
+                    *this = *this + var(other);
+                }
+                return *this;
+            }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator-=(T other)
+            {
+                if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
+                {
+                    std::get<int>(value) -= other;
+                }
+                else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
+                {
+                    std::get<double>(value) -= static_cast<double>(other);
+                }
+                else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
+                {
+                    std::get<long long>(value) -= static_cast<long long>(other);
+                }
+                else
+                {
+                    *this = *this - var(other);
+                }
+                return *this;
+            }
+
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator*=(T other)
+            {
+                if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
+                {
+                    std::get<int>(value) *= other;
+                }
+                else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
+                {
+                    std::get<double>(value) *= static_cast<double>(other);
+                }
+                else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
+                {
+                    std::get<long long>(value) *= static_cast<long long>(other);
+                }
+                else
+                {
+                    *this = *this * var(other);
+                }
+                return *this;
             }
 
             // Comparison operators (return var(bool) for Pythonic style)
@@ -1170,190 +2160,6 @@ namespace pythonic
                     return var(toDouble() <= other.toDouble());
                 }
                 throw std::runtime_error("Unsupported types for comparison");
-            }
-
-            // Compound assignment operators
-            // OPTIMIZED: In-place modification using TypeTag for fast dispatch
-            var &operator+=(const var &other)
-            {
-                // Fast-path: same type in-place update
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        std::get<int>(value) += std::get<int>(other.value);
-                        return *this;
-                    case TypeTag::DOUBLE:
-                        std::get<double>(value) += std::get<double>(other.value);
-                        return *this;
-                    case TypeTag::LONG_LONG:
-                        std::get<long long>(value) += std::get<long long>(other.value);
-                        return *this;
-                    case TypeTag::FLOAT:
-                        std::get<float>(value) += std::get<float>(other.value);
-                        return *this;
-                    case TypeTag::LONG:
-                        std::get<long>(value) += std::get<long>(other.value);
-                        return *this;
-                    case TypeTag::STRING:
-                        std::get<std::string>(value) += std::get<std::string>(other.value);
-                        return *this;
-                    case TypeTag::LIST:
-                    {
-                        auto &lst = std::get<List>(value);
-                        const auto &other_lst = std::get<List>(other.value);
-                        lst.insert(lst.end(), other_lst.begin(), other_lst.end());
-                        return *this;
-                    }
-                    default:
-                        break;
-                    }
-                }
-                *this = *this + other;
-                return *this;
-            }
-            var &operator-=(const var &other)
-            {
-                // Fast-path: same type in-place update
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        std::get<int>(value) -= std::get<int>(other.value);
-                        return *this;
-                    case TypeTag::DOUBLE:
-                        std::get<double>(value) -= std::get<double>(other.value);
-                        return *this;
-                    case TypeTag::LONG_LONG:
-                        std::get<long long>(value) -= std::get<long long>(other.value);
-                        return *this;
-                    case TypeTag::FLOAT:
-                        std::get<float>(value) -= std::get<float>(other.value);
-                        return *this;
-                    case TypeTag::LONG:
-                        std::get<long>(value) -= std::get<long>(other.value);
-                        return *this;
-                    default:
-                        break;
-                    }
-                }
-                *this = *this - other;
-                return *this;
-            }
-            var &operator*=(const var &other)
-            {
-                // Fast-path: same type in-place update
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        std::get<int>(value) *= std::get<int>(other.value);
-                        return *this;
-                    case TypeTag::DOUBLE:
-                        std::get<double>(value) *= std::get<double>(other.value);
-                        return *this;
-                    case TypeTag::LONG_LONG:
-                        std::get<long long>(value) *= std::get<long long>(other.value);
-                        return *this;
-                    case TypeTag::FLOAT:
-                        std::get<float>(value) *= std::get<float>(other.value);
-                        return *this;
-                    case TypeTag::LONG:
-                        std::get<long>(value) *= std::get<long>(other.value);
-                        return *this;
-                    default:
-                        break;
-                    }
-                }
-                *this = *this * other;
-                return *this;
-            }
-            var &operator/=(const var &other)
-            {
-                // Fast-path: same type in-place update
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                    {
-                        int o = std::get<int>(other.value);
-                        if (o == 0)
-                            throw std::runtime_error("Division by zero");
-                        std::get<int>(value) /= o;
-                        return *this;
-                    }
-                    case TypeTag::DOUBLE:
-                    {
-                        double o = std::get<double>(other.value);
-                        if (o == 0.0)
-                            throw std::runtime_error("Division by zero");
-                        std::get<double>(value) /= o;
-                        return *this;
-                    }
-                    case TypeTag::LONG_LONG:
-                    {
-                        long long o = std::get<long long>(other.value);
-                        if (o == 0)
-                            throw std::runtime_error("Division by zero");
-                        std::get<long long>(value) /= o;
-                        return *this;
-                    }
-                    case TypeTag::FLOAT:
-                    {
-                        float o = std::get<float>(other.value);
-                        if (o == 0.0f)
-                            throw std::runtime_error("Division by zero");
-                        std::get<float>(value) /= o;
-                        return *this;
-                    }
-                    default:
-                        break;
-                    }
-                }
-                *this = *this / other;
-                return *this;
-            }
-            var &operator%=(const var &other)
-            {
-                // Fast-path: same type in-place update
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                    {
-                        int o = std::get<int>(other.value);
-                        if (o == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        std::get<int>(value) %= o;
-                        return *this;
-                    }
-                    case TypeTag::LONG_LONG:
-                    {
-                        long long o = std::get<long long>(other.value);
-                        if (o == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        std::get<long long>(value) %= o;
-                        return *this;
-                    }
-                    case TypeTag::LONG:
-                    {
-                        long o = std::get<long>(other.value);
-                        if (o == 0)
-                            throw std::runtime_error("Modulo by zero");
-                        std::get<long>(value) %= o;
-                        return *this;
-                    }
-                    default:
-                        break;
-                    }
-                }
-                *this = *this % other;
-                return *this;
             }
 
             // ============ OPTIMIZED Implicit Conversion Operators for Arithmetic Types ============
@@ -1677,79 +2483,6 @@ namespace pythonic
 
             var operator<=(const char *other) const { return *this <= var(other); }
             friend var operator<=(const char *lhs, const var &rhs) { return var(lhs) <= rhs; }
-
-            // Compound assignment with primitives
-            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            var &operator+=(T other)
-            {
-                // Fast path: update in place if same type
-                if constexpr (std::is_same_v<T, int>)
-                {
-                    if (tag_ == TypeTag::INT)
-                    {
-                        std::get<int>(value) += other;
-                        return *this;
-                    }
-                }
-                if constexpr (std::is_same_v<T, long long>)
-                {
-                    if (tag_ == TypeTag::LONG_LONG)
-                    {
-                        std::get<long long>(value) += other;
-                        return *this;
-                    }
-                }
-                *this = *this + other;
-                return *this;
-            }
-
-            // OPTIMIZED: Direct string append avoids var construction
-            var &operator+=(const char *other)
-            {
-                if (tag_ == TypeTag::STRING)
-                {
-                    std::get<std::string>(value) += other;
-                    return *this;
-                }
-                *this = *this + other;
-                return *this;
-            }
-
-            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            var &operator-=(T other)
-            {
-                if constexpr (std::is_same_v<T, int>)
-                {
-                    if (tag_ == TypeTag::INT)
-                    {
-                        std::get<int>(value) -= other;
-                        return *this;
-                    }
-                }
-                *this = *this - other;
-                return *this;
-            }
-
-            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            var &operator*=(T other)
-            {
-                if constexpr (std::is_same_v<T, int>)
-                {
-                    if (tag_ == TypeTag::INT)
-                    {
-                        std::get<int>(value) *= other;
-                        return *this;
-                    }
-                }
-                *this = *this * other;
-                return *this;
-            }
-
-            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            var &operator/=(T other) { return *this /= var(other); }
-
-            template <typename T, typename = std::enable_if_t<std::is_integral_v<T>>>
-            var &operator%=(T other) { return *this %= var(other); }
 
             // Logical operators
             var operator&&(const var &other) const
