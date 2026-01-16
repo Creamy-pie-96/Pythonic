@@ -18,8 +18,20 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
   - [Slicing](#slicing-finally)
   - [Dicts](#dicts)
   - [Sets](#sets)
+  - [OrderedSet (Sorted Set)](#orderedset-sorted-set)
+  - [OrderedDict (Sorted Dictionary)](#ordereddict-sorted-dictionary)
   - [Truthiness (Python-style Boolean Context)](#truthiness-python-style-boolean-context)
   - [None Values](#none-values)
+- [Graph Data Structure](#graph-data-structure)
+  - [Creating Graphs](#creating-graphs)
+  - [Adding Edges](#adding-edges)
+  - [Node Data](#node-data)
+  - [Graph Properties](#graph-properties)
+  - [Graph Traversals](#graph-traversals)
+  - [Shortest Paths](#shortest-paths)
+  - [Graph Algorithms](#graph-algorithms)
+  - [Graph Serialization](#graph-serialization)
+  - [Graph Performance Optimization](#graph-performance-optimization)
 - [String Methods](#string-methods)
 - [Comprehensive Math Library](#comprehensive-math-library)
   - [Basic Math Operations](#basic-math-operations)
@@ -311,6 +323,49 @@ var sym_diff = a ^ b;           // {1, 2, 4, 5}     - Symmetric difference
 s.update(set(7, 8, 9));  // Add multiple elements from another set
 ```
 
+### OrderedSet (Sorted Set)
+
+If you need a set that maintains sorted order (like C++'s `std::set`), use `ordered_set()`:
+
+```cpp
+// OrderedSet maintains sorted order (O(log n) operations)
+var os = ordered_set(5, 3, 1, 4, 2);
+print("OrderedSet:", os);  // OrderedSet{1, 2, 3, 4, 5} - sorted!
+
+// All set operations work the same
+os.add(0);  // Added in sorted position
+print("Contains 3:", os.contains(var(3)));  // True
+
+// Set operations
+var os2 = ordered_set(4, 5, 6, 7, 8);
+var union_os = os | os2;   // Union (sorted)
+var inter_os = os & os2;   // Intersection
+```
+
+### OrderedDict (Sorted Dictionary)
+
+Similarly, `ordered_dict()` provides a dictionary sorted by keys:
+
+```cpp
+// OrderedDict maintains key-sorted order (O(log n) access)
+var od = ordered_dict({{"zebra", 1}, {"apple", 2}, {"mango", 3}});
+print("OrderedDict:");
+pprint(od);  // Keys in alphabetical order: apple, mango, zebra
+
+// Access and modify like regular dict
+od["banana"] = 4;
+print("Value:", od["apple"].get<int>());
+
+// Dict operations
+var od2 = ordered_dict({{"banana", 40}, {"cherry", 50}});
+var merged = od | od2;  // Merge (later values override)
+```
+
+**Performance Note:**
+
+- `set()` and `dict()` use hash tables (O(1) average operations) - fastest for most use cases
+- `ordered_set()` and `ordered_dict()` use balanced trees (O(log n) operations) - use when you need sorted order
+
 ### Truthiness (Python-style Boolean Context)
 
 Just like Python, containers and values have "truthiness":
@@ -379,6 +434,384 @@ if (result.is_none()) {
 if (!x) {
     print("x is None or empty or zero");
 }
+```
+
+## Graph Data Structure
+
+Graphs are everywhere - social networks, maps, dependencies, you name it. This library gives you a full-featured graph implementation that integrates seamlessly with the `var` type. Create graphs, run algorithms, all with that Pythonic feel.
+
+### Creating Graphs
+
+```cpp
+// Create a graph with n nodes (numbered 0 to n-1)
+var g = graph(5);  // 5 nodes: 0, 1, 2, 3, 4
+
+print(g.type());       // "graph"
+print(g.isGraph());    // true
+print(g.str());        // "Graph(nodes=5, edges=0)"
+
+// Graphs are truthy when they have nodes
+if (g) {
+    print("Graph has nodes!");
+}
+
+var empty = graph(0);
+if (!empty) {
+    print("Empty graph is falsy");
+}
+```
+
+### Adding Edges
+
+Edges connect nodes. You can make them directed or undirected, and give them weights.
+
+```cpp
+var g = graph(4);
+
+// add_edge(from, to, weight, reverse_weight, directed)
+//
+// Parameters:
+//   from          - Source node index (size_t)
+//   to            - Destination node index (size_t)
+//   weight        - Edge weight (default: 0.0)
+//   reverse_weight- Weight for reverse edge in undirected graphs (default: 0.0)
+//   directed      - If true, creates one-way edge. If false (default), creates both directions.
+
+// Undirected edge (default) - creates edges in both directions
+g.add_edge(0, 1, 5.0);        // 0 <-> 1 with weight 5.0
+
+// Directed edge - only one direction
+g.add_edge(1, 2, 3.0, 0.0, true);  // 1 -> 2 only
+
+// Check if edges exist
+print(g.has_edge(0, 1));  // true
+print(g.has_edge(1, 0));  // true (undirected)
+print(g.has_edge(1, 2));  // true
+print(g.has_edge(2, 1));  // false (directed)
+
+// Get edge weight (returns std::optional<double>)
+auto weight = g.get_edge_weight(0, 1);
+if (weight.has_value()) {
+    print("Weight:", weight.value());  // 5.0
+}
+
+// Set edge weight
+// set_edge_weight(from, to, new_weight)
+g.set_edge_weight(0, 1, 10.0);
+
+// Remove an edge
+// remove_edge(from, to, remove_reverse)
+//   remove_reverse - If true (default), also removes the reverse edge
+g.remove_edge(0, 1);  // Removes both 0->1 and 1->0
+```
+
+### Node Data
+
+Each node can store arbitrary data using the `var` type. Super useful for labeling nodes, storing metadata, etc.
+
+```cpp
+var g = graph(3);
+
+// set_node_data(node_index, data)
+g.set_node_data(0, "Alice");
+g.set_node_data(1, "Bob");
+g.set_node_data(2, dict({{"name", "Carol"}, {"age", 30}}));
+
+// get_node_data(node_index) - returns var&
+var name = g.get_node_data(0);
+print(name);  // "Alice"
+
+var carol_info = g.get_node_data(2);
+print(carol_info["name"]);  // "Carol"
+```
+
+### Graph Properties
+
+Quick info about your graph:
+
+```cpp
+var g = graph(5);
+g.add_edge(0, 1);
+g.add_edge(1, 2);
+g.add_edge(2, 3);
+g.add_edge(3, 4);
+
+// node_count() - Total number of nodes
+print(g.node_count());  // 5
+
+// edge_count() - Total number of edges (counts both directions for undirected)
+print(g.edge_count());  // 8 (4 undirected = 8 directed)
+
+// is_connected() - Check if all nodes are reachable from any node
+print(g.is_connected());  // true
+
+// has_cycle() - Check if the graph contains any cycles
+print(g.has_cycle());  // false (linear chain)
+
+// Add a cycle
+g.add_edge(4, 0);
+print(g.has_cycle());  // true
+
+// out_degree(node) - Number of outgoing edges from a node
+print(g.out_degree(0));  // Number of edges leaving node 0
+
+// in_degree(node) - Number of incoming edges to a node
+print(g.in_degree(0));   // Number of edges pointing to node 0
+
+// get_edges(node) - Get all edges from a node as a list of dicts
+var edges = g.get_edges(0);
+for_each(edge, edges) {
+    print("To:", edge["to"], "Weight:", edge["weight"]);
+}
+```
+
+### Graph Traversals
+
+Classic traversal algorithms that return lists of visited nodes:
+
+```cpp
+var g = graph(6);
+g.add_edge(0, 1);
+g.add_edge(0, 2);
+g.add_edge(1, 3);
+g.add_edge(1, 4);
+g.add_edge(2, 5);
+
+// dfs(start, recursive)
+// Depth-First Search - goes deep before going wide
+//   start     - Starting node (default: 0)
+//   recursive - Use recursive implementation if true (default: true)
+// Returns: var (list of node indices in visit order)
+
+var dfs_order = g.dfs(0);
+print("DFS:", dfs_order);  // [0, 1, 3, 4, 2, 5] (order may vary)
+
+// bfs(start)
+// Breadth-First Search - visits all neighbors before going deeper
+//   start - Starting node (default: 0)
+// Returns: var (list of node indices in visit order)
+
+var bfs_order = g.bfs(0);
+print("BFS:", bfs_order);  // [0, 1, 2, 3, 4, 5] (level by level)
+```
+
+### Shortest Paths
+
+Three algorithms for finding shortest paths, each with different strengths:
+
+```cpp
+var g = graph(5);
+g.add_edge(0, 1, 4.0);
+g.add_edge(0, 2, 1.0);
+g.add_edge(1, 3, 1.0);
+g.add_edge(2, 1, 2.0);
+g.add_edge(2, 3, 5.0);
+g.add_edge(3, 4, 3.0);
+
+// get_shortest_path(source, destination)
+// Uses Dijkstra's algorithm (fast, but no negative weights)
+// Returns: dict with "path" (list of nodes) and "distance" (total weight)
+
+var result = g.get_shortest_path(0, 4);
+print("Path:", result["path"]);         // [0, 2, 1, 3, 4]
+print("Distance:", result["distance"]); // 7.0
+
+// bellman_ford(source)
+// Handles negative weights, detects negative cycles
+// Slower than Dijkstra but more general
+// Returns: dict with "distances" (list) and "predecessors" (list)
+
+var bf = g.bellman_ford(0);
+print("Distances from 0:", bf["distances"]);      // [0, 3, 1, 4, 7]
+print("Predecessors:", bf["predecessors"]);       // For path reconstruction
+
+// floyd_warshall()
+// All-pairs shortest paths - finds shortest path between ALL node pairs
+// Returns: 2D list (matrix) where result[i][j] = shortest distance from i to j
+// Uses infinity (very large number) for unreachable pairs
+
+var fw = g.floyd_warshall();
+print("Distance matrix:");
+for_each(row, fw) {
+    print(row);
+}
+// Row i gives distances from node i to all other nodes
+```
+
+### Graph Algorithms
+
+The heavy hitters - sorting, components, and minimum spanning trees:
+
+```cpp
+// ===== Topological Sort =====
+// topological_sort()
+// Orders nodes so that for every edge u->v, u comes before v
+// Only works on Directed Acyclic Graphs (DAGs)
+// Returns: var (list of nodes in topological order)
+
+var tasks = graph(4);
+tasks.add_edge(0, 1, 1.0, 0.0, true);  // directed
+tasks.add_edge(0, 2, 1.0, 0.0, true);
+tasks.add_edge(1, 3, 1.0, 0.0, true);
+tasks.add_edge(2, 3, 1.0, 0.0, true);
+
+var order = tasks.topological_sort();
+print("Build order:", order);  // [0, 1, 2, 3] or [0, 2, 1, 3]
+
+
+// ===== Connected Components =====
+// connected_components()
+// Finds groups of nodes that are connected to each other (for undirected graphs)
+// Returns: var (list of lists, each inner list is a component)
+
+var network = graph(6);
+network.add_edge(0, 1);
+network.add_edge(1, 2);
+// nodes 3, 4, 5 form another group
+network.add_edge(3, 4);
+network.add_edge(4, 5);
+
+var components = network.connected_components();
+print("Components:", components);  // [[0, 1, 2], [3, 4, 5]]
+
+
+// ===== Strongly Connected Components =====
+// strongly_connected_components()
+// For directed graphs: finds groups where every node can reach every other node
+// Uses Kosaraju's algorithm
+// Returns: var (list of lists)
+
+var directed = graph(5);
+directed.add_edge(0, 1, 1.0, 0.0, true);
+directed.add_edge(1, 2, 1.0, 0.0, true);
+directed.add_edge(2, 0, 1.0, 0.0, true);  // Cycle: 0->1->2->0
+directed.add_edge(2, 3, 1.0, 0.0, true);
+directed.add_edge(3, 4, 1.0, 0.0, true);
+directed.add_edge(4, 3, 1.0, 0.0, true);  // Cycle: 3<->4
+
+var sccs = directed.strongly_connected_components();
+print("SCCs:", sccs);  // Contains [0, 1, 2] and [3, 4]
+
+
+// ===== Minimum Spanning Tree =====
+// prim_mst()
+// Finds the minimum weight set of edges that connects all nodes
+// Uses Prim's algorithm
+// Returns: dict with "weight" (total MST weight) and "edges" (list of [from, to, weight])
+
+var city_network = graph(4);
+city_network.add_edge(0, 1, 1.0);
+city_network.add_edge(0, 2, 4.0);
+city_network.add_edge(1, 2, 2.0);
+city_network.add_edge(1, 3, 5.0);
+city_network.add_edge(2, 3, 3.0);
+
+var mst = city_network.prim_mst();
+print("MST total weight:", mst["weight"]);  // 6.0 (1 + 2 + 3)
+print("MST edges:", mst["edges"]);          // [[0, 1, 1.0], [1, 2, 2.0], [2, 3, 3.0]]
+```
+
+### Graph Serialization
+
+Save your graphs to files and load them back:
+
+```cpp
+var g = graph(3);
+g.add_edge(0, 1, 1.5);
+g.add_edge(1, 2, 2.5);
+g.set_node_data(0, "Start");
+
+// save_graph(filename)
+// Saves the graph structure to a file
+g.save_graph("my_graph.txt");
+
+// load_graph(filename)
+// Loads a graph from a file - this is a free function
+var loaded = load_graph("my_graph.txt");
+print("Loaded graph:", loaded.str());
+
+// to_dot(filename, show_weights)
+// Exports the graph in DOT format for visualization with Graphviz
+//   filename     - Output file path
+//   show_weights - Include edge weights in the output (default: true)
+
+g.to_dot("my_graph.dot");
+// Then run: dot -Tpng my_graph.dot -o my_graph.png
+```
+
+### Graph Performance Optimization
+
+When you know roughly how many edges you'll be adding, pre-reserving capacity can speed things up significantly:
+
+```cpp
+var g = graph(1000);
+
+// reserve_edges_per_node(per_node)
+// Pre-allocates space for edges on each node
+// Use when all nodes have roughly the same number of edges
+g.reserve_edges_per_node(10);  // Each node will have ~10 edges
+
+// Now adding edges is faster (fewer reallocations)
+for (size_t i = 0; i < 1000; i++) {
+    for (int j = 0; j < 10; j++) {
+        g.add_edge(i, (i + j + 1) % 1000, 1.0);
+    }
+}
+
+// reserve_edges_by_counts(counts_list)
+// Pre-allocates different capacities per node
+// Use when you know the exact edge counts for each node
+
+var counts = list(5, 10, 3, 8, 2);  // Node 0 gets 5 edges, node 1 gets 10, etc.
+var custom = graph(5);
+custom.reserve_edges_by_counts(counts);
+```
+
+**Tip:** These methods are optional optimizations. If you don't call them, the graph will grow dynamically (just a bit slower for large graphs).
+
+### Complete Graph Example
+
+Here's a real-world example - modeling a small road network:
+
+```cpp
+// Cities: 0=NYC, 1=Boston, 2=Philadelphia, 3=DC, 4=Baltimore
+var roads = graph(5);
+
+// Set city names
+roads.set_node_data(0, "New York");
+roads.set_node_data(1, "Boston");
+roads.set_node_data(2, "Philadelphia");
+roads.set_node_data(3, "Washington DC");
+roads.set_node_data(4, "Baltimore");
+
+// Add roads with distances (in miles, approximate)
+roads.add_edge(0, 1, 215);   // NYC <-> Boston
+roads.add_edge(0, 2, 95);    // NYC <-> Philly
+roads.add_edge(2, 4, 100);   // Philly <-> Baltimore
+roads.add_edge(4, 3, 40);    // Baltimore <-> DC
+roads.add_edge(0, 3, 225);   // NYC <-> DC (direct but longer)
+
+print("Road network:", roads.str());
+print("Connected:", roads.is_connected());
+
+// Find shortest route from NYC to DC
+var route = roads.get_shortest_path(0, 3);
+print("\nShortest NYC to DC:");
+print("  Distance:", route["distance"], "miles");
+print("  Route:", route["path"]);
+
+// Print city names along the route
+var path = route["path"];
+print("  Cities:");
+for_each(node, path) {
+    size_t idx = static_cast<size_t>(static_cast<int>(node));
+    print("   ->", roads.get_node_data(idx));
+}
+
+// Find the minimum road network to connect all cities
+var min_roads = roads.prim_mst();
+print("\nMinimum road network:");
+print("  Total miles:", min_roads["weight"]);
 ```
 
 ## String Methods

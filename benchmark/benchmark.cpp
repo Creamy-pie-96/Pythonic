@@ -1,937 +1,302 @@
-#include "pythonic.hpp"
-#include <chrono>
-#include <iostream>
+/**
+ * Comprehensive Benchmark Suite for Pythonic Library
+ *
+ * This benchmark compares the performance of Pythonic's var type and operations
+ * against native C++ equivalents. Results are compared against Python benchmarks.
+ *
+ * Categories benchmarked:
+ * - Arithmetic operations
+ * - String operations
+ * - Slicing operations
+ * - Container operations
+ * - Loop constructs
+ * - Functional programming
+ * - Sorting operations
+ * - Built-in functions
+ * - Type conversions
+ * - Graph operations
+ */
+
+// Include all benchmark modules
+#include "bench/benchmark_common.hpp"
+#include "bench/benchmark_arithmetic.hpp"
+#include "bench/benchmark_string.hpp"
+#include "bench/benchmark_slicing.hpp"
+#include "bench/benchmark_containers.hpp"
+#include "bench/benchmark_loops.hpp"
+#include "bench/benchmark_functional.hpp"
+#include "bench/benchmark_sorting.hpp"
+#include "bench/benchmark_builtins.hpp"
+#include "bench/benchmark_conversions.hpp"
+#include "bench/benchmark_graph.hpp"
+
 #include <fstream>
-#include <string>
-#include <vector>
-#include <map>
-#include <set>
-#include <sstream>
-#include <iomanip>
-#include <cstring>
+#include <ctime>
 
-using namespace pythonic::vars;
-using namespace pythonic::print;
-using namespace pythonic::loop;
-using namespace pythonic::func;
-using namespace std::chrono;
-
-// Benchmark configuration
-const size_t ITERATIONS = 1000000;
-const size_t CONTAINER_SIZE = 1000;
-const size_t SMALL_ITERATIONS = 10000;
-
-struct BenchmarkResult
+// Helper to write markdown report
+void write_markdown_report(const std::string &filename)
 {
-    std::string name;
-    double cpp_time_ms;
-    double pythonic_time_ms;
-    double python_time_ms;
-    double slowdown_factor;
-    double pythonic_vs_python;
-};
-
-std::vector<BenchmarkResult> results;
-std::map<std::string, double> python_results;
-
-// Utility to format time
-std::string format_time(double ms)
-{
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(3) << ms;
-    return oss.str();
-}
-
-// Utility to format slowdown
-std::string format_slowdown(double factor)
-{
-    std::ostringstream oss;
-    oss << std::fixed << std::setprecision(2) << factor << "x";
-    return oss.str();
-}
-
-// Escape pipe characters for markdown table cells
-std::string escape_markdown_pipes(const std::string &s)
-{
-    std::string out = s;
-    size_t pos = 0;
-    while ((pos = out.find('|', pos)) != std::string::npos)
+    std::ofstream md(filename);
+    if (!md.is_open())
     {
-        out.replace(pos, 1, "\\|");
-        pos += 2; // skip escaped sequence
-    }
-    return out;
-}
-
-// Simple JSON parser for Python results
-void load_python_results()
-{
-    std::ifstream file("python_results.json");
-    if (!file.is_open())
-    {
-        std::cerr << "Warning: Could not open python_results.json" << std::endl;
+        std::cerr << "Warning: Could not create " << filename << std::endl;
         return;
     }
 
-    std::string line;
-    while (std::getline(file, line))
+    // Get current date
+    time_t now = time(nullptr);
+    char date_buf[100];
+    strftime(date_buf, sizeof(date_buf), "%Y-%m-%d %H:%M:%S", localtime(&now));
+
+    md << "# Pythonic Library Benchmark Report\n\n";
+    md << "**Generated:** " << date_buf << "\n\n";
+    md << "This benchmark compares:\n";
+    md << "- **Native C++**: Direct C++ STL operations\n";
+    md << "- **Pythonic**: The Pythonic library's `var` type\n";
+    md << "- **Python**: Native Python 3 (when available)\n\n";
+
+    // Statistics
+    int total = 0;
+    int faster_than_python = 0;
+    int slower_than_python = 0;
+    int no_python_data = 0;
+    double total_native_overhead = 0;
+    double total_python_speedup = 0;
+
+    for (const auto &r : results)
     {
-        // Simple parsing: find "name": value pattern
-        size_t colon_pos = line.find(':');
-        if (colon_pos != std::string::npos)
+        total++;
+        if (r.cpp_time_ms > 0)
         {
-            // Extract name (between quotes)
-            size_t first_quote = line.find('"');
-            size_t second_quote = line.find('"', first_quote + 1);
-            if (first_quote != std::string::npos && second_quote != std::string::npos)
-            {
-                std::string name = line.substr(first_quote + 1, second_quote - first_quote - 1);
-
-                // Extract value (after colon)
-                std::string value_str = line.substr(colon_pos + 1);
-                // Remove whitespace and comma
-                value_str.erase(0, value_str.find_first_not_of(" \t"));
-                if (value_str.back() == ',')
-                    value_str.pop_back();
-
-                try
-                {
-                    double value = std::stod(value_str);
-                    python_results[name] = value;
-                }
-                catch (...)
-                {
-                    // Skip invalid lines
-                }
-            }
+            total_native_overhead += r.pythonic_time_ms / r.cpp_time_ms;
         }
-    }
-    file.close();
-}
-
-void add_result(const std::string &name, double cpp_time, double pythonic_time)
-{
-    double python_time = 0.0;
-    auto it = python_results.find(name);
-    if (it != python_results.end())
-    {
-        python_time = it->second;
-    }
-
-    double slowdown = pythonic_time / cpp_time;
-    double pythonic_vs_python = (python_time > 0) ? (pythonic_time / python_time) : 0.0;
-
-    results.push_back({name, cpp_time, pythonic_time, python_time, slowdown, pythonic_vs_python});
-}
-
-void benchmark_arithmetic_operations()
-{
-    std::cout << "\n=== Benchmarking Arithmetic Operations ===" << std::endl;
-
-    // Integer addition
-    {
-        auto start = high_resolution_clock::now();
-        int sum = 0;
-        for (size_t i = 0; i < ITERATIONS; ++i)
+        if (r.python_time_ms > 0)
         {
-            sum = sum + 1;
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_sum = 0;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            var_sum = var_sum + 1;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Integer Addition", cpp_time, pythonic_time);
-        std::cout << "  Integer Addition: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Integer multiplication
-    {
-        auto start = high_resolution_clock::now();
-        int prod = 1;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            prod = prod * 2;
-            if (prod > 1000000)
-                prod = 1;
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_prod = 1;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            var_prod = var_prod * 2;
-            if (var_prod.get<int>() > 1000000)
-                var_prod = 1;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Integer Multiplication", cpp_time, pythonic_time);
-        std::cout << "  Integer Multiplication: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Double operations
-    {
-        auto start = high_resolution_clock::now();
-        double sum = 0.0;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            sum = sum + 1.5;
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_sum = 0.0;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            var_sum = var_sum + 1.5;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Double Addition", cpp_time, pythonic_time);
-        std::cout << "  Double Addition: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Comparisons
-    {
-        auto start = high_resolution_clock::now();
-        bool result = false;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            result = (i % 2 == 0);
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_result = false;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            var_result = (var(i) % 2 == 0);
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Integer Comparison", cpp_time, pythonic_time);
-        std::cout << "  Integer Comparison: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void benchmark_string_operations()
-{
-    std::cout << "\n=== Benchmarking String Operations ===" << std::endl;
-
-    // String concatenation
-    {
-        auto start = high_resolution_clock::now();
-        std::string result;
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            result = std::string("Hello") + " " + "World";
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_result;
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            var_result = var("Hello") + " " + "World";
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("String Concatenation", cpp_time, pythonic_time);
-        std::cout << "  String Concatenation: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // String comparison
-    {
-        auto start = high_resolution_clock::now();
-        bool result = false;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            result = (std::string("hello") == std::string("hello"));
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_result = false;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            var_result = (var("hello") == var("hello"));
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("String Comparison", cpp_time, pythonic_time);
-        std::cout << "  String Comparison: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void benchmark_container_creation()
-{
-    std::cout << "\n=== Benchmarking Container Creation ===" << std::endl;
-
-    // List creation
-    {
-        auto start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            std::vector<int> vec = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            var lst = list(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("List Creation (10 elements)", cpp_time, pythonic_time);
-        std::cout << "  List Creation: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Set creation
-    {
-        auto start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            std::set<int> s = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            var s = set(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Set Creation (10 elements)", cpp_time, pythonic_time);
-        std::cout << "  Set Creation: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void benchmark_container_operations()
-{
-    std::cout << "\n=== Benchmarking Container Operations ===" << std::endl;
-
-    // List append
-    {
-        auto start = high_resolution_clock::now();
-        std::vector<int> vec;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            vec.push_back(i);
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var lst = list();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            lst.append(var(i));
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("List Append", cpp_time, pythonic_time);
-        std::cout << "  List Append: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // List access
-    {
-        std::vector<int> vec;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            vec.push_back(i);
-
-        auto start = high_resolution_clock::now();
-        int sum = 0;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            sum += vec[i];
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        var lst = list();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            lst.append(var(i));
-
-        start = high_resolution_clock::now();
-        var var_sum = 0;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            var_sum = var_sum + lst[i];
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("List Access (indexed)", cpp_time, pythonic_time);
-        std::cout << "  List Access: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Set insertion
-    {
-        auto start = high_resolution_clock::now();
-        std::set<int> s;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            s.insert(i);
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_set = set();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            var_set.add(var(i));
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Set Insertion", cpp_time, pythonic_time);
-        std::cout << "  Set Insertion: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Dict insertion
-    {
-        auto start = high_resolution_clock::now();
-        std::map<std::string, int> m;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            m["key" + std::to_string(i)] = i;
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var d = dict();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-        {
-            d["key" + std::to_string(i)] = var(i);
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Dict Insertion", cpp_time, pythonic_time);
-        std::cout << "  Dict Insertion: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void benchmark_container_operators()
-{
-    std::cout << "\n=== Benchmarking Container Operators ===" << std::endl;
-
-    // Set union
-    {
-        std::set<int> s1, s2;
-        for (size_t i = 0; i < 100; ++i)
-            s1.insert(i);
-        for (size_t i = 50; i < 150; ++i)
-            s2.insert(i);
-
-        auto start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            std::set<int> result;
-            result.insert(s1.begin(), s1.end());
-            result.insert(s2.begin(), s2.end());
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        var set1 = set(), set2 = set();
-        for (size_t i = 0; i < 100; ++i)
-            set1.add(var(i));
-        for (size_t i = 50; i < 150; ++i)
-            set2.add(var(i));
-
-        start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            var result = set1 | set2;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Set Union (|)", cpp_time, pythonic_time);
-        std::cout << "  Set Union: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // List concatenation
-    {
-        std::vector<int> v1, v2;
-        for (size_t i = 0; i < 100; ++i)
-            v1.push_back(i);
-        for (size_t i = 0; i < 100; ++i)
-            v2.push_back(i);
-
-        auto start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            std::vector<int> result = v1;
-            result.insert(result.end(), v2.begin(), v2.end());
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        var list1 = list(), list2 = list();
-        for (size_t i = 0; i < 100; ++i)
-            list1.append(var(i));
-        for (size_t i = 0; i < 100; ++i)
-            list2.append(var(i));
-
-        start = high_resolution_clock::now();
-        for (size_t i = 0; i < SMALL_ITERATIONS; ++i)
-        {
-            var result = list1 | list2;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("List Concatenation (|)", cpp_time, pythonic_time);
-        std::cout << "  List Concatenation: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void benchmark_loops()
-{
-    std::cout << "\n=== Benchmarking Loop Constructs ===" << std::endl;
-
-    // C++ for loop
-    {
-        auto start = high_resolution_clock::now();
-        int sum = 0;
-        for (size_t i = 0; i < ITERATIONS; ++i)
-        {
-            sum += i;
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        start = high_resolution_clock::now();
-        var var_sum = 0;
-        for_in(i, range(ITERATIONS))
-        {
-            var_sum = var_sum + i;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Loop Iteration (for_in + range)", cpp_time, pythonic_time);
-        std::cout << "  Loop (for_in + range): C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Range-based for loop
-    {
-        std::vector<int> vec;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            vec.push_back(i);
-
-        auto start = high_resolution_clock::now();
-        int sum = 0;
-        for (auto &x : vec)
-        {
-            sum += x;
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        var lst = list();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            lst.append(var(i));
-
-        start = high_resolution_clock::now();
-        var var_sum = 0;
-        for_in(x, lst)
-        {
-            var_sum = var_sum + x;
-        }
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Loop over Container (for_in)", cpp_time, pythonic_time);
-        std::cout << "  Loop over Container: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void benchmark_functional()
-{
-    std::cout << "\n=== Benchmarking Functional Operations ===" << std::endl;
-
-    // Map operation
-    {
-        std::vector<int> vec;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            vec.push_back(i);
-
-        auto start = high_resolution_clock::now();
-        std::vector<int> result;
-        for (auto &x : vec)
-        {
-            result.push_back(x * 2);
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        var lst = list();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            lst.append(var(i));
-
-        start = high_resolution_clock::now();
-        var mapped = map(lambda_(x, x * 2), lst);
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Map (transform)", cpp_time, pythonic_time);
-        std::cout << "  Map: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-
-    // Filter operation
-    {
-        std::vector<int> vec;
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            vec.push_back(i);
-
-        auto start = high_resolution_clock::now();
-        std::vector<int> result;
-        for (auto &x : vec)
-        {
-            if (x % 2 == 0)
-                result.push_back(x);
-        }
-        auto end = high_resolution_clock::now();
-        double cpp_time = duration<double, std::milli>(end - start).count();
-
-        var lst = list();
-        for (size_t i = 0; i < CONTAINER_SIZE; ++i)
-            lst.append(var(i));
-
-        start = high_resolution_clock::now();
-        var filtered = filter(lambda_(x, x % 2 == 0), lst);
-        end = high_resolution_clock::now();
-        double pythonic_time = duration<double, std::milli>(end - start).count();
-
-        add_result("Filter", cpp_time, pythonic_time);
-        std::cout << "  Filter: C++ " << format_time(cpp_time) << "ms, Pythonic "
-                  << format_time(pythonic_time) << "ms (" << format_slowdown(pythonic_time / cpp_time) << ")" << std::endl;
-    }
-}
-
-void generate_markdown_report(const std::string &filename)
-{
-    std::ofstream out(filename);
-
-    out << "# Pythonic C++ Library Benchmark Report\n\n";
-    out << "Generated on: " << __DATE__ << " " << __TIME__ << "\n\n";
-    out << "## Configuration\n\n";
-    out << "- **Iterations (Arithmetic/Comparisons)**: " << ITERATIONS << "\n";
-    out << "- **Small Iterations (Strings/Containers)**: " << SMALL_ITERATIONS << "\n";
-    out << "- **Container Size**: " << CONTAINER_SIZE << "\n\n";
-
-    out << "## Three-Way Comparison\n\n";
-    out << "| Operation | C++ (ms) | Pythonic (ms) | Python (ms) | Pythonic vs C++ | Pythonic vs Python |\n";
-    out << "|-----------|----------|---------------|-------------|-----------------|--------------------|\n";
-
-    double total_slowdown_cpp = 0.0;
-    double total_slowdown_python = 0.0;
-    int python_count = 0;
-
-    for (const auto &result : results)
-    {
-        out << "| " << escape_markdown_pipes(result.name) << " | "
-            << format_time(result.cpp_time_ms) << " | "
-            << format_time(result.pythonic_time_ms) << " | ";
-
-        if (result.python_time_ms > 0)
-        {
-            out << format_time(result.python_time_ms) << " | "
-                << format_slowdown(result.slowdown_factor) << " | "
-                << format_slowdown(result.pythonic_vs_python) << " |\n";
-            total_slowdown_python += result.pythonic_vs_python;
-            python_count++;
+            double speedup = r.python_time_ms / r.pythonic_time_ms;
+            total_python_speedup += speedup;
+            if (speedup >= 1.0)
+                faster_than_python++;
+            else
+                slower_than_python++;
         }
         else
         {
-            out << "N/A | " << format_slowdown(result.slowdown_factor) << " | N/A |\n";
+            no_python_data++;
         }
-        total_slowdown_cpp += result.slowdown_factor;
     }
 
-    double avg_slowdown_cpp = total_slowdown_cpp / results.size();
-    double avg_slowdown_python = (python_count > 0) ? (total_slowdown_python / python_count) : 0.0;
-
-    out << "\n## Analysis\n\n";
-    out << "- **Average Pythonic C++ vs C++**: " << format_slowdown(avg_slowdown_cpp) << "\n";
-    if (python_count > 0)
+    md << "## Summary\n\n";
+    md << "| Metric | Value |\n";
+    md << "|--------|-------|\n";
+    md << "| Total Benchmarks | " << total << " |\n";
+    md << "| Faster than Python | " << faster_than_python << " |\n";
+    md << "| Slower than Python | " << slower_than_python << " |\n";
+    md << "| No Python Data | " << no_python_data << " |\n";
+    if (total > 0)
     {
-        out << "- **Average Pythonic C++ vs Python**: " << format_slowdown(avg_slowdown_python) << "\n";
+        md << "| Avg Overhead vs Native | " << std::fixed << std::setprecision(2)
+           << (total_native_overhead / total) << "x |\n";
     }
-    out << "- **Total Benchmarks**: " << results.size() << "\n";
-    if (python_count > 0)
+    if (faster_than_python + slower_than_python > 0)
     {
-        out << "- **Python Benchmarks Available**: " << python_count << " / " << results.size() << "\n";
+        md << "| Avg Speedup vs Python | " << std::fixed << std::setprecision(2)
+           << (total_python_speedup / (faster_than_python + slower_than_python)) << "x |\n";
     }
-    out << "\n";
+    md << "\n";
 
-    // Find best and worst vs C++
-    auto best = std::min_element(results.begin(), results.end(),
-                                 [](const BenchmarkResult &a, const BenchmarkResult &b)
-                                 { return a.slowdown_factor < b.slowdown_factor; });
-    auto worst = std::max_element(results.begin(), results.end(),
-                                  [](const BenchmarkResult &a, const BenchmarkResult &b)
-                                  { return a.slowdown_factor < b.slowdown_factor; });
+    md << "## Detailed Results\n\n";
+    md << "| Operation | Native C++ | Pythonic | Python | vs Native | vs Python |\n";
+    md << "|-----------|------------|----------|--------|-----------|----------|\n";
 
-    out << "### Best Performance (vs C++)\n\n";
-    out << "**" << best->name << "**: " << format_slowdown(best->slowdown_factor)
-        << " slower than native C++\n\n";
-
-    out << "### Worst Performance (vs C++)\n\n";
-    out << "**" << worst->name << "**: " << format_slowdown(worst->slowdown_factor)
-        << " slower than native C++\n\n";
-
-    // Find best and worst vs Python
-    if (python_count > 0)
+    for (const auto &r : results)
     {
-        auto best_py = std::min_element(results.begin(), results.end(),
-                                        [](const BenchmarkResult &a, const BenchmarkResult &b)
-                                        {
-                                            if (a.python_time_ms == 0)
-                                                return false;
-                                            if (b.python_time_ms == 0)
-                                                return true;
-                                            return a.pythonic_vs_python < b.pythonic_vs_python;
-                                        });
-        auto worst_py = std::max_element(results.begin(), results.end(),
-                                         [](const BenchmarkResult &a, const BenchmarkResult &b)
-                                         {
-                                             if (a.python_time_ms == 0)
-                                                 return true;
-                                             if (b.python_time_ms == 0)
-                                                 return false;
-                                             return a.pythonic_vs_python < b.pythonic_vs_python;
-                                         });
+        std::string native_cmp = "N/A";
+        std::string python_cmp = "No data";
 
-        if (best_py->python_time_ms > 0)
+        if (r.cpp_time_ms > 0)
         {
-            out << "### Best Performance (vs Python)\n\n";
-            out << "**" << best_py->name << "**: " << format_slowdown(best_py->pythonic_vs_python);
-            if (best_py->pythonic_vs_python < 1.0)
+            double overhead = r.pythonic_time_ms / r.cpp_time_ms;
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(2) << overhead << "x";
+            native_cmp = oss.str();
+        }
+
+        if (r.python_time_ms > 0)
+        {
+            double speedup = r.python_time_ms / r.pythonic_time_ms;
+            std::ostringstream oss;
+            oss << std::fixed << std::setprecision(2);
+            if (speedup >= 1.0)
             {
-                out << " (FASTER than Python!)\n\n";
+                oss << "**" << speedup << "x faster**";
             }
             else
             {
-                out << "\n\n";
+                oss << "*" << (1.0 / speedup) << "x slower*";
             }
+            python_cmp = oss.str();
         }
 
-        if (worst_py->python_time_ms > 0)
-        {
-            out << "### Worst Performance (vs Python)\n\n";
-            out << "**" << worst_py->name << "**: " << format_slowdown(worst_py->pythonic_vs_python) << "\n\n";
-        }
+        md << "| " << r.name << " | "
+           << format_time(r.cpp_time_ms) << " | "
+           << format_time(r.pythonic_time_ms) << " | "
+           << (r.python_time_ms > 0 ? format_time(r.python_time_ms) : "N/A") << " | "
+           << native_cmp << " | "
+           << python_cmp << " |\n";
     }
 
-    out << "## Performance Overview\n\n";
-    if (python_count > 0)
-    {
-        if (avg_slowdown_python < 1.0)
-        {
-            out << "**Pythonic C++ is on average FASTER than Python** ("
-                << format_slowdown(avg_slowdown_python) << "), showing that the library provides ";
-            out << "Python-like syntax while maintaining significant C++ performance advantages.\n\n";
-        }
-        else if (avg_slowdown_python < 2.0)
-        {
-            out << "**Pythonic C++ performs comparably to Python** ("
-                << format_slowdown(avg_slowdown_python) << "), providing similar performance ";
-            out << "with Python-like syntax in a compiled language.\n\n";
-        }
-        else
-        {
-            out << "**Pythonic C++ is slower than Python in these microbenchmarks** ("
-                << format_slowdown(avg_slowdown_python) << "). Note that real-world performance ";
-            out << "varies based on usage patterns and compiler optimizations.\n\n";
-        }
-    }
+    md << "\n## Interpretation\n\n";
+    md << "- **vs Native**: How much slower Pythonic is compared to native C++. Lower is better.\n";
+    md << "- **vs Python**: How much faster Pythonic is compared to Python. Higher is better.\n";
+    md << "- Times are in milliseconds (ms) or microseconds (μs).\n\n";
+    md << "Pythonic adds abstraction overhead compared to native C++, but aims to be ";
+    md << "significantly faster than Python while providing a similar, ergonomic API.\n";
 
-    out << "**Pythonic C++ vs Native C++**: " << format_slowdown(avg_slowdown_cpp)
-        << " average overhead for dynamic typing and Python-like syntax.\n\n";
-
-    out << "## Detailed Results\n\n";
-
-    // Group by category
-    out << "### Arithmetic Operations\n\n";
-    for (const auto &result : results)
-    {
-        if (result.name.find("Integer") != std::string::npos ||
-            result.name.find("Double") != std::string::npos ||
-            result.name.find("Comparison") != std::string::npos)
-        {
-            out << "- **" << result.name << "**: "
-                << format_slowdown(result.slowdown_factor) << " (C++: "
-                << format_time(result.cpp_time_ms) << "ms, Pythonic: "
-                << format_time(result.pythonic_time_ms) << "ms)\n";
-        }
-    }
-
-    out << "\n### String Operations\n\n";
-    for (const auto &result : results)
-    {
-        if (result.name.find("String") != std::string::npos)
-        {
-            out << "- **" << result.name << "**: "
-                << format_slowdown(result.slowdown_factor) << " (C++: "
-                << format_time(result.cpp_time_ms) << "ms, Pythonic: "
-                << format_time(result.pythonic_time_ms) << "ms)\n";
-        }
-    }
-
-    out << "\n### Container Operations\n\n";
-    for (const auto &result : results)
-    {
-        if (result.name.find("List") != std::string::npos ||
-            result.name.find("Set") != std::string::npos ||
-            result.name.find("Dict") != std::string::npos)
-        {
-            out << "- **" << result.name << "**: "
-                << format_slowdown(result.slowdown_factor) << " (C++: "
-                << format_time(result.cpp_time_ms) << "ms, Pythonic: "
-                << format_time(result.pythonic_time_ms) << "ms)\n";
-        }
-    }
-
-    out << "\n### Loop Constructs\n\n";
-    for (const auto &result : results)
-    {
-        if (result.name.find("Loop") != std::string::npos)
-        {
-            out << "- **" << result.name << "**: "
-                << format_slowdown(result.slowdown_factor) << " (C++: "
-                << format_time(result.cpp_time_ms) << "ms, Pythonic: "
-                << format_time(result.pythonic_time_ms) << "ms)\n";
-        }
-    }
-
-    out << "\n### Functional Operations\n\n";
-    for (const auto &result : results)
-    {
-        if (result.name.find("Map") != std::string::npos ||
-            result.name.find("Filter") != std::string::npos)
-        {
-            out << "- **" << result.name << "**: "
-                << format_slowdown(result.slowdown_factor) << " (C++: "
-                << format_time(result.cpp_time_ms) << "ms, Pythonic: "
-                << format_time(result.pythonic_time_ms) << "ms)\n";
-        }
-    }
-
-    out << "\n## Interpretation\n\n";
-    out << "The Pythonic C++ library provides Python-like syntax at the cost of performance. ";
-    out << "The overhead comes from:\n\n";
-    out << "1. **Type erasure**: Using `std::variant` for dynamic typing\n";
-    out << "2. **Virtual dispatch**: Pattern matching with `std::visit`\n";
-    out << "3. **Allocation overhead**: More dynamic allocations than native C++\n";
-    out << "4. **Wrapper overhead**: Function call overhead for operations\n\n";
-    out << "**When to use Pythonic C++**:\n";
-    out << "- Rapid prototyping where Python-like syntax helps\n";
-    out << "- Applications where developer productivity > raw performance\n";
-    out << "- Mixed workloads where convenience matters more than speed\n\n";
-    out << "**When to avoid**:\n";
-    out << "- Performance-critical inner loops\n";
-    out << "- Real-time systems with strict timing requirements\n";
-    out << "- High-frequency trading or game engines\n\n";
-
-    out.close();
-    std::cout << "\n Benchmark report saved to: " << filename << std::endl;
+    md.close();
+    std::cout << "\n✓ Benchmark report saved to " << filename << "\n";
 }
+
+// Global variable for report filename
+std::string report_filename = "benchmark_report.md";
 
 int main(int argc, char *argv[])
 {
-    std::string report_file = "benchmark_report.md";
-
     // Parse command line arguments
-    for (int i = 1; i < argc; ++i)
+    for (int i = 1; i < argc; i++)
     {
-        if (std::strcmp(argv[i], "--report") == 0 && i + 1 < argc)
+        std::string arg = argv[i];
+        if (arg == "--report" && i + 1 < argc)
         {
-            report_file = argv[i + 1];
-            break;
+            report_filename = argv[++i];
+        }
+        else if (arg == "--help" || arg == "-h")
+        {
+            std::cout << "Usage: " << argv[0] << " [OPTIONS]\n";
+            std::cout << "Options:\n";
+            std::cout << "  --report <filename>  Save benchmark report to specified file\n";
+            std::cout << "                       (default: benchmark_report.md)\n";
+            std::cout << "  --help, -h           Show this help message\n";
+            return 0;
         }
     }
 
-    // Run Python benchmark first
-    std::cout << "Running Python benchmark..." << std::endl;
-    int py_result = system("python3 benchmark.py");
-    if (py_result != 0)
-    {
-        std::cerr << "Warning: Python benchmark failed or not available" << std::endl;
-    }
+    std::cout << "╔══════════════════════════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║        Pythonic Library Comprehensive Benchmark Suite            ║" << std::endl;
+    std::cout << "╚══════════════════════════════════════════════════════════════════╝" << std::endl;
+    std::cout << std::endl;
 
-    // Load Python results
+    // Load Python results for comparison
     load_python_results();
 
-    std::cout << "\n==================================================" << std::endl;
-    std::cout << "   PYTHONIC C++ LIBRARY PERFORMANCE BENCHMARK     " << std::endl;
-    std::cout << "==================================================" << std::endl;
-    std::cout << "\nConfiguration:" << std::endl;
-    std::cout << "  Iterations: " << ITERATIONS << std::endl;
-    std::cout << "  Small Iterations: " << SMALL_ITERATIONS << std::endl;
-    std::cout << "  Container Size: " << CONTAINER_SIZE << std::endl;
-
+    // Run all benchmark categories
     benchmark_arithmetic_operations();
     benchmark_string_operations();
-    benchmark_container_creation();
+    benchmark_slicing_operations();
     benchmark_container_operations();
-    benchmark_container_operators();
-    benchmark_loops();
-    benchmark_functional();
+    benchmark_loop_operations();
+    benchmark_functional_operations();
+    benchmark_sorting_operations();
+    benchmark_builtin_operations();
+    benchmark_conversion_operations();
+    benchmark_graph_operations();
 
-    std::cout << "\n==================================================" << std::endl;
-    std::cout << "              BENCHMARK COMPLETE                  " << std::endl;
-    std::cout << "==================================================" << std::endl;
+    // Print summary report
+    std::cout << "\n";
+    std::cout << "╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║                                                    BENCHMARK SUMMARY REPORT                                                                          ║" << std::endl;
+    std::cout << "╠═══════════════════════════════════════════════╦═══════════════════╦═══════════════════╦═══════════════════╦═══════════════════════╦═══════════════════╣" << std::endl;
+    std::cout << "║ Operation                                     ║ Native C++        ║ Pythonic          ║ Python            ║ Pythonic vs Native    ║ Pythonic vs Python║" << std::endl;
+    std::cout << "╠═══════════════════════════════════════════════╬═══════════════════╬═══════════════════╬═══════════════════╬═══════════════════════╬═══════════════════╣" << std::endl;
 
-    generate_markdown_report(report_file);
+    // Statistics
+    int total = 0;
+    int faster_than_python = 0;
+    int slower_than_python = 0;
+    int no_python_data = 0;
+    double total_native_overhead = 0;
+    double total_python_speedup = 0;
+
+    for (const auto &r : results)
+    {
+        total++;
+
+        // Calculate overhead vs native
+        double native_overhead = 0;
+        std::string native_comparison;
+        if (r.cpp_time_ms > 0)
+        {
+            native_overhead = r.pythonic_time_ms / r.cpp_time_ms;
+            total_native_overhead += native_overhead;
+            native_comparison = format_slowdown(native_overhead);
+        }
+        else
+        {
+            native_comparison = "N/A";
+        }
+
+        // Calculate speedup vs Python
+        std::string python_comparison;
+        if (r.python_time_ms > 0)
+        {
+            double python_speedup = r.python_time_ms / r.pythonic_time_ms;
+            total_python_speedup += python_speedup;
+            if (python_speedup >= 1.0)
+            {
+                python_comparison = "\033[32m" + std::to_string(python_speedup).substr(0, 5) + "x faster\033[0m";
+                faster_than_python++;
+            }
+            else
+            {
+                python_comparison = "\033[31m" + std::to_string(1.0 / python_speedup).substr(0, 5) + "x slower\033[0m";
+                slower_than_python++;
+            }
+        }
+        else
+        {
+            python_comparison = "No data";
+            no_python_data++;
+        }
+
+        // Print row
+        std::cout << "║ " << std::left << std::setw(45) << r.name.substr(0, 45) << " ║ "
+                  << std::setw(17) << format_time(r.cpp_time_ms) << " ║ "
+                  << std::setw(17) << format_time(r.pythonic_time_ms) << " ║ "
+                  << std::setw(17) << (r.python_time_ms > 0 ? format_time(r.python_time_ms) : "N/A") << " ║ "
+                  << std::setw(21) << native_comparison << " ║ "
+                  << std::setw(17) << python_comparison << " ║" << std::endl;
+    }
+
+    std::cout << "╚═══════════════════════════════════════════════╩═══════════════════╩═══════════════════╩═══════════════════╩═══════════════════════╩═══════════════════╝" << std::endl;
+
+    // Print statistics
+    std::cout << "\n";
+    std::cout << "╔══════════════════════════════════════════════════════════════════╗" << std::endl;
+    std::cout << "║                         STATISTICS                               ║" << std::endl;
+    std::cout << "╠══════════════════════════════════════════════════════════════════╣" << std::endl;
+    std::cout << "║ Total benchmarks: " << std::setw(47) << total << " ║" << std::endl;
+    std::cout << "║ Faster than Python: " << std::setw(45) << faster_than_python << " ║" << std::endl;
+    std::cout << "║ Slower than Python: " << std::setw(45) << slower_than_python << " ║" << std::endl;
+    std::cout << "║ No Python comparison data: " << std::setw(38) << no_python_data << " ║" << std::endl;
+
+    if (total > 0)
+    {
+        std::cout << "║ Average overhead vs Native: " << std::setw(37)
+                  << (std::to_string(total_native_overhead / total).substr(0, 5) + "x") << " ║" << std::endl;
+    }
+    if (faster_than_python + slower_than_python > 0)
+    {
+        std::cout << "║ Average speedup vs Python: " << std::setw(38)
+                  << (std::to_string(total_python_speedup / (faster_than_python + slower_than_python)).substr(0, 5) + "x") << " ║" << std::endl;
+    }
+
+    std::cout << "╚══════════════════════════════════════════════════════════════════╝" << std::endl;
+
+    std::cout << "\n";
+    std::cout << "Note: Pythonic adds abstraction overhead compared to native C++, but aims to be\n";
+    std::cout << "significantly faster than Python while providing a similar, ergonomic API.\n";
+
+    // Write markdown report
+    write_markdown_report(report_filename);
 
     return 0;
 }
