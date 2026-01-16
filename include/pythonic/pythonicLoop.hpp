@@ -46,7 +46,7 @@ namespace pythonic
                 }
             }
 
-            // Iterator class
+            // Iterator class - OPTIMIZED: removed forward_ bool, simplified comparison
             class iterator
             {
             public:
@@ -59,12 +59,10 @@ namespace pythonic
             private:
                 value_type current_;
                 value_type step_;
-                value_type end_;
-                bool forward_;
 
             public:
-                iterator(value_type current, value_type step, value_type end)
-                    : current_(current), step_(step), end_(end), forward_(step > 0) {}
+                iterator(value_type current, value_type step, value_type /*end*/)
+                    : current_(current), step_(step) {}
 
                 reference operator*() const { return current_; }
                 pointer operator->() const { return &current_; }
@@ -82,24 +80,15 @@ namespace pythonic
                     return tmp;
                 }
 
+                // OPTIMIZED: Simple value comparison - end iterator is pre-computed
                 bool operator==(const iterator &other) const
                 {
-                    // Check if we've passed the end
-                    if (forward_)
-                    {
-                        return (current_ >= end_ && other.current_ >= other.end_) ||
-                               (current_ == other.current_);
-                    }
-                    else
-                    {
-                        return (current_ <= end_ && other.current_ <= other.end_) ||
-                               (current_ == other.current_);
-                    }
+                    return current_ == other.current_;
                 }
 
                 bool operator!=(const iterator &other) const
                 {
-                    return !(*this == other);
+                    return current_ != other.current_;
                 }
             };
 
@@ -152,13 +141,14 @@ namespace pythonic
 
             bool empty() const { return size() == 0; }
 
-            // Convert to var list
+            // Convert to var list - OPTIMIZED: reserve capacity
             vars::var to_list() const
             {
                 vars::List result;
+                result.reserve(size());
                 for (auto val : *this)
                 {
-                    result.push_back(vars::var(static_cast<int>(val)));
+                    result.emplace_back(static_cast<int>(val));
                 }
                 return vars::var(result);
             }
@@ -212,7 +202,8 @@ namespace pythonic
             };
 
             iterator begin() { return iterator(container_.begin(), start_); }
-            iterator end() { return iterator(container_.end(), start_ + std::distance(container_.begin(), container_.end())); }
+            // OPTIMIZED: end index not used, avoid std::distance
+            iterator end() { return iterator(container_.end(), 0); }
         };
 
         template <typename Container>
@@ -267,7 +258,8 @@ namespace pythonic
             };
 
             iterator begin() const { return iterator(container_.begin(), start_); }
-            iterator end() const { return iterator(container_.end(), start_ + std::distance(container_.begin(), container_.end())); }
+            // OPTIMIZED: end index not used, avoid std::distance
+            iterator end() const { return iterator(container_.end(), 0); }
         };
 
         template <typename Container>
@@ -438,7 +430,7 @@ namespace pythonic
             return r.size();
         }
 
-        // Convert any iterable to a list
+        // Convert any iterable to a list - OPTIMIZED: use emplace_back
         template <typename Iterable>
         vars::var to_list(Iterable &&iterable)
         {
@@ -447,17 +439,18 @@ namespace pythonic
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, vars::var>)
                 {
-                    result.push_back(item);
+                    result.emplace_back(item);
                 }
                 else
                 {
-                    result.push_back(vars::var(item));
+                    result.emplace_back(item);
                 }
             }
             return vars::var(result);
         }
 
         // sum() - Python-like sum
+        // OPTIMIZED: Use += for in-place update
         template <typename Iterable>
         vars::var sum(Iterable &&iterable, vars::var start = vars::var(0))
         {
@@ -466,11 +459,11 @@ namespace pythonic
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, vars::var>)
                 {
-                    result = result + item;
+                    result += item;
                 }
                 else
                 {
-                    result = result + vars::var(item);
+                    result += vars::var(item);
                 }
             }
             return result;

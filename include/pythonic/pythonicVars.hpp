@@ -19,6 +19,8 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstdint>
+#include <memory>
+#include <optional>
 
 namespace pythonic
 {
@@ -28,10 +30,28 @@ namespace pythonic
         // Forward declaration
         class var;
 
-        // Type aliases for containers
+        // Custom hasher for var - implementation deferred until var is complete
+        struct VarHasher
+        {
+            size_t operator()(const var &v) const noexcept;
+        };
+
+        // Custom equality for var in unordered containers
+        struct VarEqual
+        {
+            bool operator()(const var &a, const var &b) const noexcept;
+        };
+
+        // Type aliases for containers (Python-like naming)
+        // Set: Hash-based set (like Python's set) - O(1) average operations
+        // OrderedSet: Tree-based set - maintains sorted order, O(log n)
+        // Dict: Hash-based dict (like Python's dict) - O(1) average operations
+        // OrderedDict: Tree-based dict - maintains key order, O(log n)
         using List = std::vector<var>;
-        using Set = std::set<var>;
+        using Set = std::unordered_set<var, VarHasher, VarEqual>;
+        using OrderedSet = std::set<var>;
         using Dict = std::unordered_map<std::string, var>;
+        using OrderedDict = std::map<std::string, var>;
 
         // Helper to check if type is a container
         template <typename T>
@@ -47,7 +67,15 @@ namespace pythonic
         {
         };
         template <>
+        struct is_container<OrderedSet> : std::true_type
+        {
+        };
+        template <>
         struct is_container<Dict> : std::true_type
+        {
+        };
+        template <>
+        struct is_container<OrderedDict> : std::true_type
         {
         };
 
@@ -81,16 +109,22 @@ namespace pythonic
             bool operator!=(const NoneType &) const { return false; }
         };
 
-        // The main variant type (primitives only, containers added after var is defined)
+        // Forward declaration for Graph - actual include is at the end of this file
+        // This avoids circular dependency since Graph uses var for node metadata
+        class VarGraphWrapper;
+        using GraphPtr = std::shared_ptr<VarGraphWrapper>;
+
+        // The main variant type (primitives + all container types + graph)
         using varType = std::variant<
             NoneType,
             int, float, std::string, bool, double,
             long, long long, long double,
             unsigned int, unsigned long, unsigned long long,
-            List, Set, Dict>;
+            List, Set, Dict, OrderedSet, OrderedDict, GraphPtr>;
 
         // TypeTag enum for fast type dispatch (avoids repeated std::get_if/holds_alternative calls)
         // Using uint8_t as underlying type to minimize memory overhead (1 byte)
+        // IMPORTANT: Order must match varType order exactly!
         enum class TypeTag : uint8_t
         {
             NONE = 0,
@@ -107,7 +141,10 @@ namespace pythonic
             ULONG_LONG,
             LIST,
             SET,
-            DICT
+            DICT,
+            ORDEREDSET,
+            ORDEREDDICT,
+            GRAPH
         };
 
         class var
@@ -151,6 +188,12 @@ namespace pythonic
             var(Set &&s) : value(std::move(s)), tag_(TypeTag::SET) {}
             var(const Dict &d) : value(d), tag_(TypeTag::DICT) {}
             var(Dict &&d) : value(std::move(d)), tag_(TypeTag::DICT) {}
+            var(const OrderedSet &hs) : value(hs), tag_(TypeTag::ORDEREDSET) {}
+            var(OrderedSet &&hs) : value(std::move(hs)), tag_(TypeTag::ORDEREDSET) {}
+            var(const OrderedDict &od) : value(od), tag_(TypeTag::ORDEREDDICT) {}
+            var(OrderedDict &&od) : value(std::move(od)), tag_(TypeTag::ORDEREDDICT) {}
+            var(const GraphPtr &g) : value(g), tag_(TypeTag::GRAPH) {}
+            var(GraphPtr &&g) : value(std::move(g)), tag_(TypeTag::GRAPH) {}
 
             // Check if this var is None
             bool isNone() const { return tag_ == TypeTag::NONE; }
@@ -195,11 +238,20 @@ namespace pythonic
                     return tag_ == TypeTag::SET;
                 else if constexpr (std::is_same_v<T, Dict>)
                     return tag_ == TypeTag::DICT;
+                else if constexpr (std::is_same_v<T, OrderedSet>)
+                    return tag_ == TypeTag::ORDEREDSET;
+                else if constexpr (std::is_same_v<T, OrderedDict>)
+                    return tag_ == TypeTag::ORDEREDDICT;
+                else if constexpr (std::is_same_v<T, GraphPtr>)
+                    return tag_ == TypeTag::GRAPH;
                 else if constexpr (std::is_same_v<T, NoneType>)
                     return tag_ == TypeTag::NONE;
                 else
                     return std::holds_alternative<T>(value);
             }
+
+            // Check if this var holds a graph
+            bool isGraph() const { return tag_ == TypeTag::GRAPH; }
 
             // Helper: Check if this var holds a numeric type
             bool isNumeric() const
@@ -314,6 +366,12 @@ namespace pythonic
                     return "set";
                 case TypeTag::DICT:
                     return "dict";
+                case TypeTag::ORDEREDSET:
+                    return "ordered_set";
+                case TypeTag::ORDEREDDICT:
+                    return "ordereddict";
+                case TypeTag::GRAPH:
+                    return "graph";
                 default:
                     return "unknown";
                 }
@@ -417,10 +475,49 @@ namespace pythonic
                     result += "}";
                     return result;
                 }
+                case TypeTag::ORDEREDSET:
+                {
+                    const auto &hs = std::get<OrderedSet>(value);
+                    std::string result = "OrderedSet{";
+                    bool first = true;
+                    for (const auto &item : hs)
+                    {
+                        if (!first)
+                            result += ", ";
+                        result += item.str();
+                        first = false;
+                    }
+                    result += "}";
+                    return result;
+                }
+                case TypeTag::ORDEREDDICT:
+                {
+                    const auto &od = std::get<OrderedDict>(value);
+                    std::string result = "OrderedDict{";
+                    bool first = true;
+                    for (const auto &[k, v] : od)
+                    {
+                        if (!first)
+                            result += ", ";
+                        result += "\"" + k + "\": " + v.str();
+                        first = false;
+                    }
+                    result += "}";
+                    return result;
+                }
+                case TypeTag::GRAPH:
+                {
+                    // Note: We can't call g->str() here because VarGraphWrapper is forward-declared
+                    // The graph_str() helper method is defined after VarGraphWrapper
+                    return graph_str_impl();
+                }
                 default:
                     return "[unknown]";
                 }
             }
+
+            // Private helper for graph string - defined after VarGraphWrapper
+            std::string graph_str_impl() const;
 
             // Pretty string with indentation (for pprint)
             // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
@@ -518,6 +615,46 @@ namespace pythonic
                     }
                     result += ind + "}";
                     return result;
+                }
+                case TypeTag::ORDEREDSET:
+                {
+                    const auto &hs = std::get<OrderedSet>(value);
+                    if (hs.empty())
+                        return "OrderedSet{}";
+                    std::string result = "OrderedSet{\n";
+                    size_t i = 0;
+                    for (const auto &item : hs)
+                    {
+                        result += inner_ind + item.pretty_str(indent + indent_step, indent_step);
+                        if (i < hs.size() - 1)
+                            result += ",";
+                        result += "\n";
+                        ++i;
+                    }
+                    result += ind + "}";
+                    return result;
+                }
+                case TypeTag::ORDEREDDICT:
+                {
+                    const auto &od = std::get<OrderedDict>(value);
+                    if (od.empty())
+                        return "OrderedDict{}";
+                    std::string result = "OrderedDict{\n";
+                    size_t i = 0;
+                    for (const auto &[k, v] : od)
+                    {
+                        result += inner_ind + "\"" + k + "\": " + v.pretty_str(indent + indent_step, indent_step);
+                        if (i < od.size() - 1)
+                            result += ",";
+                        result += "\n";
+                        ++i;
+                    }
+                    result += ind + "}";
+                    return result;
+                }
+                case TypeTag::GRAPH:
+                {
+                    return graph_str_impl(); // Graphs don't have nested pretty printing
                 }
                 default:
                     return "[unknown]";
@@ -1267,8 +1404,23 @@ namespace pythonic
                 return var(lhs) + rhs;
             }
 
-            var operator+(const char *other) const { return *this + var(other); }
-            friend var operator+(const char *lhs, const var &rhs) { return var(lhs) + rhs; }
+            // OPTIMIZED: Direct const char* handling avoids var construction
+            var operator+(const char *other) const
+            {
+                if (tag_ == TypeTag::STRING)
+                {
+                    return var(std::get<std::string>(value) + other);
+                }
+                return var(str() + other);
+            }
+            friend var operator+(const char *lhs, const var &rhs)
+            {
+                if (rhs.tag_ == TypeTag::STRING)
+                {
+                    return var(std::string(lhs) + std::get<std::string>(rhs.value));
+                }
+                return var(std::string(lhs) + rhs.str());
+            }
 
             // Subtraction with primitives
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
@@ -1551,7 +1703,17 @@ namespace pythonic
                 return *this;
             }
 
-            var &operator+=(const char *other) { return *this += var(other); }
+            // OPTIMIZED: Direct string append avoids var construction
+            var &operator+=(const char *other)
+            {
+                if (tag_ == TypeTag::STRING)
+                {
+                    std::get<std::string>(value) += other;
+                    return *this;
+                }
+                *this = *this + other;
+                return *this;
+            }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var &operator-=(T other)
@@ -1662,6 +1824,20 @@ namespace pythonic
                         }
                         return var(std::move(result));
                     }
+                    case TypeTag::ORDEREDSET:
+                    {
+                        const auto &a = std::get<OrderedSet>(value);
+                        const auto &b = std::get<OrderedSet>(other.value);
+                        OrderedSet result;
+                        for (const auto &item : a)
+                        {
+                            if (b.find(item) != b.end())
+                            {
+                                result.insert(item);
+                            }
+                        }
+                        return var(std::move(result));
+                    }
                     case TypeTag::LIST:
                     {
                         const auto &a = std::get<List>(value);
@@ -1682,6 +1858,20 @@ namespace pythonic
                         const auto &a = std::get<Dict>(value);
                         const auto &b = std::get<Dict>(other.value);
                         Dict result;
+                        for (const auto &[key, val] : a)
+                        {
+                            if (b.find(key) != b.end())
+                            {
+                                result[key] = val;
+                            }
+                        }
+                        return var(std::move(result));
+                    }
+                    case TypeTag::ORDEREDDICT:
+                    {
+                        const auto &a = std::get<OrderedDict>(value);
+                        const auto &b = std::get<OrderedDict>(other.value);
+                        OrderedDict result;
                         for (const auto &[key, val] : a)
                         {
                             if (b.find(key) != b.end())
@@ -1730,6 +1920,14 @@ namespace pythonic
                         result.insert(b.begin(), b.end());
                         return var(std::move(result));
                     }
+                    case TypeTag::ORDEREDSET:
+                    {
+                        const auto &a = std::get<OrderedSet>(value);
+                        const auto &b = std::get<OrderedSet>(other.value);
+                        OrderedSet result = a;
+                        result.insert(b.begin(), b.end());
+                        return var(std::move(result));
+                    }
                     case TypeTag::LIST:
                     {
                         const auto &a = std::get<List>(value);
@@ -1745,6 +1943,17 @@ namespace pythonic
                         const auto &a = std::get<Dict>(value);
                         const auto &b = std::get<Dict>(other.value);
                         Dict result = a;
+                        for (const auto &[key, val] : b)
+                        {
+                            result[key] = val;
+                        }
+                        return var(std::move(result));
+                    }
+                    case TypeTag::ORDEREDDICT:
+                    {
+                        const auto &a = std::get<OrderedDict>(value);
+                        const auto &b = std::get<OrderedDict>(other.value);
+                        OrderedDict result = a;
                         for (const auto &[key, val] : b)
                         {
                             result[key] = val;
@@ -1788,6 +1997,27 @@ namespace pythonic
                         const auto &a = std::get<Set>(value);
                         const auto &b = std::get<Set>(other.value);
                         Set result;
+                        for (const auto &item : a)
+                        {
+                            if (b.find(item) == b.end())
+                            {
+                                result.insert(item);
+                            }
+                        }
+                        for (const auto &item : b)
+                        {
+                            if (a.find(item) == a.end())
+                            {
+                                result.insert(item);
+                            }
+                        }
+                        return var(std::move(result));
+                    }
+                    case TypeTag::ORDEREDSET:
+                    {
+                        const auto &a = std::get<OrderedSet>(value);
+                        const auto &b = std::get<OrderedSet>(other.value);
+                        OrderedSet result;
                         for (const auto &item : a)
                         {
                             if (b.find(item) == b.end())
@@ -1875,10 +2105,19 @@ namespace pythonic
                     return !std::get<Set>(value).empty();
                 case TypeTag::DICT:
                     return !std::get<Dict>(value).empty();
+                case TypeTag::ORDEREDSET:
+                    return !std::get<OrderedSet>(value).empty();
+                case TypeTag::ORDEREDDICT:
+                    return !std::get<OrderedDict>(value).empty();
+                case TypeTag::GRAPH:
+                    return graph_bool_impl(); // Defined after VarGraphWrapper
                 default:
                     return true;
                 }
             }
+
+            // Private helper for graph bool - defined after VarGraphWrapper
+            bool graph_bool_impl() const;
 
             // Container access - operator[] for list and dict
             // OPTIMIZED: Uses TypeTag for fast dispatch
@@ -1916,7 +2155,11 @@ namespace pythonic
                 {
                     return std::get<Dict>(value)[key];
                 }
-                throw std::runtime_error("operator[string] requires a dict");
+                if (tag_ == TypeTag::ORDEREDDICT)
+                {
+                    return std::get<OrderedDict>(value)[key];
+                }
+                throw std::runtime_error("operator[string] requires a dict or ordered_dict");
             }
 
             var &operator[](const char *key)
@@ -1938,6 +2181,10 @@ namespace pythonic
                     return std::get<Set>(value).size();
                 case TypeTag::DICT:
                     return std::get<Dict>(value).size();
+                case TypeTag::ORDEREDSET:
+                    return std::get<OrderedSet>(value).size();
+                case TypeTag::ORDEREDDICT:
+                    return std::get<OrderedDict>(value).size();
                 default:
                     throw std::runtime_error("len() not supported for this type");
                 }
@@ -1957,7 +2204,21 @@ namespace pythonic
                 }
             }
 
-            // add for set
+            // OPTIMIZED: Template overload for primitives - avoids var construction
+            template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, var>>>
+            void append(T &&v)
+            {
+                if (tag_ == TypeTag::LIST)
+                {
+                    std::get<List>(value).emplace_back(std::forward<T>(v));
+                }
+                else
+                {
+                    throw std::runtime_error("append() requires a list");
+                }
+            }
+
+            // add for set or ordered_set
             // OPTIMIZED: Uses TypeTag for fast dispatch
             void add(const var &v)
             {
@@ -1965,9 +2226,31 @@ namespace pythonic
                 {
                     std::get<Set>(value).insert(v);
                 }
+                else if (tag_ == TypeTag::ORDEREDSET)
+                {
+                    std::get<OrderedSet>(value).insert(v);
+                }
                 else
                 {
-                    throw std::runtime_error("add() requires a set");
+                    throw std::runtime_error("add() requires a set or ordered_set");
+                }
+            }
+
+            // OPTIMIZED: Template overload for primitives - avoids var construction
+            template <typename T, typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, var>>>
+            void add(T &&v)
+            {
+                if (tag_ == TypeTag::SET)
+                {
+                    std::get<Set>(value).emplace(std::forward<T>(v));
+                }
+                else if (tag_ == TypeTag::ORDEREDSET)
+                {
+                    std::get<OrderedSet>(value).emplace(std::forward<T>(v));
+                }
+                else
+                {
+                    throw std::runtime_error("add() requires a set or ordered_set");
                 }
             }
 
@@ -2060,10 +2343,18 @@ namespace pythonic
                 }
                 case TypeTag::SET:
                     return std::get<Set>(value).find(v) != std::get<Set>(value).end();
+                case TypeTag::ORDEREDSET:
+                    return std::get<OrderedSet>(value).find(v) != std::get<OrderedSet>(value).end();
                 case TypeTag::DICT:
                     if (v.tag_ == TypeTag::STRING)
                     {
                         return std::get<Dict>(value).find(std::get<std::string>(v.value)) != std::get<Dict>(value).end();
+                    }
+                    return false;
+                case TypeTag::ORDEREDDICT:
+                    if (v.tag_ == TypeTag::STRING)
+                    {
+                        return std::get<OrderedDict>(value).find(std::get<std::string>(v.value)) != std::get<OrderedDict>(value).end();
                     }
                     return false;
                 case TypeTag::STRING:
@@ -2094,14 +2385,18 @@ namespace pythonic
                     List::iterator,
                     Set::iterator,
                     Dict::iterator,
-                    std::string::iterator>
+                    std::string::iterator,
+                    OrderedSet::iterator,
+                    OrderedDict::iterator>
                     it;
                 enum class IterType
                 {
                     LIST,
                     SET,
                     DICT,
-                    STRING
+                    STRING,
+                    ORDEREDSET,
+                    ORDEREDDICT
                 } type;
 
             public:
@@ -2110,6 +2405,8 @@ namespace pythonic
                 iterator(Set::iterator i) : it(i), type(IterType::SET) {}
                 iterator(Dict::iterator i) : it(i), type(IterType::DICT) {}
                 iterator(std::string::iterator i) : it(i), type(IterType::STRING) {}
+                iterator(OrderedSet::iterator i) : it(i), type(IterType::ORDEREDSET) {}
+                iterator(OrderedDict::iterator i) : it(i), type(IterType::ORDEREDDICT) {}
 
                 var operator*() const
                 {
@@ -2126,6 +2423,13 @@ namespace pythonic
                     }
                     case IterType::STRING:
                         return var(std::string(1, *std::get<std::string::iterator>(it)));
+                    case IterType::ORDEREDSET:
+                        return *std::get<OrderedSet::iterator>(it);
+                    case IterType::ORDEREDDICT:
+                    {
+                        auto &p = *std::get<OrderedDict::iterator>(it);
+                        return var(p.first); // Return key for ordereddict iteration
+                    }
                     }
                     return var();
                 }
@@ -2145,6 +2449,12 @@ namespace pythonic
                         break;
                     case IterType::STRING:
                         ++std::get<std::string::iterator>(it);
+                        break;
+                    case IterType::ORDEREDSET:
+                        ++std::get<OrderedSet::iterator>(it);
+                        break;
+                    case IterType::ORDEREDDICT:
+                        ++std::get<OrderedDict::iterator>(it);
                         break;
                     }
                     return *this;
@@ -2171,6 +2481,10 @@ namespace pythonic
                         return std::get<Dict::iterator>(it) == std::get<Dict::iterator>(other.it);
                     case IterType::STRING:
                         return std::get<std::string::iterator>(it) == std::get<std::string::iterator>(other.it);
+                    case IterType::ORDEREDSET:
+                        return std::get<OrderedSet::iterator>(it) == std::get<OrderedSet::iterator>(other.it);
+                    case IterType::ORDEREDDICT:
+                        return std::get<OrderedDict::iterator>(it) == std::get<OrderedDict::iterator>(other.it);
                     }
                     return false;
                 }
@@ -2192,14 +2506,18 @@ namespace pythonic
                     List::const_iterator,
                     Set::const_iterator,
                     Dict::const_iterator,
-                    std::string::const_iterator>
+                    std::string::const_iterator,
+                    OrderedSet::const_iterator,
+                    OrderedDict::const_iterator>
                     it;
                 enum class IterType
                 {
                     LIST,
                     SET,
                     DICT,
-                    STRING
+                    STRING,
+                    ORDEREDSET,
+                    ORDEREDDICT
                 } type;
 
             public:
@@ -2208,6 +2526,8 @@ namespace pythonic
                 const_iterator(Set::const_iterator i) : it(i), type(IterType::SET) {}
                 const_iterator(Dict::const_iterator i) : it(i), type(IterType::DICT) {}
                 const_iterator(std::string::const_iterator i) : it(i), type(IterType::STRING) {}
+                const_iterator(OrderedSet::const_iterator i) : it(i), type(IterType::ORDEREDSET) {}
+                const_iterator(OrderedDict::const_iterator i) : it(i), type(IterType::ORDEREDDICT) {}
 
                 var operator*() const
                 {
@@ -2224,6 +2544,13 @@ namespace pythonic
                     }
                     case IterType::STRING:
                         return var(std::string(1, *std::get<std::string::const_iterator>(it)));
+                    case IterType::ORDEREDSET:
+                        return *std::get<OrderedSet::const_iterator>(it);
+                    case IterType::ORDEREDDICT:
+                    {
+                        auto &p = *std::get<OrderedDict::const_iterator>(it);
+                        return var(p.first);
+                    }
                     }
                     return var();
                 }
@@ -2243,6 +2570,12 @@ namespace pythonic
                         break;
                     case IterType::STRING:
                         ++std::get<std::string::const_iterator>(it);
+                        break;
+                    case IterType::ORDEREDSET:
+                        ++std::get<OrderedSet::const_iterator>(it);
+                        break;
+                    case IterType::ORDEREDDICT:
+                        ++std::get<OrderedDict::const_iterator>(it);
                         break;
                     }
                     return *this;
@@ -2269,6 +2602,10 @@ namespace pythonic
                         return std::get<Dict::const_iterator>(it) == std::get<Dict::const_iterator>(other.it);
                     case IterType::STRING:
                         return std::get<std::string::const_iterator>(it) == std::get<std::string::const_iterator>(other.it);
+                    case IterType::ORDEREDSET:
+                        return std::get<OrderedSet::const_iterator>(it) == std::get<OrderedSet::const_iterator>(other.it);
+                    case IterType::ORDEREDDICT:
+                        return std::get<OrderedDict::const_iterator>(it) == std::get<OrderedDict::const_iterator>(other.it);
                     }
                     return false;
                 }
@@ -2287,6 +2624,10 @@ namespace pythonic
                     return iterator(dct->begin());
                 if (auto *s = std::get_if<std::string>(&value))
                     return iterator(s->begin());
+                if (auto *hs = std::get_if<OrderedSet>(&value))
+                    return iterator(hs->begin());
+                if (auto *od = std::get_if<OrderedDict>(&value))
+                    return iterator(od->begin());
                 throw std::runtime_error("Type is not iterable");
             }
 
@@ -2300,6 +2641,10 @@ namespace pythonic
                     return iterator(dct->end());
                 if (auto *s = std::get_if<std::string>(&value))
                     return iterator(s->end());
+                if (auto *hs = std::get_if<OrderedSet>(&value))
+                    return iterator(hs->end());
+                if (auto *od = std::get_if<OrderedDict>(&value))
+                    return iterator(od->end());
                 throw std::runtime_error("Type is not iterable");
             }
 
@@ -2313,6 +2658,10 @@ namespace pythonic
                     return const_iterator(dct->begin());
                 if (auto *s = std::get_if<std::string>(&value))
                     return const_iterator(s->begin());
+                if (auto *hs = std::get_if<OrderedSet>(&value))
+                    return const_iterator(hs->begin());
+                if (auto *od = std::get_if<OrderedDict>(&value))
+                    return const_iterator(od->begin());
                 throw std::runtime_error("Type is not iterable");
             }
 
@@ -2326,6 +2675,10 @@ namespace pythonic
                     return const_iterator(dct->end());
                 if (auto *s = std::get_if<std::string>(&value))
                     return const_iterator(s->end());
+                if (auto *hs = std::get_if<OrderedSet>(&value))
+                    return const_iterator(hs->end());
+                if (auto *od = std::get_if<OrderedDict>(&value))
+                    return const_iterator(od->end());
                 throw std::runtime_error("Type is not iterable");
             }
 
@@ -3064,17 +3417,187 @@ namespace pythonic
                 throw std::runtime_error("zfill() requires a string");
             }
 
+            // Hash function for var - enables use in unordered containers
+            size_t hash() const
+            {
+                // Combine type tag with value hash for unique hashes
+                size_t h = static_cast<size_t>(tag_);
+                switch (tag_)
+                {
+                case TypeTag::NONE:
+                    return h;
+                case TypeTag::INT:
+                    return h ^ std::hash<int>{}(std::get<int>(value));
+                case TypeTag::FLOAT:
+                    return h ^ std::hash<float>{}(std::get<float>(value));
+                case TypeTag::DOUBLE:
+                    return h ^ std::hash<double>{}(std::get<double>(value));
+                case TypeTag::STRING:
+                    return h ^ std::hash<std::string>{}(std::get<std::string>(value));
+                case TypeTag::BOOL:
+                    return h ^ std::hash<bool>{}(std::get<bool>(value));
+                case TypeTag::LONG:
+                    return h ^ std::hash<long>{}(std::get<long>(value));
+                case TypeTag::LONG_LONG:
+                    return h ^ std::hash<long long>{}(std::get<long long>(value));
+                case TypeTag::LONG_DOUBLE:
+                    return h ^ std::hash<long double>{}(std::get<long double>(value));
+                case TypeTag::UINT:
+                    return h ^ std::hash<unsigned int>{}(std::get<unsigned int>(value));
+                case TypeTag::ULONG:
+                    return h ^ std::hash<unsigned long>{}(std::get<unsigned long>(value));
+                case TypeTag::ULONG_LONG:
+                    return h ^ std::hash<unsigned long long>{}(std::get<unsigned long long>(value));
+                case TypeTag::LIST:
+                {
+                    // Hash list by combining element hashes
+                    const auto &lst = std::get<List>(value);
+                    size_t seed = lst.size();
+                    for (const auto &item : lst)
+                    {
+                        seed ^= item.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                    }
+                    return h ^ seed;
+                }
+                case TypeTag::SET:
+                {
+                    // Hash set by XORing element hashes (order-independent)
+                    const auto &s = std::get<Set>(value);
+                    size_t seed = s.size();
+                    for (const auto &item : s)
+                    {
+                        seed ^= item.hash();
+                    }
+                    return h ^ seed;
+                }
+                case TypeTag::DICT:
+                {
+                    // Hash dict by combining key-value pairs
+                    const auto &d = std::get<Dict>(value);
+                    size_t seed = d.size();
+                    for (const auto &[k, v] : d)
+                    {
+                        seed ^= std::hash<std::string>{}(k) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                        seed ^= v.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                    }
+                    return h ^ seed;
+                }
+                case TypeTag::ORDEREDSET:
+                {
+                    // Hash ordered_set by XORing element hashes (order-independent)
+                    const auto &hs = std::get<OrderedSet>(value);
+                    size_t seed = hs.size();
+                    for (const auto &item : hs)
+                    {
+                        seed ^= item.hash();
+                    }
+                    return h ^ seed;
+                }
+                case TypeTag::ORDEREDDICT:
+                {
+                    // Hash ordereddict by combining key-value pairs
+                    const auto &od = std::get<OrderedDict>(value);
+                    size_t seed = od.size();
+                    for (const auto &[k, v] : od)
+                    {
+                        seed ^= std::hash<std::string>{}(k) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                        seed ^= v.hash() + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+                    }
+                    return h ^ seed;
+                }
+                case TypeTag::GRAPH:
+                {
+                    // Hash graph by its pointer address (identity-based)
+                    const auto &g = std::get<GraphPtr>(value);
+                    return h ^ std::hash<GraphPtr>{}(g);
+                }
+                default:
+                    return h;
+                }
+            }
+
+            // ============ GRAPH METHODS ============
+            // These methods are only valid when the var holds a graph.
+            // They delegate to the underlying VarGraphWrapper.
+            // IMPORTANT: These are declared here but DEFINED after VarGraphWrapper
+            // to avoid incomplete type errors.
+
+        private:
+            // Helper to get graph with error checking - defined after VarGraphWrapper
+            VarGraphWrapper &graph_ref();
+            const VarGraphWrapper &graph_ref() const;
+
+        public:
+            // ===== Graph Properties =====
+            size_t node_count() const;
+            size_t edge_count() const;
+            bool is_connected() const;
+            bool has_cycle() const;
+            bool has_edge(size_t from, size_t to) const;
+            std::optional<double> get_edge_weight(size_t from, size_t to) const;
+            size_t out_degree(size_t node) const;
+            size_t in_degree(size_t node) const;
+
+            // ===== Graph Modification =====
+            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directed = false);
+            bool remove_edge(size_t from, size_t to, bool remove_reverse = true);
+            void set_edge_weight(size_t from, size_t to, double weight);
+
+            // ===== Capacity Reservation (Optimization) =====
+            void reserve_edges_per_node(size_t per_node);
+            void reserve_edges_by_counts(const var &counts);
+
+            // ===== Node Data =====
+            void set_node_data(size_t node, const var &data);
+            var &get_node_data(size_t node);
+
+            // ===== Traversals - Return var (list) for Python-like interface =====
+            var dfs(size_t start = 0, bool recursive = true);
+            var bfs(size_t start = 0);
+
+            // ===== Shortest Paths =====
+            var get_shortest_path(size_t src, size_t dest);
+            var bellman_ford(size_t src) const;
+            var floyd_warshall() const;
+
+            // ===== Graph Algorithms =====
+            var topological_sort() const;
+            var connected_components() const;
+            var strongly_connected_components() const;
+            var prim_mst() const;
+
+            // ===== Graph Serialization =====
+            void save_graph(const std::string &filename) const;
+            void to_dot(const std::string &filename, bool show_weights = true) const;
+
+            // ===== Get edges for a node =====
+            var get_edges(size_t node);
+
         }; // class var
+
+        // ============ Deferred implementations for VarHasher and VarEqual ============
+        // These must be defined after var is complete
+
+        inline size_t VarHasher::operator()(const var &v) const noexcept
+        {
+            return v.hash();
+        }
+
+        inline bool VarEqual::operator()(const var &a, const var &b) const noexcept
+        {
+            return static_cast<bool>(a == b);
+        }
 
         // ============ Factory functions for containers ============
 
-        // list(1, 2, 3) -> List
+        // list(1, 2, 3) -> List - OPTIMIZED: reserve + emplace_back
         template <typename... Args>
         var list(Args &&...args)
         {
             List lst;
-            (lst.push_back(var(std::forward<Args>(args))), ...);
-            return var(lst);
+            lst.reserve(sizeof...(Args));
+            (lst.emplace_back(std::forward<Args>(args)), ...);
+            return var(std::move(lst));
         }
 
         // set(1, 2, 3) -> Set
@@ -3082,8 +3605,17 @@ namespace pythonic
         var set(Args &&...args)
         {
             Set st;
-            (st.insert(var(std::forward<Args>(args))), ...);
-            return var(st);
+            (st.emplace(std::forward<Args>(args)), ...);
+            return var(std::move(st));
+        }
+
+        // ordered_set(1, 2, 3) -> OrderedSet (O(1) average operations)
+        template <typename... Args>
+        var ordered_set(Args &&...args)
+        {
+            OrderedSet hs;
+            (hs.emplace(std::forward<Args>(args)), ...);
+            return var(std::move(hs));
         }
 
         // dict({"key", value}, ...) -> Dict
@@ -3097,10 +3629,461 @@ namespace pythonic
             return var(dct);
         }
 
+        // ordered_dict({"key", value}, ...) -> OrderedDict (maintains key order)
+        inline var ordered_dict(std::initializer_list<std::pair<std::string, var>> items)
+        {
+            OrderedDict od;
+            for (const auto &[k, v] : items)
+            {
+                od[k] = v;
+            }
+            return var(od);
+        }
+
         // Empty containers
         inline var list() { return var(List{}); }
         inline var set() { return var(Set{}); }
         inline var dict() { return var(Dict{}); }
+        inline var ordered_set() { return var(OrderedSet{}); }
+        inline var ordered_dict() { return var(OrderedDict{}); }
+
+    } // namespace vars
+} // namespace pythonic
+
+// Include Graph after var is fully defined (Graph uses var for node metadata)
+#include "Graph.hpp"
+
+namespace pythonic
+{
+    namespace vars
+    {
+        // ============ GRAPH INTEGRATION ============
+
+        // VarGraph is a Graph that stores var as node metadata
+        // This allows Python-like flexibility: nodes can hold any data type
+        using VarGraph = pythonic::graph::Graph<var>;
+
+        /**
+         * @brief VarGraphWrapper wraps a VarGraph for use inside var's variant.
+         *
+         * This class provides the interface between var and the underlying Graph.
+         * It's stored via shared_ptr to enable lightweight copying of var containing graphs.
+         */
+        class VarGraphWrapper
+        {
+        public:
+            VarGraph impl; // The actual graph implementation
+
+            explicit VarGraphWrapper(size_t n) : impl(n) {}
+            VarGraphWrapper(const VarGraph &g) : impl(g) {}
+            VarGraphWrapper(VarGraph &&g) : impl(std::move(g)) {}
+
+            // ===== Graph Properties =====
+            size_t node_count() const { return impl.node_count(); }
+            size_t edge_count() const { return impl.edge_count(); }
+            bool is_connected() const { return impl.is_connected(); }
+            bool has_cycle() const { return impl.has_cycle(); }
+            bool has_edge(size_t from, size_t to) const { return impl.has_edge(from, to); }
+            std::optional<double> get_edge_weight(size_t from, size_t to) const { return impl.get_edge_weight(from, to); }
+            size_t out_degree(size_t node) const { return impl.out_degree(node); }
+            size_t in_degree(size_t node) const { return impl.in_degree(node); }
+
+            // ===== Graph Modification =====
+            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directed = false)
+            {
+                impl.add_edge(u, v, w1, w2, directed);
+            }
+
+            bool remove_edge(size_t from, size_t to, bool remove_reverse = true)
+            {
+                return impl.remove_edge(from, to, remove_reverse);
+            }
+
+            void set_edge_weight(size_t from, size_t to, double weight)
+            {
+                impl.set_edge_weight(from, to, weight);
+            }
+
+            // ===== Capacity Reservation (Optimization) =====
+            void reserve_edges_per_node(size_t per_node)
+            {
+                impl.reserve_edges_per_node(per_node);
+            }
+
+            void reserve_edges_by_counts(const std::vector<size_t> &counts)
+            {
+                impl.reserve_edges_by_counts(counts);
+            }
+
+            // ===== Node Data =====
+            void set_node_data(size_t node, const var &data)
+            {
+                impl.set_node_data(node, data);
+            }
+
+            var &get_node_data(size_t node)
+            {
+                return impl.get_node_data(node);
+            }
+
+            const var &get_node_data(size_t node) const
+            {
+                return impl.get_node_data(node);
+            }
+
+            // ===== Traversals =====
+            std::vector<size_t> dfs(size_t start = 0, bool recursive = true)
+            {
+                return impl.dfs(start, recursive);
+            }
+
+            std::vector<size_t> bfs(size_t start = 0)
+            {
+                return impl.bfs(start);
+            }
+
+            // ===== Shortest Paths =====
+            std::pair<std::vector<size_t>, double> get_shortest_path(size_t src, size_t dest)
+            {
+                return impl.get_shortest_path(src, dest);
+            }
+
+            std::pair<std::vector<double>, std::vector<size_t>> bellman_ford(size_t src) const
+            {
+                return impl.bellman_ford(src);
+            }
+
+            std::vector<std::vector<double>> floyd_warshall() const
+            {
+                return impl.floyd_warshall();
+            }
+
+            // ===== Graph Algorithms =====
+            std::vector<size_t> topological_sort() const
+            {
+                return impl.topological_sort();
+            }
+
+            std::vector<std::vector<size_t>> connected_components() const
+            {
+                return impl.connected_components();
+            }
+
+            std::vector<std::vector<size_t>> strongly_connected_components() const
+            {
+                return impl.strongly_connected_components();
+            }
+
+            std::pair<double, std::vector<std::tuple<size_t, size_t, double>>> prim_mst() const
+            {
+                return impl.prim_mst();
+            }
+
+            // ===== Serialization =====
+            void save(const std::string &filename) const
+            {
+                impl.save(filename);
+            }
+
+            void to_dot(const std::string &filename, bool show_weights = true) const
+            {
+                impl.to_dot(filename, show_weights);
+            }
+
+            // ===== Edges =====
+            std::vector<pythonic::graph::Edge> get_edges(size_t node)
+            {
+                return impl.get_edges(node);
+            }
+
+            // String representation
+            std::string str() const
+            {
+                std::ostringstream oss;
+                oss << "Graph(nodes=" << impl.node_count() << ", edges=" << impl.edge_count() << ")";
+                return oss.str();
+            }
+        };
+
+        // ============ var Graph Method Definitions ============
+        // These are defined after VarGraphWrapper is complete to avoid incomplete type errors.
+
+        inline VarGraphWrapper &var::graph_ref()
+        {
+            if (tag_ != TypeTag::GRAPH)
+                throw std::runtime_error("Operation requires a graph");
+            auto &ptr = std::get<GraphPtr>(value);
+            if (!ptr)
+                throw std::runtime_error("Graph is null");
+            return *ptr;
+        }
+
+        inline const VarGraphWrapper &var::graph_ref() const
+        {
+            if (tag_ != TypeTag::GRAPH)
+                throw std::runtime_error("Operation requires a graph");
+            const auto &ptr = std::get<GraphPtr>(value);
+            if (!ptr)
+                throw std::runtime_error("Graph is null");
+            return *ptr;
+        }
+
+        // Helper implementations for str() and operator bool()
+        inline std::string var::graph_str_impl() const
+        {
+            return graph_ref().str();
+        }
+
+        inline bool var::graph_bool_impl() const
+        {
+            return graph_ref().node_count() > 0;
+        }
+
+        // ===== Graph Properties =====
+        inline size_t var::node_count() const { return graph_ref().node_count(); }
+        inline size_t var::edge_count() const { return graph_ref().edge_count(); }
+        inline bool var::is_connected() const { return graph_ref().is_connected(); }
+        inline bool var::has_cycle() const { return graph_ref().has_cycle(); }
+        inline bool var::has_edge(size_t from, size_t to) const { return graph_ref().has_edge(from, to); }
+        inline std::optional<double> var::get_edge_weight(size_t from, size_t to) const { return graph_ref().get_edge_weight(from, to); }
+        inline size_t var::out_degree(size_t node) const { return graph_ref().out_degree(node); }
+        inline size_t var::in_degree(size_t node) const { return graph_ref().in_degree(node); }
+
+        // ===== Graph Modification =====
+        inline void var::add_edge(size_t u, size_t v, double w1, double w2, bool directed)
+        {
+            graph_ref().add_edge(u, v, w1, w2, directed);
+        }
+
+        inline bool var::remove_edge(size_t from, size_t to, bool remove_reverse)
+        {
+            return graph_ref().remove_edge(from, to, remove_reverse);
+        }
+
+        inline void var::set_edge_weight(size_t from, size_t to, double weight)
+        {
+            graph_ref().set_edge_weight(from, to, weight);
+        }
+
+        // ===== Capacity Reservation (Optimization) =====
+        inline void var::reserve_edges_per_node(size_t per_node)
+        {
+            graph_ref().reserve_edges_per_node(per_node);
+        }
+
+        inline void var::reserve_edges_by_counts(const var &counts)
+        {
+            if (!counts.is<List>())
+                throw std::runtime_error("reserve_edges_by_counts requires a list of counts");
+            const auto &lst = counts.get<List>();
+            std::vector<size_t> vec;
+            vec.reserve(lst.size());
+            for (const auto &item : lst)
+                vec.push_back(static_cast<size_t>(static_cast<long long>(item)));
+            graph_ref().reserve_edges_by_counts(vec);
+        }
+
+        // ===== Node Data =====
+        inline void var::set_node_data(size_t node, const var &data)
+        {
+            graph_ref().set_node_data(node, data);
+        }
+
+        inline var &var::get_node_data(size_t node)
+        {
+            return graph_ref().get_node_data(node);
+        }
+
+        // ===== Traversals - Return var (list) for Python-like interface =====
+        inline var var::dfs(size_t start, bool recursive)
+        {
+            auto result = graph_ref().dfs(start, recursive);
+            List lst;
+            lst.reserve(result.size());
+            for (size_t n : result)
+                lst.emplace_back(static_cast<long long>(n));
+            return var(std::move(lst));
+        }
+
+        inline var var::bfs(size_t start)
+        {
+            auto result = graph_ref().bfs(start);
+            List lst;
+            lst.reserve(result.size());
+            for (size_t n : result)
+                lst.emplace_back(static_cast<long long>(n));
+            return var(std::move(lst));
+        }
+
+        // ===== Shortest Paths =====
+        inline var var::get_shortest_path(size_t src, size_t dest)
+        {
+            auto [path, dist] = graph_ref().get_shortest_path(src, dest);
+            Dict result;
+            List path_list;
+            path_list.reserve(path.size());
+            for (size_t n : path)
+                path_list.emplace_back(static_cast<long long>(n));
+            result["path"] = var(std::move(path_list));
+            result["distance"] = var(dist);
+            return var(std::move(result));
+        }
+
+        inline var var::bellman_ford(size_t src) const
+        {
+            auto [dist, prev] = graph_ref().bellman_ford(src);
+            Dict result;
+            List dist_list, prev_list;
+            dist_list.reserve(dist.size());
+            prev_list.reserve(prev.size());
+            for (double d : dist)
+                dist_list.emplace_back(d);
+            for (size_t p : prev)
+                prev_list.emplace_back(static_cast<long long>(p));
+            result["distances"] = var(std::move(dist_list));
+            result["predecessors"] = var(std::move(prev_list));
+            return var(std::move(result));
+        }
+
+        inline var var::floyd_warshall() const
+        {
+            auto dist = graph_ref().floyd_warshall();
+            List result;
+            result.reserve(dist.size());
+            for (const auto &row : dist)
+            {
+                List row_list;
+                row_list.reserve(row.size());
+                for (double d : row)
+                    row_list.emplace_back(d);
+                result.emplace_back(std::move(row_list));
+            }
+            return var(std::move(result));
+        }
+
+        // ===== Graph Algorithms =====
+        inline var var::topological_sort() const
+        {
+            auto result = graph_ref().topological_sort();
+            List lst;
+            lst.reserve(result.size());
+            for (size_t n : result)
+                lst.emplace_back(static_cast<long long>(n));
+            return var(std::move(lst));
+        }
+
+        inline var var::connected_components() const
+        {
+            auto comps = graph_ref().connected_components();
+            List result;
+            result.reserve(comps.size());
+            for (const auto &comp : comps)
+            {
+                List comp_list;
+                comp_list.reserve(comp.size());
+                for (size_t n : comp)
+                    comp_list.emplace_back(static_cast<long long>(n));
+                result.emplace_back(std::move(comp_list));
+            }
+            return var(std::move(result));
+        }
+
+        inline var var::strongly_connected_components() const
+        {
+            auto sccs = graph_ref().strongly_connected_components();
+            List result;
+            result.reserve(sccs.size());
+            for (const auto &scc : sccs)
+            {
+                List scc_list;
+                scc_list.reserve(scc.size());
+                for (size_t n : scc)
+                    scc_list.emplace_back(static_cast<long long>(n));
+                result.emplace_back(std::move(scc_list));
+            }
+            return var(std::move(result));
+        }
+
+        inline var var::prim_mst() const
+        {
+            auto [weight, edges] = graph_ref().prim_mst();
+            Dict result;
+            result["weight"] = var(weight);
+            List edge_list;
+            edge_list.reserve(edges.size());
+            for (const auto &[from, to, w] : edges)
+            {
+                List edge;
+                edge.emplace_back(static_cast<long long>(from));
+                edge.emplace_back(static_cast<long long>(to));
+                edge.emplace_back(w);
+                edge_list.emplace_back(std::move(edge));
+            }
+            result["edges"] = var(std::move(edge_list));
+            return var(std::move(result));
+        }
+
+        // ===== Graph Serialization =====
+        inline void var::save_graph(const std::string &filename) const
+        {
+            graph_ref().save(filename);
+        }
+
+        inline void var::to_dot(const std::string &filename, bool show_weights) const
+        {
+            graph_ref().to_dot(filename, show_weights);
+        }
+
+        // ===== Get edges for a node =====
+        inline var var::get_edges(size_t node)
+        {
+            auto edges = graph_ref().get_edges(node);
+            List result;
+            result.reserve(edges.size());
+            for (const auto &e : edges)
+            {
+                Dict edge;
+                edge["to"] = var(static_cast<long long>(e.id));
+                edge["weight"] = var(e.weight);
+                edge["directed"] = var(e.directed);
+                result.emplace_back(std::move(edge));
+            }
+            return var(std::move(result));
+        }
+
+        /**
+         * @brief Create a new graph with n nodes.
+         *
+         * Returns a var containing a graph. All graph operations can be performed
+         * via the var's graph methods.
+         *
+         * @param n Number of nodes in the graph (indexed 0 to n-1).
+         * @return var containing the graph.
+         *
+         * Example:
+         * @code
+         * var g = graph(5);
+         * g.add_edge(0, 1);
+         * g.set_node_data(0, "Start");
+         * var path = g.dfs(0);
+         * @endcode
+         */
+        inline var graph(size_t n)
+        {
+            return var(std::make_shared<VarGraphWrapper>(n));
+        }
+
+        /**
+         * @brief Load a graph from a file.
+         *
+         * @param filename Path to the graph file.
+         * @return var containing the loaded graph.
+         */
+        inline var load_graph(const std::string &filename)
+        {
+            auto g = VarGraph::load(filename);
+            return var(std::make_shared<VarGraphWrapper>(std::move(g)));
+        }
 
         // None constant - Python's None equivalent
         inline const var None = var(NoneType{});
@@ -3628,3 +4611,15 @@ namespace pythonic
 
     } // namespace vars
 } // namespace pythonic
+// std::hash specialization for var - enables use in std::unordered_set and std::unordered_map
+namespace std
+{
+    template <>
+    struct hash<pythonic::vars::var>
+    {
+        size_t operator()(const pythonic::vars::var &v) const noexcept
+        {
+            return v.hash();
+        }
+    };
+} // namespace std

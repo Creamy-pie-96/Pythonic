@@ -17,7 +17,7 @@ namespace pythonic
         using namespace pythonic::loop;
 
         // ============ Map ============
-        // Python-like map(function, iterable)
+        // Python-like map(function, iterable) - OPTIMIZED
 
         template <typename Func, typename Iterable>
         var map(Func &&func, Iterable &&iterable)
@@ -27,17 +27,17 @@ namespace pythonic
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, var>)
                 {
-                    result.push_back(var(func(item)));
+                    result.emplace_back(func(item));
                 }
                 else
                 {
-                    result.push_back(var(func(var(item))));
+                    result.emplace_back(func(var(item)));
                 }
             }
             return var(result);
         }
 
-        // Map with index (like enumerate + map)
+        // Map with index (like enumerate + map) - OPTIMIZED
         template <typename Func, typename Iterable>
         var map_indexed(Func &&func, Iterable &&iterable)
         {
@@ -47,11 +47,11 @@ namespace pythonic
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, var>)
                 {
-                    result.push_back(var(func(idx, item)));
+                    result.emplace_back(func(idx, item));
                 }
                 else
                 {
-                    result.push_back(var(func(idx, var(item))));
+                    result.emplace_back(func(idx, var(item)));
                 }
                 ++idx;
             }
@@ -59,7 +59,7 @@ namespace pythonic
         }
 
         // ============ Filter ============
-        // Python-like filter(function, iterable)
+        // Python-like filter(function, iterable) - OPTIMIZED
 
         template <typename Func, typename Iterable>
         var filter(Func &&func, Iterable &&iterable)
@@ -72,13 +72,13 @@ namespace pythonic
                 {
                     keep = static_cast<bool>(func(item));
                     if (keep)
-                        result.push_back(item);
+                        result.emplace_back(item);
                 }
                 else
                 {
                     keep = static_cast<bool>(func(var(item)));
                     if (keep)
-                        result.push_back(var(item));
+                        result.emplace_back(item);
                 }
             }
             return var(result);
@@ -142,7 +142,7 @@ namespace pythonic
                 {
                     if (static_cast<bool>(cond(item)))
                     {
-                        result.push_back(var(expr(item)));
+                        result.emplace_back(expr(item));
                     }
                 }
                 else
@@ -150,7 +150,7 @@ namespace pythonic
                     var v(item);
                     if (static_cast<bool>(cond(v)))
                     {
-                        result.push_back(var(expr(v)));
+                        result.emplace_back(expr(v));
                     }
                 }
             }
@@ -257,14 +257,14 @@ namespace pythonic
         }
 
         // ============ Sorted ============
-        // Python-like sorted(iterable, key=None, reverse=False)
+        // Python-like sorted(iterable, key=None, reverse=False) - OPTIMIZED
 
         inline var sorted(const var &iterable, bool reverse = false)
         {
             List result;
-            for (auto item : iterable)
+            for (const auto &item : iterable)
             {
-                result.push_back(item);
+                result.emplace_back(item);
             }
             if (reverse)
             {
@@ -282,9 +282,9 @@ namespace pythonic
         var sorted(const var &iterable, KeyFunc &&key, bool reverse = false)
         {
             List result;
-            for (auto item : iterable)
+            for (const auto &item : iterable)
             {
-                result.push_back(item);
+                result.emplace_back(item);
             }
             if (reverse)
             {
@@ -455,11 +455,13 @@ namespace pythonic
         }
 
         // ============ Take / Drop ============
+        // OPTIMIZED: reserve + emplace_back
 
         template <typename Iterable>
         var take(size_t n, Iterable &&iterable)
         {
             List result;
+            result.reserve(n);
             size_t i = 0;
             for (auto &&item : iterable)
             {
@@ -467,17 +469,18 @@ namespace pythonic
                     break;
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, var>)
                 {
-                    result.push_back(item);
+                    result.emplace_back(item);
                 }
                 else
                 {
-                    result.push_back(var(item));
+                    result.emplace_back(item);
                 }
                 ++i;
             }
             return var(result);
         }
 
+        // OPTIMIZED: use emplace_back
         template <typename Iterable>
         var drop(size_t n, Iterable &&iterable)
         {
@@ -489,11 +492,11 @@ namespace pythonic
                 {
                     if constexpr (std::is_same_v<std::decay_t<decltype(item)>, var>)
                     {
-                        result.push_back(item);
+                        result.emplace_back(item);
                     }
                     else
                     {
-                        result.push_back(var(item));
+                        result.emplace_back(item);
                     }
                 }
                 ++i;
@@ -502,6 +505,7 @@ namespace pythonic
         }
 
         // ============ TakeWhile / DropWhile ============
+        // OPTIMIZED: use emplace_back
 
         template <typename Iterable, typename Pred>
         var take_while(Pred &&pred, Iterable &&iterable)
@@ -513,14 +517,14 @@ namespace pythonic
                 {
                     if (!static_cast<bool>(pred(item)))
                         break;
-                    result.push_back(item);
+                    result.emplace_back(item);
                 }
                 else
                 {
                     var v(item);
                     if (!static_cast<bool>(pred(v)))
                         break;
-                    result.push_back(v);
+                    result.emplace_back(v);
                 }
             }
             return var(result);
@@ -538,7 +542,7 @@ namespace pythonic
                     if (dropping && static_cast<bool>(pred(item)))
                         continue;
                     dropping = false;
-                    result.push_back(item);
+                    result.emplace_back(item);
                 }
                 else
                 {
@@ -546,47 +550,47 @@ namespace pythonic
                     if (dropping && static_cast<bool>(pred(v)))
                         continue;
                     dropping = false;
-                    result.push_back(v);
+                    result.emplace_back(v);
                 }
             }
             return var(result);
         }
 
         // ============ Flatten ============
-        // Flatten nested lists one level
+        // Flatten nested lists one level - OPTIMIZED
 
         inline var flatten(const var &nested)
         {
             List result;
-            for (auto item : nested)
+            for (const auto &item : nested)
             {
                 if (item.is<List>())
                 {
-                    for (auto inner : item)
+                    for (const auto &inner : item)
                     {
-                        result.push_back(inner);
+                        result.emplace_back(inner);
                     }
                 }
                 else
                 {
-                    result.push_back(item);
+                    result.emplace_back(item);
                 }
             }
             return var(result);
         }
 
         // ============ Unique ============
-        // Return unique elements preserving order
+        // Return unique elements preserving order - OPTIMIZED
 
         inline var unique(const var &iterable)
         {
             List result;
             Set seen;
-            for (auto item : iterable)
+            for (const auto &item : iterable)
             {
                 if (seen.find(item) == seen.end())
                 {
-                    result.push_back(item);
+                    result.emplace_back(item);
                     seen.insert(item);
                 }
             }
@@ -594,13 +598,13 @@ namespace pythonic
         }
 
         // ============ GroupBy ============
-        // Group elements by key function
+        // Group elements by key function - OPTIMIZED
 
         template <typename KeyFunc>
         var group_by(KeyFunc &&key_func, const var &iterable)
         {
             Dict result;
-            for (auto item : iterable)
+            for (const auto &item : iterable)
             {
                 var key = key_func(item);
                 std::string key_str = key.str();
@@ -608,7 +612,7 @@ namespace pythonic
                 {
                     result[key_str] = vars::list();
                 }
-                result[key_str].get<List>().push_back(item);
+                result[key_str].get<List>().emplace_back(item);
             }
             return var(result);
         }
