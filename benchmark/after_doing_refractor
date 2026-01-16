@@ -1,0 +1,117 @@
+# Pythonic Library Benchmark Report
+
+**Generated:** 2026-01-16 23:13:12
+
+This benchmark compares:
+- **Native C++**: Direct C++ STL operations
+- **Pythonic**: The Pythonic library's `var` type
+- **Python**: Native Python 3 (when available)
+
+## Summary
+
+| Metric | Value |
+|--------|-------|
+| Total Benchmarks | 85 |
+| Faster than Python | 52 |
+| Slower than Python | 33 |
+| No Python Data | 0 |
+| Avg Overhead vs Native | 1655.49x |
+| Avg Speedup vs Python | 366.65x |
+
+## Detailed Results
+
+| Operation | Native C++ | Pythonic | Python | vs Native | vs Python |
+|-----------|------------|----------|--------|-----------|----------|
+| Integer Addition | 0.001 | 0.127 | 29.555 | 86.31x | **233.40x faster** |
+| Integer Multiplication | 0.001 | 8.410 | 35.638 | 5736.62x | **4.24x faster** |
+| Double Addition | 0.001 | 0.150 | 27.479 | 102.07x | **183.51x faster** |
+| Integer Division | 0.001 | 0.136 | 25.403 | 92.88x | **186.43x faster** |
+| Integer Modulo | 0.001 | 0.132 | 38.278 | 94.44x | **290.13x faster** |
+| Integer Comparison | 0.001 | 0.182 | 42.045 | 124.11x | **231.09x faster** |
+| String Concatenation | 0.230 | 0.922 | 0.163 | 4.02x | *5.66x slower* |
+| String Comparison | 0.001 | 40.632 | 19.513 | 41588.54x | *2.08x slower* |
+| String upper() | 0.396 | 0.687 | 0.457 | 1.74x | *1.50x slower* |
+| String lower() | 0.430 | 0.638 | 0.462 | 1.48x | *1.38x slower* |
+| String strip() | 0.507 | 0.886 | 0.592 | 1.75x | *1.50x slower* |
+| String replace() | 0.544 | 1.827 | 1.042 | 3.36x | *1.75x slower* |
+| String find() | 0.128 | 0.505 | 0.976 | 3.96x | **1.93x faster** |
+| String split() | 3.922 | 6.379 | 1.458 | 1.63x | *4.38x slower* |
+| String startswith() | 0.039 | 0.388 | 0.755 | 9.82x | **1.95x faster** |
+| String endswith() | 0.002 | 0.347 | 0.733 | 146.24x | **2.11x faster** |
+| String isdigit() | 0.001 | 0.010 | 0.398 | 11.15x | **39.32x faster** |
+| String center() | 0.768 | 1.229 | 0.757 | 1.60x | *1.62x slower* |
+| String zfill() | 0.240 | 0.463 | 0.728 | 1.93x | **1.57x faster** |
+| String Slice [2:8] | 0.085 | 0.457 | 0.663 | 5.39x | **1.45x faster** |
+| List Slice [2:8] | 0.220 | 1.937 | 0.758 | 8.81x | *2.55x slower* |
+| String Slice [::2] | 0.128 | 0.420 | 0.770 | 3.28x | **1.83x faster** |
+| List Slice [::2] | 0.046 | 1.719 | 1.503 | 37.64x | *1.14x slower* |
+| List Slice [-5:-1] | 0.226 | 1.421 | 0.791 | 6.28x | *1.80x slower* |
+| List Slice [::-1] (Reverse) | 0.101 | 2.230 | 2.145 | 22.16x | *1.04x slower* |
+| List Creation | 0.106 | 0.772 | 0.632 | 7.30x | *1.22x slower* |
+| Dict Creation | 1.497 | 2.529 | 1.293 | 1.69x | *1.96x slower* |
+| Set Creation | 1.293 | 2.898 | 1.304 | 2.24x | *2.22x slower* |
+| List append() | 0.122 | 0.647 | 0.051 | 5.31x | *12.80x slower* |
+| List extend() | 0.308 | 3.685 | 1.373 | 11.98x | *2.68x slower* |
+| List Index Access | 0.003 | 2.504 | 0.047 | 874.33x | *53.59x slower* |
+| Dict Access | 0.046 | 0.246 | 0.178 | 5.38x | *1.38x slower* |
+| Dict keys() | 0.184 | 2.812 | 49.443 | 15.30x | **17.58x faster** |
+| Dict values() | 0.107 | 1.308 | 46.730 | 12.18x | **35.72x faster** |
+| Dict items() | 0.245 | 8.735 | 207.459 | 35.65x | **23.75x faster** |
+| Set add() | 1.089 | 0.877 | 0.067 | 0.81x | *13.00x slower* |
+| 'in' Operator (List) | 0.004 | 0.363 | 3.110 | 83.75x | **8.58x faster** |
+| 'in' Operator (Set) | 0.010 | 0.159 | 0.033 | 16.42x | *4.77x slower* |
+| 'in' Operator (Dict) | 0.028 | 0.549 | 0.037 | 19.85x | *14.66x slower* |
+| List + Operator | 0.107 | 0.992 | 3.285 | 9.25x | **3.31x faster** |
+| List * Operator | 0.353 | 1.388 | 3.202 | 3.93x | **2.31x faster** |
+| range() Iteration | 0.001 | 0.008 | 41.860 | 7.78x | **5498.47x faster** |
+| range(start, stop) Iteration | 0.001 | 0.007 | 41.847 | 6.93x | **6176.71x faster** |
+| range(start, stop, step) Iteration | 0.001 | 0.004 | 20.873 | 4.69x | **4899.84x faster** |
+| for_in with List | 0.002 | 7.238 | 0.028 | 3700.48x | *259.48x slower* |
+| enumerate() | 0.001 | 2.082 | 0.067 | 1490.34x | *30.86x slower* |
+| zip() | 0.002 | 1.379 | 0.054 | 581.04x | *25.60x slower* |
+| Dict Iteration (items()) | 0.003 | 18.487 | 0.039 | 6457.36x | *478.65x slower* |
+| map() | 0.756 | 8.959 | 0.054 | 11.85x | *167.02x slower* |
+| filter() | 0.654 | 5.618 | 0.064 | 8.58x | *87.27x slower* |
+| reduce() | 0.002 | 11.274 | 0.062 | 4611.10x | *180.49x slower* |
+| Chained map + filter | 1.041 | 20.280 | 0.106 | 19.48x | *191.14x slower* |
+| Lambda Application | 0.001 | 0.190 | 0.692 | 194.60x | **3.64x faster** |
+| sorted() Ascending | 0.298 | 3.672 | 45.526 | 12.34x | **12.40x faster** |
+| sorted() Descending | 0.296 | 3.486 | 45.588 | 11.79x | **13.08x faster** |
+| Large List Sorting (1000 elements) | 0.497 | 3.656 | 51.173 | 7.36x | **14.00x faster** |
+| len() | 0.003 | 0.003 | 35.172 | 1.00x | **12588.48x faster** |
+| sum() | 0.001 | 0.975 | 51.589 | 998.03x | **52.91x faster** |
+| min() | 0.003 | 1.580 | 97.961 | 538.65x | **61.98x faster** |
+| max() | 0.001 | 1.490 | 110.584 | 1066.69x | **74.21x faster** |
+| abs() | 0.001 | 9.908 | 25.621 | 7092.30x | **2.59x faster** |
+| all() | 0.002 | 0.572 | 3.955 | 233.95x | **6.91x faster** |
+| any() | 0.001 | 0.396 | 5.065 | 269.94x | **12.80x faster** |
+| pow() | 0.001 | 0.187 | 0.909 | 134.08x | **4.86x faster** |
+| sqrt() | 0.001 | 0.168 | 0.685 | 172.43x | **4.07x faster** |
+| floor() | 0.001 | 0.185 | 0.435 | 189.32x | **2.35x faster** |
+| ceil() | 0.001 | 0.183 | 0.475 | 186.96x | **2.60x faster** |
+| round() | 0.001 | 0.209 | 3.415 | 142.35x | **16.35x faster** |
+| Int() from String | 0.137 | 0.554 | 1.475 | 4.03x | **2.67x faster** |
+| Float() from String | 0.910 | 1.704 | 1.124 | 1.87x | *1.52x slower* |
+| Str() from Int | 0.118 | 0.367 | 1.123 | 3.12x | **3.06x faster** |
+| Bool() from Int | 0.001 | 14.536 | 45.910 | 14863.06x | **3.16x faster** |
+| Int to Double | 0.001 | 11.004 | 44.844 | 7501.06x | **4.08x faster** |
+| type() | 0.001 | 33.165 | 0.295 | 36525.31x | *112.27x slower* |
+| isinstance() | 0.002 | 8.008 | 0.306 | 4246.25x | *26.16x slower* |
+| Graph Creation | 0.001 | 0.062 | 5.901 | 44.10x | **95.80x faster** |
+| add_edge() | 0.014 | 0.038 | 0.709 | 2.64x | **18.66x faster** |
+| DFS Traversal | 0.346 | 0.168 | 5.888 | 0.48x | **35.09x faster** |
+| BFS Traversal | 0.297 | 0.215 | 13.551 | 0.73x | **62.93x faster** |
+| has_edge() | 0.001 | 0.012 | 0.120 | 13.15x | **10.02x faster** |
+| get_shortest_path() | 0.056 | 0.048 | 1.066 | 0.86x | **22.22x faster** |
+| is_connected() | 0.199 | 0.078 | 3.285 | 0.39x | **42.33x faster** |
+| has_cycle() | 0.001 | 0.082 | 7.902 | 89.76x | **96.95x faster** |
+| topological_sort() | 0.000 | 0.019 | 0.613 | 38.71x | **32.39x faster** |
+| connected_components() | 0.001 | 0.039 | 0.257 | 26.90x | **6.51x faster** |
+
+## Interpretation
+
+- **vs Native**: How much slower Pythonic is compared to native C++. Lower is better.
+- **vs Python**: How much faster Pythonic is compared to Python. Higher is better.
+- Times are in milliseconds (ms) or microseconds (μs).
+
+Pythonic adds abstraction overhead compared to native C++, but aims to be significantly faster than Python while providing a similar, ergonomic API.
