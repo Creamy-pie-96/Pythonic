@@ -274,7 +274,7 @@ namespace pythonic
                     throw std::runtime_error("File is not open");
                 }
 
-                if (auto *lst = std::get_if<List>(&lines.getValue()))
+                if (auto *lst = lines.var_get_if<List>())
                 {
                     for (const auto &line : *lst)
                     {

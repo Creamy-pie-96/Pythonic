@@ -122,9 +122,8 @@ namespace pythonic
             unsigned int, unsigned long, unsigned long long,
             List, Set, Dict, OrderedSet, OrderedDict, GraphPtr>;
 
-        // TypeTag enum for fast type dispatch (avoids repeated std::get_if/holds_alternative calls)
+        // TypeTag enum for fast type dispatch (avoids repeated var_get_if/holds_alternative calls)
         // Using uint8_t as underlying type to minimize memory overhead (1 byte)
-        // IMPORTANT: Order must match varType order exactly!
         enum class TypeTag : uint8_t
         {
             NONE = 0,
@@ -147,16 +146,409 @@ namespace pythonic
             GRAPH
         };
 
+        // ============ Union-based Storage for var ============
+        // This replaces std::variant for better performance:
+        // - Direct field access (no var_get overhead)
+        // - Smaller memory footprint (~24 bytes vs ~80 bytes for variant)
+        // - Better cache locality
+        //
+        // Non-trivial types (string, containers) are heap-allocated via void* ptr
+        // and require manual lifetime management in var's constructors/destructor.
+
+        union VarData
+        {
+            bool b;
+            int i;
+            unsigned int ui;
+            long l;
+            unsigned long ul;
+            long long ll;
+            unsigned long long ull;
+            float f;
+            double d;
+            long double ld;
+            void *ptr; // For: string, List, Set, Dict, OrderedSet, OrderedDict, GraphPtr
+
+            // Default constructor (for union, does nothing)
+            VarData() : ll(0) {}
+
+            // Explicit constructors for each type
+            VarData(bool v) : b(v) {}
+            VarData(int v) : i(v) {}
+            VarData(unsigned int v) : ui(v) {}
+            VarData(long v) : l(v) {}
+            VarData(unsigned long v) : ul(v) {}
+            VarData(long long v) : ll(v) {}
+            VarData(unsigned long long v) : ull(v) {}
+            VarData(float v) : f(v) {}
+            VarData(double v) : d(v) {}
+            VarData(long double v) : ld(v) {}
+            VarData(void *v) : ptr(v) {}
+        };
+
+        // Helper to check if a TypeTag represents a heap-allocated type
+        inline bool is_heap_type(TypeTag tag) noexcept
+        {
+            switch (tag)
+            {
+            case TypeTag::STRING:
+            case TypeTag::LIST:
+            case TypeTag::SET:
+            case TypeTag::DICT:
+            case TypeTag::ORDEREDSET:
+            case TypeTag::ORDEREDDICT:
+            case TypeTag::GRAPH:
+                return true;
+            default:
+                return false;
+            }
+        }
+
         class var
         {
         private:
-            varType value;
-            TypeTag tag_; // Cached type tag for fast dispatch
+            VarData data_; // Union-based storage (replaces std::variant)
+            TypeTag tag_;  // Type discriminator
 
-            // Helper to compute tag from variant
-            static TypeTag compute_tag(const varType &v)
+        public:
+            // ============ Internal Accessors for Union ============
+            // These provide type-safe access to the union data
+            // Template specializations handle each type
+
+            template <typename T>
+            T &var_get()
             {
-                return static_cast<TypeTag>(v.index());
+                if constexpr (std::is_same_v<T, bool>)
+                    return data_.b;
+                else if constexpr (std::is_same_v<T, int>)
+                    return data_.i;
+                else if constexpr (std::is_same_v<T, unsigned int>)
+                    return data_.ui;
+                else if constexpr (std::is_same_v<T, long>)
+                    return data_.l;
+                else if constexpr (std::is_same_v<T, unsigned long>)
+                    return data_.ul;
+                else if constexpr (std::is_same_v<T, long long>)
+                    return data_.ll;
+                else if constexpr (std::is_same_v<T, unsigned long long>)
+                    return data_.ull;
+                else if constexpr (std::is_same_v<T, float>)
+                    return data_.f;
+                else if constexpr (std::is_same_v<T, double>)
+                    return data_.d;
+                else if constexpr (std::is_same_v<T, long double>)
+                    return data_.ld;
+                else if constexpr (std::is_same_v<T, std::string>)
+                    return *static_cast<std::string *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, List>)
+                    return *static_cast<List *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, Set>)
+                    return *static_cast<Set *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, Dict>)
+                    return *static_cast<Dict *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, OrderedSet>)
+                    return *static_cast<OrderedSet *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, OrderedDict>)
+                    return *static_cast<OrderedDict *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, GraphPtr>)
+                    return *static_cast<GraphPtr *>(data_.ptr);
+                else
+                    static_assert(sizeof(T) == 0, "Unsupported type for var_get");
+            }
+
+            template <typename T>
+            const T &var_get() const
+            {
+                if constexpr (std::is_same_v<T, bool>)
+                    return data_.b;
+                else if constexpr (std::is_same_v<T, int>)
+                    return data_.i;
+                else if constexpr (std::is_same_v<T, unsigned int>)
+                    return data_.ui;
+                else if constexpr (std::is_same_v<T, long>)
+                    return data_.l;
+                else if constexpr (std::is_same_v<T, unsigned long>)
+                    return data_.ul;
+                else if constexpr (std::is_same_v<T, long long>)
+                    return data_.ll;
+                else if constexpr (std::is_same_v<T, unsigned long long>)
+                    return data_.ull;
+                else if constexpr (std::is_same_v<T, float>)
+                    return data_.f;
+                else if constexpr (std::is_same_v<T, double>)
+                    return data_.d;
+                else if constexpr (std::is_same_v<T, long double>)
+                    return data_.ld;
+                else if constexpr (std::is_same_v<T, std::string>)
+                    return *static_cast<const std::string *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, List>)
+                    return *static_cast<const List *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, Set>)
+                    return *static_cast<const Set *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, Dict>)
+                    return *static_cast<const Dict *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, OrderedSet>)
+                    return *static_cast<const OrderedSet *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, OrderedDict>)
+                    return *static_cast<const OrderedDict *>(data_.ptr);
+                else if constexpr (std::is_same_v<T, GraphPtr>)
+                    return *static_cast<const GraphPtr *>(data_.ptr);
+                else
+                    static_assert(sizeof(T) == 0, "Unsupported type for var_get");
+            }
+
+            // var_get_if - returns pointer to value if type matches, nullptr otherwise
+            // This is for backward compatibility with code that used std::get_if
+            template <typename T>
+            T *var_get_if() noexcept
+            {
+                if constexpr (std::is_same_v<T, bool>)
+                {
+                    if (tag_ == TypeTag::BOOL)
+                        return &data_.b;
+                }
+                else if constexpr (std::is_same_v<T, int>)
+                {
+                    if (tag_ == TypeTag::INT)
+                        return &data_.i;
+                }
+                else if constexpr (std::is_same_v<T, unsigned int>)
+                {
+                    if (tag_ == TypeTag::UINT)
+                        return &data_.ui;
+                }
+                else if constexpr (std::is_same_v<T, long>)
+                {
+                    if (tag_ == TypeTag::LONG)
+                        return &data_.l;
+                }
+                else if constexpr (std::is_same_v<T, unsigned long>)
+                {
+                    if (tag_ == TypeTag::ULONG)
+                        return &data_.ul;
+                }
+                else if constexpr (std::is_same_v<T, long long>)
+                {
+                    if (tag_ == TypeTag::LONG_LONG)
+                        return &data_.ll;
+                }
+                else if constexpr (std::is_same_v<T, unsigned long long>)
+                {
+                    if (tag_ == TypeTag::ULONG_LONG)
+                        return &data_.ull;
+                }
+                else if constexpr (std::is_same_v<T, float>)
+                {
+                    if (tag_ == TypeTag::FLOAT)
+                        return &data_.f;
+                }
+                else if constexpr (std::is_same_v<T, double>)
+                {
+                    if (tag_ == TypeTag::DOUBLE)
+                        return &data_.d;
+                }
+                else if constexpr (std::is_same_v<T, long double>)
+                {
+                    if (tag_ == TypeTag::LONG_DOUBLE)
+                        return &data_.ld;
+                }
+                else if constexpr (std::is_same_v<T, std::string>)
+                {
+                    if (tag_ == TypeTag::STRING)
+                        return static_cast<std::string *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, List>)
+                {
+                    if (tag_ == TypeTag::LIST)
+                        return static_cast<List *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, Set>)
+                {
+                    if (tag_ == TypeTag::SET)
+                        return static_cast<Set *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, Dict>)
+                {
+                    if (tag_ == TypeTag::DICT)
+                        return static_cast<Dict *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, OrderedSet>)
+                {
+                    if (tag_ == TypeTag::ORDEREDSET)
+                        return static_cast<OrderedSet *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, OrderedDict>)
+                {
+                    if (tag_ == TypeTag::ORDEREDDICT)
+                        return static_cast<OrderedDict *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, GraphPtr>)
+                {
+                    if (tag_ == TypeTag::GRAPH)
+                        return static_cast<GraphPtr *>(data_.ptr);
+                }
+                return nullptr;
+            }
+
+            template <typename T>
+            const T *var_get_if() const noexcept
+            {
+                if constexpr (std::is_same_v<T, bool>)
+                {
+                    if (tag_ == TypeTag::BOOL)
+                        return &data_.b;
+                }
+                else if constexpr (std::is_same_v<T, int>)
+                {
+                    if (tag_ == TypeTag::INT)
+                        return &data_.i;
+                }
+                else if constexpr (std::is_same_v<T, unsigned int>)
+                {
+                    if (tag_ == TypeTag::UINT)
+                        return &data_.ui;
+                }
+                else if constexpr (std::is_same_v<T, long>)
+                {
+                    if (tag_ == TypeTag::LONG)
+                        return &data_.l;
+                }
+                else if constexpr (std::is_same_v<T, unsigned long>)
+                {
+                    if (tag_ == TypeTag::ULONG)
+                        return &data_.ul;
+                }
+                else if constexpr (std::is_same_v<T, long long>)
+                {
+                    if (tag_ == TypeTag::LONG_LONG)
+                        return &data_.ll;
+                }
+                else if constexpr (std::is_same_v<T, unsigned long long>)
+                {
+                    if (tag_ == TypeTag::ULONG_LONG)
+                        return &data_.ull;
+                }
+                else if constexpr (std::is_same_v<T, float>)
+                {
+                    if (tag_ == TypeTag::FLOAT)
+                        return &data_.f;
+                }
+                else if constexpr (std::is_same_v<T, double>)
+                {
+                    if (tag_ == TypeTag::DOUBLE)
+                        return &data_.d;
+                }
+                else if constexpr (std::is_same_v<T, long double>)
+                {
+                    if (tag_ == TypeTag::LONG_DOUBLE)
+                        return &data_.ld;
+                }
+                else if constexpr (std::is_same_v<T, std::string>)
+                {
+                    if (tag_ == TypeTag::STRING)
+                        return static_cast<const std::string *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, List>)
+                {
+                    if (tag_ == TypeTag::LIST)
+                        return static_cast<const List *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, Set>)
+                {
+                    if (tag_ == TypeTag::SET)
+                        return static_cast<const Set *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, Dict>)
+                {
+                    if (tag_ == TypeTag::DICT)
+                        return static_cast<const Dict *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, OrderedSet>)
+                {
+                    if (tag_ == TypeTag::ORDEREDSET)
+                        return static_cast<const OrderedSet *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, OrderedDict>)
+                {
+                    if (tag_ == TypeTag::ORDEREDDICT)
+                        return static_cast<const OrderedDict *>(data_.ptr);
+                }
+                else if constexpr (std::is_same_v<T, GraphPtr>)
+                {
+                    if (tag_ == TypeTag::GRAPH)
+                        return static_cast<const GraphPtr *>(data_.ptr);
+                }
+                return nullptr;
+            }
+
+            // Helper to destroy heap-allocated data
+            void destroy_heap_data() noexcept
+            {
+                switch (tag_)
+                {
+                case TypeTag::STRING:
+                    delete static_cast<std::string *>(data_.ptr);
+                    break;
+                case TypeTag::LIST:
+                    delete static_cast<List *>(data_.ptr);
+                    break;
+                case TypeTag::SET:
+                    delete static_cast<Set *>(data_.ptr);
+                    break;
+                case TypeTag::DICT:
+                    delete static_cast<Dict *>(data_.ptr);
+                    break;
+                case TypeTag::ORDEREDSET:
+                    delete static_cast<OrderedSet *>(data_.ptr);
+                    break;
+                case TypeTag::ORDEREDDICT:
+                    delete static_cast<OrderedDict *>(data_.ptr);
+                    break;
+                case TypeTag::GRAPH:
+                    delete static_cast<GraphPtr *>(data_.ptr);
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            // Helper to copy heap-allocated data from another var
+            void copy_heap_data(const var &other)
+            {
+                switch (other.tag_)
+                {
+                case TypeTag::STRING:
+                    data_.ptr = new std::string(*static_cast<const std::string *>(other.data_.ptr));
+                    break;
+                case TypeTag::LIST:
+                    data_.ptr = new List(*static_cast<const List *>(other.data_.ptr));
+                    break;
+                case TypeTag::SET:
+                    data_.ptr = new Set(*static_cast<const Set *>(other.data_.ptr));
+                    break;
+                case TypeTag::DICT:
+                    data_.ptr = new Dict(*static_cast<const Dict *>(other.data_.ptr));
+                    break;
+                case TypeTag::ORDEREDSET:
+                    data_.ptr = new OrderedSet(*static_cast<const OrderedSet *>(other.data_.ptr));
+                    break;
+                case TypeTag::ORDEREDDICT:
+                    data_.ptr = new OrderedDict(*static_cast<const OrderedDict *>(other.data_.ptr));
+                    break;
+                case TypeTag::GRAPH:
+                    data_.ptr = new GraphPtr(*static_cast<const GraphPtr *>(other.data_.ptr));
+                    break;
+                default:
+                    break;
+                }
+            }
+
+            // Helper to move heap-allocated data from another var
+            void move_heap_data(var &&other) noexcept
+            {
+                data_.ptr = other.data_.ptr;
+                other.data_.ptr = nullptr;
+                other.tag_ = TypeTag::NONE;
             }
 
             // Type promotion helpers
@@ -274,7 +666,7 @@ namespace pythonic
                 if (tag_ == TypeTag::STRING && other.isIntegral())
                 {
                     std::string result;
-                    std::string s = std::get<std::string>(value);
+                    const std::string &s = var_get<std::string>();
                     int count = other.toInt();
                     result.reserve(s.size() * count);
                     for (int i = 0; i < count; ++i)
@@ -284,7 +676,7 @@ namespace pythonic
                 if (other.tag_ == TypeTag::STRING && isIntegral())
                 {
                     std::string result;
-                    std::string s = std::get<std::string>(other.value);
+                    const std::string &s = other.var_get<std::string>();
                     int count = toInt();
                     result.reserve(s.size() * count);
                     for (int i = 0; i < count; ++i)
@@ -419,48 +811,127 @@ namespace pythonic
             // Fast type tag accessor
             TypeTag tag() const { return tag_; }
 
-            // Constructors - all set tag_ appropriately
-            var() : value(0), tag_(TypeTag::INT) {}
-            var(const varType &v) : value(v), tag_(compute_tag(v)) {}
-            var(const char *s) : value(std::string(s)), tag_(TypeTag::STRING) {}
-            var(NoneType) : value(NoneType{}), tag_(TypeTag::NONE) {}
+            // ============ Constructors ============
+            // Default constructor - initializes to int(0)
+            var() : data_(0), tag_(TypeTag::INT) {}
 
-            // Specialized constructors for common types (faster than varType constructor)
-            var(int v) : value(v), tag_(TypeTag::INT) {}
-            var(double v) : value(v), tag_(TypeTag::DOUBLE) {}
-            var(float v) : value(v), tag_(TypeTag::FLOAT) {}
-            var(bool v) : value(v), tag_(TypeTag::BOOL) {}
-            var(long v) : value(v), tag_(TypeTag::LONG) {}
-            var(long long v) : value(v), tag_(TypeTag::LONG_LONG) {}
-            var(long double v) : value(v), tag_(TypeTag::LONG_DOUBLE) {}
-            var(unsigned int v) : value(v), tag_(TypeTag::UINT) {}
-            var(unsigned long v) : value(v), tag_(TypeTag::ULONG) {}
-            var(unsigned long long v) : value(v), tag_(TypeTag::ULONG_LONG) {}
-            var(const std::string &s) : value(s), tag_(TypeTag::STRING) {}
-            var(std::string &&s) : value(std::move(s)), tag_(TypeTag::STRING) {}
-            var(const List &l) : value(l), tag_(TypeTag::LIST) {}
-            var(List &&l) : value(std::move(l)), tag_(TypeTag::LIST) {}
-            var(const Set &s) : value(s), tag_(TypeTag::SET) {}
-            var(Set &&s) : value(std::move(s)), tag_(TypeTag::SET) {}
-            var(const Dict &d) : value(d), tag_(TypeTag::DICT) {}
-            var(Dict &&d) : value(std::move(d)), tag_(TypeTag::DICT) {}
-            var(const OrderedSet &hs) : value(hs), tag_(TypeTag::ORDEREDSET) {}
-            var(OrderedSet &&hs) : value(std::move(hs)), tag_(TypeTag::ORDEREDSET) {}
-            var(const OrderedDict &od) : value(od), tag_(TypeTag::ORDEREDDICT) {}
-            var(OrderedDict &&od) : value(std::move(od)), tag_(TypeTag::ORDEREDDICT) {}
-            var(const GraphPtr &g) : value(g), tag_(TypeTag::GRAPH) {}
-            var(GraphPtr &&g) : value(std::move(g)), tag_(TypeTag::GRAPH) {}
+            // None constructor
+            var(NoneType) : data_(), tag_(TypeTag::NONE) {}
+
+            // Primitive type constructors - direct union assignment
+            var(bool v) : data_(v), tag_(TypeTag::BOOL) {}
+            var(int v) : data_(v), tag_(TypeTag::INT) {}
+            var(unsigned int v) : data_(v), tag_(TypeTag::UINT) {}
+            var(long v) : data_(v), tag_(TypeTag::LONG) {}
+            var(unsigned long v) : data_(v), tag_(TypeTag::ULONG) {}
+            var(long long v) : data_(v), tag_(TypeTag::LONG_LONG) {}
+            var(unsigned long long v) : data_(v), tag_(TypeTag::ULONG_LONG) {}
+            var(float v) : data_(v), tag_(TypeTag::FLOAT) {}
+            var(double v) : data_(v), tag_(TypeTag::DOUBLE) {}
+            var(long double v) : data_(v), tag_(TypeTag::LONG_DOUBLE) {}
+
+            // String constructors - heap allocated
+            var(const char *s) : data_(static_cast<void *>(new std::string(s))), tag_(TypeTag::STRING) {}
+            var(const std::string &s) : data_(static_cast<void *>(new std::string(s))), tag_(TypeTag::STRING) {}
+            var(std::string &&s) : data_(static_cast<void *>(new std::string(std::move(s)))), tag_(TypeTag::STRING) {}
+
+            // Container constructors - heap allocated
+            var(const List &l) : data_(static_cast<void *>(new List(l))), tag_(TypeTag::LIST) {}
+            var(List &&l) : data_(static_cast<void *>(new List(std::move(l)))), tag_(TypeTag::LIST) {}
+            var(const Set &s) : data_(static_cast<void *>(new Set(s))), tag_(TypeTag::SET) {}
+            var(Set &&s) : data_(static_cast<void *>(new Set(std::move(s)))), tag_(TypeTag::SET) {}
+            var(const Dict &d) : data_(static_cast<void *>(new Dict(d))), tag_(TypeTag::DICT) {}
+            var(Dict &&d) : data_(static_cast<void *>(new Dict(std::move(d)))), tag_(TypeTag::DICT) {}
+            var(const OrderedSet &hs) : data_(static_cast<void *>(new OrderedSet(hs))), tag_(TypeTag::ORDEREDSET) {}
+            var(OrderedSet &&hs) : data_(static_cast<void *>(new OrderedSet(std::move(hs)))), tag_(TypeTag::ORDEREDSET) {}
+            var(const OrderedDict &od) : data_(static_cast<void *>(new OrderedDict(od))), tag_(TypeTag::ORDEREDDICT) {}
+            var(OrderedDict &&od) : data_(static_cast<void *>(new OrderedDict(std::move(od)))), tag_(TypeTag::ORDEREDDICT) {}
+            var(const GraphPtr &g) : data_(static_cast<void *>(new GraphPtr(g))), tag_(TypeTag::GRAPH) {}
+            var(GraphPtr &&g) : data_(static_cast<void *>(new GraphPtr(std::move(g)))), tag_(TypeTag::GRAPH) {}
+
+            // ============ Destructor ============
+            ~var()
+            {
+                if (is_heap_type(tag_))
+                {
+                    destroy_heap_data();
+                }
+            }
+
+            // ============ Copy Constructor ============
+            var(const var &other) : tag_(other.tag_)
+            {
+                if (is_heap_type(tag_))
+                {
+                    copy_heap_data(other);
+                }
+                else
+                {
+                    data_ = other.data_;
+                }
+            }
+
+            // ============ Move Constructor ============
+            var(var &&other) noexcept : tag_(other.tag_)
+            {
+                if (is_heap_type(tag_))
+                {
+                    move_heap_data(std::move(other));
+                }
+                else
+                {
+                    data_ = other.data_;
+                }
+            }
+
+            // ============ Copy Assignment ============
+            var &operator=(const var &other)
+            {
+                if (this != &other)
+                {
+                    // Destroy current heap data if any
+                    if (is_heap_type(tag_))
+                    {
+                        destroy_heap_data();
+                    }
+                    tag_ = other.tag_;
+                    if (is_heap_type(tag_))
+                    {
+                        copy_heap_data(other);
+                    }
+                    else
+                    {
+                        data_ = other.data_;
+                    }
+                }
+                return *this;
+            }
+
+            // ============ Move Assignment ============
+            var &operator=(var &&other) noexcept
+            {
+                if (this != &other)
+                {
+                    // Destroy current heap data if any
+                    if (is_heap_type(tag_))
+                    {
+                        destroy_heap_data();
+                    }
+                    tag_ = other.tag_;
+                    if (is_heap_type(tag_))
+                    {
+                        move_heap_data(std::move(other));
+                    }
+                    else
+                    {
+                        data_ = other.data_;
+                    }
+                }
+                return *this;
+            }
 
             // Check if this var is None
             bool isNone() const { return tag_ == TypeTag::NONE; }
-
-            // Accessors
-            const varType &getValue() const { return value; }
-            void setValue(const varType &v)
-            {
-                this->value = v;
-                tag_ = compute_tag(v);
-            }
 
             // Type checking - now O(1) using tag
             template <typename T>
@@ -503,7 +974,7 @@ namespace pythonic
                 else if constexpr (std::is_same_v<T, NoneType>)
                     return tag_ == TypeTag::NONE;
                 else
-                    return std::holds_alternative<T>(value);
+                    return false; // Unknown type
             }
 
             // Check if this var holds a graph
@@ -564,45 +1035,45 @@ namespace pythonic
             // These skip type checking for maximum performance in hot paths
             // IMPORTANT: Caller must verify type first using is_list(), etc.
             // Container types
-            List &as_list_unchecked() noexcept { return std::get<List>(value); }
-            const List &as_list_unchecked() const noexcept { return std::get<List>(value); }
-            Dict &as_dict_unchecked() noexcept { return std::get<Dict>(value); }
-            const Dict &as_dict_unchecked() const noexcept { return std::get<Dict>(value); }
-            Set &as_set_unchecked() noexcept { return std::get<Set>(value); }
-            const Set &as_set_unchecked() const noexcept { return std::get<Set>(value); }
-            OrderedDict &as_ordered_dict_unchecked() noexcept { return std::get<OrderedDict>(value); }
-            const OrderedDict &as_ordered_dict_unchecked() const noexcept { return std::get<OrderedDict>(value); }
-            OrderedSet &as_ordered_set_unchecked() noexcept { return std::get<OrderedSet>(value); }
-            const OrderedSet &as_ordered_set_unchecked() const noexcept { return std::get<OrderedSet>(value); }
+            List &as_list_unchecked() noexcept { return var_get<List>(); }
+            const List &as_list_unchecked() const noexcept { return var_get<List>(); }
+            Dict &as_dict_unchecked() noexcept { return var_get<Dict>(); }
+            const Dict &as_dict_unchecked() const noexcept { return var_get<Dict>(); }
+            Set &as_set_unchecked() noexcept { return var_get<Set>(); }
+            const Set &as_set_unchecked() const noexcept { return var_get<Set>(); }
+            OrderedDict &as_ordered_dict_unchecked() noexcept { return var_get<OrderedDict>(); }
+            const OrderedDict &as_ordered_dict_unchecked() const noexcept { return var_get<OrderedDict>(); }
+            OrderedSet &as_ordered_set_unchecked() noexcept { return var_get<OrderedSet>(); }
+            const OrderedSet &as_ordered_set_unchecked() const noexcept { return var_get<OrderedSet>(); }
             // String type
-            std::string &as_string_unchecked() noexcept { return std::get<std::string>(value); }
-            const std::string &as_string_unchecked() const noexcept { return std::get<std::string>(value); }
+            std::string &as_string_unchecked() noexcept { return var_get<std::string>(); }
+            const std::string &as_string_unchecked() const noexcept { return var_get<std::string>(); }
             // Basic numeric types
-            int &as_int_unchecked() noexcept { return std::get<int>(value); }
-            int as_int_unchecked() const noexcept { return std::get<int>(value); }
-            double &as_double_unchecked() noexcept { return std::get<double>(value); }
-            double as_double_unchecked() const noexcept { return std::get<double>(value); }
-            float &as_float_unchecked() noexcept { return std::get<float>(value); }
-            float as_float_unchecked() const noexcept { return std::get<float>(value); }
-            bool &as_bool_unchecked() noexcept { return std::get<bool>(value); }
-            bool as_bool_unchecked() const noexcept { return std::get<bool>(value); }
+            int &as_int_unchecked() noexcept { return var_get<int>(); }
+            int as_int_unchecked() const noexcept { return var_get<int>(); }
+            double &as_double_unchecked() noexcept { return var_get<double>(); }
+            double as_double_unchecked() const noexcept { return var_get<double>(); }
+            float &as_float_unchecked() noexcept { return var_get<float>(); }
+            float as_float_unchecked() const noexcept { return var_get<float>(); }
+            bool &as_bool_unchecked() noexcept { return var_get<bool>(); }
+            bool as_bool_unchecked() const noexcept { return var_get<bool>(); }
             // Extended numeric types
-            long &as_long_unchecked() noexcept { return std::get<long>(value); }
-            long as_long_unchecked() const noexcept { return std::get<long>(value); }
-            long long &as_long_long_unchecked() noexcept { return std::get<long long>(value); }
-            long long as_long_long_unchecked() const noexcept { return std::get<long long>(value); }
-            long double &as_long_double_unchecked() noexcept { return std::get<long double>(value); }
-            long double as_long_double_unchecked() const noexcept { return std::get<long double>(value); }
+            long &as_long_unchecked() noexcept { return var_get<long>(); }
+            long as_long_unchecked() const noexcept { return var_get<long>(); }
+            long long &as_long_long_unchecked() noexcept { return var_get<long long>(); }
+            long long as_long_long_unchecked() const noexcept { return var_get<long long>(); }
+            long double &as_long_double_unchecked() noexcept { return var_get<long double>(); }
+            long double as_long_double_unchecked() const noexcept { return var_get<long double>(); }
             // Unsigned types
-            unsigned int &as_uint_unchecked() noexcept { return std::get<unsigned int>(value); }
-            unsigned int as_uint_unchecked() const noexcept { return std::get<unsigned int>(value); }
-            unsigned long &as_ulong_unchecked() noexcept { return std::get<unsigned long>(value); }
-            unsigned long as_ulong_unchecked() const noexcept { return std::get<unsigned long>(value); }
-            unsigned long long &as_ulong_long_unchecked() noexcept { return std::get<unsigned long long>(value); }
-            unsigned long long as_ulong_long_unchecked() const noexcept { return std::get<unsigned long long>(value); }
+            unsigned int &as_uint_unchecked() noexcept { return var_get<unsigned int>(); }
+            unsigned int as_uint_unchecked() const noexcept { return var_get<unsigned int>(); }
+            unsigned long &as_ulong_unchecked() noexcept { return var_get<unsigned long>(); }
+            unsigned long as_ulong_unchecked() const noexcept { return var_get<unsigned long>(); }
+            unsigned long long &as_ulong_long_unchecked() noexcept { return var_get<unsigned long long>(); }
+            unsigned long long as_ulong_long_unchecked() const noexcept { return var_get<unsigned long long>(); }
             // Graph type
-            GraphPtr &as_graph_unchecked() noexcept { return std::get<GraphPtr>(value); }
-            const GraphPtr &as_graph_unchecked() const noexcept { return std::get<GraphPtr>(value); }
+            GraphPtr &as_graph_unchecked() noexcept { return var_get<GraphPtr>(); }
+            const GraphPtr &as_graph_unchecked() const noexcept { return var_get<GraphPtr>(); }
 
             // ============ Safe Typed Accessors ============
             // These check type and throw if mismatched
@@ -611,137 +1082,137 @@ namespace pythonic
             {
                 if (tag_ != TypeTag::LIST)
                     throw std::runtime_error("as_list() requires a list");
-                return std::get<List>(value);
+                return var_get<List>();
             }
             const List &as_list() const
             {
                 if (tag_ != TypeTag::LIST)
                     throw std::runtime_error("as_list() requires a list");
-                return std::get<List>(value);
+                return var_get<List>();
             }
             Dict &as_dict()
             {
                 if (tag_ != TypeTag::DICT)
                     throw std::runtime_error("as_dict() requires a dict");
-                return std::get<Dict>(value);
+                return var_get<Dict>();
             }
             const Dict &as_dict() const
             {
                 if (tag_ != TypeTag::DICT)
                     throw std::runtime_error("as_dict() requires a dict");
-                return std::get<Dict>(value);
+                return var_get<Dict>();
             }
             Set &as_set()
             {
                 if (tag_ != TypeTag::SET)
                     throw std::runtime_error("as_set() requires a set");
-                return std::get<Set>(value);
+                return var_get<Set>();
             }
             const Set &as_set() const
             {
                 if (tag_ != TypeTag::SET)
                     throw std::runtime_error("as_set() requires a set");
-                return std::get<Set>(value);
+                return var_get<Set>();
             }
             OrderedDict &as_ordered_dict()
             {
                 if (tag_ != TypeTag::ORDEREDDICT)
                     throw std::runtime_error("as_ordered_dict() requires an ordered dict");
-                return std::get<OrderedDict>(value);
+                return var_get<OrderedDict>();
             }
             const OrderedDict &as_ordered_dict() const
             {
                 if (tag_ != TypeTag::ORDEREDDICT)
                     throw std::runtime_error("as_ordered_dict() requires an ordered dict");
-                return std::get<OrderedDict>(value);
+                return var_get<OrderedDict>();
             }
             OrderedSet &as_ordered_set()
             {
                 if (tag_ != TypeTag::ORDEREDSET)
                     throw std::runtime_error("as_ordered_set() requires an ordered set");
-                return std::get<OrderedSet>(value);
+                return var_get<OrderedSet>();
             }
             const OrderedSet &as_ordered_set() const
             {
                 if (tag_ != TypeTag::ORDEREDSET)
                     throw std::runtime_error("as_ordered_set() requires an ordered set");
-                return std::get<OrderedSet>(value);
+                return var_get<OrderedSet>();
             }
             // String type
             std::string &as_string()
             {
                 if (tag_ != TypeTag::STRING)
                     throw std::runtime_error("as_string() requires a string");
-                return std::get<std::string>(value);
+                return var_get<std::string>();
             }
             const std::string &as_string() const
             {
                 if (tag_ != TypeTag::STRING)
                     throw std::runtime_error("as_string() requires a string");
-                return std::get<std::string>(value);
+                return var_get<std::string>();
             }
             // Basic numeric types
             int as_int() const
             {
                 if (tag_ != TypeTag::INT)
                     throw std::runtime_error("as_int() requires an int");
-                return std::get<int>(value);
+                return var_get<int>();
             }
             double as_double() const
             {
                 if (tag_ != TypeTag::DOUBLE)
                     throw std::runtime_error("as_double() requires a double");
-                return std::get<double>(value);
+                return var_get<double>();
             }
             float as_float() const
             {
                 if (tag_ != TypeTag::FLOAT)
                     throw std::runtime_error("as_float() requires a float");
-                return std::get<float>(value);
+                return var_get<float>();
             }
             bool as_bool() const
             {
                 if (tag_ != TypeTag::BOOL)
                     throw std::runtime_error("as_bool() requires a bool");
-                return std::get<bool>(value);
+                return var_get<bool>();
             }
             // Extended numeric types
             long as_long() const
             {
                 if (tag_ != TypeTag::LONG)
                     throw std::runtime_error("as_long() requires a long");
-                return std::get<long>(value);
+                return var_get<long>();
             }
             long long as_long_long() const
             {
                 if (tag_ != TypeTag::LONG_LONG)
                     throw std::runtime_error("as_long_long() requires a long long");
-                return std::get<long long>(value);
+                return var_get<long long>();
             }
             long double as_long_double() const
             {
                 if (tag_ != TypeTag::LONG_DOUBLE)
                     throw std::runtime_error("as_long_double() requires a long double");
-                return std::get<long double>(value);
+                return var_get<long double>();
             }
             // Unsigned types
             unsigned int as_uint() const
             {
                 if (tag_ != TypeTag::UINT)
                     throw std::runtime_error("as_uint() requires an unsigned int");
-                return std::get<unsigned int>(value);
+                return var_get<unsigned int>();
             }
             unsigned long as_ulong() const
             {
                 if (tag_ != TypeTag::ULONG)
                     throw std::runtime_error("as_ulong() requires an unsigned long");
-                return std::get<unsigned long>(value);
+                return var_get<unsigned long>();
             }
             unsigned long long as_ulong_long() const
             {
                 if (tag_ != TypeTag::ULONG_LONG)
                     throw std::runtime_error("as_ulong_long() requires an unsigned long long");
-                return std::get<unsigned long long>(value);
+                return var_get<unsigned long long>();
             }
 
             // ============ Type Conversion Methods ============
@@ -754,25 +1225,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return std::get<int>(value);
+                    return var_get<int>();
                 case TypeTag::FLOAT:
-                    return static_cast<int>(std::get<float>(value));
+                    return static_cast<int>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<int>(std::get<double>(value));
+                    return static_cast<int>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<int>(std::get<long>(value));
+                    return static_cast<int>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<int>(std::get<long long>(value));
+                    return static_cast<int>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<int>(std::get<long double>(value));
+                    return static_cast<int>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<int>(std::get<unsigned int>(value));
+                    return static_cast<int>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<int>(std::get<unsigned long>(value));
+                    return static_cast<int>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<int>(std::get<unsigned long long>(value));
+                    return static_cast<int>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1 : 0;
+                    return var_get<bool>() ? 1 : 0;
                 default:
                     throw std::runtime_error("Cannot convert to int");
                 }
@@ -784,25 +1255,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<unsigned int>(std::get<int>(value));
+                    return static_cast<unsigned int>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<unsigned int>(std::get<float>(value));
+                    return static_cast<unsigned int>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<unsigned int>(std::get<double>(value));
+                    return static_cast<unsigned int>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<unsigned int>(std::get<long>(value));
+                    return static_cast<unsigned int>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<unsigned int>(std::get<long long>(value));
+                    return static_cast<unsigned int>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<unsigned int>(std::get<long double>(value));
+                    return static_cast<unsigned int>(var_get<long double>());
                 case TypeTag::UINT:
-                    return std::get<unsigned int>(value);
+                    return var_get<unsigned int>();
                 case TypeTag::ULONG:
-                    return static_cast<unsigned int>(std::get<unsigned long>(value));
+                    return static_cast<unsigned int>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<unsigned int>(std::get<unsigned long long>(value));
+                    return static_cast<unsigned int>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1U : 0U;
+                    return var_get<bool>() ? 1U : 0U;
                 default:
                     throw std::runtime_error("Cannot convert to unsigned int");
                 }
@@ -814,25 +1285,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<long>(std::get<int>(value));
+                    return static_cast<long>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<long>(std::get<float>(value));
+                    return static_cast<long>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<long>(std::get<double>(value));
+                    return static_cast<long>(var_get<double>());
                 case TypeTag::LONG:
-                    return std::get<long>(value);
+                    return var_get<long>();
                 case TypeTag::LONG_LONG:
-                    return static_cast<long>(std::get<long long>(value));
+                    return static_cast<long>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<long>(std::get<long double>(value));
+                    return static_cast<long>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<long>(std::get<unsigned int>(value));
+                    return static_cast<long>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<long>(std::get<unsigned long>(value));
+                    return static_cast<long>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<long>(std::get<unsigned long long>(value));
+                    return static_cast<long>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1L : 0L;
+                    return var_get<bool>() ? 1L : 0L;
                 default:
                     throw std::runtime_error("Cannot convert to long");
                 }
@@ -844,25 +1315,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<unsigned long>(std::get<int>(value));
+                    return static_cast<unsigned long>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<unsigned long>(std::get<float>(value));
+                    return static_cast<unsigned long>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<unsigned long>(std::get<double>(value));
+                    return static_cast<unsigned long>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<unsigned long>(std::get<long>(value));
+                    return static_cast<unsigned long>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<unsigned long>(std::get<long long>(value));
+                    return static_cast<unsigned long>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<unsigned long>(std::get<long double>(value));
+                    return static_cast<unsigned long>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<unsigned long>(std::get<unsigned int>(value));
+                    return static_cast<unsigned long>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return std::get<unsigned long>(value);
+                    return var_get<unsigned long>();
                 case TypeTag::ULONG_LONG:
-                    return static_cast<unsigned long>(std::get<unsigned long long>(value));
+                    return static_cast<unsigned long>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1UL : 0UL;
+                    return var_get<bool>() ? 1UL : 0UL;
                 default:
                     throw std::runtime_error("Cannot convert to unsigned long");
                 }
@@ -874,25 +1345,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<long long>(std::get<int>(value));
+                    return static_cast<long long>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<long long>(std::get<float>(value));
+                    return static_cast<long long>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<long long>(std::get<double>(value));
+                    return static_cast<long long>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<long long>(std::get<long>(value));
+                    return static_cast<long long>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return std::get<long long>(value);
+                    return var_get<long long>();
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<long long>(std::get<long double>(value));
+                    return static_cast<long long>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<long long>(std::get<unsigned int>(value));
+                    return static_cast<long long>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<long long>(std::get<unsigned long>(value));
+                    return static_cast<long long>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<long long>(std::get<unsigned long long>(value));
+                    return static_cast<long long>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1LL : 0LL;
+                    return var_get<bool>() ? 1LL : 0LL;
                 default:
                     throw std::runtime_error("Cannot convert to long long");
                 }
@@ -904,25 +1375,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<unsigned long long>(std::get<int>(value));
+                    return static_cast<unsigned long long>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<unsigned long long>(std::get<float>(value));
+                    return static_cast<unsigned long long>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<unsigned long long>(std::get<double>(value));
+                    return static_cast<unsigned long long>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<unsigned long long>(std::get<long>(value));
+                    return static_cast<unsigned long long>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<unsigned long long>(std::get<long long>(value));
+                    return static_cast<unsigned long long>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<unsigned long long>(std::get<long double>(value));
+                    return static_cast<unsigned long long>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<unsigned long long>(std::get<unsigned int>(value));
+                    return static_cast<unsigned long long>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<unsigned long long>(std::get<unsigned long>(value));
+                    return static_cast<unsigned long long>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return std::get<unsigned long long>(value);
+                    return var_get<unsigned long long>();
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1ULL : 0ULL;
+                    return var_get<bool>() ? 1ULL : 0ULL;
                 default:
                     throw std::runtime_error("Cannot convert to unsigned long long");
                 }
@@ -934,25 +1405,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<float>(std::get<int>(value));
+                    return static_cast<float>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return std::get<float>(value);
+                    return var_get<float>();
                 case TypeTag::DOUBLE:
-                    return static_cast<float>(std::get<double>(value));
+                    return static_cast<float>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<float>(std::get<long>(value));
+                    return static_cast<float>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<float>(std::get<long long>(value));
+                    return static_cast<float>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<float>(std::get<long double>(value));
+                    return static_cast<float>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<float>(std::get<unsigned int>(value));
+                    return static_cast<float>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<float>(std::get<unsigned long>(value));
+                    return static_cast<float>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<float>(std::get<unsigned long long>(value));
+                    return static_cast<float>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1.0f : 0.0f;
+                    return var_get<bool>() ? 1.0f : 0.0f;
                 default:
                     throw std::runtime_error("Cannot convert to float");
                 }
@@ -964,25 +1435,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<double>(std::get<int>(value));
+                    return static_cast<double>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<double>(std::get<float>(value));
+                    return static_cast<double>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return std::get<double>(value);
+                    return var_get<double>();
                 case TypeTag::LONG:
-                    return static_cast<double>(std::get<long>(value));
+                    return static_cast<double>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<double>(std::get<long long>(value));
+                    return static_cast<double>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return static_cast<double>(std::get<long double>(value));
+                    return static_cast<double>(var_get<long double>());
                 case TypeTag::UINT:
-                    return static_cast<double>(std::get<unsigned int>(value));
+                    return static_cast<double>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<double>(std::get<unsigned long>(value));
+                    return static_cast<double>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<double>(std::get<unsigned long long>(value));
+                    return static_cast<double>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1.0 : 0.0;
+                    return var_get<bool>() ? 1.0 : 0.0;
                 default:
                     throw std::runtime_error("Cannot convert to double");
                 }
@@ -994,25 +1465,25 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return static_cast<long double>(std::get<int>(value));
+                    return static_cast<long double>(var_get<int>());
                 case TypeTag::FLOAT:
-                    return static_cast<long double>(std::get<float>(value));
+                    return static_cast<long double>(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return static_cast<long double>(std::get<double>(value));
+                    return static_cast<long double>(var_get<double>());
                 case TypeTag::LONG:
-                    return static_cast<long double>(std::get<long>(value));
+                    return static_cast<long double>(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return static_cast<long double>(std::get<long long>(value));
+                    return static_cast<long double>(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return std::get<long double>(value);
+                    return var_get<long double>();
                 case TypeTag::UINT:
-                    return static_cast<long double>(std::get<unsigned int>(value));
+                    return static_cast<long double>(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return static_cast<long double>(std::get<unsigned long>(value));
+                    return static_cast<long double>(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return static_cast<long double>(std::get<unsigned long long>(value));
+                    return static_cast<long double>(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? 1.0L : 0.0L;
+                    return var_get<bool>() ? 1.0L : 0.0L;
                 default:
                     throw std::runtime_error("Cannot convert to long double");
                 }
@@ -1026,27 +1497,27 @@ namespace pythonic
                 case TypeTag::NONE:
                     return "None";
                 case TypeTag::INT:
-                    return std::to_string(std::get<int>(value));
+                    return std::to_string(var_get<int>());
                 case TypeTag::FLOAT:
-                    return std::to_string(std::get<float>(value));
+                    return std::to_string(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return std::to_string(std::get<double>(value));
+                    return std::to_string(var_get<double>());
                 case TypeTag::LONG:
-                    return std::to_string(std::get<long>(value));
+                    return std::to_string(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return std::to_string(std::get<long long>(value));
+                    return std::to_string(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return std::to_string(std::get<long double>(value));
+                    return std::to_string(var_get<long double>());
                 case TypeTag::UINT:
-                    return std::to_string(std::get<unsigned int>(value));
+                    return std::to_string(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return std::to_string(std::get<unsigned long>(value));
+                    return std::to_string(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return std::to_string(std::get<unsigned long long>(value));
+                    return std::to_string(var_get<unsigned long long>());
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? "True" : "False";
+                    return var_get<bool>() ? "True" : "False";
                 case TypeTag::STRING:
-                    return std::get<std::string>(value);
+                    return var_get<std::string>();
                 default:
                     return "[" + type() + "]";
                 }
@@ -1125,13 +1596,13 @@ namespace pythonic
             template <typename T>
             T &get()
             {
-                return std::get<T>(value);
+                return var_get<T>();
             }
 
             template <typename T>
             const T &get() const
             {
-                return std::get<T>(value);
+                return var_get<T>();
             }
 
             // String conversion
@@ -1143,42 +1614,42 @@ namespace pythonic
                 case TypeTag::NONE:
                     return "None";
                 case TypeTag::STRING:
-                    return std::get<std::string>(value);
+                    return var_get<std::string>();
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? "True" : "False";
+                    return var_get<bool>() ? "True" : "False";
                 case TypeTag::INT:
-                    return std::to_string(std::get<int>(value));
+                    return std::to_string(var_get<int>());
                 case TypeTag::LONG:
-                    return std::to_string(std::get<long>(value));
+                    return std::to_string(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return std::to_string(std::get<long long>(value));
+                    return std::to_string(var_get<long long>());
                 case TypeTag::UINT:
-                    return std::to_string(std::get<unsigned int>(value));
+                    return std::to_string(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return std::to_string(std::get<unsigned long>(value));
+                    return std::to_string(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return std::to_string(std::get<unsigned long long>(value));
+                    return std::to_string(var_get<unsigned long long>());
                 case TypeTag::FLOAT:
                 {
                     std::ostringstream ss;
-                    ss << std::get<float>(value);
+                    ss << var_get<float>();
                     return ss.str();
                 }
                 case TypeTag::DOUBLE:
                 {
                     std::ostringstream ss;
-                    ss << std::get<double>(value);
+                    ss << var_get<double>();
                     return ss.str();
                 }
                 case TypeTag::LONG_DOUBLE:
                 {
                     std::ostringstream ss;
-                    ss << std::get<long double>(value);
+                    ss << var_get<long double>();
                     return ss.str();
                 }
                 case TypeTag::LIST:
                 {
-                    const auto &lst = std::get<List>(value);
+                    const auto &lst = var_get<List>();
                     std::string result = "[";
                     for (size_t i = 0; i < lst.size(); ++i)
                     {
@@ -1191,7 +1662,7 @@ namespace pythonic
                 }
                 case TypeTag::SET:
                 {
-                    const auto &st = std::get<Set>(value);
+                    const auto &st = var_get<Set>();
                     std::string result = "{";
                     bool first = true;
                     for (const auto &item : st)
@@ -1206,7 +1677,7 @@ namespace pythonic
                 }
                 case TypeTag::DICT:
                 {
-                    const auto &dct = std::get<Dict>(value);
+                    const auto &dct = var_get<Dict>();
                     std::string result = "{";
                     bool first = true;
                     for (const auto &[k, v] : dct)
@@ -1221,7 +1692,7 @@ namespace pythonic
                 }
                 case TypeTag::ORDEREDSET:
                 {
-                    const auto &hs = std::get<OrderedSet>(value);
+                    const auto &hs = var_get<OrderedSet>();
                     std::string result = "OrderedSet{";
                     bool first = true;
                     for (const auto &item : hs)
@@ -1236,7 +1707,7 @@ namespace pythonic
                 }
                 case TypeTag::ORDEREDDICT:
                 {
-                    const auto &od = std::get<OrderedDict>(value);
+                    const auto &od = var_get<OrderedDict>();
                     std::string result = "OrderedDict{";
                     bool first = true;
                     for (const auto &[k, v] : od)
@@ -1275,42 +1746,42 @@ namespace pythonic
                 case TypeTag::NONE:
                     return "None";
                 case TypeTag::STRING:
-                    return "\"" + std::get<std::string>(value) + "\"";
+                    return "\"" + var_get<std::string>() + "\"";
                 case TypeTag::BOOL:
-                    return std::get<bool>(value) ? "True" : "False";
+                    return var_get<bool>() ? "True" : "False";
                 case TypeTag::INT:
-                    return std::to_string(std::get<int>(value));
+                    return std::to_string(var_get<int>());
                 case TypeTag::LONG:
-                    return std::to_string(std::get<long>(value));
+                    return std::to_string(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return std::to_string(std::get<long long>(value));
+                    return std::to_string(var_get<long long>());
                 case TypeTag::UINT:
-                    return std::to_string(std::get<unsigned int>(value));
+                    return std::to_string(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return std::to_string(std::get<unsigned long>(value));
+                    return std::to_string(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return std::to_string(std::get<unsigned long long>(value));
+                    return std::to_string(var_get<unsigned long long>());
                 case TypeTag::FLOAT:
                 {
                     std::ostringstream ss;
-                    ss << std::get<float>(value);
+                    ss << var_get<float>();
                     return ss.str();
                 }
                 case TypeTag::DOUBLE:
                 {
                     std::ostringstream ss;
-                    ss << std::get<double>(value);
+                    ss << var_get<double>();
                     return ss.str();
                 }
                 case TypeTag::LONG_DOUBLE:
                 {
                     std::ostringstream ss;
-                    ss << std::get<long double>(value);
+                    ss << var_get<long double>();
                     return ss.str();
                 }
                 case TypeTag::LIST:
                 {
-                    const auto &lst = std::get<List>(value);
+                    const auto &lst = var_get<List>();
                     if (lst.empty())
                         return "[]";
                     std::string result = "[\n";
@@ -1326,7 +1797,7 @@ namespace pythonic
                 }
                 case TypeTag::SET:
                 {
-                    const auto &st = std::get<Set>(value);
+                    const auto &st = var_get<Set>();
                     if (st.empty())
                         return "{}";
                     std::string result = "{\n";
@@ -1344,7 +1815,7 @@ namespace pythonic
                 }
                 case TypeTag::DICT:
                 {
-                    const auto &dct = std::get<Dict>(value);
+                    const auto &dct = var_get<Dict>();
                     if (dct.empty())
                         return "{}";
                     std::string result = "{\n";
@@ -1362,7 +1833,7 @@ namespace pythonic
                 }
                 case TypeTag::ORDEREDSET:
                 {
-                    const auto &hs = std::get<OrderedSet>(value);
+                    const auto &hs = var_get<OrderedSet>();
                     if (hs.empty())
                         return "OrderedSet{}";
                     std::string result = "OrderedSet{\n";
@@ -1380,7 +1851,7 @@ namespace pythonic
                 }
                 case TypeTag::ORDEREDDICT:
                 {
-                    const auto &od = std::get<OrderedDict>(value);
+                    const auto &od = var_get<OrderedDict>();
                     if (od.empty())
                         return "OrderedDict{}";
                     std::string result = "OrderedDict{\n";
@@ -1421,19 +1892,19 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return std::get<int>(value) < std::get<int>(other.value);
+                        return var_get<int>() < other.var_get<int>();
                     case TypeTag::DOUBLE:
-                        return std::get<double>(value) < std::get<double>(other.value);
+                        return var_get<double>() < other.var_get<double>();
                     case TypeTag::STRING:
-                        return std::get<std::string>(value) < std::get<std::string>(other.value);
+                        return var_get<std::string>() < other.var_get<std::string>();
                     case TypeTag::LONG_LONG:
-                        return std::get<long long>(value) < std::get<long long>(other.value);
+                        return var_get<long long>() < other.var_get<long long>();
                     case TypeTag::FLOAT:
-                        return std::get<float>(value) < std::get<float>(other.value);
+                        return var_get<float>() < other.var_get<float>();
                     case TypeTag::LONG:
-                        return std::get<long>(value) < std::get<long>(other.value);
+                        return var_get<long>() < other.var_get<long>();
                     case TypeTag::BOOL:
-                        return std::get<bool>(value) < std::get<bool>(other.value);
+                        return var_get<bool>() < other.var_get<bool>();
                     default:
                         break;
                     }
@@ -1457,29 +1928,29 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) + std::get<int>(other.value));
+                        return var(var_get<int>() + other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) + std::get<double>(other.value));
+                        return var(var_get<double>() + other.var_get<double>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) + std::get<long long>(other.value));
+                        return var(var_get<long long>() + other.var_get<long long>());
                     case TypeTag::STRING:
-                        return var(std::get<std::string>(value) + std::get<std::string>(other.value));
+                        return var(var_get<std::string>() + other.var_get<std::string>());
                     case TypeTag::FLOAT:
-                        return var(std::get<float>(value) + std::get<float>(other.value));
+                        return var(var_get<float>() + other.var_get<float>());
                     case TypeTag::LONG:
-                        return var(std::get<long>(value) + std::get<long>(other.value));
+                        return var(var_get<long>() + other.var_get<long>());
                     case TypeTag::UINT:
-                        return var(std::get<unsigned int>(value) + std::get<unsigned int>(other.value));
+                        return var(var_get<unsigned int>() + other.var_get<unsigned int>());
                     case TypeTag::ULONG:
-                        return var(std::get<unsigned long>(value) + std::get<unsigned long>(other.value));
+                        return var(var_get<unsigned long>() + other.var_get<unsigned long>());
                     case TypeTag::ULONG_LONG:
-                        return var(std::get<unsigned long long>(value) + std::get<unsigned long long>(other.value));
+                        return var(var_get<unsigned long long>() + other.var_get<unsigned long long>());
                     case TypeTag::LONG_DOUBLE:
-                        return var(std::get<long double>(value) + std::get<long double>(other.value));
+                        return var(var_get<long double>() + other.var_get<long double>());
                     case TypeTag::LIST:
                     {
-                        const auto &a = std::get<List>(value);
-                        const auto &b = std::get<List>(other.value);
+                        const auto &a = var_get<List>();
+                        const auto &b = other.var_get<List>();
                         List result;
                         result.reserve(a.size() + b.size());
                         result.insert(result.end(), a.begin(), a.end());
@@ -1502,27 +1973,27 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) - std::get<int>(other.value));
+                        return var(var_get<int>() - other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) - std::get<double>(other.value));
+                        return var(var_get<double>() - other.var_get<double>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) - std::get<long long>(other.value));
+                        return var(var_get<long long>() - other.var_get<long long>());
                     case TypeTag::FLOAT:
-                        return var(std::get<float>(value) - std::get<float>(other.value));
+                        return var(var_get<float>() - other.var_get<float>());
                     case TypeTag::LONG:
-                        return var(std::get<long>(value) - std::get<long>(other.value));
+                        return var(var_get<long>() - other.var_get<long>());
                     case TypeTag::UINT:
-                        return var(std::get<unsigned int>(value) - std::get<unsigned int>(other.value));
+                        return var(var_get<unsigned int>() - other.var_get<unsigned int>());
                     case TypeTag::ULONG:
-                        return var(std::get<unsigned long>(value) - std::get<unsigned long>(other.value));
+                        return var(var_get<unsigned long>() - other.var_get<unsigned long>());
                     case TypeTag::ULONG_LONG:
-                        return var(std::get<unsigned long long>(value) - std::get<unsigned long long>(other.value));
+                        return var(var_get<unsigned long long>() - other.var_get<unsigned long long>());
                     case TypeTag::LONG_DOUBLE:
-                        return var(std::get<long double>(value) - std::get<long double>(other.value));
+                        return var(var_get<long double>() - other.var_get<long double>());
                     case TypeTag::SET:
                     {
-                        const auto &a = std::get<Set>(value);
-                        const auto &b = std::get<Set>(other.value);
+                        const auto &a = var_get<Set>();
+                        const auto &b = other.var_get<Set>();
                         Set result;
                         for (const auto &item : a)
                         {
@@ -1535,8 +2006,8 @@ namespace pythonic
                     }
                     case TypeTag::LIST:
                     {
-                        const auto &a = std::get<List>(value);
-                        const auto &b = std::get<List>(other.value);
+                        const auto &a = var_get<List>();
+                        const auto &b = other.var_get<List>();
                         List result;
                         Set b_set(b.begin(), b.end());
                         for (const auto &item : a)
@@ -1550,8 +2021,8 @@ namespace pythonic
                     }
                     case TypeTag::DICT:
                     {
-                        const auto &a = std::get<Dict>(value);
-                        const auto &b = std::get<Dict>(other.value);
+                        const auto &a = var_get<Dict>();
+                        const auto &b = other.var_get<Dict>();
                         Dict result;
                         for (const auto &[key, val] : a)
                         {
@@ -1582,23 +2053,23 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) * std::get<int>(other.value));
+                        return var(var_get<int>() * other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) * std::get<double>(other.value));
+                        return var(var_get<double>() * other.var_get<double>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) * std::get<long long>(other.value));
+                        return var(var_get<long long>() * other.var_get<long long>());
                     case TypeTag::FLOAT:
-                        return var(std::get<float>(value) * std::get<float>(other.value));
+                        return var(var_get<float>() * other.var_get<float>());
                     case TypeTag::LONG:
-                        return var(std::get<long>(value) * std::get<long>(other.value));
+                        return var(var_get<long>() * other.var_get<long>());
                     case TypeTag::UINT:
-                        return var(std::get<unsigned int>(value) * std::get<unsigned int>(other.value));
+                        return var(var_get<unsigned int>() * other.var_get<unsigned int>());
                     case TypeTag::ULONG:
-                        return var(std::get<unsigned long>(value) * std::get<unsigned long>(other.value));
+                        return var(var_get<unsigned long>() * other.var_get<unsigned long>());
                     case TypeTag::ULONG_LONG:
-                        return var(std::get<unsigned long long>(value) * std::get<unsigned long long>(other.value));
+                        return var(var_get<unsigned long long>() * other.var_get<unsigned long long>());
                     case TypeTag::LONG_DOUBLE:
-                        return var(std::get<long double>(value) * std::get<long double>(other.value));
+                        return var(var_get<long double>() * other.var_get<long double>());
                     default:
                         break;
                     }
@@ -1611,7 +2082,7 @@ namespace pythonic
                 // String * int = repetition
                 if (tag_ == TypeTag::STRING && other.isIntegral())
                 {
-                    const auto &s = std::get<std::string>(value);
+                    const auto &s = var_get<std::string>();
                     long long n = other.toLongLong();
                     if (n <= 0)
                         return var(std::string(""));
@@ -1624,7 +2095,7 @@ namespace pythonic
                 // int * String = repetition (commutative)
                 if (isIntegral() && other.tag_ == TypeTag::STRING)
                 {
-                    const auto &s = std::get<std::string>(other.value);
+                    const auto &s = other.var_get<std::string>();
                     long long n = toLongLong();
                     if (n <= 0)
                         return var(std::string(""));
@@ -1637,7 +2108,7 @@ namespace pythonic
                 // List * int = repetition
                 if (tag_ == TypeTag::LIST && other.isIntegral())
                 {
-                    const auto &lst = std::get<List>(value);
+                    const auto &lst = var_get<List>();
                     long long n = other.toLongLong();
                     if (n <= 0)
                         return var(List{});
@@ -1661,45 +2132,45 @@ namespace pythonic
                     {
                     case TypeTag::INT:
                     {
-                        int b = std::get<int>(other.value);
+                        int b = other.var_get<int>();
                         if (b == 0)
                             throw std::runtime_error("Division by zero");
-                        return var(std::get<int>(value) / b);
+                        return var(var_get<int>() / b);
                     }
                     case TypeTag::DOUBLE:
                     {
-                        double b = std::get<double>(other.value);
+                        double b = other.var_get<double>();
                         if (b == 0.0)
                             throw std::runtime_error("Division by zero");
-                        return var(std::get<double>(value) / b);
+                        return var(var_get<double>() / b);
                     }
                     case TypeTag::LONG_LONG:
                     {
-                        long long b = std::get<long long>(other.value);
+                        long long b = other.var_get<long long>();
                         if (b == 0)
                             throw std::runtime_error("Division by zero");
-                        return var(std::get<long long>(value) / b);
+                        return var(var_get<long long>() / b);
                     }
                     case TypeTag::FLOAT:
                     {
-                        float b = std::get<float>(other.value);
+                        float b = other.var_get<float>();
                         if (b == 0.0f)
                             throw std::runtime_error("Division by zero");
-                        return var(std::get<float>(value) / b);
+                        return var(var_get<float>() / b);
                     }
                     case TypeTag::LONG:
                     {
-                        long b = std::get<long>(other.value);
+                        long b = other.var_get<long>();
                         if (b == 0)
                             throw std::runtime_error("Division by zero");
-                        return var(std::get<long>(value) / b);
+                        return var(var_get<long>() / b);
                     }
                     case TypeTag::LONG_DOUBLE:
                     {
-                        long double b = std::get<long double>(other.value);
+                        long double b = other.var_get<long double>();
                         if (b == 0.0L)
                             throw std::runtime_error("Division by zero");
-                        return var(std::get<long double>(value) / b);
+                        return var(var_get<long double>() / b);
                     }
                     default:
                         break;
@@ -1722,45 +2193,45 @@ namespace pythonic
                     {
                     case TypeTag::INT:
                     {
-                        int b = std::get<int>(other.value);
+                        int b = other.var_get<int>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        return var(std::get<int>(value) % b);
+                        return var(var_get<int>() % b);
                     }
                     case TypeTag::LONG_LONG:
                     {
-                        long long b = std::get<long long>(other.value);
+                        long long b = other.var_get<long long>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        return var(std::get<long long>(value) % b);
+                        return var(var_get<long long>() % b);
                     }
                     case TypeTag::LONG:
                     {
-                        long b = std::get<long>(other.value);
+                        long b = other.var_get<long>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        return var(std::get<long>(value) % b);
+                        return var(var_get<long>() % b);
                     }
                     case TypeTag::UINT:
                     {
-                        unsigned int b = std::get<unsigned int>(other.value);
+                        unsigned int b = other.var_get<unsigned int>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        return var(std::get<unsigned int>(value) % b);
+                        return var(var_get<unsigned int>() % b);
                     }
                     case TypeTag::ULONG:
                     {
-                        unsigned long b = std::get<unsigned long>(other.value);
+                        unsigned long b = other.var_get<unsigned long>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        return var(std::get<unsigned long>(value) % b);
+                        return var(var_get<unsigned long>() % b);
                     }
                     case TypeTag::ULONG_LONG:
                     {
-                        unsigned long long b = std::get<unsigned long long>(other.value);
+                        unsigned long long b = other.var_get<unsigned long long>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        return var(std::get<unsigned long long>(value) % b);
+                        return var(var_get<unsigned long long>() % b);
                     }
                     default:
                         break;
@@ -1791,22 +2262,22 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        std::get<int>(value) += std::get<int>(other.value);
+                        var_get<int>() += other.var_get<int>();
                         return *this;
                     case TypeTag::DOUBLE:
-                        std::get<double>(value) += std::get<double>(other.value);
+                        var_get<double>() += other.var_get<double>();
                         return *this;
                     case TypeTag::LONG_LONG:
-                        std::get<long long>(value) += std::get<long long>(other.value);
+                        var_get<long long>() += other.var_get<long long>();
                         return *this;
                     case TypeTag::FLOAT:
-                        std::get<float>(value) += std::get<float>(other.value);
+                        var_get<float>() += other.var_get<float>();
                         return *this;
                     case TypeTag::LONG:
-                        std::get<long>(value) += std::get<long>(other.value);
+                        var_get<long>() += other.var_get<long>();
                         return *this;
                     case TypeTag::STRING:
-                        std::get<std::string>(value) += std::get<std::string>(other.value);
+                        var_get<std::string>() += other.var_get<std::string>();
                         return *this;
                     default:
                         break;
@@ -1825,19 +2296,19 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        std::get<int>(value) -= std::get<int>(other.value);
+                        var_get<int>() -= other.var_get<int>();
                         return *this;
                     case TypeTag::DOUBLE:
-                        std::get<double>(value) -= std::get<double>(other.value);
+                        var_get<double>() -= other.var_get<double>();
                         return *this;
                     case TypeTag::LONG_LONG:
-                        std::get<long long>(value) -= std::get<long long>(other.value);
+                        var_get<long long>() -= other.var_get<long long>();
                         return *this;
                     case TypeTag::FLOAT:
-                        std::get<float>(value) -= std::get<float>(other.value);
+                        var_get<float>() -= other.var_get<float>();
                         return *this;
                     case TypeTag::LONG:
-                        std::get<long>(value) -= std::get<long>(other.value);
+                        var_get<long>() -= other.var_get<long>();
                         return *this;
                     default:
                         break;
@@ -1856,19 +2327,19 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        std::get<int>(value) *= std::get<int>(other.value);
+                        var_get<int>() *= other.var_get<int>();
                         return *this;
                     case TypeTag::DOUBLE:
-                        std::get<double>(value) *= std::get<double>(other.value);
+                        var_get<double>() *= other.var_get<double>();
                         return *this;
                     case TypeTag::LONG_LONG:
-                        std::get<long long>(value) *= std::get<long long>(other.value);
+                        var_get<long long>() *= other.var_get<long long>();
                         return *this;
                     case TypeTag::FLOAT:
-                        std::get<float>(value) *= std::get<float>(other.value);
+                        var_get<float>() *= other.var_get<float>();
                         return *this;
                     case TypeTag::LONG:
-                        std::get<long>(value) *= std::get<long>(other.value);
+                        var_get<long>() *= other.var_get<long>();
                         return *this;
                     default:
                         break;
@@ -1888,34 +2359,34 @@ namespace pythonic
                     {
                     case TypeTag::INT:
                     {
-                        int b = std::get<int>(other.value);
+                        int b = other.var_get<int>();
                         if (b == 0)
                             throw std::runtime_error("Division by zero");
-                        std::get<int>(value) /= b;
+                        var_get<int>() /= b;
                         return *this;
                     }
                     case TypeTag::DOUBLE:
                     {
-                        double b = std::get<double>(other.value);
+                        double b = other.var_get<double>();
                         if (b == 0.0)
                             throw std::runtime_error("Division by zero");
-                        std::get<double>(value) /= b;
+                        var_get<double>() /= b;
                         return *this;
                     }
                     case TypeTag::LONG_LONG:
                     {
-                        long long b = std::get<long long>(other.value);
+                        long long b = other.var_get<long long>();
                         if (b == 0)
                             throw std::runtime_error("Division by zero");
-                        std::get<long long>(value) /= b;
+                        var_get<long long>() /= b;
                         return *this;
                     }
                     case TypeTag::FLOAT:
                     {
-                        float b = std::get<float>(other.value);
+                        float b = other.var_get<float>();
                         if (b == 0.0f)
                             throw std::runtime_error("Division by zero");
-                        std::get<float>(value) /= b;
+                        var_get<float>() /= b;
                         return *this;
                     }
                     default:
@@ -1936,18 +2407,18 @@ namespace pythonic
                     {
                     case TypeTag::INT:
                     {
-                        int b = std::get<int>(other.value);
+                        int b = other.var_get<int>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        std::get<int>(value) %= b;
+                        var_get<int>() %= b;
                         return *this;
                     }
                     case TypeTag::LONG_LONG:
                     {
-                        long long b = std::get<long long>(other.value);
+                        long long b = other.var_get<long long>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
-                        std::get<long long>(value) %= b;
+                        var_get<long long>() %= b;
                         return *this;
                     }
                     default:
@@ -1965,15 +2436,15 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
                 {
-                    std::get<int>(value) += other;
+                    var_get<int>() += other;
                 }
                 else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
                 {
-                    std::get<double>(value) += static_cast<double>(other);
+                    var_get<double>() += static_cast<double>(other);
                 }
                 else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
                 {
-                    std::get<long long>(value) += static_cast<long long>(other);
+                    var_get<long long>() += static_cast<long long>(other);
                 }
                 else
                 {
@@ -1987,15 +2458,15 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
                 {
-                    std::get<int>(value) -= other;
+                    var_get<int>() -= other;
                 }
                 else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
                 {
-                    std::get<double>(value) -= static_cast<double>(other);
+                    var_get<double>() -= static_cast<double>(other);
                 }
                 else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
                 {
-                    std::get<long long>(value) -= static_cast<long long>(other);
+                    var_get<long long>() -= static_cast<long long>(other);
                 }
                 else
                 {
@@ -2009,15 +2480,15 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
                 {
-                    std::get<int>(value) *= other;
+                    var_get<int>() *= other;
                 }
                 else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
                 {
-                    std::get<double>(value) *= static_cast<double>(other);
+                    var_get<double>() *= static_cast<double>(other);
                 }
                 else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
                 {
-                    std::get<long long>(value) *= static_cast<long long>(other);
+                    var_get<long long>() *= static_cast<long long>(other);
                 }
                 else
                 {
@@ -2036,17 +2507,17 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) == std::get<int>(other.value));
+                        return var(var_get<int>() == other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) == std::get<double>(other.value));
+                        return var(var_get<double>() == other.var_get<double>());
                     case TypeTag::STRING:
-                        return var(std::get<std::string>(value) == std::get<std::string>(other.value));
+                        return var(var_get<std::string>() == other.var_get<std::string>());
                     case TypeTag::BOOL:
-                        return var(std::get<bool>(value) == std::get<bool>(other.value));
+                        return var(var_get<bool>() == other.var_get<bool>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) == std::get<long long>(other.value));
+                        return var(var_get<long long>() == other.var_get<long long>());
                     case TypeTag::FLOAT:
-                        return var(std::get<float>(value) == std::get<float>(other.value));
+                        return var(var_get<float>() == other.var_get<float>());
                     default:
                         break;
                     }
@@ -2067,15 +2538,15 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) != std::get<int>(other.value));
+                        return var(var_get<int>() != other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) != std::get<double>(other.value));
+                        return var(var_get<double>() != other.var_get<double>());
                     case TypeTag::STRING:
-                        return var(std::get<std::string>(value) != std::get<std::string>(other.value));
+                        return var(var_get<std::string>() != other.var_get<std::string>());
                     case TypeTag::BOOL:
-                        return var(std::get<bool>(value) != std::get<bool>(other.value));
+                        return var(var_get<bool>() != other.var_get<bool>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) != std::get<long long>(other.value));
+                        return var(var_get<long long>() != other.var_get<long long>());
                     default:
                         break;
                     }
@@ -2094,13 +2565,13 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) > std::get<int>(other.value));
+                        return var(var_get<int>() > other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) > std::get<double>(other.value));
+                        return var(var_get<double>() > other.var_get<double>());
                     case TypeTag::STRING:
-                        return var(std::get<std::string>(value) > std::get<std::string>(other.value));
+                        return var(var_get<std::string>() > other.var_get<std::string>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) > std::get<long long>(other.value));
+                        return var(var_get<long long>() > other.var_get<long long>());
                     default:
                         break;
                     }
@@ -2119,13 +2590,13 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) >= std::get<int>(other.value));
+                        return var(var_get<int>() >= other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) >= std::get<double>(other.value));
+                        return var(var_get<double>() >= other.var_get<double>());
                     case TypeTag::STRING:
-                        return var(std::get<std::string>(value) >= std::get<std::string>(other.value));
+                        return var(var_get<std::string>() >= other.var_get<std::string>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) >= std::get<long long>(other.value));
+                        return var(var_get<long long>() >= other.var_get<long long>());
                     default:
                         break;
                     }
@@ -2144,13 +2615,13 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) <= std::get<int>(other.value));
+                        return var(var_get<int>() <= other.var_get<int>());
                     case TypeTag::DOUBLE:
-                        return var(std::get<double>(value) <= std::get<double>(other.value));
+                        return var(var_get<double>() <= other.var_get<double>());
                     case TypeTag::STRING:
-                        return var(std::get<std::string>(value) <= std::get<std::string>(other.value));
+                        return var(var_get<std::string>() <= other.var_get<std::string>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) <= std::get<long long>(other.value));
+                        return var(var_get<long long>() <= other.var_get<long long>());
                     default:
                         break;
                     }
@@ -2173,19 +2644,19 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) + other);
+                        return var(var_get<int>() + other);
                 }
                 if constexpr (std::is_same_v<T, long long>)
                 {
                     if (tag_ == TypeTag::LONG_LONG)
-                        return var(std::get<long long>(value) + other);
+                        return var(var_get<long long>() + other);
                     if (tag_ == TypeTag::INT)
-                        return var(static_cast<long long>(std::get<int>(value)) + other);
+                        return var(static_cast<long long>(var_get<int>()) + other);
                 }
                 if constexpr (std::is_floating_point_v<T>)
                 {
                     if (tag_ == TypeTag::DOUBLE)
-                        return var(std::get<double>(value) + static_cast<double>(other));
+                        return var(var_get<double>() + static_cast<double>(other));
                     if (isNumeric())
                         return var(toDouble() + static_cast<double>(other));
                 }
@@ -2198,14 +2669,14 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (rhs.tag_ == TypeTag::INT)
-                        return var(lhs + std::get<int>(rhs.value));
+                        return var(lhs + rhs.var_get<int>());
                 }
                 if constexpr (std::is_same_v<T, long long>)
                 {
                     if (rhs.tag_ == TypeTag::LONG_LONG)
-                        return var(lhs + std::get<long long>(rhs.value));
+                        return var(lhs + rhs.var_get<long long>());
                     if (rhs.tag_ == TypeTag::INT)
-                        return var(lhs + static_cast<long long>(std::get<int>(rhs.value)));
+                        return var(lhs + static_cast<long long>(rhs.var_get<int>()));
                 }
                 return var(lhs) + rhs;
             }
@@ -2215,7 +2686,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::STRING)
                 {
-                    return var(std::get<std::string>(value) + other);
+                    return var(var_get<std::string>() + other);
                 }
                 return var(str() + other);
             }
@@ -2223,7 +2694,7 @@ namespace pythonic
             {
                 if (rhs.tag_ == TypeTag::STRING)
                 {
-                    return var(std::string(lhs) + std::get<std::string>(rhs.value));
+                    return var(std::string(lhs) + rhs.var_get<std::string>());
                 }
                 return var(std::string(lhs) + rhs.str());
             }
@@ -2235,19 +2706,19 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) - other);
+                        return var(var_get<int>() - other);
                 }
                 if constexpr (std::is_same_v<T, long long>)
                 {
                     if (tag_ == TypeTag::LONG_LONG)
-                        return var(std::get<long long>(value) - other);
+                        return var(var_get<long long>() - other);
                     if (tag_ == TypeTag::INT)
-                        return var(static_cast<long long>(std::get<int>(value)) - other);
+                        return var(static_cast<long long>(var_get<int>()) - other);
                 }
                 if constexpr (std::is_floating_point_v<T>)
                 {
                     if (tag_ == TypeTag::DOUBLE)
-                        return var(std::get<double>(value) - static_cast<double>(other));
+                        return var(var_get<double>() - static_cast<double>(other));
                     if (isNumeric())
                         return var(toDouble() - static_cast<double>(other));
                 }
@@ -2260,7 +2731,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (rhs.tag_ == TypeTag::INT)
-                        return var(lhs - std::get<int>(rhs.value));
+                        return var(lhs - rhs.var_get<int>());
                 }
                 return var(lhs) - rhs;
             }
@@ -2272,17 +2743,17 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) * other);
+                        return var(var_get<int>() * other);
                 }
                 if constexpr (std::is_same_v<T, long long>)
                 {
                     if (tag_ == TypeTag::LONG_LONG)
-                        return var(std::get<long long>(value) * other);
+                        return var(var_get<long long>() * other);
                 }
                 if constexpr (std::is_floating_point_v<T>)
                 {
                     if (tag_ == TypeTag::DOUBLE)
-                        return var(std::get<double>(value) * static_cast<double>(other));
+                        return var(var_get<double>() * static_cast<double>(other));
                     if (isNumeric())
                         return var(toDouble() * static_cast<double>(other));
                 }
@@ -2295,7 +2766,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (rhs.tag_ == TypeTag::INT)
-                        return var(lhs * std::get<int>(rhs.value));
+                        return var(lhs * rhs.var_get<int>());
                 }
                 return var(lhs) * rhs;
             }
@@ -2309,12 +2780,12 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) / other);
+                        return var(var_get<int>() / other);
                 }
                 if constexpr (std::is_floating_point_v<T>)
                 {
                     if (tag_ == TypeTag::DOUBLE)
-                        return var(std::get<double>(value) / static_cast<double>(other));
+                        return var(var_get<double>() / static_cast<double>(other));
                     if (isNumeric())
                         return var(toDouble() / static_cast<double>(other));
                 }
@@ -2328,7 +2799,7 @@ namespace pythonic
                 {
                     if (rhs.tag_ == TypeTag::INT)
                     {
-                        int b = std::get<int>(rhs.value);
+                        int b = rhs.var_get<int>();
                         if (b == 0)
                             throw std::runtime_error("Division by zero");
                         return var(lhs / b);
@@ -2346,14 +2817,14 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) % other);
+                        return var(var_get<int>() % other);
                 }
                 if constexpr (std::is_same_v<T, long long>)
                 {
                     if (tag_ == TypeTag::LONG_LONG)
-                        return var(std::get<long long>(value) % other);
+                        return var(var_get<long long>() % other);
                     if (tag_ == TypeTag::INT)
-                        return var(static_cast<long long>(std::get<int>(value)) % other);
+                        return var(static_cast<long long>(var_get<int>()) % other);
                 }
                 return *this % var(other);
             }
@@ -2365,7 +2836,7 @@ namespace pythonic
                 {
                     if (rhs.tag_ == TypeTag::INT)
                     {
-                        int b = std::get<int>(rhs.value);
+                        int b = rhs.var_get<int>();
                         if (b == 0)
                             throw std::runtime_error("Modulo by zero");
                         return var(lhs % b);
@@ -2381,12 +2852,12 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) == other);
+                        return var(var_get<int>() == other);
                 }
                 if constexpr (std::is_floating_point_v<T>)
                 {
                     if (tag_ == TypeTag::DOUBLE)
-                        return var(std::get<double>(value) == static_cast<double>(other));
+                        return var(var_get<double>() == static_cast<double>(other));
                     if (isNumeric())
                         return var(toDouble() == static_cast<double>(other));
                 }
@@ -2405,7 +2876,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) != other);
+                        return var(var_get<int>() != other);
                 }
                 return *this != var(other);
             }
@@ -2422,7 +2893,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) > other);
+                        return var(var_get<int>() > other);
                 }
                 return *this > var(other);
             }
@@ -2439,7 +2910,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) >= other);
+                        return var(var_get<int>() >= other);
                 }
                 return *this >= var(other);
             }
@@ -2456,7 +2927,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) < other);
+                        return var(var_get<int>() < other);
                 }
                 return var(static_cast<int>(tag_)) < var(static_cast<int>(TypeTag::INT)); // type ordering fallback
             }
@@ -2473,7 +2944,7 @@ namespace pythonic
                 if constexpr (std::is_same_v<T, int>)
                 {
                     if (tag_ == TypeTag::INT)
-                        return var(std::get<int>(value) <= other);
+                        return var(var_get<int>() <= other);
                 }
                 return *this <= var(other);
             }
@@ -2507,17 +2978,17 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::INT:
-                    return var(~std::get<int>(value));
+                    return var(~var_get<int>());
                 case TypeTag::LONG:
-                    return var(~std::get<long>(value));
+                    return var(~var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return var(~std::get<long long>(value));
+                    return var(~var_get<long long>());
                 case TypeTag::UINT:
-                    return var(~std::get<unsigned int>(value));
+                    return var(~var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return var(~std::get<unsigned long>(value));
+                    return var(~var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return var(~std::get<unsigned long long>(value));
+                    return var(~var_get<unsigned long long>());
                 default:
                     throw std::runtime_error("Bitwise NOT requires integral type");
                 }
@@ -2532,21 +3003,21 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) & std::get<int>(other.value));
+                        return var(var_get<int>() & other.var_get<int>());
                     case TypeTag::LONG:
-                        return var(std::get<long>(value) & std::get<long>(other.value));
+                        return var(var_get<long>() & other.var_get<long>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) & std::get<long long>(other.value));
+                        return var(var_get<long long>() & other.var_get<long long>());
                     case TypeTag::UINT:
-                        return var(std::get<unsigned int>(value) & std::get<unsigned int>(other.value));
+                        return var(var_get<unsigned int>() & other.var_get<unsigned int>());
                     case TypeTag::ULONG:
-                        return var(std::get<unsigned long>(value) & std::get<unsigned long>(other.value));
+                        return var(var_get<unsigned long>() & other.var_get<unsigned long>());
                     case TypeTag::ULONG_LONG:
-                        return var(std::get<unsigned long long>(value) & std::get<unsigned long long>(other.value));
+                        return var(var_get<unsigned long long>() & other.var_get<unsigned long long>());
                     case TypeTag::SET:
                     {
-                        const auto &a = std::get<Set>(value);
-                        const auto &b = std::get<Set>(other.value);
+                        const auto &a = var_get<Set>();
+                        const auto &b = other.var_get<Set>();
                         Set result;
                         for (const auto &item : a)
                         {
@@ -2559,8 +3030,8 @@ namespace pythonic
                     }
                     case TypeTag::ORDEREDSET:
                     {
-                        const auto &a = std::get<OrderedSet>(value);
-                        const auto &b = std::get<OrderedSet>(other.value);
+                        const auto &a = var_get<OrderedSet>();
+                        const auto &b = other.var_get<OrderedSet>();
                         OrderedSet result;
                         for (const auto &item : a)
                         {
@@ -2573,8 +3044,8 @@ namespace pythonic
                     }
                     case TypeTag::LIST:
                     {
-                        const auto &a = std::get<List>(value);
-                        const auto &b = std::get<List>(other.value);
+                        const auto &a = var_get<List>();
+                        const auto &b = other.var_get<List>();
                         List result;
                         Set b_set(b.begin(), b.end());
                         for (const auto &item : a)
@@ -2588,8 +3059,8 @@ namespace pythonic
                     }
                     case TypeTag::DICT:
                     {
-                        const auto &a = std::get<Dict>(value);
-                        const auto &b = std::get<Dict>(other.value);
+                        const auto &a = var_get<Dict>();
+                        const auto &b = other.var_get<Dict>();
                         Dict result;
                         for (const auto &[key, val] : a)
                         {
@@ -2602,8 +3073,8 @@ namespace pythonic
                     }
                     case TypeTag::ORDEREDDICT:
                     {
-                        const auto &a = std::get<OrderedDict>(value);
-                        const auto &b = std::get<OrderedDict>(other.value);
+                        const auto &a = var_get<OrderedDict>();
+                        const auto &b = other.var_get<OrderedDict>();
                         OrderedDict result;
                         for (const auto &[key, val] : a)
                         {
@@ -2634,37 +3105,37 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) | std::get<int>(other.value));
+                        return var(var_get<int>() | other.var_get<int>());
                     case TypeTag::LONG:
-                        return var(std::get<long>(value) | std::get<long>(other.value));
+                        return var(var_get<long>() | other.var_get<long>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) | std::get<long long>(other.value));
+                        return var(var_get<long long>() | other.var_get<long long>());
                     case TypeTag::UINT:
-                        return var(std::get<unsigned int>(value) | std::get<unsigned int>(other.value));
+                        return var(var_get<unsigned int>() | other.var_get<unsigned int>());
                     case TypeTag::ULONG:
-                        return var(std::get<unsigned long>(value) | std::get<unsigned long>(other.value));
+                        return var(var_get<unsigned long>() | other.var_get<unsigned long>());
                     case TypeTag::ULONG_LONG:
-                        return var(std::get<unsigned long long>(value) | std::get<unsigned long long>(other.value));
+                        return var(var_get<unsigned long long>() | other.var_get<unsigned long long>());
                     case TypeTag::SET:
                     {
-                        const auto &a = std::get<Set>(value);
-                        const auto &b = std::get<Set>(other.value);
+                        const auto &a = var_get<Set>();
+                        const auto &b = other.var_get<Set>();
                         Set result = a;
                         result.insert(b.begin(), b.end());
                         return var(std::move(result));
                     }
                     case TypeTag::ORDEREDSET:
                     {
-                        const auto &a = std::get<OrderedSet>(value);
-                        const auto &b = std::get<OrderedSet>(other.value);
+                        const auto &a = var_get<OrderedSet>();
+                        const auto &b = other.var_get<OrderedSet>();
                         OrderedSet result = a;
                         result.insert(b.begin(), b.end());
                         return var(std::move(result));
                     }
                     case TypeTag::LIST:
                     {
-                        const auto &a = std::get<List>(value);
-                        const auto &b = std::get<List>(other.value);
+                        const auto &a = var_get<List>();
+                        const auto &b = other.var_get<List>();
                         List result;
                         result.reserve(a.size() + b.size());
                         result.insert(result.end(), a.begin(), a.end());
@@ -2673,8 +3144,8 @@ namespace pythonic
                     }
                     case TypeTag::DICT:
                     {
-                        const auto &a = std::get<Dict>(value);
-                        const auto &b = std::get<Dict>(other.value);
+                        const auto &a = var_get<Dict>();
+                        const auto &b = other.var_get<Dict>();
                         Dict result = a;
                         for (const auto &[key, val] : b)
                         {
@@ -2684,8 +3155,8 @@ namespace pythonic
                     }
                     case TypeTag::ORDEREDDICT:
                     {
-                        const auto &a = std::get<OrderedDict>(value);
-                        const auto &b = std::get<OrderedDict>(other.value);
+                        const auto &a = var_get<OrderedDict>();
+                        const auto &b = other.var_get<OrderedDict>();
                         OrderedDict result = a;
                         for (const auto &[key, val] : b)
                         {
@@ -2714,21 +3185,21 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        return var(std::get<int>(value) ^ std::get<int>(other.value));
+                        return var(var_get<int>() ^ other.var_get<int>());
                     case TypeTag::LONG:
-                        return var(std::get<long>(value) ^ std::get<long>(other.value));
+                        return var(var_get<long>() ^ other.var_get<long>());
                     case TypeTag::LONG_LONG:
-                        return var(std::get<long long>(value) ^ std::get<long long>(other.value));
+                        return var(var_get<long long>() ^ other.var_get<long long>());
                     case TypeTag::UINT:
-                        return var(std::get<unsigned int>(value) ^ std::get<unsigned int>(other.value));
+                        return var(var_get<unsigned int>() ^ other.var_get<unsigned int>());
                     case TypeTag::ULONG:
-                        return var(std::get<unsigned long>(value) ^ std::get<unsigned long>(other.value));
+                        return var(var_get<unsigned long>() ^ other.var_get<unsigned long>());
                     case TypeTag::ULONG_LONG:
-                        return var(std::get<unsigned long long>(value) ^ std::get<unsigned long long>(other.value));
+                        return var(var_get<unsigned long long>() ^ other.var_get<unsigned long long>());
                     case TypeTag::SET:
                     {
-                        const auto &a = std::get<Set>(value);
-                        const auto &b = std::get<Set>(other.value);
+                        const auto &a = var_get<Set>();
+                        const auto &b = other.var_get<Set>();
                         Set result;
                         for (const auto &item : a)
                         {
@@ -2748,8 +3219,8 @@ namespace pythonic
                     }
                     case TypeTag::ORDEREDSET:
                     {
-                        const auto &a = std::get<OrderedSet>(value);
-                        const auto &b = std::get<OrderedSet>(other.value);
+                        const auto &a = var_get<OrderedSet>();
+                        const auto &b = other.var_get<OrderedSet>();
                         OrderedSet result;
                         for (const auto &item : a)
                         {
@@ -2769,8 +3240,8 @@ namespace pythonic
                     }
                     case TypeTag::LIST:
                     {
-                        const auto &a = std::get<List>(value);
-                        const auto &b = std::get<List>(other.value);
+                        const auto &a = var_get<List>();
+                        const auto &b = other.var_get<List>();
                         List result;
                         Set a_set(a.begin(), a.end());
                         Set b_set(b.begin(), b.end());
@@ -2811,37 +3282,37 @@ namespace pythonic
                 case TypeTag::NONE:
                     return false;
                 case TypeTag::BOOL:
-                    return std::get<bool>(value);
+                    return var_get<bool>();
                 case TypeTag::INT:
-                    return std::get<int>(value) != 0;
+                    return var_get<int>() != 0;
                 case TypeTag::LONG:
-                    return std::get<long>(value) != 0;
+                    return var_get<long>() != 0;
                 case TypeTag::LONG_LONG:
-                    return std::get<long long>(value) != 0;
+                    return var_get<long long>() != 0;
                 case TypeTag::UINT:
-                    return std::get<unsigned int>(value) != 0;
+                    return var_get<unsigned int>() != 0;
                 case TypeTag::ULONG:
-                    return std::get<unsigned long>(value) != 0;
+                    return var_get<unsigned long>() != 0;
                 case TypeTag::ULONG_LONG:
-                    return std::get<unsigned long long>(value) != 0;
+                    return var_get<unsigned long long>() != 0;
                 case TypeTag::FLOAT:
-                    return std::get<float>(value) != 0.0f;
+                    return var_get<float>() != 0.0f;
                 case TypeTag::DOUBLE:
-                    return std::get<double>(value) != 0.0;
+                    return var_get<double>() != 0.0;
                 case TypeTag::LONG_DOUBLE:
-                    return std::get<long double>(value) != 0.0L;
+                    return var_get<long double>() != 0.0L;
                 case TypeTag::STRING:
-                    return !std::get<std::string>(value).empty();
+                    return !var_get<std::string>().empty();
                 case TypeTag::LIST:
-                    return !std::get<List>(value).empty();
+                    return !var_get<List>().empty();
                 case TypeTag::SET:
-                    return !std::get<Set>(value).empty();
+                    return !var_get<Set>().empty();
                 case TypeTag::DICT:
-                    return !std::get<Dict>(value).empty();
+                    return !var_get<Dict>().empty();
                 case TypeTag::ORDEREDSET:
-                    return !std::get<OrderedSet>(value).empty();
+                    return !var_get<OrderedSet>().empty();
                 case TypeTag::ORDEREDDICT:
-                    return !std::get<OrderedDict>(value).empty();
+                    return !var_get<OrderedDict>().empty();
                 case TypeTag::GRAPH:
                     return graph_bool_impl(); // Defined after VarGraphWrapper
                 default:
@@ -2858,7 +3329,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::LIST)
                 {
-                    auto &lst = std::get<List>(value);
+                    auto &lst = var_get<List>();
                     if (index >= lst.size())
                     {
                         throw std::out_of_range("List index out of range");
@@ -2872,7 +3343,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::LIST)
                 {
-                    const auto &lst = std::get<List>(value);
+                    const auto &lst = var_get<List>();
                     if (index >= lst.size())
                     {
                         throw std::out_of_range("List index out of range");
@@ -2886,11 +3357,11 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::DICT)
                 {
-                    return std::get<Dict>(value)[key];
+                    return var_get<Dict>()[key];
                 }
                 if (tag_ == TypeTag::ORDEREDDICT)
                 {
-                    return std::get<OrderedDict>(value)[key];
+                    return var_get<OrderedDict>()[key];
                 }
                 throw std::runtime_error("operator[string] requires a dict or ordered_dict");
             }
@@ -2907,17 +3378,17 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::STRING:
-                    return std::get<std::string>(value).size();
+                    return var_get<std::string>().size();
                 case TypeTag::LIST:
-                    return std::get<List>(value).size();
+                    return var_get<List>().size();
                 case TypeTag::SET:
-                    return std::get<Set>(value).size();
+                    return var_get<Set>().size();
                 case TypeTag::DICT:
-                    return std::get<Dict>(value).size();
+                    return var_get<Dict>().size();
                 case TypeTag::ORDEREDSET:
-                    return std::get<OrderedSet>(value).size();
+                    return var_get<OrderedSet>().size();
                 case TypeTag::ORDEREDDICT:
-                    return std::get<OrderedDict>(value).size();
+                    return var_get<OrderedDict>().size();
                 default:
                     throw std::runtime_error("len() not supported for this type");
                 }
@@ -2929,7 +3400,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::LIST)
                 {
-                    std::get<List>(value).push_back(v);
+                    var_get<List>().push_back(v);
                 }
                 else
                 {
@@ -2943,7 +3414,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::LIST)
                 {
-                    std::get<List>(value).emplace_back(std::forward<T>(v));
+                    var_get<List>().emplace_back(std::forward<T>(v));
                 }
                 else
                 {
@@ -2957,11 +3428,11 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::SET)
                 {
-                    std::get<Set>(value).insert(v);
+                    var_get<Set>().insert(v);
                 }
                 else if (tag_ == TypeTag::ORDEREDSET)
                 {
-                    std::get<OrderedSet>(value).insert(v);
+                    var_get<OrderedSet>().insert(v);
                 }
                 else
                 {
@@ -2975,11 +3446,11 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::SET)
                 {
-                    std::get<Set>(value).emplace(std::forward<T>(v));
+                    var_get<Set>().emplace(std::forward<T>(v));
                 }
                 else if (tag_ == TypeTag::ORDEREDSET)
                 {
-                    std::get<OrderedSet>(value).emplace(std::forward<T>(v));
+                    var_get<OrderedSet>().emplace(std::forward<T>(v));
                 }
                 else
                 {
@@ -2995,18 +3466,18 @@ namespace pythonic
                 {
                     throw std::runtime_error("extend() requires a list");
                 }
-                auto &lst = std::get<List>(value);
+                auto &lst = var_get<List>();
                 switch (other.tag_)
                 {
                 case TypeTag::LIST:
                 {
-                    const auto &other_lst = std::get<List>(other.value);
+                    const auto &other_lst = other.var_get<List>();
                     lst.insert(lst.end(), other_lst.begin(), other_lst.end());
                     break;
                 }
                 case TypeTag::SET:
                 {
-                    const auto &other_set = std::get<Set>(other.value);
+                    const auto &other_set = other.var_get<Set>();
                     for (const auto &item : other_set)
                     {
                         lst.push_back(item);
@@ -3015,7 +3486,7 @@ namespace pythonic
                 }
                 case TypeTag::STRING:
                 {
-                    const auto &other_str = std::get<std::string>(other.value);
+                    const auto &other_str = other.var_get<std::string>();
                     for (char c : other_str)
                     {
                         lst.push_back(var(std::string(1, c)));
@@ -3035,18 +3506,18 @@ namespace pythonic
                 {
                     throw std::runtime_error("update() requires a set");
                 }
-                auto &st = std::get<Set>(value);
+                auto &st = var_get<Set>();
                 switch (other.tag_)
                 {
                 case TypeTag::SET:
                 {
-                    const auto &other_set = std::get<Set>(other.value);
+                    const auto &other_set = other.var_get<Set>();
                     st.insert(other_set.begin(), other_set.end());
                     break;
                 }
                 case TypeTag::LIST:
                 {
-                    const auto &other_lst = std::get<List>(other.value);
+                    const auto &other_lst = other.var_get<List>();
                     for (const auto &item : other_lst)
                     {
                         st.insert(item);
@@ -3066,7 +3537,7 @@ namespace pythonic
                 {
                 case TypeTag::LIST:
                 {
-                    const auto &lst = std::get<List>(value);
+                    const auto &lst = var_get<List>();
                     for (const auto &item : lst)
                     {
                         if (static_cast<bool>(item == v))
@@ -3075,25 +3546,25 @@ namespace pythonic
                     return false;
                 }
                 case TypeTag::SET:
-                    return std::get<Set>(value).find(v) != std::get<Set>(value).end();
+                    return var_get<Set>().find(v) != var_get<Set>().end();
                 case TypeTag::ORDEREDSET:
-                    return std::get<OrderedSet>(value).find(v) != std::get<OrderedSet>(value).end();
+                    return var_get<OrderedSet>().find(v) != var_get<OrderedSet>().end();
                 case TypeTag::DICT:
                     if (v.tag_ == TypeTag::STRING)
                     {
-                        return std::get<Dict>(value).find(std::get<std::string>(v.value)) != std::get<Dict>(value).end();
+                        return var_get<Dict>().find(v.var_get<std::string>()) != var_get<Dict>().end();
                     }
                     return false;
                 case TypeTag::ORDEREDDICT:
                     if (v.tag_ == TypeTag::STRING)
                     {
-                        return std::get<OrderedDict>(value).find(std::get<std::string>(v.value)) != std::get<OrderedDict>(value).end();
+                        return var_get<OrderedDict>().find(v.var_get<std::string>()) != var_get<OrderedDict>().end();
                     }
                     return false;
                 case TypeTag::STRING:
                     if (v.tag_ == TypeTag::STRING)
                     {
-                        return std::get<std::string>(value).find(std::get<std::string>(v.value)) != std::string::npos;
+                        return var_get<std::string>().find(v.var_get<std::string>()) != std::string::npos;
                     }
                     return false;
                 default:
@@ -3349,70 +3820,86 @@ namespace pythonic
             // begin/end for range-based for loops
             iterator begin()
             {
-                if (auto *lst = std::get_if<List>(&value))
-                    return iterator(lst->begin());
-                if (auto *st = std::get_if<Set>(&value))
-                    return iterator(st->begin());
-                if (auto *dct = std::get_if<Dict>(&value))
-                    return iterator(dct->begin());
-                if (auto *s = std::get_if<std::string>(&value))
-                    return iterator(s->begin());
-                if (auto *hs = std::get_if<OrderedSet>(&value))
-                    return iterator(hs->begin());
-                if (auto *od = std::get_if<OrderedDict>(&value))
-                    return iterator(od->begin());
-                throw std::runtime_error("Type is not iterable");
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                    return iterator(var_get<List>().begin());
+                case TypeTag::SET:
+                    return iterator(var_get<Set>().begin());
+                case TypeTag::DICT:
+                    return iterator(var_get<Dict>().begin());
+                case TypeTag::STRING:
+                    return iterator(var_get<std::string>().begin());
+                case TypeTag::ORDEREDSET:
+                    return iterator(var_get<OrderedSet>().begin());
+                case TypeTag::ORDEREDDICT:
+                    return iterator(var_get<OrderedDict>().begin());
+                default:
+                    throw std::runtime_error("Type is not iterable");
+                }
             }
 
             iterator end()
             {
-                if (auto *lst = std::get_if<List>(&value))
-                    return iterator(lst->end());
-                if (auto *st = std::get_if<Set>(&value))
-                    return iterator(st->end());
-                if (auto *dct = std::get_if<Dict>(&value))
-                    return iterator(dct->end());
-                if (auto *s = std::get_if<std::string>(&value))
-                    return iterator(s->end());
-                if (auto *hs = std::get_if<OrderedSet>(&value))
-                    return iterator(hs->end());
-                if (auto *od = std::get_if<OrderedDict>(&value))
-                    return iterator(od->end());
-                throw std::runtime_error("Type is not iterable");
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                    return iterator(var_get<List>().end());
+                case TypeTag::SET:
+                    return iterator(var_get<Set>().end());
+                case TypeTag::DICT:
+                    return iterator(var_get<Dict>().end());
+                case TypeTag::STRING:
+                    return iterator(var_get<std::string>().end());
+                case TypeTag::ORDEREDSET:
+                    return iterator(var_get<OrderedSet>().end());
+                case TypeTag::ORDEREDDICT:
+                    return iterator(var_get<OrderedDict>().end());
+                default:
+                    throw std::runtime_error("Type is not iterable");
+                }
             }
 
             const_iterator begin() const
             {
-                if (auto *lst = std::get_if<List>(&value))
-                    return const_iterator(lst->begin());
-                if (auto *st = std::get_if<Set>(&value))
-                    return const_iterator(st->begin());
-                if (auto *dct = std::get_if<Dict>(&value))
-                    return const_iterator(dct->begin());
-                if (auto *s = std::get_if<std::string>(&value))
-                    return const_iterator(s->begin());
-                if (auto *hs = std::get_if<OrderedSet>(&value))
-                    return const_iterator(hs->begin());
-                if (auto *od = std::get_if<OrderedDict>(&value))
-                    return const_iterator(od->begin());
-                throw std::runtime_error("Type is not iterable");
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                    return const_iterator(var_get<List>().begin());
+                case TypeTag::SET:
+                    return const_iterator(var_get<Set>().begin());
+                case TypeTag::DICT:
+                    return const_iterator(var_get<Dict>().begin());
+                case TypeTag::STRING:
+                    return const_iterator(var_get<std::string>().begin());
+                case TypeTag::ORDEREDSET:
+                    return const_iterator(var_get<OrderedSet>().begin());
+                case TypeTag::ORDEREDDICT:
+                    return const_iterator(var_get<OrderedDict>().begin());
+                default:
+                    throw std::runtime_error("Type is not iterable");
+                }
             }
 
             const_iterator end() const
             {
-                if (auto *lst = std::get_if<List>(&value))
-                    return const_iterator(lst->end());
-                if (auto *st = std::get_if<Set>(&value))
-                    return const_iterator(st->end());
-                if (auto *dct = std::get_if<Dict>(&value))
-                    return const_iterator(dct->end());
-                if (auto *s = std::get_if<std::string>(&value))
-                    return const_iterator(s->end());
-                if (auto *hs = std::get_if<OrderedSet>(&value))
-                    return const_iterator(hs->end());
-                if (auto *od = std::get_if<OrderedDict>(&value))
-                    return const_iterator(od->end());
-                throw std::runtime_error("Type is not iterable");
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                    return const_iterator(var_get<List>().end());
+                case TypeTag::SET:
+                    return const_iterator(var_get<Set>().end());
+                case TypeTag::DICT:
+                    return const_iterator(var_get<Dict>().end());
+                case TypeTag::STRING:
+                    return const_iterator(var_get<std::string>().end());
+                case TypeTag::ORDEREDSET:
+                    return const_iterator(var_get<OrderedSet>().end());
+                case TypeTag::ORDEREDDICT:
+                    return const_iterator(var_get<OrderedDict>().end());
+                default:
+                    throw std::runtime_error("Type is not iterable");
+                }
             }
 
             const_iterator cbegin() const { return begin(); }
@@ -3421,10 +3908,11 @@ namespace pythonic
             // items() for dict - returns list of [key, value] pairs
             var items() const
             {
-                if (auto *dct = std::get_if<Dict>(&value))
+                if (tag_ == TypeTag::DICT)
                 {
+                    const Dict &dct = var_get<Dict>();
                     List result;
-                    for (const auto &[k, v] : *dct)
+                    for (const auto &[k, v] : dct)
                     {
                         // Create a [key, value] list pair manually
                         List pair;
@@ -3440,10 +3928,11 @@ namespace pythonic
             // keys() for dict
             var keys() const
             {
-                if (auto *dct = std::get_if<Dict>(&value))
+                if (tag_ == TypeTag::DICT)
                 {
+                    const Dict &dct = var_get<Dict>();
                     List result;
-                    for (const auto &[k, v] : *dct)
+                    for (const auto &[k, v] : dct)
                     {
                         result.push_back(var(k));
                     }
@@ -3455,10 +3944,11 @@ namespace pythonic
             // values() for dict
             var values() const
             {
-                if (auto *dct = std::get_if<Dict>(&value))
+                if (tag_ == TypeTag::DICT)
                 {
+                    const Dict &dct = var_get<Dict>();
                     List result;
-                    for (const auto &[k, v] : *dct)
+                    for (const auto &[k, v] : dct)
                     {
                         result.push_back(v);
                     }
@@ -3479,7 +3969,7 @@ namespace pythonic
                 }
 
                 // For List
-                if (auto *lst = std::get_if<List>(&value))
+                if (auto *lst = var_get_if<List>())
                 {
                     long long size = static_cast<long long>(lst->size());
 
@@ -3523,7 +4013,7 @@ namespace pythonic
                 }
 
                 // For String
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     long long size = static_cast<long long>(s->size());
 
@@ -3611,7 +4101,7 @@ namespace pythonic
                 }
 
                 // For List
-                if (auto *lst = std::get_if<List>(&value))
+                if (auto *lst = var_get_if<List>())
                 {
                     long long size = static_cast<long long>(lst->size());
 
@@ -3672,7 +4162,7 @@ namespace pythonic
                 }
 
                 // For String
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     long long size = static_cast<long long>(s->size());
 
@@ -3753,7 +4243,7 @@ namespace pythonic
             // upper() - convert to uppercase
             var upper() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
                     for (char &c : result)
@@ -3768,7 +4258,7 @@ namespace pythonic
             // lower() - convert to lowercase
             var lower() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
                     for (char &c : result)
@@ -3783,7 +4273,7 @@ namespace pythonic
             // strip() - remove leading/trailing whitespace
             var strip() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
                     // Left trim
@@ -3804,7 +4294,7 @@ namespace pythonic
             // lstrip() - remove leading whitespace
             var lstrip() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
                     result.erase(result.begin(), std::find_if(result.begin(), result.end(),
@@ -3818,7 +4308,7 @@ namespace pythonic
             // rstrip() - remove trailing whitespace
             var rstrip() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
                     result.erase(std::find_if(result.rbegin(), result.rend(),
@@ -3834,7 +4324,7 @@ namespace pythonic
             // replace(old, new) - replace all occurrences
             var replace(const var &old_str, const var &new_str) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string old_s = old_str.get<std::string>();
                     std::string new_s = new_str.get<std::string>();
@@ -3853,7 +4343,7 @@ namespace pythonic
             // find(substring) - find position of substring (-1 if not found)
             var find(const var &substr) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string sub = substr.get<std::string>();
                     size_t pos = s->find(sub);
@@ -3869,7 +4359,7 @@ namespace pythonic
             // startswith(prefix) - check if string starts with prefix
             var startswith(const var &prefix) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string pre = prefix.get<std::string>();
                     return var(s->substr(0, pre.length()) == pre);
@@ -3880,7 +4370,7 @@ namespace pythonic
             // endswith(suffix) - check if string ends with suffix
             var endswith(const var &suffix) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string suf = suffix.get<std::string>();
                     if (s->length() < suf.length())
@@ -3895,7 +4385,7 @@ namespace pythonic
             // isdigit() - check if all characters are digits
             var isdigit() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     if (s->empty())
                         return var(false);
@@ -3914,7 +4404,7 @@ namespace pythonic
             // isalpha() - check if all characters are alphabetic
             var isalpha() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     if (s->empty())
                         return var(false);
@@ -3933,7 +4423,7 @@ namespace pythonic
             // isalnum() - check if all characters are alphanumeric
             var isalnum() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     if (s->empty())
                         return var(false);
@@ -3952,7 +4442,7 @@ namespace pythonic
             // isspace() - check if all characters are whitespace
             var isspace() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     if (s->empty())
                         return var(false);
@@ -3971,7 +4461,7 @@ namespace pythonic
             // capitalize() - capitalize first character
             var capitalize() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     if (s->empty())
                         return var(*s);
@@ -3989,7 +4479,7 @@ namespace pythonic
             // title() - title case (first letter of each word capitalized)
             var title() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
                     bool capitalize_next = true;
@@ -4017,7 +4507,7 @@ namespace pythonic
             // count(substring) - count occurrences of substring
             var count(const var &substr) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string sub = substr.get<std::string>();
                     if (sub.empty())
@@ -4032,7 +4522,7 @@ namespace pythonic
                     return var(count);
                 }
                 // Also works for List - count occurrences of element
-                if (auto *lst = std::get_if<List>(&value))
+                if (auto *lst = var_get_if<List>())
                 {
                     int count = 0;
                     for (const auto &item : *lst)
@@ -4048,13 +4538,13 @@ namespace pythonic
             // reverse() - reverse string or list (returns new var)
             var reverse() const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string result(*s);
                     std::reverse(result.begin(), result.end());
                     return var(result);
                 }
-                if (auto *lst = std::get_if<List>(&value))
+                if (auto *lst = var_get_if<List>())
                 {
                     List result(*lst);
                     std::reverse(result.begin(), result.end());
@@ -4066,7 +4556,7 @@ namespace pythonic
             // split() - split string by delimiter (default: whitespace)
             var split(const var &delim = var(" ")) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     List result;
                     std::string d = delim.get<std::string>();
@@ -4102,9 +4592,9 @@ namespace pythonic
             // join(list) - join list elements with this string as separator
             var join(const var &lst) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
-                    if (auto *l = std::get_if<List>(&lst.value))
+                    if (auto *l = lst.var_get_if<List>())
                     {
                         std::string result;
                         for (size_t i = 0; i < l->size(); ++i)
@@ -4122,7 +4612,7 @@ namespace pythonic
             // center(width, fillchar) - center string in field of given width
             var center(int width, const var &fillchar = var(" ")) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     std::string fill = fillchar.get<std::string>();
                     char fc = fill.empty() ? ' ' : fill[0];
@@ -4140,7 +4630,7 @@ namespace pythonic
             // zfill(width) - pad string with zeros on the left
             var zfill(int width) const
             {
-                if (auto *s = std::get_if<std::string>(&value))
+                if (auto *s = var_get_if<std::string>())
                 {
                     int len = static_cast<int>(s->length());
                     if (width <= len)
@@ -4160,31 +4650,31 @@ namespace pythonic
                 case TypeTag::NONE:
                     return h;
                 case TypeTag::INT:
-                    return h ^ std::hash<int>{}(std::get<int>(value));
+                    return h ^ std::hash<int>{}(var_get<int>());
                 case TypeTag::FLOAT:
-                    return h ^ std::hash<float>{}(std::get<float>(value));
+                    return h ^ std::hash<float>{}(var_get<float>());
                 case TypeTag::DOUBLE:
-                    return h ^ std::hash<double>{}(std::get<double>(value));
+                    return h ^ std::hash<double>{}(var_get<double>());
                 case TypeTag::STRING:
-                    return h ^ std::hash<std::string>{}(std::get<std::string>(value));
+                    return h ^ std::hash<std::string>{}(var_get<std::string>());
                 case TypeTag::BOOL:
-                    return h ^ std::hash<bool>{}(std::get<bool>(value));
+                    return h ^ std::hash<bool>{}(var_get<bool>());
                 case TypeTag::LONG:
-                    return h ^ std::hash<long>{}(std::get<long>(value));
+                    return h ^ std::hash<long>{}(var_get<long>());
                 case TypeTag::LONG_LONG:
-                    return h ^ std::hash<long long>{}(std::get<long long>(value));
+                    return h ^ std::hash<long long>{}(var_get<long long>());
                 case TypeTag::LONG_DOUBLE:
-                    return h ^ std::hash<long double>{}(std::get<long double>(value));
+                    return h ^ std::hash<long double>{}(var_get<long double>());
                 case TypeTag::UINT:
-                    return h ^ std::hash<unsigned int>{}(std::get<unsigned int>(value));
+                    return h ^ std::hash<unsigned int>{}(var_get<unsigned int>());
                 case TypeTag::ULONG:
-                    return h ^ std::hash<unsigned long>{}(std::get<unsigned long>(value));
+                    return h ^ std::hash<unsigned long>{}(var_get<unsigned long>());
                 case TypeTag::ULONG_LONG:
-                    return h ^ std::hash<unsigned long long>{}(std::get<unsigned long long>(value));
+                    return h ^ std::hash<unsigned long long>{}(var_get<unsigned long long>());
                 case TypeTag::LIST:
                 {
                     // Hash list by combining element hashes
-                    const auto &lst = std::get<List>(value);
+                    const auto &lst = var_get<List>();
                     size_t seed = lst.size();
                     for (const auto &item : lst)
                     {
@@ -4195,7 +4685,7 @@ namespace pythonic
                 case TypeTag::SET:
                 {
                     // Hash set by XORing element hashes (order-independent)
-                    const auto &s = std::get<Set>(value);
+                    const auto &s = var_get<Set>();
                     size_t seed = s.size();
                     for (const auto &item : s)
                     {
@@ -4206,7 +4696,7 @@ namespace pythonic
                 case TypeTag::DICT:
                 {
                     // Hash dict by combining key-value pairs
-                    const auto &d = std::get<Dict>(value);
+                    const auto &d = var_get<Dict>();
                     size_t seed = d.size();
                     for (const auto &[k, v] : d)
                     {
@@ -4218,7 +4708,7 @@ namespace pythonic
                 case TypeTag::ORDEREDSET:
                 {
                     // Hash ordered_set by XORing element hashes (order-independent)
-                    const auto &hs = std::get<OrderedSet>(value);
+                    const auto &hs = var_get<OrderedSet>();
                     size_t seed = hs.size();
                     for (const auto &item : hs)
                     {
@@ -4229,7 +4719,7 @@ namespace pythonic
                 case TypeTag::ORDEREDDICT:
                 {
                     // Hash ordereddict by combining key-value pairs
-                    const auto &od = std::get<OrderedDict>(value);
+                    const auto &od = var_get<OrderedDict>();
                     size_t seed = od.size();
                     for (const auto &[k, v] : od)
                     {
@@ -4241,7 +4731,7 @@ namespace pythonic
                 case TypeTag::GRAPH:
                 {
                     // Hash graph by its pointer address (identity-based)
-                    const auto &g = std::get<GraphPtr>(value);
+                    const auto &g = var_get<GraphPtr>();
                     return h ^ std::hash<GraphPtr>{}(g);
                 }
                 default:
@@ -4545,7 +5035,7 @@ namespace pythonic
         {
             if (tag_ != TypeTag::GRAPH)
                 throw std::runtime_error("Operation requires a graph");
-            auto &ptr = std::get<GraphPtr>(value);
+            auto &ptr = var_get<GraphPtr>();
             if (!ptr)
                 throw std::runtime_error("Graph is null");
             return *ptr;
@@ -4555,7 +5045,7 @@ namespace pythonic
         {
             if (tag_ != TypeTag::GRAPH)
                 throw std::runtime_error("Operation requires a graph");
-            const auto &ptr = std::get<GraphPtr>(value);
+            const auto &ptr = var_get<GraphPtr>();
             if (!ptr)
                 throw std::runtime_error("Graph is null");
             return *ptr;
@@ -5274,11 +5764,12 @@ namespace pythonic
         inline var input(const var &prompt = var(""))
         {
             // Print prompt without newline
-            if (auto *s = std::get_if<std::string>(&prompt.getValue()))
+            if (prompt.is_string())
             {
-                if (!s->empty())
+                const std::string &s = prompt.as_string_unchecked();
+                if (!s.empty())
                 {
-                    std::cout << *s;
+                    std::cout << s;
                     std::cout.flush();
                 }
             }
@@ -5297,7 +5788,7 @@ namespace pythonic
 
         // ============ Tuple Access Helper ============
         // Provides Python-like tuple[0], tuple[1] access via function call syntax
-        // Usage: get(pair, 0) instead of std::get<0>(pair)
+        // Usage: get(pair, 0) instead of var_get<0>(pair)
 
         template <typename Tuple>
         auto get(const Tuple &t, size_t index)
