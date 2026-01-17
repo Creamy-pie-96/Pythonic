@@ -315,4 +315,4 @@ Check out the full documentation in the main [README.md](../README.md) for all t
 - Math library
 - And much more!
 
-Enjoy coding with Pythonic C++! 🚀
+Enjoy coding with Pythonic C++! 
