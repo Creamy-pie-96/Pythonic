@@ -181,14 +181,14 @@ int main()
 
     // Range
     print("range(5):");
-    for_in(i, range(5))
+    for_each(i, range(5))
     {
         print(i, "", "");
     }
     print();
 
     print("range(10, 0, -1) (reverse):");
-    for_in(i, range(10, 0, -1))
+    for_each(i, range(10, 0, -1))
     {
         print(i, "", "");
     }
@@ -222,7 +222,7 @@ int main()
 
     // Reversed
     print("\nReversed fruits:");
-    for_in(fruit, reversed_var(fruits))
+    for_each(fruit, reversed_var(fruits))
     {
         print("  ", fruit);
     }
@@ -567,7 +567,7 @@ int main()
 
     // Print task names in order
     print("  Execution sequence:");
-    for_in(i, topo_order)
+    for_each(i, topo_order)
     {
         size_t node_id = static_cast<size_t>(static_cast<int>(i));
         print("   ->", tasks.get_node_data(node_id));
@@ -590,7 +590,7 @@ int main()
     print("\nFloyd-Warshall (all pairs):");
     var fw = small.floyd_warshall();
     print("  Distance matrix:");
-    for_in(row, fw)
+    for_each(row, fw)
     {
         print("   ", row);
     }

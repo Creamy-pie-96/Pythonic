@@ -233,7 +233,7 @@ if (person.has("name")) {
 }
 
 // Iterate
-for_in(key, person.keys()) {
+for_each(key, person.keys()) {
     print(key, ":", person[key]);
 }
 
@@ -1074,22 +1074,22 @@ auto scale = clambda_(x, x * factor);
 using namespace pythonic::loop;
 
 // range(n) - 0 to n-1
-for_in(i, range(5)) {
+for_each(i, range(5)) {
     print(i);  // 0, 1, 2, 3, 4
 }
 
 // range(start, stop)
-for_in(i, range(2, 5)) {
+for_each(i, range(2, 5)) {
     print(i);  // 2, 3, 4
 }
 
 // range(start, stop, step)
-for_in(i, range(0, 10, 2)) {
+for_each(i, range(0, 10, 2)) {
     print(i);  // 0, 2, 4, 6, 8
 }
 
 // Negative step (reverse iteration) - very useful!
-for_in(i, range(10, 0, -1)) {
+for_each(i, range(10, 0, -1)) {
     print(i);  // 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
 }
 
@@ -1128,12 +1128,12 @@ Iterate in reverse order - super common in Python!
 var nums = list(1, 2, 3, 4, 5);
 var rev = reversed_var(nums);  // [5, 4, 3, 2, 1]
 
-for_in(x, reversed_var(nums)) {
+for_each(x, reversed_var(nums)) {
     print(x);  // 5, 4, 3, 2, 1
 }
 
 // Works with range() too
-for_in(i, reversed_var(range(10))) {
+for_each(i, reversed_var(range(10))) {
     print(i);  // 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
 }
 ```
@@ -1146,7 +1146,7 @@ Tired of typing `for (auto x : ...)`? Use these:
 var nums = list(1, 2, 3, 4, 5);
 
 // for_in - simple iteration
-for_in(x, nums) {
+for_each(x, nums) {
     print(x);
 }
 
@@ -1330,7 +1330,7 @@ if (DynamicVar::has("x")) {
 
 // List all variables
 auto all_vars = DynamicVar::list_all();
-for_in(name, all_vars) {
+for_each(name, all_vars) {
     print(name, "=", DynamicVar::get_ref(name.template get<std::string>()));
 }
 ```
@@ -1476,7 +1476,7 @@ if (content) {  // Check if file was read (returns None if missing)
 // Read lines into a list
 auto lines = read_lines("data.txt");
 if (lines) {  // Returns None if file doesn't exist
-    for_in(line, lines) {
+    for_each(line, lines) {
         print(line);
     }
 }

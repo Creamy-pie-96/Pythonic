@@ -672,9 +672,9 @@ namespace pythonic
 
 // ============ Macros for Python-like syntax ============
 
-// for_in(item, container) - cleaner syntax for range-based for
-// Usage: for_in(x, my_list) { ... }
-#define for_in(var, container) for (auto var : container)
+// for_each(item, container) - cleaner syntax for range-based for
+// Usage: for_each(x, my_list) { ... }
+#define for_each(var, container) for (auto var : container)
 
 // for_index(i, container) - loop with index
 // Usage: for_index(i, my_list) { ... }
