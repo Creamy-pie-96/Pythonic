@@ -398,9 +398,10 @@ This is the most common error. It means CMake cannot find the installed package 
 2. **Use that full path in your cmake command:**
 
    ```bash
-   cmake .. -DCMAKE_PREFIX_PATH=/home/user/pythonic_cpp_lib/Pythonic/install
+   cmake .. -DCMAKE_PREFIX_PATH=/home/user/pythonic_cpp_lib/Pythonic/install 
    ```
-
+    *note* you can add *-DCMAKE_BUILD_TYPE=Release* if you want to build in release mode
+    
 3. **Verify the path is correct** before running cmake:
 
    **Linux/macOS:**
