@@ -1,0 +1,26 @@
+cmake_minimum_required(VERSION 3.10)
+project(UsingPythonic)
+
+# Require C++20
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Find the Pythonic library (header-only)
+# FAILS if not installed
+find_package(pythonic REQUIRED)
+
+# Add your executable
+# --> Replace 'demoapp' with your project executable name
+# --> Add all your .cpp files here if you have multiple
+add_executable(demoapp demo.cpp)
+# For multi-file projects:
+# add_executable(demoapp main.cpp file1.cpp file2.cpp)
+# or use file(GLOB SOURCES *.cpp) and then add_executable(demoapp ${SOURCES})
+
+
+# Link libraries to your target
+# --> Add other libraries here if your project depends on them
+target_link_libraries(demoapp PRIVATE pythonic::pythonic)
+
+# Optional status message
+message(STATUS "Using installed Pythonic package")

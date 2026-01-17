@@ -1,0 +1,5 @@
+@PACKAGE_INIT@
+
+include("${CMAKE_CURRENT_LIST_DIR}/pythonicTargets.cmake")
+
+set(pythonic_VERSION "@PYTHONIC_VERSION@" CACHE INTERNAL "Version of pythonic")
