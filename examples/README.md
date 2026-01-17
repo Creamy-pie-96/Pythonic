@@ -27,11 +27,13 @@ Before you begin, make sure you have:
 
 ## Step 1: Clone the Pythonic Library
 
-First, clone the Pythonic repository from GitHub:
+First, choose a location to install the Pythonic library (this can be anywhere on your system). For this guide, we'll use a folder called `pythonic_cpp_lib`:
 
 ### Linux / macOS:
 
 ```bash
+mkdir -p ~/pythonic_cpp_lib
+cd ~/pythonic_cpp_lib
 git clone https://github.com/Creamy-pie-96/Pythonic.git
 cd Pythonic
 ```
@@ -39,6 +41,8 @@ cd Pythonic
 ### Windows (Command Prompt):
 
 ```cmd
+mkdir %USERPROFILE%\pythonic_cpp_lib
+cd %USERPROFILE%\pythonic_cpp_lib
 git clone https://github.com/Creamy-pie-96/Pythonic.git
 cd Pythonic
 ```
@@ -46,15 +50,19 @@ cd Pythonic
 ### Windows (PowerShell):
 
 ```powershell
+New-Item -ItemType Directory -Force -Path ~\pythonic_cpp_lib
+cd ~\pythonic_cpp_lib
 git clone https://github.com/Creamy-pie-96/Pythonic.git
 cd Pythonic
 ```
+
+**Note:** You can use any directory name and location you prefer - just remember where you put it!
 
 ---
 
 ## Step 2: Build and Install the Library
 
-Now build and install the Pythonic library to a local directory. We'll install it to a folder called `install` in your workspace.
+Now build and install the Pythonic library. The install will be placed in a subfolder called `install` within the Pythonic directory.
 
 ### Linux / macOS:
 
@@ -63,6 +71,8 @@ mkdir -p build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=../install
 cmake --build . --target install -j4
+cd ../..    # Go back to pythonic_cpp_lib directory
+pwd         # Remember this path - you'll need it later!
 ```
 
 ### Windows (Command Prompt):
@@ -72,6 +82,8 @@ mkdir build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=..\install
 cmake --build . --target install --config Release
+cd ..\..
+cd
 ```
 
 ### Windows (PowerShell):
@@ -81,44 +93,52 @@ New-Item -ItemType Directory -Force -Path build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX="..\install"
 cmake --build . --target install --config Release
+cd ..\..
+Get-Location    # Remember this path - you'll need it later!
 ```
 
-After this step, you'll have:
+**After this step:**
 
-- Headers in: `install/include/pythonic/`
-- CMake config in: `install/lib/cmake/pythonic/`
+- The library is installed at: `<your-pythonic_cpp_lib-path>/Pythonic/install/`
+- Save or remember this full path - you'll use it when building your own projects
 
 ---
 
 ## Step 3: Create Your Project
 
-Navigate back to your workspace and create a new project directory:
+Now create your own project in a **separate location** (anywhere you want - doesn't need to be near the Pythonic library):
 
 ### Linux / macOS:
 
 ```bash
-cd ..
-cd ..
-mkdir myproject
-cd myproject
+mkdir -p ~/myproject
+cd ~/myproject
 ```
 
 ### Windows (Command Prompt):
 
 ```cmd
-cd ..
-cd ..
-mkdir myproject
-cd myproject
+mkdir %USERPROFILE%\myproject
+cd %USERPROFILE%\myproject
 ```
 
 ### Windows (PowerShell):
 
 ```powershell
-cd ..
-cd ..
-New-Item -ItemType Directory -Force -Path myproject
-cd myproject
+New-Item -ItemType Directory -Force -Path ~\myproject
+cd ~\myproject
+```
+
+**Your directory structure now looks like:**
+
+```
+(anywhere on your system)
+└── pythonic_cpp_lib/
+    └── Pythonic/
+        └── install/          ← Pythonic is installed here
+
+(can be anywhere else on your system)
+└── myproject/                ← Your project (we are here now)
 ```
 
 ---
@@ -178,15 +198,33 @@ Copy paste it or we have a **CMakeLists.txt** file in **example** directory. You
 
 ## Step 5: Build Your Project
 
-Now configure and build your project, pointing CMake to where you installed Pythonic:
+Now configure and build your project. You need to tell CMake where you installed the Pythonic library.
+
+**⚠️ IMPORTANT - You Must Specify the Path:**  
+Replace `<path-to-pythonic-install>` below with the **actual full path** to where you installed Pythonic in Step 2.
+
+For example:
+
+- Linux/macOS: `/home/username/pythonic_cpp_lib/Pythonic/install`
+- Windows: `C:\Users\username\pythonic_cpp_lib\Pythonic\install`
 
 ### Linux / macOS:
 
 ```bash
 mkdir build
 cd build
-cmake .. -DCMAKE_PREFIX_PATH=../../Pythonic/install
+
+# Replace <path-to-pythonic-install> with your actual path!
+# Example: cmake .. -DCMAKE_PREFIX_PATH=/home/john/pythonic_cpp_lib/Pythonic/install
+cmake .. -DCMAKE_PREFIX_PATH=<path-to-pythonic-install>
+
 cmake --build . -j4
+```
+
+**Example with actual path:**
+
+```bash
+cmake .. -DCMAKE_PREFIX_PATH=$HOME/pythonic_cpp_lib/Pythonic/install
 ```
 
 ### Windows (Command Prompt):
@@ -194,8 +232,18 @@ cmake --build . -j4
 ```cmd
 mkdir build
 cd build
-cmake .. -DCMAKE_PREFIX_PATH=..\..\Pythonic\install
+
+REM Replace <path-to-pythonic-install> with your actual path!
+REM Example: cmake .. -DCMAKE_PREFIX_PATH=C:\Users\John\pythonic_cpp_lib\Pythonic\install
+cmake .. -DCMAKE_PREFIX_PATH=<path-to-pythonic-install>
+
 cmake --build . --config Release
+```
+
+**Example with actual path:**
+
+```cmd
+cmake .. -DCMAKE_PREFIX_PATH=%USERPROFILE%\pythonic_cpp_lib\Pythonic\install
 ```
 
 ### Windows (PowerShell):
@@ -203,8 +251,38 @@ cmake --build . --config Release
 ```powershell
 New-Item -ItemType Directory -Force -Path build
 cd build
-cmake .. -DCMAKE_PREFIX_PATH="..\..\Pythonic\install"
+
+# Replace <path-to-pythonic-install> with your actual path!
+# Example: cmake .. -DCMAKE_PREFIX_PATH="C:\Users\John\pythonic_cpp_lib\Pythonic\install"
+cmake .. -DCMAKE_PREFIX_PATH="<path-to-pythonic-install>"
+
 cmake --build . --config Release
+```
+
+**Example with actual path:**
+
+```powershell
+cmake .. -DCMAKE_PREFIX_PATH="$HOME\pythonic_cpp_lib\Pythonic\install"
+```
+
+---
+
+**Finding Your Path:**
+
+If you forgot where you installed Pythonic, you can find it:
+
+**Linux/macOS:**
+
+```bash
+find ~ -name "pythonicConfig.cmake" 2>/dev/null
+# This will show the full path - use everything before "/lib/cmake/pythonic/"
+```
+
+**Windows (PowerShell):**
+
+```powershell
+Get-ChildItem -Path $HOME -Filter "pythonicConfig.cmake" -Recurse -ErrorAction SilentlyContinue
+# Look for the path, use everything before "\lib\cmake\pythonic\"
 ```
 
 ---
@@ -289,8 +367,54 @@ Release\myapp.exe
 
 ### "Could not find pythonic" Error
 
-- Make sure you set `-DCMAKE_PREFIX_PATH` to the correct install directory
-- Verify that `install/lib/cmake/pythonic/pythonicConfig.cmake` exists
+This is the most common error. It means CMake cannot find the installed package config files.
+
+**Solution:**
+
+1. **Find where you installed Pythonic:**
+
+   **Linux/macOS:**
+
+   ```bash
+   find ~ -name "pythonicConfig.cmake" 2>/dev/null
+   ```
+
+   This will show something like: `/home/user/pythonic_cpp_lib/Pythonic/install/lib/cmake/pythonic/pythonicConfig.cmake`
+
+   The path you need is everything **before** `/lib/cmake/pythonic/`:  
+   → `/home/user/pythonic_cpp_lib/Pythonic/install`
+
+   **Windows (PowerShell):**
+
+   ```powershell
+   Get-ChildItem -Path $HOME -Filter "pythonicConfig.cmake" -Recurse -ErrorAction SilentlyContinue
+   ```
+
+   This will show something like: `C:\Users\John\pythonic_cpp_lib\Pythonic\install\lib\cmake\pythonic\pythonicConfig.cmake`
+
+   The path you need is everything **before** `\lib\cmake\pythonic\`:  
+   → `C:\Users\John\pythonic_cpp_lib\Pythonic\install`
+
+2. **Use that full path in your cmake command:**
+
+   ```bash
+   cmake .. -DCMAKE_PREFIX_PATH=/home/user/pythonic_cpp_lib/Pythonic/install
+   ```
+
+3. **Verify the path is correct** before running cmake:
+
+   **Linux/macOS:**
+
+   ```bash
+   ls /path/to/pythonic_cpp_lib/Pythonic/install/lib/cmake/pythonic/
+   # Should show: pythonicConfig.cmake  pythonicConfigVersion.cmake  pythonicTargets.cmake
+   ```
+
+   **Windows:**
+
+   ```cmd
+   dir C:\path\to\pythonic_cpp_lib\Pythonic\install\lib\cmake\pythonic\
+   ```
 
 ### "pythonic/pythonic.hpp: No such file or directory"
 
@@ -315,4 +439,4 @@ Check out the full documentation in the main [README.md](../README.md) for all t
 - Math library
 - And much more!
 
-Enjoy coding with Pythonic C++! 
+Enjoy coding with Pythonic C++!
