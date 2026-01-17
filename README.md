@@ -78,7 +78,7 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
 
 ### Build and Install with CMake
 
-For a complete step-by-step guide on cloning, building, installing, and using this library in your own project (with commands for all platforms), see the detailed [Getting Started Guide](include/pythonic/readme.md).
+For a complete step-by-step guide on cloning, building, installing, and using this library in your own project (with commands for all platforms), see the detailed [Getting Started Guide](examples/README.md).
 
 **Note:** If you don't want to install, you can simply add the `include/pythonic` directory to your project's include path and use `target_include_directories` in your CMakeLists.txt.
 
