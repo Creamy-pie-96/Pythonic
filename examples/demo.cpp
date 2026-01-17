@@ -636,7 +636,7 @@ int main()
     print("      - Topological sort");
     print("      - Connected/Strongly Connected Components");
     print("      - Cycle detection");
-    print("\nEnjoy your Pythonic C++ experience! 🚀");
+    print("\nEnjoy your Pythonic C++ experience! ");
 
     return 0;
 }
