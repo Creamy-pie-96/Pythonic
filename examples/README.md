@@ -200,7 +200,7 @@ Copy paste it or we have a **CMakeLists.txt** file in **example** directory. You
 
 Now configure and build your project. You need to tell CMake where you installed the Pythonic library.
 
-**⚠️ IMPORTANT - You Must Specify the Path:**  
+**IMPORTANT - You Must Specify the Path:**  
 Replace `<path-to-pythonic-install>` below with the **actual full path** to where you installed Pythonic in Step 2.
 
 For example:
@@ -401,7 +401,7 @@ This is the most common error. It means CMake cannot find the installed package 
    cmake .. -DCMAKE_PREFIX_PATH=/home/user/pythonic_cpp_lib/Pythonic/install 
    ```
     *note* you can add *-DCMAKE_BUILD_TYPE=Release* if you want to build in release mode
-    
+
 3. **Verify the path is correct** before running cmake:
 
    **Linux/macOS:**
