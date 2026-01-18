@@ -3369,7 +3369,8 @@ namespace pythonic
             explicit operator size_t() const
             {
                 long long v = toLongLong();
-                if (v < 0) {
+                if (v < 0)
+                {
                     throw pythonic::PythonicTypeError("Cannot convert negative value to size_t");
                 }
                 return static_cast<size_t>(v);
