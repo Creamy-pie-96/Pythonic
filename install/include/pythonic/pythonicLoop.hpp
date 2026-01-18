@@ -786,52 +786,52 @@ namespace pythonic
 
         // any() - True if any element is truthy
         template <typename Iterable>
-        bool any(Iterable &&iterable)
+        vars::var any(Iterable &&iterable)
         {
             for (auto &&item : iterable)
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, vars::var>)
                 {
                     if (static_cast<bool>(item))
-                        return true;
+                        return vars::var(true);
                 }
                 else if constexpr (std::is_same_v<std::decay_t<decltype(item)>, bool>)
                 {
                     if (item)
-                        return true;
+                        return vars::var(true);
                 }
                 else
                 {
                     if (item)
-                        return true;
+                        return vars::var(true);
                 }
             }
-            return false;
+            return vars::var(false);
         }
 
         // all() - True if all elements are truthy
         template <typename Iterable>
-        bool all(Iterable &&iterable)
+        vars::var all(Iterable &&iterable)
         {
             for (auto &&item : iterable)
             {
                 if constexpr (std::is_same_v<std::decay_t<decltype(item)>, vars::var>)
                 {
                     if (!static_cast<bool>(item))
-                        return false;
+                        return vars::var(false);
                 }
                 else if constexpr (std::is_same_v<std::decay_t<decltype(item)>, bool>)
                 {
                     if (!item)
-                        return false;
+                        return vars::var(false);
                 }
                 else
                 {
                     if (!item)
-                        return false;
+                        return vars::var(false);
                 }
             }
-            return true;
+            return vars::var(true);
         }
 
     } // namespace loop

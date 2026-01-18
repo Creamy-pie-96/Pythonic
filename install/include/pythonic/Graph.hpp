@@ -55,7 +55,7 @@ namespace pythonic
          *
          * An edge connects two nodes and may be directed or undirected.
          * Uses double for weight to match Python's float semantics.
-         * 
+         *
          * @param id Destination node index (the node this edge points to).
          * @param weight Weight of the edge (default is 0.0).
          * @param directed True if the edge is directed, false if undirected.
@@ -215,7 +215,7 @@ namespace pythonic
 
                 std::vector<bool> visited(nodes, false);
                 std::vector<size_t> parent(nodes, (size_t)-1);
-                std::vector<size_t> dist(nodes, (size_t)-1);  // distance from start
+                std::vector<size_t> dist(nodes, (size_t)-1); // distance from start
                 std::queue<size_t> q;
                 visited[start] = true;
                 dist[start] = 0;
@@ -441,7 +441,7 @@ namespace pythonic
              * For directed edges, only from->to is added. For undirected edges, both
              * directions are added. `w1` is used for the u->v weight; `w2` is used for
              * the reverse v->u when adding an undirected edge (defaults to w1 for symmetric edges).
-             * 
+             *
              * @param u Source node index.
              * @param v Destination node index.
              * @param w1 Weight for u->v edge (default: 0.0).

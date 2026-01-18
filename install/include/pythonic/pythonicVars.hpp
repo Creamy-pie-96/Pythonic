@@ -2525,6 +2525,8 @@ namespace pythonic
                 {
                     switch (tag_)
                     {
+                    case TypeTag::NONE:
+                        return var(true); // None == None is always true
                     case TypeTag::INT:
                         return var(var_get<int>() == other.var_get<int>());
                     case TypeTag::DOUBLE:
@@ -2537,6 +2539,82 @@ namespace pythonic
                         return var(var_get<long long>() == other.var_get<long long>());
                     case TypeTag::FLOAT:
                         return var(var_get<float>() == other.var_get<float>());
+                    case TypeTag::LIST:
+                    {
+                        const auto &lst1 = var_get<List>();
+                        const auto &lst2 = other.var_get<List>();
+                        if (lst1.size() != lst2.size())
+                            return var(false);
+                        for (size_t i = 0; i < lst1.size(); ++i)
+                        {
+                            // Recursively compare elements
+                            if (!static_cast<bool>(lst1[i] == lst2[i]))
+                                return var(false);
+                        }
+                        return var(true);
+                    }
+                    case TypeTag::SET:
+                    {
+                        const auto &set1 = var_get<Set>();
+                        const auto &set2 = other.var_get<Set>();
+                        if (set1.size() != set2.size())
+                            return var(false);
+                        // Check if all elements in set1 are in set2
+                        for (const auto &elem : set1)
+                        {
+                            if (set2.find(elem) == set2.end())
+                                return var(false);
+                        }
+                        return var(true);
+                    }
+                    case TypeTag::ORDEREDSET:
+                    {
+                        const auto &set1 = var_get<OrderedSet>();
+                        const auto &set2 = other.var_get<OrderedSet>();
+                        if (set1.size() != set2.size())
+                            return var(false);
+                        auto it1 = set1.begin();
+                        auto it2 = set2.begin();
+                        while (it1 != set1.end())
+                        {
+                            if (!static_cast<bool>(*it1 == *it2))
+                                return var(false);
+                            ++it1;
+                            ++it2;
+                        }
+                        return var(true);
+                    }
+                    case TypeTag::DICT:
+                    {
+                        const auto &dict1 = var_get<Dict>();
+                        const auto &dict2 = other.var_get<Dict>();
+                        if (dict1.size() != dict2.size())
+                            return var(false);
+                        for (const auto &[key, val] : dict1)
+                        {
+                            auto it = dict2.find(key);
+                            if (it == dict2.end() || !static_cast<bool>(val == it->second))
+                                return var(false);
+                        }
+                        return var(true);
+                    }
+                    case TypeTag::ORDEREDDICT:
+                    {
+                        const auto &dict1 = var_get<OrderedDict>();
+                        const auto &dict2 = other.var_get<OrderedDict>();
+                        if (dict1.size() != dict2.size())
+                            return var(false);
+                        auto it1 = dict1.begin();
+                        auto it2 = dict2.begin();
+                        while (it1 != dict1.end())
+                        {
+                            if (it1->first != it2->first || !static_cast<bool>(it1->second == it2->second))
+                                return var(false);
+                            ++it1;
+                            ++it2;
+                        }
+                        return var(true);
+                    }
                     default:
                         break;
                     }
@@ -2546,6 +2624,7 @@ namespace pythonic
                 {
                     return var(toDouble() == other.toDouble());
                 }
+                // Different types (except numeric) are not equal
                 return var(false);
             }
 
@@ -2556,6 +2635,8 @@ namespace pythonic
                 {
                     switch (tag_)
                     {
+                    case TypeTag::NONE:
+                        return var(false); // None != None is always false
                     case TypeTag::INT:
                         return var(var_get<int>() != other.var_get<int>());
                     case TypeTag::DOUBLE:
@@ -2566,6 +2647,80 @@ namespace pythonic
                         return var(var_get<bool>() != other.var_get<bool>());
                     case TypeTag::LONG_LONG:
                         return var(var_get<long long>() != other.var_get<long long>());
+                    case TypeTag::LIST:
+                    {
+                        const auto &lst1 = var_get<List>();
+                        const auto &lst2 = other.var_get<List>();
+                        if (lst1.size() != lst2.size())
+                            return var(true);
+                        for (size_t i = 0; i < lst1.size(); ++i)
+                        {
+                            if (static_cast<bool>(lst1[i] != lst2[i]))
+                                return var(true);
+                        }
+                        return var(false);
+                    }
+                    case TypeTag::SET:
+                    {
+                        const auto &set1 = var_get<Set>();
+                        const auto &set2 = other.var_get<Set>();
+                        if (set1.size() != set2.size())
+                            return var(true);
+                        for (const auto &elem : set1)
+                        {
+                            if (set2.find(elem) == set2.end())
+                                return var(true);
+                        }
+                        return var(false);
+                    }
+                    case TypeTag::ORDEREDSET:
+                    {
+                        const auto &set1 = var_get<OrderedSet>();
+                        const auto &set2 = other.var_get<OrderedSet>();
+                        if (set1.size() != set2.size())
+                            return var(true);
+                        auto it1 = set1.begin();
+                        auto it2 = set2.begin();
+                        while (it1 != set1.end())
+                        {
+                            if (static_cast<bool>(*it1 != *it2))
+                                return var(true);
+                            ++it1;
+                            ++it2;
+                        }
+                        return var(false);
+                    }
+                    case TypeTag::DICT:
+                    {
+                        const auto &dict1 = var_get<Dict>();
+                        const auto &dict2 = other.var_get<Dict>();
+                        if (dict1.size() != dict2.size())
+                            return var(true);
+                        for (const auto &[key, val] : dict1)
+                        {
+                            auto it = dict2.find(key);
+                            if (it == dict2.end() || static_cast<bool>(val != it->second))
+                                return var(true);
+                        }
+                        return var(false);
+                    }
+                    case TypeTag::ORDEREDDICT:
+                    {
+                        const auto &dict1 = var_get<OrderedDict>();
+                        const auto &dict2 = other.var_get<OrderedDict>();
+                        if (dict1.size() != dict2.size())
+                            return var(true);
+                        auto it1 = dict1.begin();
+                        auto it2 = dict2.begin();
+                        while (it1 != dict1.end())
+                        {
+                            if (it1->first != it2->first || static_cast<bool>(it1->second != it2->second))
+                                return var(true);
+                            ++it1;
+                            ++it2;
+                        }
+                        return var(false);
+                    }
                     default:
                         break;
                     }
@@ -3369,7 +3524,8 @@ namespace pythonic
             explicit operator size_t() const
             {
                 long long v = toLongLong();
-                if (v < 0) {
+                if (v < 0)
+                {
                     throw pythonic::PythonicTypeError("Cannot convert negative value to size_t");
                 }
                 return static_cast<size_t>(v);
@@ -3434,22 +3590,22 @@ namespace pythonic
 
             // len() support
             // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
-            size_t len() const
+            var len() const
             {
                 switch (tag_)
                 {
                 case TypeTag::STRING:
-                    return var_get<std::string>().size();
+                    return var(static_cast<int64_t>(var_get<std::string>().size()));
                 case TypeTag::LIST:
-                    return var_get<List>().size();
+                    return var(static_cast<int64_t>(var_get<List>().size()));
                 case TypeTag::SET:
-                    return var_get<Set>().size();
+                    return var(static_cast<int64_t>(var_get<Set>().size()));
                 case TypeTag::DICT:
-                    return var_get<Dict>().size();
+                    return var(static_cast<int64_t>(var_get<Dict>().size()));
                 case TypeTag::ORDEREDSET:
-                    return var_get<OrderedSet>().size();
+                    return var(static_cast<int64_t>(var_get<OrderedSet>().size()));
                 case TypeTag::ORDEREDDICT:
-                    return var_get<OrderedDict>().size();
+                    return var(static_cast<int64_t>(var_get<OrderedDict>().size()));
                 default:
                     throw pythonic::PythonicTypeError("object has no len()");
                 }
@@ -3592,7 +3748,7 @@ namespace pythonic
 
             // contains check (in operator simulation)
             // OPTIMIZED: Uses TypeTag for fast dispatch
-            bool contains(const var &v) const
+            var contains(const var &v) const
             {
                 switch (tag_)
                 {
@@ -3602,34 +3758,73 @@ namespace pythonic
                     for (const auto &item : lst)
                     {
                         if (static_cast<bool>(item == v))
-                            return true;
+                            return var(true);
                     }
-                    return false;
+                    return var(false);
                 }
                 case TypeTag::SET:
-                    return var_get<Set>().find(v) != var_get<Set>().end();
+                    return var(var_get<Set>().find(v) != var_get<Set>().end());
                 case TypeTag::ORDEREDSET:
-                    return var_get<OrderedSet>().find(v) != var_get<OrderedSet>().end();
+                    return var(var_get<OrderedSet>().find(v) != var_get<OrderedSet>().end());
                 case TypeTag::DICT:
                     if (v.tag_ == TypeTag::STRING)
                     {
-                        return var_get<Dict>().find(v.var_get<std::string>()) != var_get<Dict>().end();
+                        return var(var_get<Dict>().find(v.var_get<std::string>()) != var_get<Dict>().end());
                     }
-                    return false;
+                    return var(false);
                 case TypeTag::ORDEREDDICT:
                     if (v.tag_ == TypeTag::STRING)
                     {
-                        return var_get<OrderedDict>().find(v.var_get<std::string>()) != var_get<OrderedDict>().end();
+                        return var(var_get<OrderedDict>().find(v.var_get<std::string>()) != var_get<OrderedDict>().end());
                     }
-                    return false;
+                    return var(false);
                 case TypeTag::STRING:
                     if (v.tag_ == TypeTag::STRING)
                     {
-                        return var_get<std::string>().find(v.var_get<std::string>()) != std::string::npos;
+                        return var(var_get<std::string>().find(v.var_get<std::string>()) != std::string::npos);
                     }
-                    return false;
+                    return var(false);
                 default:
-                    return false;
+                    return var(false);
+                }
+            }
+
+            // has() - alias for contains(), commonly used with dicts/sets
+            var has(const var &v) const
+            {
+                return contains(v);
+            }
+
+            // remove() - remove element from set or list
+            void remove(const var &v)
+            {
+                switch (tag_)
+                {
+                case TypeTag::SET:
+                {
+                    auto &s = var_get<Set>();
+                    s.erase(v);
+                    break;
+                }
+                case TypeTag::ORDEREDSET:
+                {
+                    auto &s = var_get<OrderedSet>();
+                    s.erase(v);
+                    break;
+                }
+                case TypeTag::LIST:
+                {
+                    auto &lst = var_get<List>();
+                    auto it = std::find_if(lst.begin(), lst.end(), 
+                        [&v](const var &item) { return static_cast<bool>(item == v); });
+                    if (it != lst.end())
+                    {
+                        lst.erase(it);
+                    }
+                    break;
+                }
+                default:
+                    throw pythonic::PythonicTypeError("remove() not supported for this type");
                 }
             }
 
@@ -5702,25 +5897,9 @@ namespace pythonic
             return result;
         }
 
-        // sorted() - return new sorted list
-        inline var sorted(const var &lst, bool reverse_order = false)
-        {
-            if (lst.type() != "list")
-            {
-                throw pythonic::PythonicTypeError("sorted() expects a list");
-            }
-            List result = lst.get<List>();
-            if (reverse_order)
-            {
-                std::sort(result.begin(), result.end(), [](const var &a, const var &b)
-                          { return b < a; });
-            }
-            else
-            {
-                std::sort(result.begin(), result.end());
-            }
-            return var(result);
-        }
+        // NOTE: sorted() moved to pythonicFunction.hpp to avoid ambiguity
+        // Use pythonic::func::sorted() instead
+
 
         // reversed_var() - return new reversed list (var version)
         // Note: Use this for var types, or pythonic::loop::reversed for generic iterables

@@ -217,8 +217,8 @@ var d = lst(1, 4);            // [1, 2, 3]  (operator() works too)
 // Use None for Python-style slicing!
 using pythonic::vars::None;
 var rev = lst.slice(None, None, var(-1));  // [9, 8, 7, 6, 5, 4, 3, 2, 1, 0] - reverse!
-var first_half = lst.slice(None, 5);       // [0, 1, 2, 3, 4]
-var last_half = lst.slice(5, None);        // [5, 6, 7, 8, 9]
+var first_half = lst.slice(None, var(5));       // [0, 1, 2, 3, 4]
+var last_half = lst.slice(var(5), None);        // [5, 6, 7, 8, 9]
 
 // Strings too!
 var s = "Hello, World!";

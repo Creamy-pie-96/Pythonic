@@ -3815,8 +3815,9 @@ namespace pythonic
                 case TypeTag::LIST:
                 {
                     auto &lst = var_get<List>();
-                    auto it = std::find_if(lst.begin(), lst.end(), 
-                        [&v](const var &item) { return static_cast<bool>(item == v); });
+                    auto it = std::find_if(lst.begin(), lst.end(),
+                                           [&v](const var &item)
+                                           { return static_cast<bool>(item == v); });
                     if (it != lst.end())
                     {
                         lst.erase(it);
@@ -5899,7 +5900,6 @@ namespace pythonic
 
         // NOTE: sorted() moved to pythonicFunction.hpp to avoid ambiguity
         // Use pythonic::func::sorted() instead
-
 
         // reversed_var() - return new reversed list (var version)
         // Note: Use this for var types, or pythonic::loop::reversed for generic iterables

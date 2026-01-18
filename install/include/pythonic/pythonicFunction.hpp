@@ -796,17 +796,14 @@ namespace pythonic
         // ============ Slice ============
         // Python-like slicing: slice(list, start, end, step)
 
-        inline var slice(const var &container, long long start = 0,
-                         std::optional<long long> end_opt = std::nullopt,
-                         long long step = 1)
+        inline var slice(const var &container, long long start, const var &end_var, long long step = 1)
         {
             if (!container.is<List>() && !container.is<std::string>())
             {
                 throw pythonic::PythonicTypeError("slice() requires a list or string");
             }
 
-            List result;
-            long long size = static_cast<long long>(container.len());
+            long long size = static_cast<long long>(container.len().get<int>());
 
             // Handle negative indices
             if (start < 0)
@@ -814,6 +811,17 @@ namespace pythonic
             if (start > size)
                 start = size;
 
+            // Handle end parameter - could be None or an integer
+            std::optional<long long> end_opt;
+            if (end_var.is_none())
+            {
+                end_opt = std::nullopt;
+            }
+            else
+            {
+                end_opt = end_var.toLongLong();
+            }
+            
             long long end = end_opt.value_or(step > 0 ? size : -size - 1);
             if (end < 0)
                 end = std::max(0LL, size + end);
@@ -825,6 +833,7 @@ namespace pythonic
                 throw pythonic::PythonicValueError("slice step cannot be zero");
             }
 
+            List result;
             if (container.is<List>())
             {
                 const auto &lst = container.get<List>();

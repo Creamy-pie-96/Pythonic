@@ -21,6 +21,7 @@ namespace Pythonic
     using namespace pythonic::fast;
     using namespace pythonic::overflow;
     using namespace pythonic::error;
+
 }
 
 // Shortcut alias for even faster usage
