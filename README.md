@@ -86,16 +86,14 @@ For a complete step-by-step guide on cloning, building, installing, and using th
 
 ### The Easy Way (Recommended)
 
-Just include the main header - it pulls in everything:
+Just include the main header - it pulls in everything under the `Pythonic` (or `py`) namespace:
 
 ```cpp
 #include "pythonic/pythonic.hpp"
 
-using namespace pythonic::vars;
-using namespace pythonic::print;
-using namespace pythonic::loop;
-using namespace pythonic::func;
-using namespace pythonic::file;
+using namespace Pythonic;
+// or
+using namespace py;
 ```
 
 ### The Manual Way
@@ -113,9 +111,14 @@ Or pick exactly what you need:
 using namespace pythonic::vars;
 using namespace pythonic::print;
 using namespace pythonic::loop;
-using namespace pythonic::func;
-using namespace pythonic::file;
 using namespace pythonic::math;
+using namespace pythonic::file;
+using namespace pythonic::func;
+using namespace pythonic::graph;
+using namespace pythonic::fast;
+using namespace pythonic::overflow;
+
+using namespace pythonic::error;
 ```
 
 **Caution:** If you use namespaces and import them globally, be careful with using std names and other namespaces, as they might clash or cause ambiguity and multiple definition errors. We recommend using std:: explicitly if you make the pythonic namespace global.
@@ -123,13 +126,17 @@ using namespace pythonic::math;
 **About Namespaces:**
 
 - `pythonic::vars` - Core `var` type, containers, type conversion
-- `pythonic::print` - Printing and formatting
-- `pythonic::loop` - Iteration helpers (range, enumerate, zip, reversed)
-- `pythonic::func` - Functional programming (map, filter, comprehensions)
+- `pythonic::print` - Printing and formatting (`print()`, `pprint()`)
+- `pythonic::loop` - Iteration helpers (`range()`, `enumerate()`, `zip()`, `reversed()`)
+- `pythonic::func` - Functional programming (`map()`, `filter()`, comprehensions)
 - `pythonic::file` - File I/O
-- `pythonic::math` - Comprehensive math library (trig, logarithms, random, etc.)
+- `pythonic::math` - Comprehensive math library (`trig`, `logarithms`, `random`, etc.)
+- `pythonic::graph` - Graph data structure and algorithms
+- `pythonic::error` - Exception hierarchy and error handling
+- `pythonic::fast` - Hot-loop optimizations
+- `pythonic::overflow` - Checked arithmetic helpers
 
-You can use them all with `using namespace` or be selective and qualify names like `pythonic::vars::sorted()`.
+You can use them all at once with `using namespace Pythonic;` or `using namespace py;`.
 
 ## The `var` Type
 
@@ -162,7 +169,7 @@ if (isinstance<int>(x)) {
 var a = Int("123");      // "123" -> 123
 var b = Float("3.14");   // "3.14" -> 3.14
 var c = Str(42);         // 42 -> "42"
-var d = Bool(0);         // 0 -> false
+var d = Bool(0);         // 0 -> false. Any non 0 value for var will give true
 ```
 
 ## Containers
@@ -228,7 +235,7 @@ person["age"] = 25;
 person["city"] = "NYC";
 
 // Check if key exists
-if (person.has("name")) {
+if (person.contains("name")) {
     print(person["name"]);
 }
 

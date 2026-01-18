@@ -671,5 +671,93 @@ namespace pythonic
             return var(result);
         }
 
+        // ============ Checked Arithmetic Operations ============
+        // Perform arithmetic with overflow detection
+
+        inline var checked_add(const var &a, const var &b)
+        {
+            // For simplicity, use int64_t for checked operations
+            // In production, would use compiler intrinsics or boost::safe_numerics
+            if (a.is_int() && b.is_int())
+            {
+                int64_t a_val = a.as_int_unchecked();
+                int64_t b_val = b.as_int_unchecked();
+                
+                // Check for overflow
+                if ((b_val > 0 && a_val > std::numeric_limits<int64_t>::max() - b_val) ||
+                    (b_val < 0 && a_val < std::numeric_limits<int64_t>::min() - b_val))
+                {
+                    throw pythonic::PythonicValueError("Integer overflow in checked_add");
+                }
+                return var(a_val + b_val);
+            }
+            // Fall back to regular addition for doubles
+            return var(to_numeric(a) + to_numeric(b));
+        }
+
+        inline var checked_sub(const var &a, const var &b)
+        {
+            if (a.is_int() && b.is_int())
+            {
+                int64_t a_val = a.as_int_unchecked();
+                int64_t b_val = b.as_int_unchecked();
+                
+                if ((b_val < 0 && a_val > std::numeric_limits<int64_t>::max() + b_val) ||
+                    (b_val > 0 && a_val < std::numeric_limits<int64_t>::min() + b_val))
+                {
+                    throw pythonic::PythonicValueError("Integer overflow in checked_sub");
+                }
+                return var(a_val - b_val);
+            }
+            return var(to_numeric(a) - to_numeric(b));
+        }
+
+        inline var checked_mul(const var &a, const var &b)
+        {
+            if (a.is_int() && b.is_int())
+            {
+                int64_t a_val = a.as_int_unchecked();
+                int64_t b_val = b.as_int_unchecked();
+                
+                // Check for overflow in multiplication
+                if (a_val != 0 && b_val != 0)
+                {
+                    if (std::abs(a_val) > std::numeric_limits<int64_t>::max() / std::abs(b_val))
+                    {
+                        throw pythonic::PythonicValueError("Integer overflow in checked_mul");
+                    }
+                }
+                return var(a_val * b_val);
+            }
+            return var(to_numeric(a) * to_numeric(b));
+        }
+
+        inline var checked_div(const var &a, const var &b)
+        {
+            if (b.is_int() && b.as_int_unchecked() == 0)
+            {
+                throw pythonic::PythonicValueError("Division by zero in checked_div");
+            }
+            if (a.is_int() && b.is_int())
+            {
+                int64_t a_val = a.as_int_unchecked();
+                int64_t b_val = b.as_int_unchecked();
+                
+                // Check for special case: INT_MIN / -1 causes overflow
+                if (a_val == std::numeric_limits<int64_t>::min() && b_val == -1)
+                {
+                    throw pythonic::PythonicValueError("Integer overflow in checked_div");
+                }
+                return var(a_val / b_val);
+            }
+            
+            double b_num = to_numeric(b);
+            if (b_num == 0.0)
+            {
+                throw pythonic::PythonicValueError("Division by zero in checked_div");
+            }
+            return var(to_numeric(a) / b_num);
+        }
+
     } // namespace math
 } // namespace pythonic
