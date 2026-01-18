@@ -603,25 +603,25 @@ namespace pythonic
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(pythonic::overflow::add(toInt(), other.toInt()));
+                    return var(pythonic::overflow::add_throw(toInt(), other.toInt()));
                 case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::add(toLongLong(), other.toLongLong()));
+                    return var(pythonic::overflow::add_throw(toLongLong(), other.toLongLong()));
                 case TypeTag::DOUBLE:
-                    return var(pythonic::overflow::add(toDouble(), other.toDouble()));
+                    return var(pythonic::overflow::add_throw(toDouble(), other.toDouble()));
                 case TypeTag::STRING:
                     return var(toString() + other.toString());
                 case TypeTag::LONG_DOUBLE:
-                    return var(pythonic::overflow::add(toLongDouble(), other.toLongDouble()));
+                    return var(pythonic::overflow::add_throw(toLongDouble(), other.toLongDouble()));
                 case TypeTag::FLOAT:
-                    return var(pythonic::overflow::add(toFloat(), other.toFloat()));
+                    return var(pythonic::overflow::add_throw(toFloat(), other.toFloat()));
                 case TypeTag::LONG:
-                    return var(pythonic::overflow::add(toLong(), other.toLong()));
+                    return var(pythonic::overflow::add_throw(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                    return var(pythonic::overflow::add(toUInt(), other.toUInt()));
+                    return var(pythonic::overflow::add_throw(toUInt(), other.toUInt()));
                 case TypeTag::ULONG:
-                    return var(pythonic::overflow::add(toULong(), other.toULong()));
+                    return var(pythonic::overflow::add_throw(toULong(), other.toULong()));
                 case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::add(toULongLong(), other.toULongLong()));
+                    return var(pythonic::overflow::add_throw(toULongLong(), other.toULongLong()));
                 }
             }
 
@@ -639,25 +639,25 @@ namespace pythonic
                 switch (resultType)
                 {
                 case TypeTag::LONG_DOUBLE:
-                    return var(pythonic::overflow::sub(toLongDouble(), other.toLongDouble()));
+                    return var(pythonic::overflow::sub_throw(toLongDouble(), other.toLongDouble()));
                 case TypeTag::DOUBLE:
-                    return var(pythonic::overflow::sub(toDouble(), other.toDouble()));
+                    return var(pythonic::overflow::sub_throw(toDouble(), other.toDouble()));
                 case TypeTag::FLOAT:
-                    return var(pythonic::overflow::sub(toFloat(), other.toFloat()));
+                    return var(pythonic::overflow::sub_throw(toFloat(), other.toFloat()));
                 case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::sub(toULongLong(), other.toULongLong()));
+                    return var(pythonic::overflow::sub_throw(toULongLong(), other.toULongLong()));
                 case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::sub(toLongLong(), other.toLongLong()));
+                    return var(pythonic::overflow::sub_throw(toLongLong(), other.toLongLong()));
                 case TypeTag::ULONG:
-                    return var(pythonic::overflow::sub(toULong(), other.toULong()));
+                    return var(pythonic::overflow::sub_throw(toULong(), other.toULong()));
                 case TypeTag::LONG:
-                    return var(pythonic::overflow::sub(toLong(), other.toLong()));
+                    return var(pythonic::overflow::sub_throw(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                    return var(pythonic::overflow::sub(toUInt(), other.toUInt()));
+                    return var(pythonic::overflow::sub_throw(toUInt(), other.toUInt()));
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(pythonic::overflow::sub(toInt(), other.toInt()));
+                    return var(pythonic::overflow::sub_throw(toInt(), other.toInt()));
                 }
             }
 
@@ -695,25 +695,25 @@ namespace pythonic
                 switch (resultType)
                 {
                 case TypeTag::LONG_DOUBLE:
-                    return var(pythonic::overflow::mul(toLongDouble(), other.toLongDouble()));
+                    return var(pythonic::overflow::mul_throw(toLongDouble(), other.toLongDouble()));
                 case TypeTag::DOUBLE:
-                    return var(pythonic::overflow::mul(toDouble(), other.toDouble()));
+                    return var(pythonic::overflow::mul_throw(toDouble(), other.toDouble()));
                 case TypeTag::FLOAT:
-                    return var(pythonic::overflow::mul(toFloat(), other.toFloat()));
+                    return var(pythonic::overflow::mul_throw(toFloat(), other.toFloat()));
                 case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::mul(toULongLong(), other.toULongLong()));
+                    return var(pythonic::overflow::mul_throw(toULongLong(), other.toULongLong()));
                 case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::mul(toLongLong(), other.toLongLong()));
+                    return var(pythonic::overflow::mul_throw(toLongLong(), other.toLongLong()));
                 case TypeTag::ULONG:
-                    return var(pythonic::overflow::mul(toULong(), other.toULong()));
+                    return var(pythonic::overflow::mul_throw(toULong(), other.toULong()));
                 case TypeTag::LONG:
-                    return var(pythonic::overflow::mul(toLong(), other.toLong()));
+                    return var(pythonic::overflow::mul_throw(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                    return var(pythonic::overflow::mul(toUInt(), other.toUInt()));
+                    return var(pythonic::overflow::mul_throw(toUInt(), other.toUInt()));
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(pythonic::overflow::mul(toInt(), other.toInt()));
+                    return var(pythonic::overflow::mul_throw(toInt(), other.toInt()));
                 }
             }
 
@@ -731,11 +731,11 @@ namespace pythonic
                 // unless one operand is long double
                 if (resultType == TypeTag::LONG_DOUBLE)
                 {
-                    return var(pythonic::overflow::div(toLongDouble(), other.toLongDouble()));
+                    return var(pythonic::overflow::div_throw(toLongDouble(), other.toLongDouble()));
                 }
 
                 // All other cases use double for safety
-                return var(pythonic::overflow::div(toDouble(), other.toDouble()));
+                return var(pythonic::overflow::div_throw(toDouble(), other.toDouble()));
             }
 
             // Perform modulo with proper type promotion
@@ -761,19 +761,19 @@ namespace pythonic
                 switch (resultType)
                 {
                 case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::mod(toULongLong(), other.toULongLong()));
+                    return var(pythonic::overflow::mod_throw(toULongLong(), other.toULongLong()));
                 case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::mod(toLongLong(), other.toLongLong()));
+                    return var(pythonic::overflow::mod_throw(toLongLong(), other.toLongLong()));
                 case TypeTag::ULONG:
-                    return var(pythonic::overflow::mod(toULong(), other.toULong()));
+                    return var(pythonic::overflow::mod_throw(toULong(), other.toULong()));
                 case TypeTag::LONG:
-                    return var(pythonic::overflow::mod(toLong(), other.toLong()));
+                    return var(pythonic::overflow::mod_throw(toLong(), other.toLong()));
                 case TypeTag::UINT:
-                    return var(pythonic::overflow::mod(toUInt(), other.toUInt()));
+                    return var(pythonic::overflow::mod_throw(toUInt(), other.toUInt()));
                 case TypeTag::INT:
                 case TypeTag::BOOL:
                 default:
-                    return var(pythonic::overflow::mod(toInt(), other.toInt()));
+                    return var(pythonic::overflow::mod_throw(toInt(), other.toInt()));
                 }
             }
 
@@ -1916,25 +1916,25 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        [[likely]] return var(pythonic::overflow::add(var_get<int>(), other.var_get<int>()));
+                        [[likely]] return var(pythonic::overflow::add_throw(var_get<int>(), other.var_get<int>()));
                     case TypeTag::DOUBLE:
-                        [[likely]] return var(pythonic::overflow::add(var_get<double>(), other.var_get<double>()));
+                        [[likely]] return var(pythonic::overflow::add_throw(var_get<double>(), other.var_get<double>()));
                     case TypeTag::LONG_LONG:
-                        return var(pythonic::overflow::add(var_get<long long>(), other.var_get<long long>()));
+                        return var(pythonic::overflow::add_throw(var_get<long long>(), other.var_get<long long>()));
                     case TypeTag::STRING:
                         [[likely]] return var(var_get<std::string>() + other.var_get<std::string>());
                     case TypeTag::FLOAT:
-                        return var(pythonic::overflow::add(var_get<float>(), other.var_get<float>()));
+                        return var(pythonic::overflow::add_throw(var_get<float>(), other.var_get<float>()));
                     case TypeTag::LONG:
-                        return var(pythonic::overflow::add(var_get<long>(), other.var_get<long>()));
+                        return var(pythonic::overflow::add_throw(var_get<long>(), other.var_get<long>()));
                     case TypeTag::UINT:
-                        return var(pythonic::overflow::add(var_get<unsigned int>(), other.var_get<unsigned int>()));
+                        return var(pythonic::overflow::add_throw(var_get<unsigned int>(), other.var_get<unsigned int>()));
                     case TypeTag::ULONG:
-                        return var(pythonic::overflow::add(var_get<unsigned long>(), other.var_get<unsigned long>()));
+                        return var(pythonic::overflow::add_throw(var_get<unsigned long>(), other.var_get<unsigned long>()));
                     case TypeTag::ULONG_LONG:
-                        return var(pythonic::overflow::add(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
+                        return var(pythonic::overflow::add_throw(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
                     case TypeTag::LONG_DOUBLE:
-                        return var(pythonic::overflow::add(var_get<long double>(), other.var_get<long double>()));
+                        return var(pythonic::overflow::add_throw(var_get<long double>(), other.var_get<long double>()));
                     case TypeTag::LIST:
                     {
                         const auto &a = var_get<List>();
@@ -1961,23 +1961,23 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        [[likely]] return var(pythonic::overflow::sub(var_get<int>(), other.var_get<int>()));
+                        [[likely]] return var(pythonic::overflow::sub_throw(var_get<int>(), other.var_get<int>()));
                     case TypeTag::DOUBLE:
-                        [[likely]] return var(pythonic::overflow::sub(var_get<double>(), other.var_get<double>()));
+                        [[likely]] return var(pythonic::overflow::sub_throw(var_get<double>(), other.var_get<double>()));
                     case TypeTag::LONG_LONG:
-                        return var(pythonic::overflow::sub(var_get<long long>(), other.var_get<long long>()));
+                        return var(pythonic::overflow::sub_throw(var_get<long long>(), other.var_get<long long>()));
                     case TypeTag::FLOAT:
-                        return var(pythonic::overflow::sub(var_get<float>(), other.var_get<float>()));
+                        return var(pythonic::overflow::sub_throw(var_get<float>(), other.var_get<float>()));
                     case TypeTag::LONG:
-                        return var(pythonic::overflow::sub(var_get<long>(), other.var_get<long>()));
+                        return var(pythonic::overflow::sub_throw(var_get<long>(), other.var_get<long>()));
                     case TypeTag::UINT:
-                        return var(pythonic::overflow::sub(var_get<unsigned int>(), other.var_get<unsigned int>()));
+                        return var(pythonic::overflow::sub_throw(var_get<unsigned int>(), other.var_get<unsigned int>()));
                     case TypeTag::ULONG:
-                        return var(pythonic::overflow::sub(var_get<unsigned long>(), other.var_get<unsigned long>()));
+                        return var(pythonic::overflow::sub_throw(var_get<unsigned long>(), other.var_get<unsigned long>()));
                     case TypeTag::ULONG_LONG:
-                        return var(pythonic::overflow::sub(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
+                        return var(pythonic::overflow::sub_throw(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
                     case TypeTag::LONG_DOUBLE:
-                        return var(pythonic::overflow::sub(var_get<long double>(), other.var_get<long double>()));
+                        return var(pythonic::overflow::sub_throw(var_get<long double>(), other.var_get<long double>()));
                     case TypeTag::SET:
                     {
                         const auto &a = var_get<Set>();
@@ -2041,23 +2041,23 @@ namespace pythonic
                     switch (tag_)
                     {
                     case TypeTag::INT:
-                        [[likely]] return var(pythonic::overflow::mul(var_get<int>(), other.var_get<int>()));
+                        [[likely]] return var(pythonic::overflow::mul_throw(var_get<int>(), other.var_get<int>()));
                     case TypeTag::DOUBLE:
-                        [[likely]] return var(pythonic::overflow::mul(var_get<double>(), other.var_get<double>()));
+                        [[likely]] return var(pythonic::overflow::mul_throw(var_get<double>(), other.var_get<double>()));
                     case TypeTag::LONG_LONG:
-                        return var(pythonic::overflow::mul(var_get<long long>(), other.var_get<long long>()));
+                        return var(pythonic::overflow::mul_throw(var_get<long long>(), other.var_get<long long>()));
                     case TypeTag::FLOAT:
-                        return var(pythonic::overflow::mul(var_get<float>(), other.var_get<float>()));
+                        return var(pythonic::overflow::mul_throw(var_get<float>(), other.var_get<float>()));
                     case TypeTag::LONG:
-                        return var(pythonic::overflow::mul(var_get<long>(), other.var_get<long>()));
+                        return var(pythonic::overflow::mul_throw(var_get<long>(), other.var_get<long>()));
                     case TypeTag::UINT:
-                        return var(pythonic::overflow::mul(var_get<unsigned int>(), other.var_get<unsigned int>()));
+                        return var(pythonic::overflow::mul_throw(var_get<unsigned int>(), other.var_get<unsigned int>()));
                     case TypeTag::ULONG:
-                        return var(pythonic::overflow::mul(var_get<unsigned long>(), other.var_get<unsigned long>()));
+                        return var(pythonic::overflow::mul_throw(var_get<unsigned long>(), other.var_get<unsigned long>()));
                     case TypeTag::ULONG_LONG:
-                        return var(pythonic::overflow::mul(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
+                        return var(pythonic::overflow::mul_throw(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
                     case TypeTag::LONG_DOUBLE:
-                        return var(pythonic::overflow::mul(var_get<long double>(), other.var_get<long double>()));
+                        return var(pythonic::overflow::mul_throw(var_get<long double>(), other.var_get<long double>()));
                     default:
                         break;
                     }
@@ -2122,11 +2122,15 @@ namespace pythonic
                     case TypeTag::INT:
                         [[likely]]
                         {
+                            int a = var_get<int>();
                             int b = other.var_get<int>();
                             if (b == 0)
                                 throw pythonic::PythonicZeroDivisionError::division();
+                            // Check for INT_MIN / -1 overflow
+                            if (a == std::numeric_limits<int>::min() && b == -1)
+                                throw pythonic::PythonicOverflowError("integer division overflow");
                             // Python: int / int -> float (always)
-                            return var(static_cast<double>(var_get<int>()) / static_cast<double>(b));
+                            return var(static_cast<double>(a) / static_cast<double>(b));
                         }
                     case TypeTag::DOUBLE:
                         [[likely]]
@@ -2138,11 +2142,15 @@ namespace pythonic
                         }
                     case TypeTag::LONG_LONG:
                     {
+                        long long a = var_get<long long>();
                         long long b = other.var_get<long long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
+                        // Check for LLONG_MIN / -1 overflow
+                        if (a == std::numeric_limits<long long>::min() && b == -1LL)
+                            throw pythonic::PythonicOverflowError("integer division overflow");
                         // Python: int / int -> float (always)
-                        return var(static_cast<double>(var_get<long long>()) / static_cast<double>(b));
+                        return var(static_cast<double>(a) / static_cast<double>(b));
                     }
                     case TypeTag::FLOAT:
                     {
@@ -2153,11 +2161,15 @@ namespace pythonic
                     }
                     case TypeTag::LONG:
                     {
+                        long a = var_get<long>();
                         long b = other.var_get<long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
+                        // Check for LONG_MIN / -1 overflow
+                        if (a == std::numeric_limits<long>::min() && b == -1L)
+                            throw pythonic::PythonicOverflowError("integer division overflow");
                         // Python: int / int -> float (always)
-                        return var(static_cast<double>(var_get<long>()) / static_cast<double>(b));
+                        return var(static_cast<double>(a) / static_cast<double>(b));
                     }
                     case TypeTag::UINT:
                     {
@@ -2215,42 +2227,42 @@ namespace pythonic
                             int b = other.var_get<int>();
                             if (b == 0)
                                 throw pythonic::PythonicZeroDivisionError::modulo();
-                            return var(pythonic::overflow::mod(var_get<int>(), b));
+                            return var(pythonic::overflow::mod_throw(var_get<int>(), b));
                         }
                     case TypeTag::LONG_LONG:
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod(var_get<long long>(), b));
+                        return var(pythonic::overflow::mod_throw(var_get<long long>(), b));
                     }
                     case TypeTag::LONG:
                     {
                         long b = other.var_get<long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod(var_get<long>(), b));
+                        return var(pythonic::overflow::mod_throw(var_get<long>(), b));
                     }
                     case TypeTag::UINT:
                     {
                         unsigned int b = other.var_get<unsigned int>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod(var_get<unsigned int>(), b));
+                        return var(pythonic::overflow::mod_throw(var_get<unsigned int>(), b));
                     }
                     case TypeTag::ULONG:
                     {
                         unsigned long b = other.var_get<unsigned long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod(var_get<unsigned long>(), b));
+                        return var(pythonic::overflow::mod_throw(var_get<unsigned long>(), b));
                     }
                     case TypeTag::ULONG_LONG:
                     {
                         unsigned long long b = other.var_get<unsigned long long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod(var_get<unsigned long long>(), b));
+                        return var(pythonic::overflow::mod_throw(var_get<unsigned long long>(), b));
                     }
                     default:
                         break;

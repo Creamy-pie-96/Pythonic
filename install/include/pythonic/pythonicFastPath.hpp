@@ -89,12 +89,12 @@ namespace pythonic
 
             inline var add_int_int(const var &a, const var &b)
             {
-                return var(overflow::add(a.var_get<int>(), b.var_get<int>()));
+                return var(overflow::add_throw(a.var_get<int>(), b.var_get<int>()));
             }
 
             inline var add_ll_ll(const var &a, const var &b)
             {
-                return var(overflow::add(a.var_get<long long>(), b.var_get<long long>()));
+                return var(overflow::add_throw(a.var_get<long long>(), b.var_get<long long>()));
             }
 
             inline var add_double_double(const var &a, const var &b)
@@ -125,12 +125,12 @@ namespace pythonic
 
             inline var add_int_ll(const var &a, const var &b)
             {
-                return var(overflow::add(static_cast<long long>(a.var_get<int>()), b.var_get<long long>()));
+                return var(overflow::add_throw(static_cast<long long>(a.var_get<int>()), b.var_get<long long>()));
             }
 
             inline var add_ll_int(const var &a, const var &b)
             {
-                return var(overflow::add(a.var_get<long long>(), static_cast<long long>(b.var_get<int>())));
+                return var(overflow::add_throw(a.var_get<long long>(), static_cast<long long>(b.var_get<int>())));
             }
 
             // Float cross-type additions
@@ -179,12 +179,12 @@ namespace pythonic
 
             inline var sub_int_int(const var &a, const var &b)
             {
-                return var(overflow::sub(a.var_get<int>(), b.var_get<int>()));
+                return var(overflow::sub_throw(a.var_get<int>(), b.var_get<int>()));
             }
 
             inline var sub_ll_ll(const var &a, const var &b)
             {
-                return var(overflow::sub(a.var_get<long long>(), b.var_get<long long>()));
+                return var(overflow::sub_throw(a.var_get<long long>(), b.var_get<long long>()));
             }
 
             inline var sub_double_double(const var &a, const var &b)
@@ -210,12 +210,12 @@ namespace pythonic
 
             inline var sub_int_ll(const var &a, const var &b)
             {
-                return var(overflow::sub(static_cast<long long>(a.var_get<int>()), b.var_get<long long>()));
+                return var(overflow::sub_throw(static_cast<long long>(a.var_get<int>()), b.var_get<long long>()));
             }
 
             inline var sub_ll_int(const var &a, const var &b)
             {
-                return var(overflow::sub(a.var_get<long long>(), static_cast<long long>(b.var_get<int>())));
+                return var(overflow::sub_throw(a.var_get<long long>(), static_cast<long long>(b.var_get<int>())));
             }
 
             // Float cross-type subtractions
@@ -264,12 +264,12 @@ namespace pythonic
 
             inline var mul_int_int(const var &a, const var &b)
             {
-                return var(overflow::mul(a.var_get<int>(), b.var_get<int>()));
+                return var(overflow::mul_throw(a.var_get<int>(), b.var_get<int>()));
             }
 
             inline var mul_ll_ll(const var &a, const var &b)
             {
-                return var(overflow::mul(a.var_get<long long>(), b.var_get<long long>()));
+                return var(overflow::mul_throw(a.var_get<long long>(), b.var_get<long long>()));
             }
 
             inline var mul_double_double(const var &a, const var &b)
@@ -295,12 +295,12 @@ namespace pythonic
 
             inline var mul_int_ll(const var &a, const var &b)
             {
-                return var(overflow::mul(static_cast<long long>(a.var_get<int>()), b.var_get<long long>()));
+                return var(overflow::mul_throw(static_cast<long long>(a.var_get<int>()), b.var_get<long long>()));
             }
 
             inline var mul_ll_int(const var &a, const var &b)
             {
-                return var(overflow::mul(a.var_get<long long>(), static_cast<long long>(b.var_get<int>())));
+                return var(overflow::mul_throw(a.var_get<long long>(), static_cast<long long>(b.var_get<int>())));
             }
 
             // Float cross-type multiplications
