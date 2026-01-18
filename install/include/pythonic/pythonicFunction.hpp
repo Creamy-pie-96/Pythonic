@@ -69,7 +69,8 @@ namespace pythonic
 
         // Generic overload for non-var iterables (using C++20 concepts)
         template <typename Func, traits::Iterable Iterable>
-        var map(Func &&func, Iterable &&iterable) requires (!std::is_same_v<std::decay_t<Iterable>, var>)
+        var map(Func &&func, Iterable &&iterable)
+            requires(!std::is_same_v<std::decay_t<Iterable>, var>)
         {
             List result;
             for (auto &&item : iterable)
@@ -169,7 +170,8 @@ namespace pythonic
 
         // Generic overload for non-var iterables (using C++20 concepts)
         template <typename Func, traits::Iterable Iterable>
-        var filter(Func &&func, Iterable &&iterable) requires (!std::is_same_v<std::decay_t<Iterable>, var>)
+        var filter(Func &&func, Iterable &&iterable)
+            requires(!std::is_same_v<std::decay_t<Iterable>, var>)
         {
             List result;
             for (auto &&item : iterable)
@@ -264,7 +266,8 @@ namespace pythonic
         }
         // Generic overload for non-var iterables (using C++20 concepts)
         template <typename Func, traits::Iterable Iterable>
-        var reduce(Func &&func, Iterable &&iterable) requires (!std::is_same_v<std::decay_t<Iterable>, var>)
+        var reduce(Func &&func, Iterable &&iterable)
+            requires(!std::is_same_v<std::decay_t<Iterable>, var>)
         {
             auto it = iterable.begin();
             if (it == iterable.end())
@@ -821,7 +824,7 @@ namespace pythonic
             {
                 end_opt = end_var.toLongLong();
             }
-            
+
             long long end = end_opt.value_or(step > 0 ? size : -size - 1);
             if (end < 0)
                 end = std::max(0LL, size + end);

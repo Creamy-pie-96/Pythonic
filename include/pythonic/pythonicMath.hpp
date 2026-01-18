@@ -11,6 +11,14 @@ namespace pythonic
     namespace math
     {
         using namespace pythonic::vars;
+        using pythonic::overflow::Overflow;
+
+        // Forward declarations for overflow-aware arithmetic operations
+        inline var add(const var &a, const var &b, Overflow policy);
+        inline var sub(const var &a, const var &b, Overflow policy);
+        inline var mul(const var &a, const var &b, Overflow policy);
+        inline var div(const var &a, const var &b, Overflow policy);
+        inline var mod(const var &a, const var &b, Overflow policy);
 
         // Helper to extract numeric value from var - OPTIMIZED with fast type checks
         // Handles ALL numeric types with fast paths before falling back to toDouble()
@@ -70,52 +78,318 @@ namespace pythonic
             return var(std::round(to_numeric(v)));
         }
 
-        inline var pow(const var &base, const var &exponent)
+        // ============================================================================
+        // SMART PROMOTION HELPERS
+        // ============================================================================
+        // Strategy: Compute in long double, then find smallest container that fits.
+        // - If inputs were all integers: try int → long long → float → double → long double
+        // - If any input was floating point or it's division: try float → double → long double
+        // This is O(1), no chains, simple and fast!
+        // ============================================================================
+
+        // Helper to get long double value from var
+        inline long double to_long_double(const var &v)
         {
-            // Fast path: int ^ int (common case) - returns int for memory efficiency
-            if (base.is_int() && exponent.is_int())
+            if (v.is_long_double())
+                return v.as_long_double_unchecked();
+            return static_cast<long double>(to_numeric(v));
+        }
+
+        inline bool is_integer_type(const var &v)
+        {
+            return v.is_int() || v.is_long() || v.is_long_long();
+        }
+
+        inline bool is_floating_type(const var &v)
+        {
+            return v.is_float() || v.is_double() || v.is_long_double();
+        }
+
+        // Forward declaration for fit_floating_result (used by fit_integer_result)
+        inline var fit_floating_result(long double result);
+
+        // Find smallest container for an integer result
+        inline var fit_integer_result(long double result)
+        {
+            // Check if it's an integer value
+            if (result == std::floor(result))
             {
-                int b = base.as_int_unchecked();
-                int e = exponent.as_int_unchecked();
-                if (e >= 0 && e < 31)
-                { // Avoid overflow for small exponents
-                    int result = 1;
-                    for (int i = 0; i < e; ++i)
-                        result *= b;
-                    return var(result);
-                }
-            }
-            // Fast path: long long ^ int - returns long long
-            if (base.is_long_long() && exponent.is_int())
-            {
-                long long b = base.as_long_long_unchecked();
-                int e = exponent.as_int_unchecked();
-                if (e >= 0 && e < 63)
+                // Try int first
+                if (result >= std::numeric_limits<int>::min() &&
+                    result <= std::numeric_limits<int>::max())
                 {
-                    long long result = 1;
-                    for (int i = 0; i < e; ++i)
-                        result *= b;
-                    return var(result);
+                    return var(static_cast<int>(result));
+                }
+                // Try long long
+                if (result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
+                    result <= static_cast<long double>(std::numeric_limits<long long>::max()))
+                {
+                    return var(static_cast<long long>(result));
                 }
             }
-            // Fast path: double ^ int or double ^ double - returns double
-            if (base.is_double())
+            // Fall through to floating point (try float → double → long double)
+            return fit_floating_result(result);
+        }
+
+        // Find smallest floating container that fits
+        // TODO: When adding support for larger dtypes (e.g., __float128, arbitrary precision),
+        // update this function to check for those types before throwing on overflow.
+        inline var fit_floating_result(long double result)
+        {
+            // First check if long double itself overflowed
+            if (std::isinf(result) || std::isnan(result))
             {
-                if (exponent.is_int())
-                    return var(std::pow(base.as_double_unchecked(), exponent.as_int_unchecked()));
-                if (exponent.is_double())
-                    return var(std::pow(base.as_double_unchecked(), exponent.as_double_unchecked()));
+                throw PythonicOverflowError("Result exceeds long double range (promote policy)");
             }
-            // Fast path: float ^ int or float ^ float - returns double for precision
-            if (base.is_float())
+
+            // Check float
+            if (result >= -std::numeric_limits<float>::max() &&
+                result <= std::numeric_limits<float>::max() &&
+                !std::isinf(static_cast<float>(result)))
             {
-                if (exponent.is_int())
-                    return var(std::pow(static_cast<double>(base.as_float_unchecked()), exponent.as_int_unchecked()));
-                if (exponent.is_float())
-                    return var(std::pow(static_cast<double>(base.as_float_unchecked()), static_cast<double>(exponent.as_float_unchecked())));
+                return var(static_cast<float>(result));
             }
-            // Fallback: convert to double - returns double
-            return var(std::pow(to_numeric(base), to_numeric(exponent)));
+            // Check double
+            if (result >= -std::numeric_limits<double>::max() &&
+                result <= std::numeric_limits<double>::max() &&
+                !std::isinf(static_cast<double>(result)))
+            {
+                return var(static_cast<double>(result));
+            }
+            // Use long double
+            return var(result);
+        }
+
+        // Smart promotion: compute in long double, fit to smallest container
+        // TODO: When adding support for larger dtypes, update this function
+        // to handle the new type hierarchy.
+        inline var smart_promote(long double result, bool has_floating_input)
+        {
+            if (has_floating_input)
+            {
+                return fit_floating_result(result);
+            }
+            else
+            {
+                return fit_integer_result(result);
+            }
+        }
+
+        // Helper to determine result type for integer power operations
+        // The result type is the larger of the two types
+        template <typename T, typename U>
+        struct PowResultType
+        {
+            using type = std::conditional_t<(sizeof(T) > sizeof(U)), T, U>;
+        };
+
+        inline var pow(const var &base, const var &exponent, Overflow policy = Overflow::Throw)
+        {
+            // ================================================================
+            // WRAP POLICY: Fast path - native operations, no overflow checking
+            // Returns the same type as the larger operand
+            // ================================================================
+            if (policy == Overflow::Wrap)
+            {
+                // int ^ int -> int
+                if (base.is_int() && exponent.is_int())
+                {
+                    int e = exponent.as_int_unchecked();
+                    if (e >= 0)
+                        return var(static_cast<int>(std::pow(base.as_int_unchecked(), e)));
+                    return var(std::pow(static_cast<double>(base.as_int_unchecked()), e));
+                }
+                // long ^ int or int ^ long -> long
+                if ((base.is_long() && exponent.is_int()) || (base.is_int() && exponent.is_long()))
+                {
+                    long b = base.is_long() ? base.as_long_unchecked() : static_cast<long>(base.as_int_unchecked());
+                    long e = exponent.is_long() ? exponent.as_long_unchecked() : static_cast<long>(exponent.as_int_unchecked());
+                    if (e >= 0)
+                        return var(static_cast<long>(std::pow(static_cast<long double>(b), e)));
+                    return var(std::pow(static_cast<double>(b), e));
+                }
+                // long ^ long -> long
+                if (base.is_long() && exponent.is_long())
+                {
+                    long e = exponent.as_long_unchecked();
+                    if (e >= 0)
+                        return var(static_cast<long>(std::pow(static_cast<long double>(base.as_long_unchecked()), e)));
+                    return var(std::pow(static_cast<double>(base.as_long_unchecked()), e));
+                }
+                // long long ^ X or X ^ long long -> long long (for integers)
+                if ((base.is_long_long() || exponent.is_long_long()) && base.isNumeric() && exponent.isNumeric())
+                {
+                    if (!base.is_double() && !base.is_float() && !base.is_long_double() &&
+                        !exponent.is_double() && !exponent.is_float() && !exponent.is_long_double())
+                    {
+                        long long b = base.toLongLong();
+                        long long e = exponent.toLongLong();
+                        if (e >= 0)
+                            return var(static_cast<long long>(std::pow(static_cast<long double>(b), e)));
+                        return var(std::pow(static_cast<double>(b), e));
+                    }
+                }
+                // float ^ X (where X is not double/long double) -> float
+                if (base.is_float() && !exponent.is_double() && !exponent.is_long_double())
+                {
+                    return var(static_cast<float>(std::pow(base.as_float_unchecked(), to_numeric(exponent))));
+                }
+                // X ^ float (where X is not double/long double) -> float
+                if (exponent.is_float() && !base.is_double() && !base.is_long_double())
+                {
+                    return var(static_cast<float>(std::pow(to_numeric(base), exponent.as_float_unchecked())));
+                }
+                // double ^ X or X ^ double -> double
+                if (base.is_double() || exponent.is_double())
+                {
+                    return var(std::pow(to_numeric(base), to_numeric(exponent)));
+                }
+                // long double ^ X or X ^ long double -> long double
+                if (base.is_long_double() || exponent.is_long_double())
+                {
+                    long double b = base.is_long_double() ? base.as_long_double_unchecked() : static_cast<long double>(to_numeric(base));
+                    long double e = exponent.is_long_double() ? exponent.as_long_double_unchecked() : static_cast<long double>(to_numeric(exponent));
+                    return var(std::pow(b, e));
+                }
+                // Fallback
+                return var(std::pow(to_numeric(base), to_numeric(exponent)));
+            }
+
+            // ================================================================
+            // THROW POLICY: Check for overflow, throw if it occurs
+            // ================================================================
+            if (policy == Overflow::Throw)
+            {
+                // int ^ int -> int (throw on overflow)
+                if (base.is_int() && exponent.is_int())
+                {
+                    int e = exponent.as_int_unchecked();
+                    if (e >= 0)
+                    {
+                        long double result = std::pow(static_cast<long double>(base.as_int_unchecked()), e);
+                        if (result > std::numeric_limits<int>::max() || result < std::numeric_limits<int>::min())
+                            throw PythonicOverflowError("integer pow overflow");
+                        return var(static_cast<int>(result));
+                    }
+                    return var(std::pow(static_cast<double>(base.as_int_unchecked()), e));
+                }
+                // long ^ int or int ^ long -> long (throw on overflow)
+                if ((base.is_long() && exponent.is_int()) || (base.is_int() && exponent.is_long()) ||
+                    (base.is_long() && exponent.is_long()))
+                {
+                    long b = base.is_int() ? static_cast<long>(base.as_int_unchecked()) : base.as_long_unchecked();
+                    long e = exponent.is_int() ? static_cast<long>(exponent.as_int_unchecked()) : exponent.as_long_unchecked();
+                    if (e >= 0)
+                    {
+                        long double result = std::pow(static_cast<long double>(b), e);
+                        if (result > std::numeric_limits<long>::max() || result < std::numeric_limits<long>::min())
+                            throw PythonicOverflowError("long pow overflow");
+                        return var(static_cast<long>(result));
+                    }
+                    return var(std::pow(static_cast<double>(b), e));
+                }
+                // long long ^ X or X ^ long long -> long long (throw on overflow)
+                if ((base.is_long_long() || exponent.is_long_long()) && base.isNumeric() && exponent.isNumeric())
+                {
+                    if (!base.is_double() && !base.is_float() && !base.is_long_double() &&
+                        !exponent.is_double() && !exponent.is_float() && !exponent.is_long_double())
+                    {
+                        long long b = base.toLongLong();
+                        long long e = exponent.toLongLong();
+                        if (e >= 0)
+                        {
+                            long double result = std::pow(static_cast<long double>(b), e);
+                            if (result > std::numeric_limits<long long>::max() || result < std::numeric_limits<long long>::min())
+                                throw PythonicOverflowError("long long pow overflow");
+                            return var(static_cast<long long>(result));
+                        }
+                        return var(std::pow(static_cast<double>(b), e));
+                    }
+                }
+                // float ^ X (not double/long double) -> float (throw on inf)
+                if (base.is_float() && !exponent.is_double() && !exponent.is_long_double())
+                {
+                    float result = std::pow(base.as_float_unchecked(), static_cast<float>(to_numeric(exponent)));
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("float pow overflow");
+                    return var(result);
+                }
+                // X ^ float (not double/long double) -> float
+                if (exponent.is_float() && !base.is_double() && !base.is_long_double())
+                {
+                    float result = std::pow(static_cast<float>(to_numeric(base)), exponent.as_float_unchecked());
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("float pow overflow");
+                    return var(result);
+                }
+                // double ^ X or X ^ double -> double (throw on inf)
+                if (base.is_double() || exponent.is_double())
+                {
+                    double result = std::pow(to_numeric(base), to_numeric(exponent));
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("double pow overflow");
+                    return var(result);
+                }
+                // long double -> long double
+                if (base.is_long_double() || exponent.is_long_double())
+                {
+                    long double b = base.is_long_double() ? base.as_long_double_unchecked() : static_cast<long double>(to_numeric(base));
+                    long double e = exponent.is_long_double() ? exponent.as_long_double_unchecked() : static_cast<long double>(to_numeric(exponent));
+                    long double result = std::pow(b, e);
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("long double pow overflow");
+                    return var(result);
+                }
+                // Fallback
+                double result = std::pow(to_numeric(base), to_numeric(exponent));
+                if (std::isinf(result))
+                    throw PythonicOverflowError("pow overflow");
+                return var(result);
+            }
+
+            // ================================================================
+            // PROMOTE POLICY: Compute in long double, fit to smallest container
+            // Uses the same smart_promote strategy as add/sub/mul/mod
+            // ================================================================
+            if (!base.isNumeric() || !exponent.isNumeric())
+                throw pythonic::PythonicTypeError("pow() requires numeric types");
+
+            // Check if any input is floating point
+            bool has_floating = is_floating_type(base) || is_floating_type(exponent);
+
+            // Compute in long double
+            long double result = std::pow(to_long_double(base), to_long_double(exponent));
+
+            // For negative exponent, result is always floating
+            if (to_long_double(exponent) < 0)
+                return fit_floating_result(result);
+
+            // Find smallest container that fits
+            return smart_promote(result, has_floating);
+        }
+
+        // Convenience versions
+        inline var pow_throw(const var &base, const var &exponent)
+        {
+            return pow(base, exponent, Overflow::Throw);
+        }
+
+        inline var pow_promote(const var &base, const var &exponent)
+        {
+            return pow(base, exponent, Overflow::Promote);
+        }
+
+        inline var pow_wrap(const var &base, const var &exponent)
+        {
+            return pow(base, exponent, Overflow::Wrap);
+        }
+
+        // Primitive overloads for pow
+        template <typename T1, typename T2,
+                  typename = std::enable_if_t<std::is_arithmetic_v<T1> && std::is_arithmetic_v<T2>>>
+        inline var pow(T1 base, T2 exponent, Overflow policy = Overflow::Throw)
+        {
+            return pow(var(base), var(exponent), policy);
         }
 
         inline var sqrt(const var &v)
@@ -603,7 +877,7 @@ namespace pythonic
 
         // ============ Product Function (for lists and sets) ============
 
-        inline var product(const var &iterable, const var &start = var(1))
+        inline var product(const var &iterable, const var &start = var(1), Overflow policy = Overflow::Throw)
         {
             var result = start;
 
@@ -612,7 +886,7 @@ namespace pythonic
                 const auto &l = iterable.get<List>();
                 for (const auto &item : l)
                 {
-                    result = result * item;
+                    result = mul(result, item, policy);
                 }
             }
             else if (iterable.type() == "set")
@@ -620,7 +894,7 @@ namespace pythonic
                 const auto &s = iterable.get<Set>();
                 for (const auto &item : s)
                 {
-                    result = result * item;
+                    result = mul(result, item, policy);
                 }
             }
             else
@@ -629,6 +903,22 @@ namespace pythonic
             }
 
             return result;
+        }
+
+        // Convenience versions
+        inline var product_throw(const var &iterable, const var &start = var(1))
+        {
+            return product(iterable, start, Overflow::Throw);
+        }
+
+        inline var product_promote(const var &iterable, const var &start = var(1))
+        {
+            return product(iterable, start, Overflow::Promote);
+        }
+
+        inline var product_wrap(const var &iterable, const var &start = var(1))
+        {
+            return product(iterable, start, Overflow::Wrap);
         }
 
         // ============ Degree/Radian Conversion ============
@@ -651,112 +941,986 @@ namespace pythonic
                                 static_cast<long long>(to_numeric(b))));
         }
 
-        inline var lcm(const var &a, const var &b)
+        inline var lcm(const var &a, const var &b, Overflow policy = Overflow::Throw)
         {
-            return var(std::lcm(static_cast<long long>(to_numeric(a)),
-                                static_cast<long long>(to_numeric(b))));
+            // Extract values directly to preserve precision (to_numeric loses precision for large long long)
+            long long av, bv;
+            if (a.is_int())
+                av = a.as_int_unchecked();
+            else if (a.is_long())
+                av = a.as_long_unchecked();
+            else if (a.is_long_long())
+                av = a.as_long_long_unchecked();
+            else
+                av = static_cast<long long>(to_numeric(a));
+
+            if (b.is_int())
+                bv = b.as_int_unchecked();
+            else if (b.is_long())
+                bv = b.as_long_unchecked();
+            else if (b.is_long_long())
+                bv = b.as_long_long_unchecked();
+            else
+                bv = static_cast<long long>(to_numeric(b));
+
+            long long g = std::gcd(av, bv);
+            if (g == 0)
+                return var(0LL);
+
+            // lcm = |a * b| / gcd(a, b)
+            // To avoid overflow, compute (a / gcd) * b
+            long long a_div_g = av / g;
+            switch (policy)
+            {
+            case Overflow::Throw:
+                return mul(var(a_div_g), var(bv), Overflow::Throw);
+            case Overflow::Promote:
+                return mul(var(a_div_g), var(bv), Overflow::Promote);  // Uses smart_promote
+            case Overflow::Wrap:
+                return mul(var(a_div_g), var(bv), Overflow::Wrap);
+            default:
+                return mul(var(a_div_g), var(bv), Overflow::Throw);
+            }
         }
 
-        inline var factorial(const var &n)
+        // Convenience versions
+        inline var lcm_throw(const var &a, const var &b)
+        {
+            return lcm(a, b, Overflow::Throw);
+        }
+
+        inline var lcm_promote(const var &a, const var &b)
+        {
+            return lcm(a, b, Overflow::Promote);
+        }
+
+        inline var lcm_wrap(const var &a, const var &b)
+        {
+            return lcm(a, b, Overflow::Wrap);
+        }
+
+        inline var factorial(const var &n, Overflow policy = Overflow::Throw)
         {
             int num = static_cast<int>(to_numeric(n));
             if (num < 0)
                 throw pythonic::PythonicValueError("factorial() not defined for negative values");
 
-            long long result = 1;
-            for (int i = 2; i <= num; ++i)
+            switch (policy)
             {
-                result *= i;
+            case Overflow::Throw:
+            {
+                long long result = 1;
+                for (int i = 2; i <= num; ++i)
+                {
+                    result = pythonic::overflow::mul_throw(result, static_cast<long long>(i));
+                }
+                return var(result);
             }
-            return var(result);
+            case Overflow::Promote:
+            {
+                // Compute in long double (widest type)
+                long double result = 1.0L;
+                for (int i = 2; i <= num; ++i)
+                {
+                    result = result * static_cast<long double>(i);
+                }
+                // All inputs are integers, use smart_promote to find smallest container
+                return smart_promote(result, false);  // false = no floating inputs
+            }
+            case Overflow::Wrap:
+            {
+                long long result = 1;
+                for (int i = 2; i <= num; ++i)
+                {
+                    result = pythonic::overflow::mul_wrap(result, static_cast<long long>(i));
+                }
+                return var(result);
+            }
+            default:
+            {
+                long long result = 1;
+                for (int i = 2; i <= num; ++i)
+                {
+                    result = pythonic::overflow::mul_throw(result, static_cast<long long>(i));
+                }
+                return var(result);
+            }
+            }
+        }
+
+        // Convenience versions
+        inline var factorial_throw(const var &n)
+        {
+            return factorial(n, Overflow::Throw);
+        }
+
+        inline var factorial_promote(const var &n)
+        {
+            return factorial(n, Overflow::Promote);
+        }
+
+        inline var factorial_wrap(const var &n)
+        {
+            return factorial(n, Overflow::Wrap);
         }
 
         // ============ Checked Arithmetic Operations ============
-        // Perform arithmetic with overflow detection
+        // Perform arithmetic with overflow detection and configurable overflow policy
+        // Uses the new pythonic::overflow::Overflow enum:
+        //   - Overflow::Throw   (default): Throw PythonicOverflowError on overflow
+        //   - Overflow::Promote : Auto-promote to larger type on overflow
+        //   - Overflow::Wrap    : Allow wrapping (C++ default behavior)
+
+        using pythonic::overflow::Overflow;
+
+        // ============================================================================
+        // Helper: Determine result type for mixed type operations
+        // ============================================================================
+        // Rules:
+        // - Same types: use that type
+        // - Mixed integers: use the larger type
+        // - Integer + float: use double (for precision)
+        // - Any + double: use double
+        // - Any + long double: use long double
+        // ============================================================================
+
+        // ============================================================================
+        // ADDITION Operations
+        // ============================================================================
+
+        // add_throw: Throws on overflow (default behavior)
+        inline var add_throw(const var &a, const var &b)
+        {
+            // Same type cases - use type-specific overflow check
+            if (a.is_int() && b.is_int())
+                return var(pythonic::overflow::add_throw(a.as_int_unchecked(), b.as_int_unchecked()));
+            if (a.is_long() && b.is_long())
+                return var(pythonic::overflow::add_throw(a.as_long_unchecked(), b.as_long_unchecked()));
+            if (a.is_long_long() && b.is_long_long())
+                return var(pythonic::overflow::add_throw(a.as_long_long_unchecked(), b.as_long_long_unchecked()));
+            if (a.is_float() && b.is_float())
+                return var(pythonic::overflow::add_throw(a.as_float_unchecked(), b.as_float_unchecked()));
+            if (a.is_double() && b.is_double())
+                return var(pythonic::overflow::add_throw(a.as_double_unchecked(), b.as_double_unchecked()));
+            if (a.is_long_double() && b.is_long_double())
+                return var(to_long_double(a) + to_long_double(b)); // no overflow check for long double
+
+            // Mixed type cases
+            if (a.isNumeric() && b.isNumeric())
+            {
+                // Any + long double -> long double
+                if (a.is_long_double() || b.is_long_double())
+                    return var(to_long_double(a) + to_long_double(b));
+
+                // Any + double -> double
+                if (a.is_double() || b.is_double())
+                    return var(pythonic::overflow::add_throw(to_numeric(a), to_numeric(b)));
+
+                // Integer + float -> double (for precision)
+                if ((a.is_float() || b.is_float()) &&
+                    (a.is_int() || a.is_long() || a.is_long_long() ||
+                     b.is_int() || b.is_long() || b.is_long_long()))
+                    return var(pythonic::overflow::add_throw(to_numeric(a), to_numeric(b)));
+
+                // float + float already handled above
+                if (a.is_float() || b.is_float())
+                    return var(pythonic::overflow::add_throw(
+                        static_cast<float>(to_numeric(a)), static_cast<float>(to_numeric(b))));
+
+                // Mixed integers - use the larger type
+                // int + long -> long, int + long long -> long long, long + long long -> long long
+                if (a.is_long_long() || b.is_long_long())
+                    return var(pythonic::overflow::add_throw(a.toLongLong(), b.toLongLong()));
+                if (a.is_long() || b.is_long())
+                    return var(pythonic::overflow::add_throw(
+                        static_cast<long>(a.toLongLong()), static_cast<long>(b.toLongLong())));
+
+                // Fallback to long long
+                return var(pythonic::overflow::add_throw(a.toLongLong(), b.toLongLong()));
+            }
+            throw pythonic::PythonicTypeError("add() requires numeric types");
+        }
+
+        // add_wrap: Fast path - no overflow checking, returns appropriate type
+        inline var add_wrap(const var &a, const var &b)
+        {
+            // Same type cases - native operations (fast path)
+            if (a.is_int() && b.is_int())
+                return var(a.as_int_unchecked() + b.as_int_unchecked());
+            if (a.is_long() && b.is_long())
+                return var(a.as_long_unchecked() + b.as_long_unchecked());
+            if (a.is_long_long() && b.is_long_long())
+                return var(a.as_long_long_unchecked() + b.as_long_long_unchecked());
+            if (a.is_float() && b.is_float())
+                return var(a.as_float_unchecked() + b.as_float_unchecked());
+            if (a.is_double() && b.is_double())
+                return var(a.as_double_unchecked() + b.as_double_unchecked());
+            if (a.is_long_double() && b.is_long_double())
+                return var(to_long_double(a) + to_long_double(b));
+
+            // Mixed type cases
+            if (a.isNumeric() && b.isNumeric())
+            {
+                // Any + long double -> long double
+                if (a.is_long_double() || b.is_long_double())
+                    return var(to_long_double(a) + to_long_double(b));
+
+                // Any + double -> double
+                if (a.is_double() || b.is_double())
+                    return var(to_numeric(a) + to_numeric(b));
+
+                // Integer + float -> float (for wrap, keep smaller type)
+                if (a.is_float() || b.is_float())
+                    return var(static_cast<float>(to_numeric(a)) + static_cast<float>(to_numeric(b)));
+
+                // Mixed integers - use the larger type
+                if (a.is_long_long() || b.is_long_long())
+                    return var(a.toLongLong() + b.toLongLong());
+                if (a.is_long() || b.is_long())
+                    return var(static_cast<long>(a.toLongLong()) + static_cast<long>(b.toLongLong()));
+
+                // Fallback
+                return var(a.toLongLong() + b.toLongLong());
+            }
+            throw pythonic::PythonicTypeError("add() requires numeric types");
+        }
+
+        // add_promote: Smart promotion - compute in long double, fit to smallest container
+        inline var add_promote(const var &a, const var &b)
+        {
+            if (!a.isNumeric() || !b.isNumeric())
+                throw pythonic::PythonicTypeError("add() requires numeric types");
+
+            // Check if any input is floating point
+            bool has_floating = is_floating_type(a) || is_floating_type(b);
+
+            // Compute in long double (widest type)
+            long double result = to_long_double(a) + to_long_double(b);
+
+            // Find smallest container that fits
+            return smart_promote(result, has_floating);
+        }
+
+        // Main add function with policy selection
+        inline var add(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            switch (policy)
+            {
+            case Overflow::Wrap:
+                return add_wrap(a, b);
+            case Overflow::Promote:
+                return add_promote(a, b);
+            case Overflow::Throw:
+            default:
+                return add_throw(a, b);
+            }
+        }
+
+        // Overloads for var + primitive and primitive + var
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var add(const var &a, T b, Overflow policy = Overflow::Throw)
+        {
+            return add(a, var(b), policy);
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var add(T a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            return add(var(a), b, policy);
+        }
+
+        // ============================================================================
+        // SUBTRACTION Operations
+        // ============================================================================
+
+        inline var sub_throw(const var &a, const var &b)
+        {
+            // Same type cases
+            if (a.is_int() && b.is_int())
+                return var(pythonic::overflow::sub_throw(a.as_int_unchecked(), b.as_int_unchecked()));
+            if (a.is_long() && b.is_long())
+                return var(pythonic::overflow::sub_throw(a.as_long_unchecked(), b.as_long_unchecked()));
+            if (a.is_long_long() && b.is_long_long())
+                return var(pythonic::overflow::sub_throw(a.as_long_long_unchecked(), b.as_long_long_unchecked()));
+            if (a.is_float() && b.is_float())
+                return var(pythonic::overflow::sub_throw(a.as_float_unchecked(), b.as_float_unchecked()));
+            if (a.is_double() && b.is_double())
+                return var(pythonic::overflow::sub_throw(a.as_double_unchecked(), b.as_double_unchecked()));
+            if (a.is_long_double() && b.is_long_double())
+                return var(to_long_double(a) - to_long_double(b));
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                    return var(to_long_double(a) - to_long_double(b));
+                if (a.is_double() || b.is_double())
+                    return var(pythonic::overflow::sub_throw(to_numeric(a), to_numeric(b)));
+                if ((a.is_float() || b.is_float()) &&
+                    (a.is_int() || a.is_long() || a.is_long_long() ||
+                     b.is_int() || b.is_long() || b.is_long_long()))
+                    return var(pythonic::overflow::sub_throw(to_numeric(a), to_numeric(b)));
+                if (a.is_float() || b.is_float())
+                    return var(pythonic::overflow::sub_throw(
+                        static_cast<float>(to_numeric(a)), static_cast<float>(to_numeric(b))));
+                if (a.is_long_long() || b.is_long_long())
+                    return var(pythonic::overflow::sub_throw(a.toLongLong(), b.toLongLong()));
+                if (a.is_long() || b.is_long())
+                    return var(pythonic::overflow::sub_throw(
+                        static_cast<long>(a.toLongLong()), static_cast<long>(b.toLongLong())));
+                return var(pythonic::overflow::sub_throw(a.toLongLong(), b.toLongLong()));
+            }
+            throw pythonic::PythonicTypeError("sub() requires numeric types");
+        }
+
+        inline var sub_wrap(const var &a, const var &b)
+        {
+            // Same type cases - fast path
+            if (a.is_int() && b.is_int())
+                return var(a.as_int_unchecked() - b.as_int_unchecked());
+            if (a.is_long() && b.is_long())
+                return var(a.as_long_unchecked() - b.as_long_unchecked());
+            if (a.is_long_long() && b.is_long_long())
+                return var(a.as_long_long_unchecked() - b.as_long_long_unchecked());
+            if (a.is_float() && b.is_float())
+                return var(a.as_float_unchecked() - b.as_float_unchecked());
+            if (a.is_double() && b.is_double())
+                return var(a.as_double_unchecked() - b.as_double_unchecked());
+            if (a.is_long_double() && b.is_long_double())
+                return var(to_long_double(a) - to_long_double(b));
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                    return var(to_long_double(a) - to_long_double(b));
+                if (a.is_double() || b.is_double())
+                    return var(to_numeric(a) - to_numeric(b));
+                if (a.is_float() || b.is_float())
+                    return var(static_cast<float>(to_numeric(a)) - static_cast<float>(to_numeric(b)));
+                if (a.is_long_long() || b.is_long_long())
+                    return var(a.toLongLong() - b.toLongLong());
+                if (a.is_long() || b.is_long())
+                    return var(static_cast<long>(a.toLongLong()) - static_cast<long>(b.toLongLong()));
+                return var(a.toLongLong() - b.toLongLong());
+            }
+            throw pythonic::PythonicTypeError("sub() requires numeric types");
+        }
+
+        // sub_promote: Smart promotion - compute in long double, fit to smallest container
+        inline var sub_promote(const var &a, const var &b)
+        {
+            if (!a.isNumeric() || !b.isNumeric())
+                throw pythonic::PythonicTypeError("sub() requires numeric types");
+
+            // Check if any input is floating point
+            bool has_floating = is_floating_type(a) || is_floating_type(b);
+
+            // Compute in long double (widest type)
+            long double result = to_long_double(a) - to_long_double(b);
+
+            // Find smallest container that fits
+            return smart_promote(result, has_floating);
+        }
+
+        inline var sub(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            switch (policy)
+            {
+            case Overflow::Wrap:
+                return sub_wrap(a, b);
+            case Overflow::Promote:
+                return sub_promote(a, b);
+            case Overflow::Throw:
+            default:
+                return sub_throw(a, b);
+            }
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var sub(const var &a, T b, Overflow policy = Overflow::Throw)
+        {
+            return sub(a, var(b), policy);
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var sub(T a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            return sub(var(a), b, policy);
+        }
+
+        // ============================================================================
+        // MULTIPLICATION Operations
+        // ============================================================================
+
+        inline var mul_throw(const var &a, const var &b)
+        {
+            // Same type cases
+            if (a.is_int() && b.is_int())
+                return var(pythonic::overflow::mul_throw(a.as_int_unchecked(), b.as_int_unchecked()));
+            if (a.is_long() && b.is_long())
+                return var(pythonic::overflow::mul_throw(a.as_long_unchecked(), b.as_long_unchecked()));
+            if (a.is_long_long() && b.is_long_long())
+                return var(pythonic::overflow::mul_throw(a.as_long_long_unchecked(), b.as_long_long_unchecked()));
+            if (a.is_float() && b.is_float())
+                return var(pythonic::overflow::mul_throw(a.as_float_unchecked(), b.as_float_unchecked()));
+            if (a.is_double() && b.is_double())
+                return var(pythonic::overflow::mul_throw(a.as_double_unchecked(), b.as_double_unchecked()));
+            if (a.is_long_double() && b.is_long_double())
+                return var(to_long_double(a) * to_long_double(b));
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                    return var(to_long_double(a) * to_long_double(b));
+                if (a.is_double() || b.is_double())
+                    return var(pythonic::overflow::mul_throw(to_numeric(a), to_numeric(b)));
+                if ((a.is_float() || b.is_float()) &&
+                    (a.is_int() || a.is_long() || a.is_long_long() ||
+                     b.is_int() || b.is_long() || b.is_long_long()))
+                    return var(pythonic::overflow::mul_throw(to_numeric(a), to_numeric(b)));
+                if (a.is_float() || b.is_float())
+                    return var(pythonic::overflow::mul_throw(
+                        static_cast<float>(to_numeric(a)), static_cast<float>(to_numeric(b))));
+                if (a.is_long_long() || b.is_long_long())
+                    return var(pythonic::overflow::mul_throw(a.toLongLong(), b.toLongLong()));
+                if (a.is_long() || b.is_long())
+                    return var(pythonic::overflow::mul_throw(
+                        static_cast<long>(a.toLongLong()), static_cast<long>(b.toLongLong())));
+                return var(pythonic::overflow::mul_throw(a.toLongLong(), b.toLongLong()));
+            }
+            throw pythonic::PythonicTypeError("mul() requires numeric types");
+        }
+
+        inline var mul_wrap(const var &a, const var &b)
+        {
+            // Same type cases - fast path
+            if (a.is_int() && b.is_int())
+                return var(a.as_int_unchecked() * b.as_int_unchecked());
+            if (a.is_long() && b.is_long())
+                return var(a.as_long_unchecked() * b.as_long_unchecked());
+            if (a.is_long_long() && b.is_long_long())
+                return var(a.as_long_long_unchecked() * b.as_long_long_unchecked());
+            if (a.is_float() && b.is_float())
+                return var(a.as_float_unchecked() * b.as_float_unchecked());
+            if (a.is_double() && b.is_double())
+                return var(a.as_double_unchecked() * b.as_double_unchecked());
+            if (a.is_long_double() && b.is_long_double())
+                return var(to_long_double(a) * to_long_double(b));
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                    return var(to_long_double(a) * to_long_double(b));
+                if (a.is_double() || b.is_double())
+                    return var(to_numeric(a) * to_numeric(b));
+                if (a.is_float() || b.is_float())
+                    return var(static_cast<float>(to_numeric(a)) * static_cast<float>(to_numeric(b)));
+                if (a.is_long_long() || b.is_long_long())
+                    return var(a.toLongLong() * b.toLongLong());
+                if (a.is_long() || b.is_long())
+                    return var(static_cast<long>(a.toLongLong()) * static_cast<long>(b.toLongLong()));
+                return var(a.toLongLong() * b.toLongLong());
+            }
+            throw pythonic::PythonicTypeError("mul() requires numeric types");
+        }
+
+        // mul_promote: Smart promotion - compute in long double, fit to smallest container
+        inline var mul_promote(const var &a, const var &b)
+        {
+            if (!a.isNumeric() || !b.isNumeric())
+                throw pythonic::PythonicTypeError("mul() requires numeric types");
+
+            // Check if any input is floating point
+            bool has_floating = is_floating_type(a) || is_floating_type(b);
+
+            // Compute in long double (widest type)
+            long double result = to_long_double(a) * to_long_double(b);
+
+            // Find smallest container that fits
+            return smart_promote(result, has_floating);
+        }
+
+        inline var mul(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            switch (policy)
+            {
+            case Overflow::Wrap:
+                return mul_wrap(a, b);
+            case Overflow::Promote:
+                return mul_promote(a, b);
+            case Overflow::Throw:
+            default:
+                return mul_throw(a, b);
+            }
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var mul(const var &a, T b, Overflow policy = Overflow::Throw)
+        {
+            return mul(a, var(b), policy);
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var mul(T a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            return mul(var(a), b, policy);
+        }
+
+        // ============================================================================
+        // DIVISION Operations
+        // ============================================================================
+
+        inline var div_throw(const var &a, const var &b)
+        {
+            // Same type cases
+            if (a.is_int() && b.is_int())
+            {
+                int divisor = b.as_int_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(pythonic::overflow::div_throw(a.as_int_unchecked(), divisor));
+            }
+            if (a.is_long() && b.is_long())
+            {
+                long divisor = b.as_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(pythonic::overflow::div_throw(a.as_long_unchecked(), divisor));
+            }
+            if (a.is_long_long() && b.is_long_long())
+            {
+                long long divisor = b.as_long_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(pythonic::overflow::div_throw(a.as_long_long_unchecked(), divisor));
+            }
+            if (a.is_float() && b.is_float())
+            {
+                float divisor = b.as_float_unchecked();
+                if (divisor == 0.0f)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(pythonic::overflow::div_throw(a.as_float_unchecked(), divisor));
+            }
+            if (a.is_double() && b.is_double())
+            {
+                double divisor = b.as_double_unchecked();
+                if (divisor == 0.0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(pythonic::overflow::div_throw(a.as_double_unchecked(), divisor));
+            }
+            if (a.is_long_double() && b.is_long_double())
+            {
+                long double divisor = to_long_double(b);
+                if (divisor == 0.0L)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(to_long_double(a) / divisor);
+            }
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                {
+                    long double divisor = to_long_double(b);
+                    if (divisor == 0.0L)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(to_long_double(a) / divisor);
+                }
+                if (a.is_double() || b.is_double() || a.is_float() || b.is_float() ||
+                    (a.is_int() || a.is_long() || a.is_long_long()) && (b.is_float() || b.is_double()) ||
+                    (b.is_int() || b.is_long() || b.is_long_long()) && (a.is_float() || a.is_double()))
+                {
+                    double divisor = to_numeric(b);
+                    if (divisor == 0.0)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(pythonic::overflow::div_throw(to_numeric(a), divisor));
+                }
+                // Mixed integers
+                if (a.is_long_long() || b.is_long_long())
+                {
+                    long long divisor = b.toLongLong();
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(pythonic::overflow::div_throw(a.toLongLong(), divisor));
+                }
+                if (a.is_long() || b.is_long())
+                {
+                    long divisor = static_cast<long>(b.toLongLong());
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(pythonic::overflow::div_throw(static_cast<long>(a.toLongLong()), divisor));
+                }
+                // Fallback
+                double divisor = to_numeric(b);
+                if (divisor == 0.0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(to_numeric(a) / divisor);
+            }
+            throw pythonic::PythonicTypeError("div() requires numeric types");
+        }
+
+        inline var div_wrap(const var &a, const var &b)
+        {
+            // Same type cases - fast path
+            if (a.is_int() && b.is_int())
+            {
+                int divisor = b.as_int_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(a.as_int_unchecked() / divisor);
+            }
+            if (a.is_long() && b.is_long())
+            {
+                long divisor = b.as_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(a.as_long_unchecked() / divisor);
+            }
+            if (a.is_long_long() && b.is_long_long())
+            {
+                long long divisor = b.as_long_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(a.as_long_long_unchecked() / divisor);
+            }
+            if (a.is_float() && b.is_float())
+            {
+                float divisor = b.as_float_unchecked();
+                if (divisor == 0.0f)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(a.as_float_unchecked() / divisor);
+            }
+            if (a.is_double() && b.is_double())
+            {
+                double divisor = b.as_double_unchecked();
+                if (divisor == 0.0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(a.as_double_unchecked() / divisor);
+            }
+            if (a.is_long_double() && b.is_long_double())
+            {
+                long double divisor = to_long_double(b);
+                if (divisor == 0.0L)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(to_long_double(a) / divisor);
+            }
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                {
+                    long double divisor = to_long_double(b);
+                    if (divisor == 0.0L)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(to_long_double(a) / divisor);
+                }
+                if (a.is_double() || b.is_double())
+                {
+                    double divisor = to_numeric(b);
+                    if (divisor == 0.0)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(to_numeric(a) / divisor);
+                }
+                if (a.is_float() || b.is_float())
+                {
+                    float divisor = static_cast<float>(to_numeric(b));
+                    if (divisor == 0.0f)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(static_cast<float>(to_numeric(a)) / divisor);
+                }
+                // Mixed integers
+                if (a.is_long_long() || b.is_long_long())
+                {
+                    long long divisor = b.toLongLong();
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(a.toLongLong() / divisor);
+                }
+                if (a.is_long() || b.is_long())
+                {
+                    long divisor = static_cast<long>(b.toLongLong());
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::division();
+                    return var(static_cast<long>(a.toLongLong()) / divisor);
+                }
+                // Fallback
+                double divisor = to_numeric(b);
+                if (divisor == 0.0)
+                    throw pythonic::PythonicZeroDivisionError::division();
+                return var(to_numeric(a) / divisor);
+            }
+            throw pythonic::PythonicTypeError("div() requires numeric types");
+        }
+
+        // div_promote: Smart promotion - compute in long double, fit to smallest floating container
+        // Division always returns floating point in promote mode (because result may not be integer)
+        inline var div_promote(const var &a, const var &b)
+        {
+            if (!a.isNumeric() || !b.isNumeric())
+                throw pythonic::PythonicTypeError("div() requires numeric types");
+
+            // Check for zero divisor
+            long double divisor = to_long_double(b);
+            if (divisor == 0.0L)
+                throw pythonic::PythonicZeroDivisionError::division();
+
+            // Compute in long double (widest type)
+            long double result = to_long_double(a) / divisor;
+
+            // Division always uses floating point container (because result may not be integer)
+            return fit_floating_result(result);
+        }
+
+        inline var div(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            switch (policy)
+            {
+            case Overflow::Wrap:
+                return div_wrap(a, b);
+            case Overflow::Promote:
+                return div_promote(a, b);
+            case Overflow::Throw:
+            default:
+                return div_throw(a, b);
+            }
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var div(const var &a, T b, Overflow policy = Overflow::Throw)
+        {
+            return div(a, var(b), policy);
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var div(T a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            return div(var(a), b, policy);
+        }
+
+        // ============================================================================
+        // MODULO Operations
+        // ============================================================================
+
+        inline var mod_throw(const var &a, const var &b)
+        {
+            // Same type cases
+            if (a.is_int() && b.is_int())
+            {
+                int divisor = b.as_int_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(pythonic::overflow::mod_throw(a.as_int_unchecked(), divisor));
+            }
+            if (a.is_long() && b.is_long())
+            {
+                long divisor = b.as_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(pythonic::overflow::mod_throw(a.as_long_unchecked(), divisor));
+            }
+            if (a.is_long_long() && b.is_long_long())
+            {
+                long long divisor = b.as_long_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(pythonic::overflow::mod_throw(a.as_long_long_unchecked(), divisor));
+            }
+
+            // Mixed types - use fmod for floating point results
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                {
+                    long double divisor = to_long_double(b);
+                    if (divisor == 0.0L)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(std::fmod(to_long_double(a), divisor));
+                }
+                if (a.is_double() || b.is_double() || a.is_float() || b.is_float())
+                {
+                    double divisor = to_numeric(b);
+                    if (divisor == 0.0)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(std::fmod(to_numeric(a), divisor));
+                }
+                // Mixed integers
+                if (a.is_long_long() || b.is_long_long())
+                {
+                    long long divisor = b.toLongLong();
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(pythonic::overflow::mod_throw(a.toLongLong(), divisor));
+                }
+                if (a.is_long() || b.is_long())
+                {
+                    long divisor = static_cast<long>(b.toLongLong());
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(pythonic::overflow::mod_throw(static_cast<long>(a.toLongLong()), divisor));
+                }
+                // Fallback to fmod
+                double divisor = to_numeric(b);
+                if (divisor == 0.0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(std::fmod(to_numeric(a), divisor));
+            }
+            throw pythonic::PythonicTypeError("mod() requires numeric types");
+        }
+
+        inline var mod_wrap(const var &a, const var &b)
+        {
+            // Same type cases - fast path
+            if (a.is_int() && b.is_int())
+            {
+                int divisor = b.as_int_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(a.as_int_unchecked() % divisor);
+            }
+            if (a.is_long() && b.is_long())
+            {
+                long divisor = b.as_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(a.as_long_unchecked() % divisor);
+            }
+            if (a.is_long_long() && b.is_long_long())
+            {
+                long long divisor = b.as_long_long_unchecked();
+                if (divisor == 0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(a.as_long_long_unchecked() % divisor);
+            }
+
+            // Mixed types
+            if (a.isNumeric() && b.isNumeric())
+            {
+                if (a.is_long_double() || b.is_long_double())
+                {
+                    long double divisor = to_long_double(b);
+                    if (divisor == 0.0L)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(std::fmod(to_long_double(a), divisor));
+                }
+                if (a.is_double() || b.is_double())
+                {
+                    double divisor = to_numeric(b);
+                    if (divisor == 0.0)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(std::fmod(to_numeric(a), divisor));
+                }
+                if (a.is_float() || b.is_float())
+                {
+                    float divisor = static_cast<float>(to_numeric(b));
+                    if (divisor == 0.0f)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(std::fmod(static_cast<float>(to_numeric(a)), divisor));
+                }
+                // Mixed integers
+                if (a.is_long_long() || b.is_long_long())
+                {
+                    long long divisor = b.toLongLong();
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(a.toLongLong() % divisor);
+                }
+                if (a.is_long() || b.is_long())
+                {
+                    long divisor = static_cast<long>(b.toLongLong());
+                    if (divisor == 0)
+                        throw pythonic::PythonicZeroDivisionError::modulo();
+                    return var(static_cast<long>(a.toLongLong()) % divisor);
+                }
+                // Fallback
+                double divisor = to_numeric(b);
+                if (divisor == 0.0)
+                    throw pythonic::PythonicZeroDivisionError::modulo();
+                return var(std::fmod(to_numeric(a), divisor));
+            }
+            throw pythonic::PythonicTypeError("mod() requires numeric types");
+        }
+
+        // mod_promote: Smart promotion - compute with fmod in long double, fit to smallest container
+        // Modulo with floating point uses fmod
+        inline var mod_promote(const var &a, const var &b)
+        {
+            if (!a.isNumeric() || !b.isNumeric())
+                throw pythonic::PythonicTypeError("mod() requires numeric types");
+
+            // Check for zero divisor
+            long double divisor = to_long_double(b);
+            if (divisor == 0.0L)
+                throw pythonic::PythonicZeroDivisionError::modulo();
+
+            // Check if any input is floating point
+            bool has_floating = is_floating_type(a) || is_floating_type(b);
+
+            // Compute modulo in long double
+            long double result = std::fmod(to_long_double(a), divisor);
+
+            // Find smallest container that fits
+            return smart_promote(result, has_floating);
+        }
+
+        inline var mod(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            switch (policy)
+            {
+            case Overflow::Wrap:
+                return mod_wrap(a, b);
+            case Overflow::Promote:
+                return mod_promote(a, b);
+            case Overflow::Throw:
+            default:
+                return mod_throw(a, b);
+            }
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var mod(const var &a, T b, Overflow policy = Overflow::Throw)
+        {
+            return mod(a, var(b), policy);
+        }
+
+        template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+        inline var mod(T a, const var &b, Overflow policy = Overflow::Throw)
+        {
+            return mod(var(a), b, policy);
+        }
+
+        // ============================================================================
+        // Legacy API (backward compatibility)
+        // ============================================================================
+        // These maintain the old checked_* naming but use the new system
+        // ============================================================================
 
         inline var checked_add(const var &a, const var &b)
         {
-            // For simplicity, use int64_t for checked operations
-            // In production, would use compiler intrinsics or boost::safe_numerics
-            if (a.is_int() && b.is_int())
-            {
-                int64_t a_val = a.as_int_unchecked();
-                int64_t b_val = b.as_int_unchecked();
-
-                // Check for overflow
-                if ((b_val > 0 && a_val > std::numeric_limits<int64_t>::max() - b_val) ||
-                    (b_val < 0 && a_val < std::numeric_limits<int64_t>::min() - b_val))
-                {
-                    throw pythonic::PythonicValueError("Integer overflow in checked_add");
-                }
-                return var(a_val + b_val);
-            }
-            // Fall back to regular addition for doubles
-            return var(to_numeric(a) + to_numeric(b));
+            return add(a, b, Overflow::Throw);
         }
 
         inline var checked_sub(const var &a, const var &b)
         {
-            if (a.is_int() && b.is_int())
-            {
-                int64_t a_val = a.as_int_unchecked();
-                int64_t b_val = b.as_int_unchecked();
-
-                if ((b_val < 0 && a_val > std::numeric_limits<int64_t>::max() + b_val) ||
-                    (b_val > 0 && a_val < std::numeric_limits<int64_t>::min() + b_val))
-                {
-                    throw pythonic::PythonicValueError("Integer overflow in checked_sub");
-                }
-                return var(a_val - b_val);
-            }
-            return var(to_numeric(a) - to_numeric(b));
+            return sub(a, b, Overflow::Throw);
         }
 
         inline var checked_mul(const var &a, const var &b)
         {
-            if (a.is_int() && b.is_int())
-            {
-                int64_t a_val = a.as_int_unchecked();
-                int64_t b_val = b.as_int_unchecked();
-
-                // Check for overflow in multiplication
-                if (a_val != 0 && b_val != 0)
-                {
-                    if (std::abs(a_val) > std::numeric_limits<int64_t>::max() / std::abs(b_val))
-                    {
-                        throw pythonic::PythonicValueError("Integer overflow in checked_mul");
-                    }
-                }
-                return var(a_val * b_val);
-            }
-            return var(to_numeric(a) * to_numeric(b));
+            return mul(a, b, Overflow::Throw);
         }
 
         inline var checked_div(const var &a, const var &b)
         {
-            if (b.is_int() && b.as_int_unchecked() == 0)
-            {
-                throw pythonic::PythonicValueError("Division by zero in checked_div");
-            }
-            if (a.is_int() && b.is_int())
-            {
-                int64_t a_val = a.as_int_unchecked();
-                int64_t b_val = b.as_int_unchecked();
+            return div(a, b, Overflow::Throw);
+        }
 
-                // Check for special case: INT_MIN / -1 causes overflow
-                if (a_val == std::numeric_limits<int64_t>::min() && b_val == -1)
-                {
-                    throw pythonic::PythonicValueError("Integer overflow in checked_div");
-                }
-                return var(a_val / b_val);
-            }
-
-            double b_num = to_numeric(b);
-            if (b_num == 0.0)
-            {
-                throw pythonic::PythonicValueError("Division by zero in checked_div");
-            }
-            return var(to_numeric(a) / b_num);
+        inline var checked_mod(const var &a, const var &b)
+        {
+            return mod(a, b, Overflow::Throw);
         }
 
     } // namespace math
