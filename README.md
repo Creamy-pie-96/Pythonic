@@ -761,7 +761,7 @@ print("  Route:", route["path"]);
 var path = route["path"];
 print("  Cities:");
 for_each(node, path) {
-    size_t idx = static_cast<size_t>(static_cast<int>(node));
+    size_t idx = static_cast<size_t>(node.toInt());
     print("   ->", roads.get_node_data(idx));
 }
 
@@ -2143,6 +2143,17 @@ auto sum = reduce(lambda2_(acc, x, acc + x), nums, var(0));
 - **Operator ambiguity with slicing** - When using `slice()` with `None`, wrap numeric literals in `var()`: `slice(None, None, var(-1))`
 - **Index ambiguity** - Use `size_t` for list indices when 0 might be ambiguous: `lst[size_t(0)]`
 - **DynamicVar arithmetic** - Convert `let()` variables to `var` first for arithmetic: `var v = let(x); let(x) = v + 50;`
+- **Type Conversions** - The `var` type provides explicit conversion operators, so `static_cast<int>()`, `static_cast<double>()` work correctly. However, for clarity and best practice, prefer using the explicit conversion methods `.toInt()`, `.toDouble()`, `.toString()`:
+  ```cpp
+  var x = 42;
+  int i1 = static_cast<int>(x);    // Works ✓ (returns 42)
+  int i2 = x.toInt();              // Recommended ✓ (clearer intent)
+  
+  // For list/path access, both work:
+  var path = list(0, 2, 4, 3);
+  size_t idx1 = static_cast<size_t>(static_cast<int>(path[1]));  // Works ✓
+  size_t idx2 = static_cast<size_t>(path[1].toInt());            // Clearer ✓
+  ```
 
 ## Safety Features
 
