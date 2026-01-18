@@ -398,9 +398,10 @@ This is the most common error. It means CMake cannot find the installed package 
 2. **Use that full path in your cmake command:**
 
    ```bash
-   cmake .. -DCMAKE_PREFIX_PATH=/home/user/pythonic_cpp_lib/Pythonic/install 
+   cmake .. -DCMAKE_PREFIX_PATH=/home/user/pythonic_cpp_lib/Pythonic/install
    ```
-    *note* you can add *-DCMAKE_BUILD_TYPE=Release* if you want to build in release mode
+
+   _note_ you can add _-DCMAKE_BUILD_TYPE=Release_ if you want to build in release mode
 
 3. **Verify the path is correct** before running cmake:
 
@@ -486,7 +487,7 @@ int main() {
     g.add_edge(1, 2, 2.0);
     g.add_edge(2, 3, 3.0);
     g.add_edge(3, 0, 4.0);
-    
+
     // If GRAPHVIZ_AVAILABLE: Creates my_graph.dot AND my_graph.svg
     // Otherwise: Creates only my_graph.dot
     g.to_dot("my_graph.dot");
