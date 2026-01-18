@@ -682,7 +682,7 @@ namespace pythonic
             {
                 int64_t a_val = a.as_int_unchecked();
                 int64_t b_val = b.as_int_unchecked();
-                
+
                 // Check for overflow
                 if ((b_val > 0 && a_val > std::numeric_limits<int64_t>::max() - b_val) ||
                     (b_val < 0 && a_val < std::numeric_limits<int64_t>::min() - b_val))
@@ -701,7 +701,7 @@ namespace pythonic
             {
                 int64_t a_val = a.as_int_unchecked();
                 int64_t b_val = b.as_int_unchecked();
-                
+
                 if ((b_val < 0 && a_val > std::numeric_limits<int64_t>::max() + b_val) ||
                     (b_val > 0 && a_val < std::numeric_limits<int64_t>::min() + b_val))
                 {
@@ -718,7 +718,7 @@ namespace pythonic
             {
                 int64_t a_val = a.as_int_unchecked();
                 int64_t b_val = b.as_int_unchecked();
-                
+
                 // Check for overflow in multiplication
                 if (a_val != 0 && b_val != 0)
                 {
@@ -742,7 +742,7 @@ namespace pythonic
             {
                 int64_t a_val = a.as_int_unchecked();
                 int64_t b_val = b.as_int_unchecked();
-                
+
                 // Check for special case: INT_MIN / -1 causes overflow
                 if (a_val == std::numeric_limits<int64_t>::min() && b_val == -1)
                 {
@@ -750,7 +750,7 @@ namespace pythonic
                 }
                 return var(a_val / b_val);
             }
-            
+
             double b_num = to_numeric(b);
             if (b_num == 0.0)
             {

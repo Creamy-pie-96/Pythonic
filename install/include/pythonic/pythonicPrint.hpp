@@ -157,11 +157,11 @@ namespace pythonic
             return ss.str();
         }
 
-        // Specialization for var - use smart formatting
+        // Specialization for var - use simple str() formatting
         template <>
         inline std::string to_print_str<var>(const var &arg)
         {
-            return format_value(arg, 0, 2, true);
+            return arg.str(); // Use simple str() instead of format_value
         }
 
         // Main print function - handles any types
