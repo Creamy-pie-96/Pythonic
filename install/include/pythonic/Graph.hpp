@@ -10,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <filesystem>
+#include <cmath>
 #include "pythonicError.hpp"
 #include <limits>
 #include <algorithm>
@@ -53,8 +54,10 @@ namespace pythonic
          * @brief Represents an edge in the graph.
          *
          * An edge connects two nodes and may be directed or undirected.
+         * Uses double for weight to match Python's float semantics.
+         * 
          * @param id Destination node index (the node this edge points to).
-         * @param weight Weight of the edge (default is 1.0).
+         * @param weight Weight of the edge (default is 0.0).
          * @param directed True if the edge is directed, false if undirected.
          */
         struct Edge
@@ -80,6 +83,8 @@ namespace pythonic
          * Graph stores `nodes` nodes indexed 0..nodes-1 and an adjacency list of
          * `Edge` objects. Supports directed or undirected edges, optional weights,
          * and per-node metadata of type `T`.
+         *
+         * Edge weights use double to match Python's float semantics.
          *
          * @tparam T Type stored as node metadata (e.g. string, int, custom struct).
          */
@@ -210,9 +215,10 @@ namespace pythonic
 
                 std::vector<bool> visited(nodes, false);
                 std::vector<size_t> parent(nodes, (size_t)-1);
-                double hopp = 0;
+                std::vector<size_t> dist(nodes, (size_t)-1);  // distance from start
                 std::queue<size_t> q;
                 visited[start] = true;
+                dist[start] = 0;
                 q.push(start);
 
                 while (!q.empty())
@@ -229,11 +235,17 @@ namespace pythonic
                         if (!visited[v])
                         {
                             visited[v] = true;
-                            ++hopp;
+                            dist[v] = dist[u] + 1;
                             parent[v] = u;
                             q.push(v);
                         }
                     }
+                }
+
+                // Check if goal is reachable
+                if (!visited[goal])
+                {
+                    return {std::vector<size_t>{}, INF};
                 }
 
                 // reconstruct path
@@ -242,7 +254,7 @@ namespace pythonic
                     path.push_back(v);
 
                 std::reverse(path.begin(), path.end());
-                return {path, hopp};
+                return {path, static_cast<double>(dist[goal])};
             }
 
         public:
@@ -428,15 +440,23 @@ namespace pythonic
              *
              * For directed edges, only from->to is added. For undirected edges, both
              * directions are added. `w1` is used for the u->v weight; `w2` is used for
-             * the reverse v->u when adding an undirected edge.
+             * the reverse v->u when adding an undirected edge (defaults to w1 for symmetric edges).
+             * 
+             * @param u Source node index.
+             * @param v Destination node index.
+             * @param w1 Weight for u->v edge (default: 0.0).
+             * @param w2 Weight for v->u edge in undirected graphs. If NaN (default), uses w1.
+             * @param directional If true, only adds u->v edge. If false, adds both directions.
              */
-            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directional = false)
+            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directional = false)
             {
                 Edge e_uv(v, w1, directional);
                 edges[u].push_back(e_uv);
                 if (!directional)
                 {
-                    Edge e_vu(u, w2, directional);
+                    // For undirected edges, use w1 as the reverse weight if w2 is NaN (not explicitly set)
+                    double reverse_weight = std::isnan(w2) ? w1 : w2;
+                    Edge e_vu(u, reverse_weight, directional);
                     edges[v].push_back(e_vu);
                 }
                 DAG = directional;
@@ -449,11 +469,15 @@ namespace pythonic
                         negative_edges++;
                 }
 
-                if (!directional && w2 != 0.0)
+                if (!directional)
                 {
-                    non_zero_edge++;
-                    if (w2 < 0)
-                        negative_edges++;
+                    double reverse_weight = std::isnan(w2) ? w1 : w2;
+                    if (reverse_weight != 0.0)
+                    {
+                        non_zero_edge++;
+                        if (reverse_weight < 0)
+                            negative_edges++;
+                    }
                 }
 
                 // Update boolean flags
@@ -591,48 +615,66 @@ namespace pythonic
 #endif
             }
 
-            std::pair<std::vector<size_t>, double> get_shortest_path(size_t src, size_t dest = -1)
+            /**
+             * @brief Get shortest path between nodes using the optimal algorithm.
+             *
+             * Algorithm selection:
+             * - Unweighted graph: BFS (O(V+E))
+             * - Weighted without negative edges: Dijkstra (O((V+E)logV))
+             * - Weighted with negative edges: Bellman-Ford (O(VE))
+             *
+             * @param src Source node index.
+             * @param dest Destination node index.
+             * @return Pair of (path as vector of node indices, total distance).
+             *         Returns ({}, INF) if no path exists.
+             */
+            std::pair<std::vector<size_t>, double> get_shortest_path(size_t src, size_t dest)
             {
-                if (src >= nodes || (dest != (size_t)-1 && dest >= nodes))
+                if (src >= nodes || dest >= nodes)
                 {
                     throw pythonic::PythonicGraphError("invalid nodes");
                 }
-                // will use bfs if weighted is false
-                // will use dikjtra if weighted is true but has_negative is false
-                // will use bellman-ford if weighted and has_negative is true
-                // will use floyd if dest = -1 or none of the upper can solve the pb
-                // btw do i need to check for cycle for any of them?
-                std::pair<std::vector<size_t>, double> result;
+
+                // Unweighted: use BFS
                 if (!is_weighted)
                 {
-                    if (dest == (size_t)-1)
-                        throw pythonic::PythonicGraphError::not_implemented("all-destination shortest path for unweighted graphs");
-                    result = bfs_shortest_path(src, dest);
-                    return result;
+                    return bfs_shortest_path(src, dest);
                 }
 
-                // weighted
+                // Weighted with negative edges: use Bellman-Ford
                 if (has_negative_weight)
                 {
-                    throw pythonic::PythonicGraphError::not_implemented("Bellman-Ford for negative weights");
+                    auto [dist, prev] = bellman_ford(src);
+                    if (dist.empty())
+                    {
+                        throw pythonic::PythonicGraphError("Graph contains a negative cycle");
+                    }
+                    if (dist[dest] == INF)
+                    {
+                        return {std::vector<size_t>{}, INF};
+                    }
+                    std::vector<size_t> path = reconstruct_path(src, dest, prev);
+                    return {path, dist[dest]};
                 }
 
-                // weighted and non-negative: Dijkstra
-                if (dest == (size_t)-1)
-                {
-                    throw pythonic::PythonicGraphError::not_implemented("all-destination shortest path for weighted graphs");
-                }
-
-                auto r = dijkstra_all(src, dest, true);
-                const auto &dist = r.first;
-                const auto &path = r.second;
+                // Weighted without negative edges: use Dijkstra
+                auto [dist, path] = dijkstra_all(src, dest, true);
                 if (dist[dest] == INF)
                 {
                     return {std::vector<size_t>{}, INF};
                 }
-                double shortest_dist = dist[dest];
-                result = {path, shortest_dist};
-                return result;
+                return {path, dist[dest]};
+            }
+
+            /**
+             * @brief Get all-pairs shortest paths using Floyd-Warshall.
+             *
+             * @return 2D vector where result[i][j] is the shortest distance from i to j.
+             *         INF indicates unreachable.
+             */
+            std::vector<std::vector<double>> get_all_shortest_paths() const
+            {
+                return floyd_warshall();
             }
 
             /**

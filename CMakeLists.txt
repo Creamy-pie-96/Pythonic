@@ -5,6 +5,26 @@ project(Pythonic)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# ============================================================================
+# Optional: Detect Graphviz for Graph::to_dot() SVG auto-generation
+# ============================================================================
+option(PYTHONIC_ENABLE_GRAPHVIZ "Enable Graphviz integration for automatic SVG generation" ON)
+
+if(PYTHONIC_ENABLE_GRAPHVIZ)
+    find_program(GRAPHVIZ_DOT_EXECUTABLE dot)
+    if(GRAPHVIZ_DOT_EXECUTABLE)
+        message(STATUS "Found Graphviz: ${GRAPHVIZ_DOT_EXECUTABLE}")
+        message(STATUS "  Graph::to_dot() will automatically generate SVG files")
+        set(PYTHONIC_GRAPHVIZ_FOUND TRUE)
+    else()
+        message(STATUS "Graphviz not found (optional)")
+        message(STATUS "  Graph::to_dot() will only create .dot files")
+        message(STATUS "  Install Graphviz and rebuild to enable automatic SVG generation")
+        message(STATUS "  Or use: dot -Tsvg graph.dot -o graph.svg")
+        set(PYTHONIC_GRAPHVIZ_FOUND FALSE)
+    endif()
+endif()
+
 # Create a header-only interface library
 add_library(pythonic INTERFACE)
 
@@ -14,6 +34,11 @@ target_include_directories(pythonic INTERFACE
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
+
+# Add Graphviz compile definition if found
+if(PYTHONIC_GRAPHVIZ_FOUND)
+    target_compile_definitions(pythonic INTERFACE GRAPHVIZ_AVAILABLE)
+endif()
 
 # Require C++20 for interface users
 target_compile_features(pythonic INTERFACE cxx_std_20)

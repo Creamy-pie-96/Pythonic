@@ -2114,6 +2114,7 @@ namespace pythonic
             var operator/(const var &other) const
             {
                 // Fast-path: same type
+                // Note: Python semantics - / always returns float, even for int/int
                 if (tag_ == other.tag_)
                 {
                     switch (tag_)
@@ -2124,7 +2125,8 @@ namespace pythonic
                             int b = other.var_get<int>();
                             if (b == 0)
                                 throw pythonic::PythonicZeroDivisionError::division();
-                            return var(pythonic::overflow::div(var_get<int>(), b));
+                            // Python: int / int -> float (always)
+                            return var(static_cast<double>(var_get<int>()) / static_cast<double>(b));
                         }
                     case TypeTag::DOUBLE:
                         [[likely]]
@@ -2132,56 +2134,61 @@ namespace pythonic
                             double b = other.var_get<double>();
                             if (b == 0.0)
                                 throw pythonic::PythonicZeroDivisionError::division();
-                            return var(pythonic::overflow::div(var_get<double>(), b));
+                            return var(var_get<double>() / b);
                         }
                     case TypeTag::LONG_LONG:
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<long long>(), b));
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(var_get<long long>()) / static_cast<double>(b));
                     }
                     case TypeTag::FLOAT:
                     {
                         float b = other.var_get<float>();
                         if (b == 0.0f)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<float>(), b));
+                        return var(var_get<float>() / b);
                     }
                     case TypeTag::LONG:
                     {
                         long b = other.var_get<long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<long>(), b));
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(var_get<long>()) / static_cast<double>(b));
                     }
                     case TypeTag::UINT:
                     {
                         unsigned int b = other.var_get<unsigned int>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<unsigned int>(), b));
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(var_get<unsigned int>()) / static_cast<double>(b));
                     }
                     case TypeTag::ULONG:
                     {
                         unsigned long b = other.var_get<unsigned long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<unsigned long>(), b));
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(var_get<unsigned long>()) / static_cast<double>(b));
                     }
                     case TypeTag::ULONG_LONG:
                     {
                         unsigned long long b = other.var_get<unsigned long long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<unsigned long long>(), b));
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(var_get<unsigned long long>()) / static_cast<double>(b));
                     }
                     case TypeTag::LONG_DOUBLE:
                     {
                         long double b = other.var_get<long double>();
                         if (b == 0.0L)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(pythonic::overflow::div(var_get<long double>(), b));
+                        return var(var_get<long double>() / b);
                     }
                     default:
                         break;
@@ -2784,15 +2791,21 @@ namespace pythonic
             }
 
             // Division with primitives
+            // Note: Python semantics - / always returns float, even for int/int
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator/(T other) const
             {
                 if (other == 0)
                     throw pythonic::PythonicZeroDivisionError::division();
-                if constexpr (std::is_same_v<T, int>)
+                if constexpr (std::is_integral_v<T>)
                 {
+                    // Python: int / int -> float (always)
                     if (tag_ == TypeTag::INT)
-                        return var(var_get<int>() / other);
+                        return var(static_cast<double>(var_get<int>()) / static_cast<double>(other));
+                    if (tag_ == TypeTag::LONG_LONG)
+                        return var(static_cast<double>(var_get<long long>()) / static_cast<double>(other));
+                    if (isNumeric())
+                        return var(toDouble() / static_cast<double>(other));
                 }
                 if constexpr (std::is_floating_point_v<T>)
                 {
@@ -2807,14 +2820,23 @@ namespace pythonic
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             friend var operator/(T lhs, const var &rhs)
             {
-                if constexpr (std::is_same_v<T, int>)
+                if constexpr (std::is_integral_v<T>)
                 {
                     if (rhs.tag_ == TypeTag::INT)
                     {
                         int b = rhs.var_get<int>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(lhs / b);
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(lhs) / static_cast<double>(b));
+                    }
+                    if (rhs.tag_ == TypeTag::LONG_LONG)
+                    {
+                        long long b = rhs.var_get<long long>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        // Python: int / int -> float (always)
+                        return var(static_cast<double>(lhs) / static_cast<double>(b));
                     }
                 }
                 return var(lhs) / rhs;
@@ -3313,6 +3335,50 @@ namespace pythonic
                 default:
                     return true;
                 }
+            }
+
+            // Explicit integer conversion operator
+            // Allows: int i = static_cast<int>(some_var);
+            // Note: Use explicit to prevent implicit conversion in mixed expressions
+            explicit operator int() const
+            {
+                return toInt();
+            }
+
+            // Explicit long long conversion operator
+            explicit operator long long() const
+            {
+                return toLongLong();
+            }
+
+            // Explicit double conversion operator
+            // Allows: double d = static_cast<double>(some_var);
+            explicit operator double() const
+            {
+                return toDouble();
+            }
+
+            // Explicit float conversion operator
+            explicit operator float() const
+            {
+                return static_cast<float>(toDouble());
+            }
+
+            // Explicit size_t conversion operator (useful for indexing)
+            // Allows: size_t idx = static_cast<size_t>(some_var);
+            explicit operator size_t() const
+            {
+                long long v = toLongLong();
+                if (v < 0) {
+                    throw pythonic::PythonicTypeError("Cannot convert negative value to size_t");
+                }
+                return static_cast<size_t>(v);
+            }
+
+            // Explicit string conversion operator
+            explicit operator std::string() const
+            {
+                return toString();
             }
 
             // Private helper for graph bool - defined after VarGraphWrapper
@@ -4762,7 +4828,7 @@ namespace pythonic
             var neighbors(size_t node) const;
 
             // ===== Graph Modification =====
-            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directed = false);
+            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directed = false);
             bool remove_edge(size_t from, size_t to, bool remove_reverse = true);
             void set_edge_weight(size_t from, size_t to, double weight);
 
@@ -4918,7 +4984,7 @@ namespace pythonic
             std::vector<size_t> neighbors(size_t node) const { return impl.neighbors(node); }
 
             // ===== Graph Modification =====
-            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = 0.0, bool directed = false)
+            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directed = false)
             {
                 impl.add_edge(u, v, w1, w2, directed);
             }

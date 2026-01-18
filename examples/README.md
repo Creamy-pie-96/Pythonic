@@ -429,6 +429,86 @@ This is the most common error. It means CMake cannot find the installed package 
 
 ---
 
+## Optional: Enabling Graphviz Support
+
+The Graph class includes a `to_dot()` method that exports the graph structure to a DOT file (for visualization with Graphviz). By default, it only creates the `.dot` file.
+
+If you have [Graphviz](https://graphviz.org/) installed on your system, you can enable **automatic SVG generation** when `to_dot()` is called.
+
+### Auto-Detection (Recommended)
+
+The CMakeLists.txt provided in this examples folder **automatically detects Graphviz**. When you run `cmake`, you'll see one of these messages:
+
+```
+-- Graphviz found: /usr/bin/dot
+--   Graph::to_dot() will automatically generate SVG files
+```
+
+or:
+
+```
+-- Graphviz not found (optional)
+--   Graph::to_dot() will only create .dot files
+--   Install Graphviz to enable automatic SVG generation
+```
+
+To disable the auto-detection, configure with:
+
+```bash
+cmake .. -DCMAKE_PREFIX_PATH=<path> -DENABLE_GRAPHVIZ=OFF
+```
+
+### Manual Enable (Alternative)
+
+If you're creating your own CMakeLists.txt from scratch, add this line after `add_executable()`:
+
+```cmake
+target_compile_definitions(myapp PRIVATE GRAPHVIZ_AVAILABLE)
+```
+
+Or define it in your code before including the library:
+
+```cpp
+#define GRAPHVIZ_AVAILABLE
+#include <pythonic/pythonic.hpp>
+```
+
+### Example Usage
+
+```cpp
+#include <pythonic/pythonic.hpp>
+
+using namespace pythonic::vars;
+
+int main() {
+    var g = graph(4);
+    g.add_edge(0, 1, 1.0);
+    g.add_edge(1, 2, 2.0);
+    g.add_edge(2, 3, 3.0);
+    g.add_edge(3, 0, 4.0);
+    
+    // If GRAPHVIZ_AVAILABLE: Creates my_graph.dot AND my_graph.svg
+    // Otherwise: Creates only my_graph.dot
+    g.to_dot("my_graph.dot");
+    return 0;
+}
+```
+
+**Without Graphviz installed**, you can still manually convert DOT files:
+
+```bash
+# Install Graphviz first (one-time):
+# Ubuntu/Debian: sudo apt install graphviz
+# macOS: brew install graphviz
+# Windows: Download from https://graphviz.org/download/
+
+# Then convert manually:
+dot -Tsvg my_graph.dot -o my_graph.svg
+dot -Tpng my_graph.dot -o my_graph.png
+```
+
+---
+
 ## What's Next?
 
 Check out the full documentation in the main [README.md](../README.md) for all the features:
