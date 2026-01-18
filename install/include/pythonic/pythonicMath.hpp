@@ -14,11 +14,11 @@ namespace pythonic
         using pythonic::overflow::Overflow;
 
         // Forward declarations for overflow-aware arithmetic operations
-        inline var add(const var &a, const var &b, Overflow policy);
-        inline var sub(const var &a, const var &b, Overflow policy);
-        inline var mul(const var &a, const var &b, Overflow policy);
-        inline var div(const var &a, const var &b, Overflow policy);
-        inline var mod(const var &a, const var &b, Overflow policy);
+        inline var add(const var &a, const var &b, Overflow policy = Overflow::Throw, bool smallest_fit = false);
+        inline var sub(const var &a, const var &b, Overflow policy = Overflow::Throw, bool smallest_fit = false);
+        inline var mul(const var &a, const var &b, Overflow policy = Overflow::Throw, bool smallest_fit = false);
+        inline var div(const var &a, const var &b, Overflow policy = Overflow::Throw, bool smallest_fit = false);
+        inline var mod(const var &a, const var &b, Overflow policy = Overflow::Throw, bool smallest_fit = false);
 
         // Helper to extract numeric value from var - OPTIMIZED with fast type checks
         // Handles ALL numeric types with fast paths before falling back to toDouble()
@@ -82,8 +82,11 @@ namespace pythonic
         // SMART PROMOTION HELPERS
         // ============================================================================
         // Strategy: Compute in long double, then find smallest container that fits.
-        // - If inputs were all integers: try int → long long → float → double → long double
+        // - If inputs were all integers: try smallest integer container → float → double → long double
         // - If any input was floating point or it's division: try float → double → long double
+        // - Signed/Unsigned handling:
+        //   * Both unsigned + result >= 0: try uint → ulong → ulong_long → float → ...
+        //   * Any signed or result < 0: try int → long → long_long → float → ...
         // This is O(1), no chains, simple and fast!
         // ============================================================================
 
@@ -95,9 +98,22 @@ namespace pythonic
             return static_cast<long double>(to_numeric(v));
         }
 
-        inline bool is_integer_type(const var &v)
+        // Check if var is an unsigned integer type
+        inline bool is_unsigned_type(const var &v)
+        {
+            return v.is_uint() || v.is_ulong() || v.is_ulong_long();
+        }
+
+        // Check if var is a signed integer type
+        inline bool is_signed_integer_type(const var &v)
         {
             return v.is_int() || v.is_long() || v.is_long_long();
+        }
+
+        // Check if var is any integer type (signed or unsigned)
+        inline bool is_integer_type(const var &v)
+        {
+            return is_signed_integer_type(v) || is_unsigned_type(v);
         }
 
         inline bool is_floating_type(const var &v)
@@ -105,36 +121,140 @@ namespace pythonic
             return v.is_float() || v.is_double() || v.is_long_double();
         }
 
-        // Forward declaration for fit_floating_result (used by fit_integer_result)
-        inline var fit_floating_result(long double result);
+        // ============================================================================
+        // TYPE RANKING SYSTEM FOR SMALLEST_FIT FEATURE
+        // ============================================================================
+        // Ranking: bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
+        // Unsigned types have LOWER rank than their signed counterparts.
+        // This means: if EITHER input is unsigned, the result prefers unsigned containers.
+        // When smallest_fit=false, we won't downgrade below the highest input rank.
+        // ============================================================================
 
-        // Find smallest container for an integer result
-        inline var fit_integer_result(long double result)
+        // Get type rank from var (uses var::getTypeRank internally)
+        inline int getTypeRankFromVar(const var &v)
+        {
+            return var::getTypeRank(v.getTag());
+        }
+
+        // Get max rank from two vars
+        inline int getMaxRank(const var &a, const var &b)
+        {
+            return std::max(getTypeRankFromVar(a), getTypeRankFromVar(b));
+        }
+
+        // Type rank constants for comparison
+        // New ranking: bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
+        constexpr int RANK_BOOL = 0;
+        constexpr int RANK_UINT = 1;
+        constexpr int RANK_INT = 2;
+        constexpr int RANK_ULONG = 3;
+        constexpr int RANK_LONG = 4;
+        constexpr int RANK_ULONG_LONG = 5;
+        constexpr int RANK_LONG_LONG = 6;
+        constexpr int RANK_FLOAT = 7;
+        constexpr int RANK_DOUBLE = 8;
+        constexpr int RANK_LONG_DOUBLE = 9;
+
+        // Forward declaration for fit_floating_result (used by fit_integer_result)
+        inline var fit_floating_result(long double result, int min_rank = 0);
+
+        // Find smallest UNSIGNED integer container that fits the result
+        // Returns: var with smallest fitting unsigned type, or calls fit_floating_result if overflow
+        inline var fit_unsigned_result(long double result, int min_rank = 0)
+        {
+            // Can only use unsigned for non-negative values
+            if (result < 0 || result != std::floor(result))
+            {
+                // Negative or non-integer - fall to floating point
+                return fit_floating_result(result, min_rank);
+            }
+
+            // Try uint (rank=1)
+            if (min_rank <= RANK_UINT &&
+                result <= std::numeric_limits<unsigned int>::max())
+            {
+                return var(static_cast<unsigned int>(result));
+            }
+            // Try ulong (rank=3)
+            if (min_rank <= RANK_ULONG &&
+                result <= std::numeric_limits<unsigned long>::max())
+            {
+                return var(static_cast<unsigned long>(result));
+            }
+            // Try ulong_long (rank=5)
+            if (min_rank <= RANK_ULONG_LONG &&
+                result <= static_cast<long double>(std::numeric_limits<unsigned long long>::max()))
+            {
+                return var(static_cast<unsigned long long>(result));
+            }
+            // Fall through to floating point
+            return fit_floating_result(result, min_rank);
+        }
+
+        // Find smallest SIGNED integer container that fits the result
+        // Returns: var with smallest fitting signed type, or calls fit_floating_result if overflow
+        inline var fit_signed_result(long double result, int min_rank = 0)
         {
             // Check if it's an integer value
-            if (result == std::floor(result))
+            if (result != std::floor(result))
             {
-                // Try int first
-                if (result >= std::numeric_limits<int>::min() &&
-                    result <= std::numeric_limits<int>::max())
-                {
-                    return var(static_cast<int>(result));
-                }
-                // Try long long
-                if (result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
-                    result <= static_cast<long double>(std::numeric_limits<long long>::max()))
-                {
-                    return var(static_cast<long long>(result));
-                }
+                // Non-integer - fall to floating point
+                return fit_floating_result(result, min_rank);
             }
-            // Fall through to floating point (try float → double → long double)
-            return fit_floating_result(result);
+
+            // Try int (rank=2)
+            if (min_rank <= RANK_INT &&
+                result >= std::numeric_limits<int>::min() &&
+                result <= std::numeric_limits<int>::max())
+            {
+                return var(static_cast<int>(result));
+            }
+            // Try long (rank=4)
+            if (min_rank <= RANK_LONG &&
+                result >= std::numeric_limits<long>::min() &&
+                result <= std::numeric_limits<long>::max())
+            {
+                return var(static_cast<long>(result));
+            }
+            // Try long_long (rank=6)
+            if (min_rank <= RANK_LONG_LONG &&
+                result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
+                result <= static_cast<long double>(std::numeric_limits<long long>::max()))
+            {
+                return var(static_cast<long long>(result));
+            }
+            // Fall through to floating point
+            return fit_floating_result(result, min_rank);
+        }
+
+        // Find smallest container for an integer result
+        // both_unsigned: if true, BOTH inputs were unsigned types (result can be unsigned)
+        //                if false, at least one input is signed (result must be signed)
+        // min_rank: minimum type rank to return (0 = any, RANK_LONG_LONG = skip int, etc.)
+        // force_signed: if true, always use signed path (e.g., for subtraction where result could be negative)
+        inline var fit_integer_result(long double result, bool both_unsigned, int min_rank = 0, bool force_signed = false)
+        {
+            // If force_signed or result is negative, use signed containers
+            if (force_signed || result < 0)
+            {
+                return fit_signed_result(result, min_rank);
+            }
+
+            // Only if BOTH inputs were unsigned and result is non-negative, use unsigned containers
+            if (both_unsigned && result >= 0)
+            {
+                return fit_unsigned_result(result, min_rank);
+            }
+
+            // Default: if ANY input is signed, use signed containers
+            return fit_signed_result(result, min_rank);
         }
 
         // Find smallest floating container that fits
+        // min_rank: minimum type rank to return (0 = any, RANK_DOUBLE = skip float, etc.)
         // TODO: When adding support for larger dtypes (e.g., __float128, arbitrary precision),
         // update this function to check for those types before throwing on overflow.
-        inline var fit_floating_result(long double result)
+        inline var fit_floating_result(long double result, int min_rank)
         {
             // First check if long double itself overflowed
             if (std::isinf(result) || std::isnan(result))
@@ -142,36 +262,50 @@ namespace pythonic
                 throw PythonicOverflowError("Result exceeds long double range (promote policy)");
             }
 
-            // Check float
-            if (result >= -std::numeric_limits<float>::max() &&
+            // Check float (rank=7), only if min_rank allows it
+            if (min_rank <= RANK_FLOAT &&
+                result >= -std::numeric_limits<float>::max() &&
                 result <= std::numeric_limits<float>::max() &&
                 !std::isinf(static_cast<float>(result)))
             {
                 return var(static_cast<float>(result));
             }
-            // Check double
-            if (result >= -std::numeric_limits<double>::max() &&
+            // Check double (rank=8), only if min_rank allows it
+            if (min_rank <= RANK_DOUBLE &&
+                result >= -std::numeric_limits<double>::max() &&
                 result <= std::numeric_limits<double>::max() &&
                 !std::isinf(static_cast<double>(result)))
             {
                 return var(static_cast<double>(result));
             }
-            // Use long double
+            // Use long double (rank=9)
             return var(result);
         }
 
         // Smart promotion: compute in long double, fit to smallest container
+        // has_floating_input: if any input was floating point
+        // both_unsigned: if BOTH inputs were unsigned integer types
+        //                (if ANY input is signed, result will be signed)
+        // smallest_fit: if true, find absolute smallest container (default behavior)
+        //               if false, don't downgrade below the highest input rank
+        // min_rank: minimum type rank (only used when smallest_fit=false)
+        // force_signed: if true, always use signed containers (for subtraction)
         // TODO: When adding support for larger dtypes, update this function
         // to handle the new type hierarchy.
-        inline var smart_promote(long double result, bool has_floating_input)
+        inline var smart_promote(long double result, bool has_floating_input, bool both_unsigned,
+                                 bool smallest_fit = true, int min_rank = 0, bool force_signed = false)
         {
+            // If smallest_fit=true, we find the absolute smallest container (min_rank=0)
+            // If smallest_fit=false, we respect min_rank from the inputs
+            int effective_min_rank = smallest_fit ? 0 : min_rank;
+
             if (has_floating_input)
             {
-                return fit_floating_result(result);
+                return fit_floating_result(result, effective_min_rank);
             }
             else
             {
-                return fit_integer_result(result);
+                return fit_integer_result(result, both_unsigned, effective_min_rank, force_signed);
             }
         }
 
@@ -183,7 +317,12 @@ namespace pythonic
             using type = std::conditional_t<(sizeof(T) > sizeof(U)), T, U>;
         };
 
-        inline var pow(const var &base, const var &exponent, Overflow policy = Overflow::Throw)
+        // pow: Power operation with configurable overflow policy
+        // smallest_fit: only applies to Overflow::Promote policy
+        //               if true (default), find absolute smallest container
+        //               if false, don't downgrade below the highest input type rank
+        inline var pow(const var &base, const var &exponent, Overflow policy = Overflow::Throw,
+                       bool smallest_fit = true)
         {
             // ================================================================
             // WRAP POLICY: Fast path - native operations, no overflow checking
@@ -350,6 +489,7 @@ namespace pythonic
             // ================================================================
             // PROMOTE POLICY: Compute in long double, fit to smallest container
             // Uses the same smart_promote strategy as add/sub/mul/mod
+            // smallest_fit controls whether we can downgrade below input ranks
             // ================================================================
             if (!base.isNumeric() || !exponent.isNumeric())
                 throw pythonic::PythonicTypeError("pow() requires numeric types");
@@ -357,15 +497,22 @@ namespace pythonic
             // Check if any input is floating point
             bool has_floating = is_floating_type(base) || is_floating_type(exponent);
 
+            // Check if BOTH inputs are unsigned (only then can result be unsigned)
+            // If ANY input is signed, result will be signed
+            bool both_unsigned = is_unsigned_type(base) && is_unsigned_type(exponent);
+
+            // Get max rank of inputs (for smallest_fit=false)
+            int min_rank = getMaxRank(base, exponent);
+
             // Compute in long double
             long double result = std::pow(to_long_double(base), to_long_double(exponent));
 
             // For negative exponent, result is always floating
             if (to_long_double(exponent) < 0)
-                return fit_floating_result(result);
+                return fit_floating_result(result, smallest_fit ? 0 : min_rank);
 
             // Find smallest container that fits
-            return smart_promote(result, has_floating);
+            return smart_promote(result, has_floating, both_unsigned, smallest_fit, min_rank, false);
         }
 
         // Convenience versions
@@ -374,9 +521,9 @@ namespace pythonic
             return pow(base, exponent, Overflow::Throw);
         }
 
-        inline var pow_promote(const var &base, const var &exponent)
+        inline var pow_promote(const var &base, const var &exponent, bool smallest_fit = true)
         {
-            return pow(base, exponent, Overflow::Promote);
+            return pow(base, exponent, Overflow::Promote, smallest_fit);
         }
 
         inline var pow_wrap(const var &base, const var &exponent)
@@ -975,7 +1122,7 @@ namespace pythonic
             case Overflow::Throw:
                 return mul(var(a_div_g), var(bv), Overflow::Throw);
             case Overflow::Promote:
-                return mul(var(a_div_g), var(bv), Overflow::Promote);  // Uses smart_promote
+                return mul(var(a_div_g), var(bv), Overflow::Promote); // Uses smart_promote
             case Overflow::Wrap:
                 return mul(var(a_div_g), var(bv), Overflow::Wrap);
             default:
@@ -1024,8 +1171,8 @@ namespace pythonic
                 {
                     result = result * static_cast<long double>(i);
                 }
-                // All inputs are integers, use smart_promote to find smallest container
-                return smart_promote(result, false);  // false = no floating inputs
+                // All inputs are integers (factorial is always positive), use signed containers
+                return smart_promote(result, false, false, true, 0, false); // no floating, not both unsigned, smallest_fit=true
             }
             case Overflow::Wrap:
             {
@@ -1186,7 +1333,9 @@ namespace pythonic
         }
 
         // add_promote: Smart promotion - compute in long double, fit to smallest container
-        inline var add_promote(const var &a, const var &b)
+        // smallest_fit: if true, find absolute smallest container (default)
+        //               if false, don't downgrade below the highest input type rank
+        inline var add_promote(const var &a, const var &b, bool smallest_fit = true)
         {
             if (!a.isNumeric() || !b.isNumeric())
                 throw pythonic::PythonicTypeError("add() requires numeric types");
@@ -1194,22 +1343,32 @@ namespace pythonic
             // Check if any input is floating point
             bool has_floating = is_floating_type(a) || is_floating_type(b);
 
+            // Check if BOTH inputs are unsigned (only then can result be unsigned)
+            // If ANY input is signed, result will be signed
+            bool both_unsigned = is_unsigned_type(a) && is_unsigned_type(b);
+
+            // Get max rank of inputs (for smallest_fit=false)
+            int min_rank = getMaxRank(a, b);
+
             // Compute in long double (widest type)
             long double result = to_long_double(a) + to_long_double(b);
 
             // Find smallest container that fits
-            return smart_promote(result, has_floating);
+            return smart_promote(result, has_floating, both_unsigned, smallest_fit, min_rank, false);
         }
 
         // Main add function with policy selection
-        inline var add(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        // smallest_fit: only applies to Overflow::Promote policy
+        //               if true (default), find absolute smallest container
+        //               if false, don't downgrade below the highest input type rank
+        inline var add(const var &a, const var &b, Overflow policy, bool smallest_fit)
         {
             switch (policy)
             {
             case Overflow::Wrap:
                 return add_wrap(a, b);
             case Overflow::Promote:
-                return add_promote(a, b);
+                return add_promote(a, b, smallest_fit);
             case Overflow::Throw:
             default:
                 return add_throw(a, b);
@@ -1218,15 +1377,15 @@ namespace pythonic
 
         // Overloads for var + primitive and primitive + var
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var add(const var &a, T b, Overflow policy = Overflow::Throw)
+        inline var add(const var &a, T b, Overflow policy, bool smallest_fit)
         {
-            return add(a, var(b), policy);
+            return add(a, var(b), policy, smallest_fit);
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var add(T a, const var &b, Overflow policy = Overflow::Throw)
+        inline var add(T a, const var &b, Overflow policy, bool smallest_fit)
         {
-            return add(var(a), b, policy);
+            return add(var(a), b, policy, smallest_fit);
         }
 
         // ============================================================================
@@ -1308,7 +1467,10 @@ namespace pythonic
         }
 
         // sub_promote: Smart promotion - compute in long double, fit to smallest container
-        inline var sub_promote(const var &a, const var &b)
+        // smallest_fit: if true, find absolute smallest container (default)
+        //               if false, don't downgrade below the highest input type rank
+        // NOTE: Subtraction always uses signed containers because result can be negative
+        inline var sub_promote(const var &a, const var &b, bool smallest_fit = true)
         {
             if (!a.isNumeric() || !b.isNumeric())
                 throw pythonic::PythonicTypeError("sub() requires numeric types");
@@ -1316,21 +1478,27 @@ namespace pythonic
             // Check if any input is floating point
             bool has_floating = is_floating_type(a) || is_floating_type(b);
 
+            // Get max rank of inputs (for smallest_fit=false)
+            int min_rank = getMaxRank(a, b);
+
             // Compute in long double (widest type)
             long double result = to_long_double(a) - to_long_double(b);
 
-            // Find smallest container that fits
-            return smart_promote(result, has_floating);
+            // Subtraction can produce negative, so force signed containers
+            // both_unsigned=false, force_signed=true (subtraction always signed)
+            return smart_promote(result, has_floating, false, smallest_fit, min_rank, true);
         }
 
-        inline var sub(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        // Main sub function with policy selection
+        // smallest_fit: only applies to Overflow::Promote policy
+        inline var sub(const var &a, const var &b, Overflow policy, bool smallest_fit)
         {
             switch (policy)
             {
             case Overflow::Wrap:
                 return sub_wrap(a, b);
             case Overflow::Promote:
-                return sub_promote(a, b);
+                return sub_promote(a, b, smallest_fit);
             case Overflow::Throw:
             default:
                 return sub_throw(a, b);
@@ -1338,15 +1506,15 @@ namespace pythonic
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var sub(const var &a, T b, Overflow policy = Overflow::Throw)
+        inline var sub(const var &a, T b, Overflow policy, bool smallest_fit)
         {
-            return sub(a, var(b), policy);
+            return sub(a, var(b), policy, smallest_fit);
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var sub(T a, const var &b, Overflow policy = Overflow::Throw)
+        inline var sub(T a, const var &b, Overflow policy, bool smallest_fit)
         {
-            return sub(var(a), b, policy);
+            return sub(var(a), b, policy, smallest_fit);
         }
 
         // ============================================================================
@@ -1428,7 +1596,11 @@ namespace pythonic
         }
 
         // mul_promote: Smart promotion - compute in long double, fit to smallest container
-        inline var mul_promote(const var &a, const var &b)
+        // smallest_fit: if true, find absolute smallest container (default)
+        //               if false, don't downgrade below the highest input type rank
+        // NOTE: Multiplication of unsigned values can stay unsigned, but signed * unsigned = signed
+        //       Negative * anything = signed
+        inline var mul_promote(const var &a, const var &b, bool smallest_fit = true)
         {
             if (!a.isNumeric() || !b.isNumeric())
                 throw pythonic::PythonicTypeError("mul() requires numeric types");
@@ -1436,21 +1608,30 @@ namespace pythonic
             // Check if any input is floating point
             bool has_floating = is_floating_type(a) || is_floating_type(b);
 
+            // Check if BOTH inputs are unsigned (only then can result be unsigned)
+            // If ANY input is signed, result will be signed
+            bool both_unsigned = is_unsigned_type(a) && is_unsigned_type(b);
+
+            // Get max rank of inputs (for smallest_fit=false)
+            int min_rank = getMaxRank(a, b);
+
             // Compute in long double (widest type)
             long double result = to_long_double(a) * to_long_double(b);
 
-            // Find smallest container that fits
-            return smart_promote(result, has_floating);
+            // Find smallest container (multiplication result can be negative if either input is negative)
+            return smart_promote(result, has_floating, both_unsigned, smallest_fit, min_rank, false);
         }
 
-        inline var mul(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        // Main mul function with policy selection
+        // smallest_fit: only applies to Overflow::Promote policy
+        inline var mul(const var &a, const var &b, Overflow policy, bool smallest_fit)
         {
             switch (policy)
             {
             case Overflow::Wrap:
                 return mul_wrap(a, b);
             case Overflow::Promote:
-                return mul_promote(a, b);
+                return mul_promote(a, b, smallest_fit);
             case Overflow::Throw:
             default:
                 return mul_throw(a, b);
@@ -1458,15 +1639,15 @@ namespace pythonic
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var mul(const var &a, T b, Overflow policy = Overflow::Throw)
+        inline var mul(const var &a, T b, Overflow policy, bool smallest_fit)
         {
-            return mul(a, var(b), policy);
+            return mul(a, var(b), policy, smallest_fit);
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var mul(T a, const var &b, Overflow policy = Overflow::Throw)
+        inline var mul(T a, const var &b, Overflow policy, bool smallest_fit)
         {
-            return mul(var(a), b, policy);
+            return mul(var(a), b, policy, smallest_fit);
         }
 
         // ============================================================================
@@ -1658,7 +1839,9 @@ namespace pythonic
 
         // div_promote: Smart promotion - compute in long double, fit to smallest floating container
         // Division always returns floating point in promote mode (because result may not be integer)
-        inline var div_promote(const var &a, const var &b)
+        // smallest_fit: if true, find absolute smallest container (default)
+        //               if false, don't downgrade below the highest input type rank
+        inline var div_promote(const var &a, const var &b, bool smallest_fit = true)
         {
             if (!a.isNumeric() || !b.isNumeric())
                 throw pythonic::PythonicTypeError("div() requires numeric types");
@@ -1668,21 +1851,27 @@ namespace pythonic
             if (divisor == 0.0L)
                 throw pythonic::PythonicZeroDivisionError::division();
 
+            // Get max rank of inputs (for smallest_fit=false)
+            int min_rank = getMaxRank(a, b);
+
             // Compute in long double (widest type)
             long double result = to_long_double(a) / divisor;
 
             // Division always uses floating point container (because result may not be integer)
-            return fit_floating_result(result);
+            // Apply min_rank only if smallest_fit=false
+            return fit_floating_result(result, smallest_fit ? 0 : min_rank);
         }
 
-        inline var div(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        // Main div function with policy selection
+        // smallest_fit: only applies to Overflow::Promote policy
+        inline var div(const var &a, const var &b, Overflow policy, bool smallest_fit)
         {
             switch (policy)
             {
             case Overflow::Wrap:
                 return div_wrap(a, b);
             case Overflow::Promote:
-                return div_promote(a, b);
+                return div_promote(a, b, smallest_fit);
             case Overflow::Throw:
             default:
                 return div_throw(a, b);
@@ -1690,15 +1879,15 @@ namespace pythonic
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var div(const var &a, T b, Overflow policy = Overflow::Throw)
+        inline var div(const var &a, T b, Overflow policy, bool smallest_fit)
         {
-            return div(a, var(b), policy);
+            return div(a, var(b), policy, smallest_fit);
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var div(T a, const var &b, Overflow policy = Overflow::Throw)
+        inline var div(T a, const var &b, Overflow policy, bool smallest_fit)
         {
-            return div(var(a), b, policy);
+            return div(var(a), b, policy, smallest_fit);
         }
 
         // ============================================================================
@@ -1846,7 +2035,10 @@ namespace pythonic
 
         // mod_promote: Smart promotion - compute with fmod in long double, fit to smallest container
         // Modulo with floating point uses fmod
-        inline var mod_promote(const var &a, const var &b)
+        // smallest_fit: if true, find absolute smallest container (default)
+        //               if false, don't downgrade below the highest input type rank
+        // NOTE: Modulo result has same sign as dividend, so can be negative if dividend is negative
+        inline var mod_promote(const var &a, const var &b, bool smallest_fit = true)
         {
             if (!a.isNumeric() || !b.isNumeric())
                 throw pythonic::PythonicTypeError("mod() requires numeric types");
@@ -1859,21 +2051,30 @@ namespace pythonic
             // Check if any input is floating point
             bool has_floating = is_floating_type(a) || is_floating_type(b);
 
+            // Check if BOTH inputs are unsigned (only then can result be unsigned)
+            // If ANY input is signed, result will be signed
+            bool both_unsigned = is_unsigned_type(a) && is_unsigned_type(b);
+
+            // Get max rank of inputs (for smallest_fit=false)
+            int min_rank = getMaxRank(a, b);
+
             // Compute modulo in long double
             long double result = std::fmod(to_long_double(a), divisor);
 
             // Find smallest container that fits
-            return smart_promote(result, has_floating);
+            return smart_promote(result, has_floating, both_unsigned, smallest_fit, min_rank, false);
         }
 
-        inline var mod(const var &a, const var &b, Overflow policy = Overflow::Throw)
+        // Main mod function with policy selection
+        // smallest_fit: only applies to Overflow::Promote policy
+        inline var mod(const var &a, const var &b, Overflow policy, bool smallest_fit)
         {
             switch (policy)
             {
             case Overflow::Wrap:
                 return mod_wrap(a, b);
             case Overflow::Promote:
-                return mod_promote(a, b);
+                return mod_promote(a, b, smallest_fit);
             case Overflow::Throw:
             default:
                 return mod_throw(a, b);
@@ -1881,15 +2082,15 @@ namespace pythonic
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var mod(const var &a, T b, Overflow policy = Overflow::Throw)
+        inline var mod(const var &a, T b, Overflow policy, bool smallest_fit)
         {
-            return mod(a, var(b), policy);
+            return mod(a, var(b), policy, smallest_fit);
         }
 
         template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-        inline var mod(T a, const var &b, Overflow policy = Overflow::Throw)
+        inline var mod(T a, const var &b, Overflow policy, bool smallest_fit)
         {
-            return mod(var(a), b, policy);
+            return mod(var(a), b, policy, smallest_fit);
         }
 
         // ============================================================================

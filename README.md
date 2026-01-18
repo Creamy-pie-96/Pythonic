@@ -1867,9 +1867,7 @@ catch (const PythonicError& e) {
 
 The library provides comprehensive overflow-checked arithmetic operations with configurable policies for handling overflow scenarios.
 
-### Overflow Policies
-
-The `Overflow` enum provides three modes for handling arithmetic overflow:
+### API Overview
 
 ```cpp
 #include "pythonic/pythonic.hpp"
@@ -1878,59 +1876,125 @@ using namespace pythonic::overflow;
 using namespace pythonic::math;
 using namespace pythonic::vars;
 
-// Overflow::Throw (default) - Throws PythonicOverflowError on overflow
-// Overflow::Promote         - Auto-promotes to larger type on overflow
-// Overflow::Wrap            - Allows wrapping (C++ default behavior)
+// Full function signature:
+var result = add(a, b, policy, smallest_fit);
+var result = sub(a, b, policy, smallest_fit);
+var result = mul(a, b, policy, smallest_fit);
+var result = div(a, b, policy, smallest_fit);
+var result = mod(a, b, policy, smallest_fit);
+
+// Parameters:
+// - a, b: var or primitive numeric types
+// - policy: Overflow::Throw (default), Overflow::Promote, or Overflow::Wrap
+// - smallest_fit: bool (default=true), only affects Overflow::Promote policy
 ```
 
-### Basic Usage with var Types
+### Overflow Policies
+
+| Policy      | Behavior                                                                 |
+| ----------- | ------------------------------------------------------------------------ |
+| **Throw**   | Check for overflow, throw `PythonicOverflowError` if overflow occurs     |
+| **Wrap**    | No checking, allow wrapping (C++ default behavior)                       |
+| **Promote** | Compute in `long double`, fit result to smallest container that holds it |
+
+### Basic Usage
 
 ```cpp
 var a = 10;
 var b = 20;
 
-// Default behavior (Throw) - throws on overflow
-var result = add(a, b);                      // 30
+// Default: Overflow::Throw - throws on overflow
+var result = add(a, b);                      // 30 (int)
 var result2 = add(a, b, Overflow::Throw);    // Same as above
 
-// Promote mode - auto-promotes to larger type
+// Overflow::Promote - finds smallest container for result
 var max_int = std::numeric_limits<int>::max();
 var one = 1;
-var promoted = add(max_int, one, Overflow::Promote);  // Promotes to long long or double
+var promoted = add(max_int, one, Overflow::Promote);  // Promotes to long
 
-// Wrap mode - allows overflow wrapping
-var wrapped = add(max_int, one, Overflow::Wrap);  // Wraps around (implementation-defined)
+// Overflow::Wrap - allows overflow wrapping
+var wrapped = add(max_int, one, Overflow::Wrap);  // Wraps around
 ```
 
-### Available Operations
+### The `smallest_fit` Parameter
 
-All operations support the three overflow policies:
+When using `Overflow::Promote`, the `smallest_fit` parameter controls type selection:
 
 ```cpp
-// Addition
-var sum = add(a, b, Overflow::Throw);      // Throws on overflow
-var sum = add(a, b, Overflow::Promote);    // Promotes on overflow
-var sum = add(a, b, Overflow::Wrap);       // Wraps on overflow
+// smallest_fit = true (default): Find absolute smallest container
+// smallest_fit = false: Don't downgrade below the max input type rank
 
-// Subtraction
-var diff = sub(a, b, Overflow::Throw);
-var diff = sub(a, b, Overflow::Promote);
-var diff = sub(a, b, Overflow::Wrap);
+var a = 1.0;   // double, rank=8
+var b = 1;     // int, rank=2
 
-// Multiplication
-var prod = mul(a, b, Overflow::Throw);
-var prod = mul(a, b, Overflow::Promote);
-var prod = mul(a, b, Overflow::Wrap);
+// smallest_fit=true: result can be any type that fits
+var r1 = add(a, b, Overflow::Promote, true);   // Returns float (fits in smaller container)
 
-// Division (always throws on zero, overflow check for INT_MIN/-1)
-var quot = div(a, b, Overflow::Throw);
-var quot = div(a, b, Overflow::Promote);
-var quot = div(a, b, Overflow::Wrap);
+// smallest_fit=false: respects max input rank (8 = double)
+var r2 = add(a, b, Overflow::Promote, false);  // Returns double (won't downgrade)
+```
 
-// Modulo (always throws on zero)
-var rem = mod(a, b, Overflow::Throw);
-var rem = mod(a, b, Overflow::Promote);
-var rem = mod(a, b, Overflow::Wrap);
+### Type Ranking System
+
+```
+bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
+```
+
+**Key design principle:** Unsigned types have LOWER rank than their signed counterparts. This means if EITHER input is unsigned, the result prefers unsigned containers.
+
+### Smart Promotion Strategy
+
+When using `Overflow::Promote`:
+
+1. **Compute in `long double`** (widest type)
+2. **Select container family** based on inputs:
+   - **Any input is unsigned** → try `uint → ulong → ulong_long → float → double → long_double`
+   - **Both inputs are signed** → try `int → long → long_long → float → double → long_double`
+   - **Any input is floating** → try `float → double → long_double`
+3. **Apply smallest_fit rule** to decide minimum rank
+4. **Return smallest fitting container**
+
+**Special cases:**
+
+- **Subtraction** always uses signed (result can be negative)
+- **Division** always uses floating point (result may not be integer)
+
+```cpp
+// Unsigned + anything → prefers unsigned result
+var ua = 1u, b = 2;
+auto r1 = add(ua, b, Overflow::Promote);  // Returns unsigned int
+
+// Subtraction → always signed
+auto r2 = sub(ua, b, Overflow::Promote);  // Returns int (not unsigned)
+
+// Division → always floating
+auto r3 = div(ua, b, Overflow::Promote);  // Returns float
+
+// Overflow → promotes to larger container
+var max_int = std::numeric_limits<int>::max();
+auto r4 = add(max_int, var(1), Overflow::Promote);  // Returns long (or long_long)
+
+// Huge overflow → goes to float
+var max_ll = std::numeric_limits<long long>::max();
+auto r5 = add(max_ll, var(1LL), Overflow::Promote);  // Returns float
+```
+
+### When to Use `smallest_fit=false`
+
+```cpp
+// Preserve precision through calculations
+var d1 = 1.0;  // double
+var d2 = 2.0;  // double
+
+// With smallest_fit=true: might downgrade to float
+auto r1 = add(d1, d2, Overflow::Promote, true);   // Could be float
+
+// With smallest_fit=false: guaranteed to stay at double rank
+auto r2 = add(d1, d2, Overflow::Promote, false);  // Guaranteed double
+
+// Works with all operations
+auto r3 = mul(d1, d2, Overflow::Promote, false);  // Stays double
+auto r4 = div(d1, d2, Overflow::Promote, false);  // Stays double
 ```
 
 ### Mixed Type Support
@@ -1944,45 +2008,43 @@ var x = 100;
 var r1 = add(x, var(50));
 
 // var + primitive
-var r2 = add(x, 50, Overflow::Throw);
+var r2 = add(x, 50, Overflow::Promote);
 
 // primitive + var
-var r3 = add(50, x, Overflow::Throw);
-
-// All numeric types supported
-var ll = var(1000000000LL);
-var d = var(3.14);
-var result = add(ll, d, Overflow::Promote);  // Returns double
+var r3 = add(50, x, Overflow::Promote);
 ```
 
-### Direct Primitive Operations
+### Direct Operators
 
-For performance-critical code, use direct primitive operations:
+Direct operators (`+`, `-`, `*`, `/`, `%`) on `var` types use smart promotion with Throw-on-overflow:
 
 ```cpp
-using namespace pythonic::overflow;
+var a = 10, b = 20;
 
-int a = std::numeric_limits<int>::max();
-int b = 1;
+// These use smart promotion internally
+var sum = a + b;   // Uses smallest container that fits
+var diff = a - b;  // Always signed
+var prod = a * b;  // Unsigned if either input is unsigned
+var quot = a / b;  // Always floating
+var rem = a % b;   // Matches input signedness
 
-// Throw variants
+// Throws on overflow
 try {
-    int result = add_throw(a, b);  // Throws PythonicOverflowError
+    var max_int = std::numeric_limits<int>::max();
+    var big = max_int * var(2);  // Throws if overflows
 }
 catch (const PythonicOverflowError& e) {
-    print("Overflow detected!");
+    print("Overflow!");
 }
 
-// Promote variants - auto-promotes return type
-auto promoted = add_promote(a, b);  // Returns long long (or double if needed)
-
-// Wrap variants
-int wrapped = add_wrap(a, b);  // Wraps around
-
-// Policy-based API
-auto r1 = add(a, b, Overflow::Throw);
-auto r2 = add(a, b, Overflow::Promote);
-auto r3 = add(a, b, Overflow::Wrap);
+// Division by zero
+try {
+    var zero = 0;
+    var bad = a / zero;  // Throws PythonicZeroDivisionError
+}
+catch (const PythonicZeroDivisionError& e) {
+    print("Division by zero!");
+}
 ```
 
 ### Overflow Detection Helpers
@@ -2005,155 +2067,6 @@ if (would_sub_overflow(a, b)) {
 if (would_mul_overflow(a, b)) {
     print("Multiplication would overflow!");
 }
-```
-
-### Type Promotion Chain
-
-When using `Overflow::Promote`, the library uses a **smart promotion** strategy:
-
-1. **Compute the result in `long double`** (the widest type available)
-2. **Find the smallest container that fits the result**
-
-#### Integer Inputs (no floating point operands)
-
-If both operands are integers, try these containers in order:
-
-```
-int → long long → float → double → long double → (throw if inf)
-```
-
-#### Floating Point or Division
-
-If any operand is floating point, or the operation is division, try:
-
-```
-float → double → long double → (throw if inf)
-```
-
-> **Note:** This strategy is O(1), simple, and always finds the most compact representation.
-> If even `long double` overflows (becomes infinity), a `PythonicOverflowError` is thrown.
-
-```cpp
-// Example: int addition that fits in int
-var a = 10, b = 20;
-auto result = add(a, b, Overflow::Promote);  // Returns int (30)
-
-// Example: int overflow promotes to long long
-var max_int = std::numeric_limits<int>::max();
-auto result2 = add(max_int, var(1), Overflow::Promote);  // Returns long long
-
-// Example: long long overflow promotes to double
-var max_ll = std::numeric_limits<long long>::max();
-auto result3 = add(max_ll, var(1LL), Overflow::Promote);  // Returns double
-
-// Example: int + float → smallest floating container
-var x = 10;
-var y = 1.5f;
-auto result4 = add(x, y, Overflow::Promote);  // Returns float (11.5)
-```
-
-### Legacy API (Backward Compatibility)
-
-The old `checked_*` functions still work and use `Overflow::Throw`:
-
-```cpp
-// These are equivalent to using Overflow::Throw
-var a = 10, b = 20;
-var sum = checked_add(a, b);    // Same as add(a, b, Overflow::Throw)
-var diff = checked_sub(a, b);   // Same as sub(a, b, Overflow::Throw)
-var prod = checked_mul(a, b);   // Same as mul(a, b, Overflow::Throw)
-var quot = checked_div(a, b);   // Same as div(a, b, Overflow::Throw)
-var rem = checked_mod(a, b);    // Same as mod(a, b, Overflow::Throw)
-```
-
-### Direct Operators
-
-Direct operators (`+`, `-`, `*`, `/`, `%`) on `var` types use the default throw behavior:
-
-```cpp
-var a = 10, b = 20;
-
-// Direct operators - use internal overflow checking with Throw policy
-var sum = a + b;   // Uses operator+, throws on overflow
-var diff = a - b;  // Uses operator-
-var prod = a * b;  // Uses operator*
-var quot = a / b;  // Uses operator/, throws on zero
-var rem = a % b;   // Uses operator%, throws on zero
-
-// These throw the appropriate errors
-try {
-    var zero = 0;
-    var bad = a / zero;  // Throws PythonicZeroDivisionError
-}
-catch (const PythonicZeroDivisionError& e) {
-    print("Division by zero!");
-}
-```
-
-### Error Types
-
-- **`PythonicOverflowError`** - Thrown when arithmetic overflows (with Throw policy)
-- **`PythonicZeroDivisionError`** - Thrown when dividing or taking modulo by zero
-
-### Detailed Overflow Policy Behavior
-
-#### Policy Overview
-
-| Policy      | Behavior                                                                                     |
-| ----------- | -------------------------------------------------------------------------------------------- |
-| **Throw**   | Check for overflow, throw `PythonicOverflowError` if overflow occurs                         |
-| **Wrap**    | Fast path, no checking, allow wrapping (undefined behavior for signed, defined for unsigned) |
-| **Promote** | Compute in `long double`, find smallest container that fits the result                       |
-
-#### Smart Promotion Strategy
-
-The `Overflow::Promote` policy uses a simple O(1) algorithm:
-
-1. Convert all operands to `long double`
-2. Perform the operation in `long double`
-3. Find the smallest type that can hold the result:
-   - **Integer inputs**: try `int` → `long long` → `float` → `double` → `long double`
-   - **Floating inputs or division**: try `float` → `double` → `long double`
-4. If the result is infinity/NaN, throw `PythonicOverflowError`
-
-#### Operation-Specific Behavior
-
-| Operation | Throw                         | Wrap                             | Promote                                    |
-| --------- | ----------------------------- | -------------------------------- | ------------------------------------------ |
-| **ADD**   | Check and throw on overflow   | Fast path, no check              | Compute in `long double` → fit to smallest |
-| **SUB**   | Check and throw on overflow   | Fast path, no check              | Compute in `long double` → fit to smallest |
-| **MUL**   | Check and throw on overflow   | Fast path, no check              | Compute in `long double` → fit to smallest |
-| **DIV**   | Throws on zero and INT_MIN/-1 | Throws on zero, INT_MIN/-1 wraps | Always floating result → fit to smallest   |
-| **MOD**   | Throws on zero divisor        | Throws on zero divisor           | Use `fmod` → fit to smallest               |
-| **POW**   | Check and throw on overflow   | Fast path, no check              | Compute in `long double` → fit to smallest |
-
-#### Example: Smart Promotion in Action
-
-```cpp
-var a = 10;
-var b = 20;
-
-// No overflow → fits in int
-var result = add(a, b, Overflow::Promote);  // Returns int (30)
-
-// Overflow → promoted to smallest container that fits
-var max_int = std::numeric_limits<int>::max();
-var one = 1;
-var result2 = add(max_int, one, Overflow::Promote);  // Returns long long
-
-// Large overflow → promoted to double
-var max_ll = std::numeric_limits<long long>::max();
-var result3 = add(max_ll, var(1LL), Overflow::Promote);  // Returns double
-
-// Division always returns floating point
-var five = 5;
-var two = 2;
-var result4 = div(five, two, Overflow::Promote);  // Returns float (2.5)
-
-// Mixed int + float → smallest floating container
-var x = 1000;
-var y = 1.5f;
-var result5 = add(x, y, Overflow::Promote);  // Returns float (1001.5)
 ```
 
 ## What's Under the Hood?
