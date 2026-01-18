@@ -4,6 +4,7 @@
 #include <concepts>
 #include <type_traits>
 #include <cmath>
+#include <cstdint>
 #include "pythonicError.hpp"
 
 namespace pythonic

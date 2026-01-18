@@ -558,26 +558,30 @@ namespace pythonic
             // Type promotion helpers
             // Returns the TypeTag that should be used for mixed-type operations
             // STRING has highest rank - any operation with string converts other to string
-            // For numeric types: bool < int < uint < long < ulong < long long < ulong long < float < double < long double
+            // For numeric types: bool < uint < int < ulong < long < ulong_long < long_long < float < double < long double
+            // Unsigned types have lower rank than their signed counterparts - this means if EITHER input
+            // is unsigned, the result prefers unsigned containers
 
             // Get promotion rank for a type tag (higher = wider type)
+            // New ranking: unsigned types come before their signed counterparts
+            // bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
             static int getTypeRank(TypeTag t) noexcept
             {
                 switch (t)
                 {
                 case TypeTag::BOOL:
                     return 0;
-                case TypeTag::INT:
-                    return 1;
                 case TypeTag::UINT:
+                    return 1;
+                case TypeTag::INT:
                     return 2;
-                case TypeTag::LONG:
-                    return 3;
                 case TypeTag::ULONG:
+                    return 3;
+                case TypeTag::LONG:
                     return 4;
-                case TypeTag::LONG_LONG:
-                    return 5;
                 case TypeTag::ULONG_LONG:
+                    return 5;
+                case TypeTag::LONG_LONG:
                     return 6;
                 case TypeTag::FLOAT:
                     return 7;
@@ -592,80 +596,141 @@ namespace pythonic
                 }
             }
 
+            // Helper: Check if a TypeTag is unsigned integer
+            static bool isUnsignedTag(TypeTag t) noexcept
+            {
+                return t == TypeTag::UINT || t == TypeTag::ULONG || t == TypeTag::ULONG_LONG;
+            }
+
+            // Helper: Check if a TypeTag is signed integer
+            static bool isSignedIntegerTag(TypeTag t) noexcept
+            {
+                return t == TypeTag::INT || t == TypeTag::LONG || t == TypeTag::LONG_LONG || t == TypeTag::BOOL;
+            }
+
+            // Helper: Check if a TypeTag is floating point
+            static bool isFloatingTag(TypeTag t) noexcept
+            {
+                return t == TypeTag::FLOAT || t == TypeTag::DOUBLE || t == TypeTag::LONG_DOUBLE;
+            }
+
             // Type promoted operation helpers
+            // NEW DESIGN: Use smart promotion strategy
+            // - If BOTH inputs are unsigned → result can be unsigned
+            // - If ANY input is signed → result will be signed
+            // - If EITHER input is floating → use floating containers
+            // - Subtraction always uses signed (can produce negative)
+
             // Perform addition with proper type promotion
             var addPromoted(const var &other) const
             {
-                TypeTag resultType = getPromotedType(tag_, other.tag_);
-
-                switch (resultType)
+                // Handle string concatenation
+                if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
-                case TypeTag::INT:
-                case TypeTag::BOOL:
-                default:
-                    return var(pythonic::overflow::add_throw(toInt(), other.toInt()));
-                case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::add_throw(toLongLong(), other.toLongLong()));
-                case TypeTag::DOUBLE:
-                    return var(pythonic::overflow::add_throw(toDouble(), other.toDouble()));
-                case TypeTag::STRING:
                     return var(toString() + other.toString());
-                case TypeTag::LONG_DOUBLE:
-                    return var(pythonic::overflow::add_throw(toLongDouble(), other.toLongDouble()));
-                case TypeTag::FLOAT:
-                    return var(pythonic::overflow::add_throw(toFloat(), other.toFloat()));
-                case TypeTag::LONG:
-                    return var(pythonic::overflow::add_throw(toLong(), other.toLong()));
-                case TypeTag::UINT:
-                    return var(pythonic::overflow::add_throw(toUInt(), other.toUInt()));
-                case TypeTag::ULONG:
-                    return var(pythonic::overflow::add_throw(toULong(), other.toULong()));
-                case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::add_throw(toULongLong(), other.toULongLong()));
+                }
+
+                // Check if any input is floating point
+                bool has_floating = isFloatingTag(tag_) || isFloatingTag(other.tag_);
+
+                // Check if BOTH inputs are unsigned (only then can result be unsigned)
+                // If ANY input is signed, result will be signed
+                bool both_unsigned = isUnsignedTag(tag_) && isUnsignedTag(other.tag_);
+
+                // Compute in long double
+                long double result = toLongDouble() + other.toLongDouble();
+
+                // Use smart fit to find smallest container
+                if (has_floating)
+                {
+                    // Floating point result
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("Addition overflow");
+                    if (result >= -std::numeric_limits<float>::max() &&
+                        result <= std::numeric_limits<float>::max())
+                        return var(static_cast<float>(result));
+                    if (result >= -std::numeric_limits<double>::max() &&
+                        result <= std::numeric_limits<double>::max())
+                        return var(static_cast<double>(result));
+                    return var(result);
+                }
+                else if (both_unsigned && result >= 0)
+                {
+                    // Only if BOTH are unsigned, use unsigned containers
+                    if (result <= std::numeric_limits<unsigned int>::max())
+                        return var(static_cast<unsigned int>(result));
+                    if (result <= std::numeric_limits<unsigned long>::max())
+                        return var(static_cast<unsigned long>(result));
+                    if (result <= static_cast<long double>(std::numeric_limits<unsigned long long>::max()))
+                        return var(static_cast<unsigned long long>(result));
+                    // Overflow to float
+                    return var(static_cast<float>(result));
+                }
+                else
+                {
+                    // If ANY is signed, use signed containers
+                    if (result >= std::numeric_limits<int>::min() &&
+                        result <= std::numeric_limits<int>::max())
+                        return var(static_cast<int>(result));
+                    if (result >= std::numeric_limits<long>::min() &&
+                        result <= std::numeric_limits<long>::max())
+                        return var(static_cast<long>(result));
+                    if (result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
+                        result <= static_cast<long double>(std::numeric_limits<long long>::max()))
+                        return var(static_cast<long long>(result));
+                    // Overflow to float
+                    return var(static_cast<float>(result));
                 }
             }
 
             // Perform subtraction with proper type promotion
+            // ALWAYS uses signed containers (subtraction can produce negative)
             var subPromoted(const var &other) const
             {
-                TypeTag resultType = getPromotedType(tag_, other.tag_);
-
-                // String subtraction doesn't make sense, throw error
-                if (resultType == TypeTag::STRING)
+                if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
                     throw PythonicTypeError("Cannot subtract strings");
                 }
 
-                switch (resultType)
+                // Check if any input is floating point
+                bool has_floating = isFloatingTag(tag_) || isFloatingTag(other.tag_);
+
+                // Compute in long double
+                long double result = toLongDouble() - other.toLongDouble();
+
+                // Subtraction always uses signed containers
+                if (has_floating)
                 {
-                case TypeTag::LONG_DOUBLE:
-                    return var(pythonic::overflow::sub_throw(toLongDouble(), other.toLongDouble()));
-                case TypeTag::DOUBLE:
-                    return var(pythonic::overflow::sub_throw(toDouble(), other.toDouble()));
-                case TypeTag::FLOAT:
-                    return var(pythonic::overflow::sub_throw(toFloat(), other.toFloat()));
-                case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::sub_throw(toULongLong(), other.toULongLong()));
-                case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::sub_throw(toLongLong(), other.toLongLong()));
-                case TypeTag::ULONG:
-                    return var(pythonic::overflow::sub_throw(toULong(), other.toULong()));
-                case TypeTag::LONG:
-                    return var(pythonic::overflow::sub_throw(toLong(), other.toLong()));
-                case TypeTag::UINT:
-                    return var(pythonic::overflow::sub_throw(toUInt(), other.toUInt()));
-                case TypeTag::INT:
-                case TypeTag::BOOL:
-                default:
-                    return var(pythonic::overflow::sub_throw(toInt(), other.toInt()));
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("Subtraction overflow");
+                    if (result >= -std::numeric_limits<float>::max() &&
+                        result <= std::numeric_limits<float>::max())
+                        return var(static_cast<float>(result));
+                    if (result >= -std::numeric_limits<double>::max() &&
+                        result <= std::numeric_limits<double>::max())
+                        return var(static_cast<double>(result));
+                    return var(result);
+                }
+                else
+                {
+                    // Always signed for subtraction
+                    if (result >= std::numeric_limits<int>::min() &&
+                        result <= std::numeric_limits<int>::max())
+                        return var(static_cast<int>(result));
+                    if (result >= std::numeric_limits<long>::min() &&
+                        result <= std::numeric_limits<long>::max())
+                        return var(static_cast<long>(result));
+                    if (result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
+                        result <= static_cast<long double>(std::numeric_limits<long long>::max()))
+                        return var(static_cast<long long>(result));
+                    // Overflow to float
+                    return var(static_cast<float>(result));
                 }
             }
 
             // Perform multiplication with proper type promotion
             var mulPromoted(const var &other) const
             {
-                TypeTag resultType = getPromotedType(tag_, other.tag_);
-
                 // String multiplication: "ab" * 3 = "ababab"
                 if (tag_ == TypeTag::STRING && other.isIntegral())
                 {
@@ -687,93 +752,144 @@ namespace pythonic
                         result += s;
                     return var(result);
                 }
-                if (resultType == TypeTag::STRING)
+                if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
                     throw pythonic::PythonicTypeError("cannot multiply two strings");
                 }
 
-                switch (resultType)
+                // Check if any input is floating point
+                bool has_floating = isFloatingTag(tag_) || isFloatingTag(other.tag_);
+
+                // Check if BOTH inputs are unsigned (only then can result be unsigned)
+                // If ANY input is signed, result will be signed
+                bool both_unsigned = isUnsignedTag(tag_) && isUnsignedTag(other.tag_);
+
+                // Compute in long double
+                long double result = toLongDouble() * other.toLongDouble();
+
+                // Use smart fit
+                if (has_floating)
                 {
-                case TypeTag::LONG_DOUBLE:
-                    return var(pythonic::overflow::mul_throw(toLongDouble(), other.toLongDouble()));
-                case TypeTag::DOUBLE:
-                    return var(pythonic::overflow::mul_throw(toDouble(), other.toDouble()));
-                case TypeTag::FLOAT:
-                    return var(pythonic::overflow::mul_throw(toFloat(), other.toFloat()));
-                case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::mul_throw(toULongLong(), other.toULongLong()));
-                case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::mul_throw(toLongLong(), other.toLongLong()));
-                case TypeTag::ULONG:
-                    return var(pythonic::overflow::mul_throw(toULong(), other.toULong()));
-                case TypeTag::LONG:
-                    return var(pythonic::overflow::mul_throw(toLong(), other.toLong()));
-                case TypeTag::UINT:
-                    return var(pythonic::overflow::mul_throw(toUInt(), other.toUInt()));
-                case TypeTag::INT:
-                case TypeTag::BOOL:
-                default:
-                    return var(pythonic::overflow::mul_throw(toInt(), other.toInt()));
+                    if (std::isinf(result))
+                        throw PythonicOverflowError("Multiplication overflow");
+                    if (result >= -std::numeric_limits<float>::max() &&
+                        result <= std::numeric_limits<float>::max())
+                        return var(static_cast<float>(result));
+                    if (result >= -std::numeric_limits<double>::max() &&
+                        result <= std::numeric_limits<double>::max())
+                        return var(static_cast<double>(result));
+                    return var(result);
+                }
+                else if (both_unsigned && result >= 0)
+                {
+                    // Only if BOTH are unsigned, use unsigned containers
+                    if (result <= std::numeric_limits<unsigned int>::max())
+                        return var(static_cast<unsigned int>(result));
+                    if (result <= std::numeric_limits<unsigned long>::max())
+                        return var(static_cast<unsigned long>(result));
+                    if (result <= static_cast<long double>(std::numeric_limits<unsigned long long>::max()))
+                        return var(static_cast<unsigned long long>(result));
+                    return var(static_cast<float>(result));
+                }
+                else
+                {
+                    // If ANY is signed, use signed containers
+                    if (result >= std::numeric_limits<int>::min() &&
+                        result <= std::numeric_limits<int>::max())
+                        return var(static_cast<int>(result));
+                    if (result >= std::numeric_limits<long>::min() &&
+                        result <= std::numeric_limits<long>::max())
+                        return var(static_cast<long>(result));
+                    if (result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
+                        result <= static_cast<long double>(std::numeric_limits<long long>::max()))
+                        return var(static_cast<long long>(result));
+                    return var(static_cast<float>(result));
                 }
             }
 
-            // Perform division with proper type promotion (always returns floating point for safety)
+            // Perform division with proper type promotion (always returns floating point)
             var divPromoted(const var &other) const
             {
-                TypeTag resultType = getPromotedType(tag_, other.tag_);
-
-                if (resultType == TypeTag::STRING)
+                if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
                     throw pythonic::PythonicTypeError("cannot divide strings");
                 }
 
-                // For division, promote to at least double for precision
-                // unless one operand is long double
-                if (resultType == TypeTag::LONG_DOUBLE)
-                {
-                    return var(pythonic::overflow::div_throw(toLongDouble(), other.toLongDouble()));
-                }
+                long double divisor = other.toLongDouble();
+                if (divisor == 0.0L)
+                    throw PythonicZeroDivisionError("Division by zero");
 
-                // All other cases use double for safety
-                return var(pythonic::overflow::div_throw(toDouble(), other.toDouble()));
+                long double result = toLongDouble() / divisor;
+
+                // Division always returns floating point
+                if (std::isinf(result))
+                    throw PythonicOverflowError("Division overflow");
+                if (result >= -std::numeric_limits<float>::max() &&
+                    result <= std::numeric_limits<float>::max())
+                    return var(static_cast<float>(result));
+                if (result >= -std::numeric_limits<double>::max() &&
+                    result <= std::numeric_limits<double>::max())
+                    return var(static_cast<double>(result));
+                return var(result);
             }
 
             // Perform modulo with proper type promotion
             var modPromoted(const var &other) const
             {
-                TypeTag resultType = getPromotedType(tag_, other.tag_);
-
-                if (resultType == TypeTag::STRING)
+                if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
                     throw pythonic::PythonicTypeError("cannot perform modulo on strings");
                 }
 
-                // For floating point, use fmod
-                if (resultType == TypeTag::LONG_DOUBLE || resultType == TypeTag::DOUBLE || resultType == TypeTag::FLOAT)
-                {
-                    double divisor = other.toDouble();
-                    if (divisor == 0.0)
-                        throw PythonicZeroDivisionError("Modulo by zero");
-                    return var(std::fmod(toDouble(), divisor));
-                }
+                long double divisor = other.toLongDouble();
+                if (divisor == 0.0L)
+                    throw PythonicZeroDivisionError("Modulo by zero");
 
-                // For integers, use integer modulo
-                switch (resultType)
+                // Check if any input is floating point
+                bool has_floating = isFloatingTag(tag_) || isFloatingTag(other.tag_);
+
+                // Check if BOTH inputs are unsigned (only then can result be unsigned)
+                // If ANY input is signed, result will be signed
+                bool both_unsigned = isUnsignedTag(tag_) && isUnsignedTag(other.tag_);
+
+                // Compute modulo
+                long double result = std::fmod(toLongDouble(), divisor);
+
+                // Use smart fit
+                if (has_floating)
                 {
-                case TypeTag::ULONG_LONG:
-                    return var(pythonic::overflow::mod_throw(toULongLong(), other.toULongLong()));
-                case TypeTag::LONG_LONG:
-                    return var(pythonic::overflow::mod_throw(toLongLong(), other.toLongLong()));
-                case TypeTag::ULONG:
-                    return var(pythonic::overflow::mod_throw(toULong(), other.toULong()));
-                case TypeTag::LONG:
-                    return var(pythonic::overflow::mod_throw(toLong(), other.toLong()));
-                case TypeTag::UINT:
-                    return var(pythonic::overflow::mod_throw(toUInt(), other.toUInt()));
-                case TypeTag::INT:
-                case TypeTag::BOOL:
-                default:
-                    return var(pythonic::overflow::mod_throw(toInt(), other.toInt()));
+                    if (result >= -std::numeric_limits<float>::max() &&
+                        result <= std::numeric_limits<float>::max())
+                        return var(static_cast<float>(result));
+                    if (result >= -std::numeric_limits<double>::max() &&
+                        result <= std::numeric_limits<double>::max())
+                        return var(static_cast<double>(result));
+                    return var(result);
+                }
+                else if (both_unsigned && result >= 0)
+                {
+                    // Only if BOTH are unsigned, use unsigned containers
+                    if (result <= std::numeric_limits<unsigned int>::max())
+                        return var(static_cast<unsigned int>(result));
+                    if (result <= std::numeric_limits<unsigned long>::max())
+                        return var(static_cast<unsigned long>(result));
+                    if (result <= static_cast<long double>(std::numeric_limits<unsigned long long>::max()))
+                        return var(static_cast<unsigned long long>(result));
+                    return var(static_cast<float>(result));
+                }
+                else
+                {
+                    // If ANY is signed, use signed containers
+                    if (result >= std::numeric_limits<int>::min() &&
+                        result <= std::numeric_limits<int>::max())
+                        return var(static_cast<int>(result));
+                    if (result >= std::numeric_limits<long>::min() &&
+                        result <= std::numeric_limits<long>::max())
+                        return var(static_cast<long>(result));
+                    if (result >= static_cast<long double>(std::numeric_limits<long long>::min()) &&
+                        result <= static_cast<long double>(std::numeric_limits<long long>::max()))
+                        return var(static_cast<long long>(result));
+                    return var(static_cast<float>(result));
                 }
             }
 
