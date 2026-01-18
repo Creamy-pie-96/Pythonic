@@ -7,6 +7,8 @@
 namespace pythonic
 {
 
+    namespace error
+    {
     // ============================================================================
     // Pythonic Error Hierarchy
     // ============================================================================
@@ -358,4 +360,8 @@ namespace pythonic
         }                                   \
     } while (0)
 
+    } // namespace error
+
+    // Pull error members into the pythonic namespace for backward compatibility and internal use
+    using namespace error;
 } // namespace pythonic
