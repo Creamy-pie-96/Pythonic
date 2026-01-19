@@ -88,9 +88,10 @@ inline void benchmark_conversion_operations()
             } }, []()
                   {
             var n = 42;
-            var result;
+            const char* result;
             for (size_t i = 0; i < ITERATIONS; ++i)
-                result = n.type(); });
+                result = n.type_cstr();
+            (void)result; });
 
     // isinstance()
     run_benchmark("isinstance()", []()

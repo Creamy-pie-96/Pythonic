@@ -1650,8 +1650,8 @@ namespace pythonic
             }
 
             // Type name - returns string like "int", "str", "list", "dict", "NoneType" etc.
-            // OPTIMIZED: Use tag for common cases
-            std::string type() const
+            // OPTIMIZED: Use tag for common cases, returns const char* to avoid allocation
+            const char* type_cstr() const noexcept
             {
                 switch (tag_)
                 {
@@ -1695,6 +1695,15 @@ namespace pythonic
                     return "unknown";
                 }
             }
+            
+            // type() returns std::string for compatibility, but prefer type_cstr() for performance
+            std::string type() const
+            {
+                return std::string(type_cstr());
+            }
+            
+            // Fast type tag accessor for performance-critical code
+            TypeTag type_tag() const noexcept { return tag_; }
 
             // Get value as specific type
             template <typename T>
@@ -4291,21 +4300,25 @@ namespace pythonic
             const_iterator cend() const { return end(); }
 
             // items() for dict - returns list of [key, value] pairs
+            // Note: For better performance in loops, consider using items_fast() 
+            // which returns an iterable view instead of materializing a list
             var items() const
             {
                 if (tag_ == TypeTag::DICT)
                 {
                     const Dict &dct = var_get<Dict>();
                     List result;
+                    result.reserve(dct.size());  // Pre-allocate
                     for (const auto &[k, v] : dct)
                     {
-                        // Create a [key, value] list pair manually
+                        // Create a [key, value] list pair
                         List pair;
-                        pair.push_back(var(k));
-                        pair.push_back(v);
-                        result.push_back(var(pair));
+                        pair.reserve(2);  // Pre-allocate for 2 elements
+                        pair.emplace_back(k);
+                        pair.emplace_back(v);
+                        result.emplace_back(std::move(pair));
                     }
-                    return var(result);
+                    return var(std::move(result));
                 }
                 throw pythonic::PythonicAttributeError("items() requires a dict");
             }
@@ -5797,55 +5810,114 @@ namespace pythonic
             return v.is<T>();
         }
 
+        // Helper: Convert type name string to TypeTag for fast comparison
+        inline TypeTag type_name_to_tag(const char* type_name) noexcept
+        {
+            // Fast path for common single-char differences
+            if (!type_name || !type_name[0]) return TypeTag::NONE;
+            
+            switch (type_name[0]) {
+                case 'i': return TypeTag::INT;  // "int"
+                case 'f': return TypeTag::FLOAT;  // "float"
+                case 's': 
+                    if (type_name[1] == 't') return TypeTag::STRING;  // "str"
+                    return TypeTag::SET;  // "set"
+                case 'b': return TypeTag::BOOL;  // "bool"
+                case 'd': 
+                    if (type_name[1] == 'i') return TypeTag::DICT;  // "dict"
+                    return TypeTag::DOUBLE;  // "double"
+                case 'l':
+                    if (type_name[1] == 'i') return TypeTag::LIST;  // "list"
+                    if (type_name[1] == 'o' && type_name[2] == 'n' && type_name[3] == 'g') {
+                        if (type_name[4] == ' ') {
+                            if (type_name[5] == 'l') return TypeTag::LONG_LONG;  // "long long"
+                            if (type_name[5] == 'd') return TypeTag::LONG_DOUBLE;  // "long double"
+                        }
+                        return TypeTag::LONG;  // "long"
+                    }
+                    break;
+                case 'N': return TypeTag::NONE;  // "NoneType"
+                case 'u':
+                    if (type_name[9] == 'i') return TypeTag::UINT;  // "unsigned int"
+                    if (type_name[9] == 'l') {
+                        if (type_name[13] == ' ') return TypeTag::ULONG_LONG;  // "unsigned long long"
+                        return TypeTag::ULONG;  // "unsigned long"
+                    }
+                    break;
+                case 'o': return TypeTag::ORDEREDSET;  // "ordered_set" or "ordereddict"
+                case 'g': return TypeTag::GRAPH;  // "graph"
+            }
+            return TypeTag::NONE;
+        }
+
         // isinstance with string type name - like Python's isinstance(obj, type)
         // Usage: isinstance(v, "int"), isinstance(v, "list"), etc.
+        // OPTIMIZED: Uses TypeTag comparison instead of string comparison
         inline bool isinstance(const var &v, const std::string &type_name)
         {
-            return v.type() == type_name;
+            return v.type_tag() == type_name_to_tag(type_name.c_str());
         }
 
         inline bool isinstance(const var &v, const char *type_name)
         {
-            return v.type() == std::string(type_name);
+            return v.type_tag() == type_name_to_tag(type_name);
         }
 
         // ============ Python Built-in Functions ============
 
         // bool() - Python truthiness rules
         // Empty containers, 0, empty string = False; else True
+        // OPTIMIZED: Uses TypeTag for fast dispatch instead of string comparison
         inline var Bool(const var &v)
         {
-            std::string t = v.type();
-            if (t == "bool")
+            switch (v.type_tag())
+            {
+            case TypeTag::BOOL:
                 return v;
-            if (t == "int")
+            case TypeTag::INT:
                 return var(v.get<int>() != 0);
-            if (t == "float")
+            case TypeTag::FLOAT:
                 return var(v.get<float>() != 0.0f);
-            if (t == "double")
+            case TypeTag::DOUBLE:
                 return var(v.get<double>() != 0.0);
-            if (t == "long")
+            case TypeTag::LONG:
                 return var(v.get<long>() != 0);
-            if (t == "long long")
+            case TypeTag::LONG_LONG:
                 return var(v.get<long long>() != 0);
-            if (t == "str")
+            case TypeTag::UINT:
+                return var(v.get<unsigned int>() != 0);
+            case TypeTag::ULONG:
+                return var(v.get<unsigned long>() != 0);
+            case TypeTag::ULONG_LONG:
+                return var(v.get<unsigned long long>() != 0);
+            case TypeTag::LONG_DOUBLE:
+                return var(v.get<long double>() != 0.0L);
+            case TypeTag::STRING:
                 return var(!v.get<std::string>().empty());
-            if (t == "list")
+            case TypeTag::LIST:
                 return var(!v.get<List>().empty());
-            if (t == "dict")
+            case TypeTag::DICT:
                 return var(!v.get<Dict>().empty());
-            if (t == "set")
+            case TypeTag::SET:
                 return var(!v.get<Set>().empty());
-            return var(true); // unknown types are truthy
+            case TypeTag::ORDEREDSET:
+                return var(!v.get<OrderedSet>().empty());
+            case TypeTag::ORDEREDDICT:
+                return var(!v.get<OrderedDict>().empty());
+            case TypeTag::NONE:
+                return var(false);
+            default:
+                return var(true); // unknown types are truthy
+            }
         }
 
         // repr() - String representation with quotes and escapes
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var repr(const var &v)
         {
-            std::string t = v.type();
-            if (t == "str")
+            if (v.type_tag() == TypeTag::STRING)
             {
-                std::string s = v.get<std::string>();
+                const std::string& s = v.get<std::string>();
                 std::ostringstream ss;
                 ss << "'";
                 for (char c : s)
@@ -5884,23 +5956,32 @@ namespace pythonic
         }
 
         // int() - convert to int
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var Int(const var &v)
         {
-            std::string t = v.type();
-            if (t == "int")
-                return v;
-            if (t == "float")
-                return var(static_cast<int>(v.get<float>()));
-            if (t == "double")
-                return var(static_cast<int>(v.get<double>()));
-            if (t == "long")
-                return var(static_cast<int>(v.get<long>()));
-            if (t == "long long")
-                return var(static_cast<int>(v.get<long long>()));
-            if (t == "bool")
-                return var(v.get<bool>() ? 1 : 0);
-            if (t == "str")
+            switch (v.type_tag())
             {
+            case TypeTag::INT:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<int>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<int>(v.get<double>()));
+            case TypeTag::LONG:
+                return var(static_cast<int>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<int>(v.get<long long>()));
+            case TypeTag::UINT:
+                return var(static_cast<int>(v.get<unsigned int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<int>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<int>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<int>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
                 try
                 {
                     return var(std::stoi(v.get<std::string>()));
@@ -5909,26 +5990,37 @@ namespace pythonic
                 {
                     throw pythonic::PythonicValueError("invalid literal for int(): '" + v.get<std::string>() + "'");
                 }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to int");
             }
-            throw pythonic::PythonicValueError("cannot convert " + t + " to int");
         }
 
         // float() - convert to float/double
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var Float(const var &v)
         {
-            std::string t = v.type();
-            if (t == "double" || t == "float")
-                return v;
-            if (t == "int")
-                return var(static_cast<double>(v.get<int>()));
-            if (t == "long")
-                return var(static_cast<double>(v.get<long>()));
-            if (t == "long long")
-                return var(static_cast<double>(v.get<long long>()));
-            if (t == "bool")
-                return var(v.get<bool>() ? 1.0 : 0.0);
-            if (t == "str")
+            switch (v.type_tag())
             {
+            case TypeTag::DOUBLE:
+            case TypeTag::FLOAT:
+                return v;
+            case TypeTag::INT:
+                return var(static_cast<double>(v.get<int>()));
+            case TypeTag::LONG:
+                return var(static_cast<double>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<double>(v.get<long long>()));
+            case TypeTag::UINT:
+                return var(static_cast<double>(v.get<unsigned int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<double>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<double>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<double>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1.0 : 0.0);
+            case TypeTag::STRING:
                 try
                 {
                     return var(std::stod(v.get<std::string>()));
@@ -5937,25 +6029,32 @@ namespace pythonic
                 {
                     throw pythonic::PythonicValueError("could not convert string to float: '" + v.get<std::string>() + "'");
                 }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to float");
             }
-            throw pythonic::PythonicValueError("cannot convert " + t + " to float");
         }
 
         // abs() - absolute value
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var abs(const var &v)
         {
-            std::string t = v.type();
-            if (t == "int")
+            switch (v.type_tag())
+            {
+            case TypeTag::INT:
                 return var(std::abs(v.get<int>()));
-            if (t == "float")
+            case TypeTag::FLOAT:
                 return var(std::abs(v.get<float>()));
-            if (t == "double")
+            case TypeTag::DOUBLE:
                 return var(std::abs(v.get<double>()));
-            if (t == "long")
+            case TypeTag::LONG:
                 return var(std::abs(v.get<long>()));
-            if (t == "long long")
+            case TypeTag::LONG_LONG:
                 return var(std::abs(v.get<long long>()));
-            throw pythonic::PythonicTypeError("abs() requires numeric type, got " + t);
+            case TypeTag::LONG_DOUBLE:
+                return var(std::abs(v.get<long double>()));
+            default:
+                throw pythonic::PythonicTypeError("abs() requires numeric type, got " + v.type());
+            }
         }
 
         // min() - minimum of list or two values
@@ -5966,9 +6065,10 @@ namespace pythonic
             return b;
         }
 
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var min(const var &lst)
         {
-            if (lst.type() != "list")
+            if (lst.type_tag() != TypeTag::LIST)
             {
                 throw pythonic::PythonicTypeError("min() expects a list or two arguments");
             }
@@ -5992,9 +6092,10 @@ namespace pythonic
             return a;
         }
 
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var max(const var &lst)
         {
-            if (lst.type() != "list")
+            if (lst.type_tag() != TypeTag::LIST)
             {
                 throw pythonic::PythonicTypeError("max() expects a list or two arguments");
             }
@@ -6011,9 +6112,10 @@ namespace pythonic
         }
 
         // sum() - sum of list elements
+        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var sum(const var &lst, const var &start = var(0))
         {
-            if (lst.type() != "list")
+            if (lst.type_tag() != TypeTag::LIST)
             {
                 throw pythonic::PythonicTypeError("sum() expects a list");
             }

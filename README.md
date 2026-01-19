@@ -157,8 +157,17 @@ x = list(1, 2, 3);    // now I'm a list!
 
 ```cpp
 var x = 42;
-print(x.type());              // prints: int
+print(x.type());              // prints: int (returns std::string)
 print(isinstance(x, "int"));  // prints: True
+
+// PERFORMANCE TIP: For hot paths, use type_cstr() which returns const char*
+// instead of type() which allocates a new string each call
+const char* t = x.type_cstr();  // "int" - no allocation!
+
+// Or use type_tag() for fastest comparison using enum
+if (x.type_tag() == TypeTag::INT) {
+    // fastest type check
+}
 
 // Template version
 if (isinstance<int>(x)) {
@@ -248,6 +257,11 @@ for_each(key, person.keys()) {
 var keys = person.keys();      // list of keys
 var values = person.values();  // list of values
 var items = person.items();    // list of [key, value] pairs
+
+// Iterate over key-value pairs
+for_each(item, person.items()) {
+    print(item[0], "->", item[1]);  // item[0] is key, item[1] is value
+}
 ```
 
 ### Sets
@@ -1152,7 +1166,7 @@ Tired of typing `for (auto x : ...)`? Use these:
 ```cpp
 var nums = list(1, 2, 3, 4, 5);
 
-// for_in - simple iteration
+// for_each - simple iteration
 for_each(x, nums) {
     print(x);
 }
@@ -2176,11 +2190,36 @@ int main() {
 1. **Use `using namespace`** - Makes code cleaner, less typing
 2. **`pprint()` for debugging** - Much easier to read than `print()` for complex structures
 3. **Lambda macros** - `lambda_()`, `lambda2_()` save tons of typing
-4. **Loop macros** - `for_in`, `for_enumerate` are your friends
+4. **Loop macros** - `for_each`, `for_enumerate` are your friends
 5. **Type conversions** - Use `Int()`, `Float()`, `Str()`, `Bool()` for explicit conversions
 6. **Slicing** - Works on both lists and strings, supports negative indices
 7. **Comprehensions** - More concise than manual loops for transforming data
 8. **The central header** - `#include "pythonic.hpp"` gives you everything
+
+### Performance Optimization Tips
+
+For performance-critical code, use these optimized APIs:
+
+```cpp
+// Type checking - use type_cstr() instead of type() to avoid string allocation
+const char* t = x.type_cstr();  // Returns const char*, no allocation
+if (strcmp(t, "int") == 0) { ... }
+
+// Even faster: use type_tag() for enum comparison
+if (x.type_tag() == TypeTag::INT) {
+    // Fastest type check - single integer comparison
+}
+
+// isinstance() is already optimized to use TypeTag internally
+if (isinstance(x, "int")) { ... }  // Now uses fast tag comparison
+```
+
+Available TypeTag values:
+- `TypeTag::NONE`, `TypeTag::INT`, `TypeTag::FLOAT`, `TypeTag::STRING`
+- `TypeTag::BOOL`, `TypeTag::DOUBLE`, `TypeTag::LONG`, `TypeTag::LONG_LONG`
+- `TypeTag::LONG_DOUBLE`, `TypeTag::UINT`, `TypeTag::ULONG`, `TypeTag::ULONG_LONG`
+- `TypeTag::LIST`, `TypeTag::SET`, `TypeTag::DICT`
+- `TypeTag::ORDEREDSET`, `TypeTag::ORDEREDDICT`, `TypeTag::GRAPH`
 
 ## API Notes & Gotchas
 
