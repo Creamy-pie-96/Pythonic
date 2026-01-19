@@ -1,6 +1,6 @@
 # Pythonic Library Benchmark Report
 
-**Generated:** 2026-01-19 23:58:59
+**Generated:** 2026-01-20 00:27:21
 
 This benchmark compares:
 - **Native C++**: Direct C++ STL operations
@@ -12,101 +12,101 @@ This benchmark compares:
 | Metric | Value |
 |--------|-------|
 | Total Benchmarks | 85 |
-| Faster than Python | 54 |
-| Slower than Python | 30 |
+| Faster than Python | 56 |
+| Slower than Python | 28 |
 | No Python Data | 1 |
-| Avg Overhead vs Native | 35682.21x |
-| Avg Speedup vs Python | 2280.65x |
+| Avg Overhead vs Native | 9653.77x |
+| Avg Speedup vs Python | 21158.85x |
 
 ## Detailed Results
 
 | Operation | Native C++ | Pythonic | Python | vs Native | vs Python |
 |-----------|------------|----------|--------|-----------|----------|
-| Integer Addition | 0.000 | 0.125 | 29.555 | 696.48x | **235.74x faster** |
-| Integer Multiplication | 0.000 | 8.167 | 35.638 | 204173.02x | **4.36x faster** |
-| Double Addition | 0.000 | 0.129 | 27.479 | 4147.19x | **213.74x faster** |
-| Integer Division | 0.000 | 0.000 | 25.403 | 6.03x | **140346.87x faster** |
-| Integer Modulo | 0.000 | 0.127 | 38.278 | 4111.97x | **300.29x faster** |
-| Integer Comparison | 0.000 | 0.128 | 42.045 | 4272.43x | **328.04x faster** |
-| String Concatenation | 0.226 | 0.907 | 0.163 | 4.01x | *5.57x slower* |
-| String Comparison | 0.000 | 39.843 | 19.513 | 398433.92x | *2.04x slower* |
-| String upper() | 0.268 | 0.529 | 0.457 | 1.98x | *1.16x slower* |
-| String lower() | 0.276 | 0.500 | 0.462 | 1.81x | *1.08x slower* |
-| String strip() | 0.128 | 0.652 | 0.592 | 5.09x | *1.10x slower* |
-| String replace() | 0.266 | 1.223 | 1.042 | 4.59x | *1.17x slower* |
-| String find() | 0.000 | 0.210 | 0.976 | 2337.64x | **4.64x faster** |
-| String split() | 2.737 | 4.573 | 1.458 | 1.67x | *3.14x slower* |
-| String startswith() | 0.031 | 0.394 | 0.755 | 12.64x | **1.92x faster** |
-| String endswith() | 0.000 | 0.395 | 0.733 | 1794.35x | **1.86x faster** |
-| String isdigit() | 0.000 | 0.003 | 0.398 | 22.27x | **147.74x faster** |
-| String center() | 0.587 | 0.967 | 0.757 | 1.65x | *1.28x slower* |
-| String zfill() | 0.163 | 0.358 | 0.728 | 2.20x | **2.03x faster** |
-| String Slice [2:8] | 0.099 | 0.412 | 0.663 | 4.15x | **1.61x faster** |
-| List Slice [2:8] | 0.137 | 1.370 | 0.758 | 9.97x | *1.81x slower* |
-| String Slice [::2] | 0.082 | 0.406 | 0.770 | 4.92x | **1.90x faster** |
-| List Slice [::2] | 0.048 | 1.319 | 1.503 | 27.36x | **1.14x faster** |
-| List Slice [-5:-1] | 0.141 | 0.985 | 0.791 | 6.99x | *1.25x slower* |
-| List Slice [::-1] (Reverse) | 0.084 | 1.686 | 2.145 | 19.99x | **1.27x faster** |
-| List Creation | 0.113 | 0.672 | 0.632 | 5.95x | *1.06x slower* |
-| Dict Creation | 1.516 | 1.644 | 1.293 | 1.08x | *1.27x slower* |
-| Set Creation | 0.997 | 1.862 | 1.304 | 1.87x | *1.43x slower* |
-| List append() | 0.107 | 0.525 | 0.051 | 4.90x | *10.39x slower* |
-| List extend() | 0.234 | 2.605 | 1.373 | 11.11x | *1.90x slower* |
-| List Index Access | 0.000 | 1.772 | 0.047 | 5352.96x | *37.92x slower* |
-| Dict Access | 0.042 | 0.163 | 0.178 | 3.91x | **1.09x faster** |
-| Dict keys() | 0.123 | 1.730 | 49.443 | 14.07x | **28.58x faster** |
-| Dict values() | 0.094 | 0.770 | 46.730 | 8.16x | **60.69x faster** |
-| Dict items() | 0.229 | 6.598 | 207.459 | 28.77x | **31.45x faster** |
-| Set add() | 0.776 | 0.650 | 0.067 | 0.84x | *9.64x slower* |
-| 'in' Operator (List) | 0.001 | 2.423 | 3.110 | 3451.23x | **1.28x faster** |
-| 'in' Operator (Set) | 0.006 | 0.157 | 0.033 | 26.40x | *4.70x slower* |
-| 'in' Operator (Dict) | 0.111 | 0.478 | 0.037 | 4.31x | *12.78x slower* |
-| List + Operator | 0.107 | 0.738 | 3.285 | 6.92x | **4.45x faster** |
-| List * Operator | 0.054 | 1.073 | 3.202 | 20.01x | **2.98x faster** |
-| range() Iteration | 0.000 | 0.007 | 41.860 | 233.10x | **5985.97x faster** |
-| range(start, stop) Iteration | 0.000 | 0.006 | 41.847 | 158.55x | **6598.43x faster** |
-| range(start, stop, step) Iteration | 0.000 | 0.003 | 20.873 | 114.23x | **6090.84x faster** |
-| for_each with List | 0.001 | 8.684 | N/A | 11119.54x | No data |
-| enumerate() | 0.000 | 2.370 | 0.067 | 5374.97x | *35.13x slower* |
-| zip() | 0.001 | 1.102 | 0.054 | 2200.39x | *20.46x slower* |
-| Dict Iteration (items()) | 0.002 | 14.633 | 0.039 | 7301.87x | *378.86x slower* |
-| map() | 0.589 | 8.420 | 0.054 | 14.30x | *156.97x slower* |
-| filter() | 0.590 | 11.501 | 0.064 | 19.48x | *178.67x slower* |
-| reduce() | 0.001 | 10.028 | 0.062 | 15404.33x | *160.54x slower* |
-| Chained map + filter | 0.652 | 21.369 | 0.106 | 32.76x | *201.41x slower* |
-| Lambda Application | 0.000 | 2.604 | 0.692 | 86787.43x | *3.76x slower* |
-| sorted() Ascending | 0.231 | 3.908 | 45.526 | 16.90x | **11.65x faster** |
-| sorted() Descending | 0.278 | 3.985 | 45.588 | 14.33x | **11.44x faster** |
-| Large List Sorting (1000 elements) | 0.459 | 3.516 | 51.173 | 7.67x | **14.55x faster** |
-| len() | 0.002 | 2.288 | 35.172 | 1454.77x | **15.37x faster** |
-| sum() | 0.000 | 1.071 | 51.589 | 5073.76x | **48.19x faster** |
-| min() | 0.000 | 1.617 | 97.961 | 8986.11x | **60.56x faster** |
-| max() | 0.000 | 1.638 | 110.584 | 8622.83x | **67.50x faster** |
-| abs() | 0.000 | 9.110 | 25.621 | 293876.58x | **2.81x faster** |
-| all() | 0.001 | 0.573 | 3.955 | 664.48x | **6.91x faster** |
-| any() | 0.000 | 0.356 | 5.065 | 2224.71x | **14.23x faster** |
+| Integer Addition | 0.000 | 0.133 | 29.555 | 739.52x | **222.03x faster** |
+| Integer Multiplication | 0.000 | 8.078 | 35.638 | 269276.00x | **4.41x faster** |
+| Double Addition | 0.000 | 0.130 | 27.479 | 4339.93x | **211.06x faster** |
+| Integer Division | 0.000 | 0.000 | 25.403 | 4.03x | **209940.37x faster** |
+| Integer Modulo | 0.000 | 0.125 | 38.278 | 4176.30x | **305.52x faster** |
+| Integer Comparison | 0.000 | 0.125 | 42.045 | 4182.63x | **335.08x faster** |
+| String Concatenation | 0.226 | 0.892 | 0.163 | 3.95x | *5.48x slower* |
+| String Comparison | 0.000 | 38.942 | 19.513 | 354020.31x | *2.00x slower* |
+| String upper() | 0.264 | 0.496 | 0.457 | 1.88x | *1.08x slower* |
+| String lower() | 0.291 | 0.532 | 0.462 | 1.83x | *1.15x slower* |
+| String strip() | 0.132 | 0.643 | 0.592 | 4.86x | *1.09x slower* |
+| String replace() | 0.274 | 1.243 | 1.042 | 4.53x | *1.19x slower* |
+| String find() | 0.000 | 0.206 | 0.976 | 2284.90x | **4.75x faster** |
+| String split() | 2.835 | 4.684 | 1.458 | 1.65x | *3.21x slower* |
+| String startswith() | 0.037 | 0.392 | 0.755 | 10.63x | **1.93x faster** |
+| String endswith() | 0.000 | 0.383 | 0.733 | 2738.99x | **1.91x faster** |
+| String isdigit() | 0.000 | 0.003 | 0.398 | 21.73x | **140.94x faster** |
+| String center() | 0.592 | 0.967 | 0.757 | 1.63x | *1.28x slower* |
+| String zfill() | 0.159 | 0.376 | 0.728 | 2.37x | **1.94x faster** |
+| String Slice [2:8] | 0.089 | 0.399 | 0.663 | 4.51x | **1.66x faster** |
+| List Slice [2:8] | 0.154 | 1.429 | 0.758 | 9.28x | *1.88x slower* |
+| String Slice [::2] | 0.100 | 0.387 | 0.770 | 3.88x | **1.99x faster** |
+| List Slice [::2] | 0.035 | 1.324 | 1.503 | 37.36x | **1.14x faster** |
+| List Slice [-5:-1] | 0.152 | 1.033 | 0.791 | 6.79x | *1.31x slower* |
+| List Slice [::-1] (Reverse) | 0.083 | 1.737 | 2.145 | 20.89x | **1.24x faster** |
+| List Creation | 0.161 | 0.814 | 0.632 | 5.05x | *1.29x slower* |
+| Dict Creation | 1.490 | 1.630 | 1.293 | 1.09x | *1.26x slower* |
+| Set Creation | 1.043 | 1.856 | 1.304 | 1.78x | *1.42x slower* |
+| List append() | 0.105 | 0.530 | 0.051 | 5.04x | *10.48x slower* |
+| List extend() | 0.277 | 2.469 | 1.373 | 8.90x | *1.80x slower* |
+| List Index Access | 0.000 | 1.835 | 0.047 | 5082.29x | *39.26x slower* |
+| Dict Access | 0.038 | 0.236 | 0.178 | 6.24x | *1.32x slower* |
+| Dict keys() | 0.149 | 1.830 | 49.443 | 12.29x | **27.02x faster** |
+| Dict values() | 0.087 | 0.850 | 46.730 | 9.82x | **54.97x faster** |
+| Dict items() | 0.229 | 2.052 | 207.459 | 8.98x | **101.12x faster** |
+| Set add() | 0.774 | 0.622 | 0.067 | 0.80x | *9.22x slower* |
+| 'in' Operator (List) | 0.001 | 2.411 | 3.110 | 3253.82x | **1.29x faster** |
+| 'in' Operator (Set) | 0.008 | 0.123 | 0.033 | 15.42x | *3.69x slower* |
+| 'in' Operator (Dict) | 0.087 | 0.487 | 0.037 | 5.59x | *13.01x slower* |
+| List + Operator | 0.086 | 0.785 | 3.285 | 9.11x | **4.18x faster** |
+| List * Operator | 0.053 | 1.022 | 3.202 | 19.23x | **3.13x faster** |
+| range() Iteration | 0.000 | 0.007 | 41.860 | 168.82x | **6198.71x faster** |
+| range(start, stop) Iteration | 0.000 | 0.006 | 41.847 | 200.03x | **6973.38x faster** |
+| range(start, stop, step) Iteration | 0.000 | 0.003 | 20.873 | 164.85x | **6331.00x faster** |
+| for_each with List | 0.001 | 8.655 | N/A | 10415.12x | No data |
+| enumerate() | 0.000 | 2.296 | 0.067 | 4675.47x | *34.02x slower* |
+| zip() | 0.000 | 1.091 | 0.054 | 4935.67x | *20.24x slower* |
+| Dict Iteration (items()) | 0.001 | 6.768 | 0.039 | 5238.02x | *175.22x slower* |
+| map() | 0.575 | 8.394 | 0.054 | 14.59x | *156.47x slower* |
+| filter() | 0.521 | 12.003 | 0.064 | 23.04x | *186.46x slower* |
+| reduce() | 0.001 | 10.977 | 0.062 | 11778.32x | *175.73x slower* |
+| Chained map + filter | 0.652 | 21.904 | 0.106 | 33.58x | *206.46x slower* |
+| Lambda Application | 0.000 | 2.586 | 0.692 | 64637.65x | *3.74x slower* |
+| sorted() Ascending | 0.271 | 3.847 | 45.526 | 14.21x | **11.83x faster** |
+| sorted() Descending | 0.238 | 3.558 | 45.588 | 14.97x | **12.81x faster** |
+| Large List Sorting (1000 elements) | 0.448 | 3.653 | 51.173 | 8.16x | **14.01x faster** |
+| len() | 0.000 | 1.763 | 35.172 | 5668.66x | **19.95x faster** |
+| sum() | 0.000 | 0.916 | 51.589 | 13086.01x | **56.32x faster** |
+| min() | 0.000 | 1.626 | 97.961 | 13547.26x | **60.26x faster** |
+| max() | 0.002 | 1.655 | 110.584 | 917.57x | **66.81x faster** |
+| abs() | 0.000 | 0.133 | 25.621 | 4446.77x | **192.05x faster** |
+| all() | 0.002 | 0.515 | 3.955 | 304.15x | **7.68x faster** |
+| any() | 0.000 | 0.362 | 5.065 | 2010.04x | **14.00x faster** |
 | pow() | 0.000 | 0.000 | 0.909 | 1.00x | **30310.95x faster** |
-| sqrt() | 0.000 | 0.141 | 0.685 | 4709.23x | **4.85x faster** |
-| floor() | 0.000 | 0.133 | 0.435 | 4430.03x | **3.27x faster** |
-| ceil() | 0.000 | 0.128 | 0.475 | 4268.07x | **3.71x faster** |
-| round() | 0.000 | 0.136 | 3.415 | 4540.93x | **25.07x faster** |
-| Int() from String | 0.110 | 0.464 | 1.475 | 4.21x | **3.18x faster** |
-| Float() from String | 0.795 | 1.366 | 1.124 | 1.72x | *1.22x slower* |
-| Str() from Int | 0.034 | 0.333 | 1.123 | 9.81x | **3.37x faster** |
-| Bool() from Int | 0.000 | 14.297 | 45.910 | 476574.40x | **3.21x faster** |
-| Int to Double | 0.000 | 18.748 | 44.844 | 624943.90x | **2.39x faster** |
-| type() | 0.000 | 29.649 | 0.295 | 592986.36x | *100.37x slower* |
-| isinstance() | 0.000 | 9.505 | 0.306 | 237632.30x | *31.05x slower* |
-| Graph Creation | 0.000 | 0.051 | 5.901 | 460.50x | **115.45x faster** |
-| add_edge() | 0.007 | 0.012 | 0.709 | 1.57x | **61.17x faster** |
-| DFS Traversal | 0.320 | 0.183 | 5.888 | 0.57x | **32.13x faster** |
-| BFS Traversal | 0.310 | 0.191 | 13.551 | 0.62x | **70.89x faster** |
-| has_edge() | 0.000 | 0.003 | 0.120 | 6.11x | **45.42x faster** |
-| get_shortest_path() | 0.067 | 0.051 | 1.066 | 0.76x | **20.94x faster** |
-| is_connected() | 0.233 | 0.083 | 3.285 | 0.35x | **39.72x faster** |
-| has_cycle() | 0.000 | 0.068 | 7.902 | 2250.60x | **117.03x faster** |
-| topological_sort() | 0.000 | 0.016 | 0.613 | 529.00x | **38.62x faster** |
-| connected_components() | 0.000 | 0.027 | 0.257 | 886.00x | **9.66x faster** |
+| sqrt() | 0.000 | 0.139 | 0.685 | 4630.13x | **4.93x faster** |
+| floor() | 0.000 | 0.140 | 0.435 | 4665.87x | **3.11x faster** |
+| ceil() | 0.000 | 0.140 | 0.475 | 4659.87x | **3.40x faster** |
+| round() | 0.000 | 0.140 | 3.415 | 4660.87x | **24.42x faster** |
+| Int() from String | 0.117 | 0.123 | 1.475 | 1.05x | **11.98x faster** |
+| Float() from String | 0.777 | 0.865 | 1.124 | 1.11x | **1.30x faster** |
+| Str() from Int | 0.030 | 0.316 | 1.123 | 10.64x | **3.55x faster** |
+| Bool() from Int | 0.000 | 0.146 | 45.910 | 4877.27x | **313.77x faster** |
+| Int to Double | 0.000 | 0.000 | 44.844 | 1.50x | **1494789.12x faster** |
+| type() | 0.000 | 0.000 | 0.295 | 0.75x | **9846.69x faster** |
+| isinstance() | 0.000 | 0.000 | 0.306 | 1.00x | **10204.32x faster** |
+| Graph Creation | 0.000 | 0.057 | 5.901 | 177.69x | **103.46x faster** |
+| add_edge() | 0.016 | 0.022 | 0.709 | 1.34x | **32.72x faster** |
+| DFS Traversal | 0.318 | 0.217 | 5.888 | 0.68x | **27.12x faster** |
+| BFS Traversal | 0.325 | 0.189 | 13.551 | 0.58x | **71.75x faster** |
+| has_edge() | 0.001 | 0.003 | 0.120 | 5.04x | **47.40x faster** |
+| get_shortest_path() | 0.051 | 0.052 | 1.066 | 1.03x | **20.50x faster** |
+| is_connected() | 0.216 | 0.074 | 3.285 | 0.34x | **44.65x faster** |
+| has_cycle() | 0.000 | 0.079 | 7.902 | 2629.67x | **100.16x faster** |
+| topological_sort() | 0.000 | 0.020 | 0.613 | 650.93x | **31.39x faster** |
+| connected_components() | 0.000 | 0.028 | 0.257 | 943.47x | **9.07x faster** |
 
 ## Interpretation
 
