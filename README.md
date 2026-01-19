@@ -2215,6 +2215,7 @@ if (isinstance(x, "int")) { ... }  // Now uses fast tag comparison
 ```
 
 Available TypeTag values:
+
 - `TypeTag::NONE`, `TypeTag::INT`, `TypeTag::FLOAT`, `TypeTag::STRING`
 - `TypeTag::BOOL`, `TypeTag::DOUBLE`, `TypeTag::LONG`, `TypeTag::LONG_LONG`
 - `TypeTag::LONG_DOUBLE`, `TypeTag::UINT`, `TypeTag::ULONG`, `TypeTag::ULONG_LONG`
