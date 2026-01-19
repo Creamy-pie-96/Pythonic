@@ -18,7 +18,7 @@ inline void benchmark_loop_operations()
             (void)sum; }, []()
                   {
             var sum = 0;
-            for_in(i, range(1000))
+            for_each(i, range(1000))
                 sum = sum + i; });
 
     // range(start, stop) iteration
@@ -30,7 +30,7 @@ inline void benchmark_loop_operations()
             (void)sum; }, []()
                   {
             var sum = 0;
-            for_in(i, range(100, 1000))
+            for_each(i, range(100, 1000))
                 sum = sum + i; });
 
     // range(start, stop, step) iteration
@@ -42,11 +42,11 @@ inline void benchmark_loop_operations()
             (void)sum; }, []()
                   {
             var sum = 0;
-            for_in(i, range(0, 1000, 2))
+            for_each(i, range(0, 1000, 2))
                 sum = sum + i; });
 
-    // for_in with list
-    run_benchmark("for_in with List", []()
+    // for_each with list
+    run_benchmark("for_each with List", []()
                   {
             std::vector<int> v;
             for (int i = 0; i < 100; ++i) v.push_back(i);
@@ -60,7 +60,7 @@ inline void benchmark_loop_operations()
             for (int i = 0; i < 100; ++i) v.append(i);
             var sum = 0;
             for (size_t iter = 0; iter < SMALL_ITERATIONS; ++iter)
-                for_in(x, v)
+                for_each(x, v)
                     sum = sum + x; });
 
     // enumerate()
@@ -78,7 +78,7 @@ inline void benchmark_loop_operations()
             var sum = 0;
             for (size_t iter = 0; iter < SMALL_ITERATIONS; ++iter) {
                 size_t idx = 0;
-                for_in(item, enumerate(v)) {
+                for_each(item, enumerate(v)) {
                     sum = sum + var(static_cast<long long>(std::get<0>(item)));
                 }
             } });
@@ -99,7 +99,7 @@ inline void benchmark_loop_operations()
             var v2 = list(10, 20, 30, 40, 50);
             var sum = 0;
             for (size_t iter = 0; iter < SMALL_ITERATIONS; ++iter) {
-                for_in(p, zip(v1, v2))
+                for_each(p, zip(v1, v2))
                     sum = sum + std::get<0>(p) + std::get<1>(p);
             } });
 
@@ -121,6 +121,6 @@ inline void benchmark_loop_operations()
             d["e"] = 5;
             var sum = 0;
             for (size_t iter = 0; iter < SMALL_ITERATIONS; ++iter)
-                for_in(item, d.items())
+                for_each(item, d.items())
                     sum = sum + item[1]; });
 }
