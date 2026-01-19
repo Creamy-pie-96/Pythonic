@@ -8,14 +8,16 @@
 ### 🔴 NEXT PRIORITY: BigInt Implementation
 
 Adding arbitrary-precision integers (BigInt) to support:
+
 - Numbers larger than `long long` (beyond 2^63)
 - Crypto applications requiring large number arithmetic
 - Python-like unlimited integer precision
 - Integration with existing overflow/promotion system
 
 **Implementation Plan:**
+
 1. Create `BigInt` class with string-based storage or digit array
-2. Implement basic operations: +, -, *, /, %, comparisons
+2. Implement basic operations: +, -, \*, /, %, comparisons
 3. Add conversion to/from other numeric types
 4. Integrate with `var` type as `TypeTag::BIGINT`
 5. Update overflow promotion to use BigInt when long_long overflows
@@ -49,7 +51,7 @@ Adding arbitrary-precision integers (BigInt) to support:
    - Trigonometry: sin, cos, tan, asin, acos, atan, atan2
    - Hyperbolic: sinh, cosh, tanh
    - Constants: pi, e
-   - Random: random_int, random_float, random_choice, fill_random*
+   - Random: random_int, random_float, random_choice, fill_random\*
    - Advanced: gcd, lcm, factorial, hypot, product
    - Aggregation: min, max, sum
 
@@ -96,6 +98,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 ## Known Issues 🐛
 
 ### Issue 1: Missing `group_by` in Demo
+
 **Status:** Known limitation  
 **Description:** Demo skips `group_by` due to API constraints
 
@@ -106,6 +109,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 ### Priority 1: Python Parity Features 🔴
 
 #### 1.1 String Methods (Missing)
+
 - [ ] `join()` - `", ".join(list)` → `"a, b, c"`
 - [ ] `format()` - String formatting `"{} + {} = {}".format(1, 2, 3)`
 - [ ] `isdigit()`, `isalpha()`, `isalnum()`, `isspace()`
@@ -117,6 +121,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 - [ ] `maketrans()`, `translate()` - Character mapping
 
 #### 1.2 List Methods (Missing/Incomplete)
+
 - [ ] `insert(index, item)` - Insert at position
 - [ ] `index(item)` - Find index of item
 - [ ] `count(item)` - Count occurrences
@@ -125,6 +130,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 - [ ] `pop(index=-1)` - Pop with index parameter
 
 #### 1.3 Dict Methods (Missing)
+
 - [ ] `get(key, default)` - Get with default value
 - [ ] `setdefault(key, default)` - Set default if missing
 - [ ] `pop(key, default)` - Remove and return
@@ -134,6 +140,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 - [ ] `clear()` - Remove all items
 
 #### 1.4 Set Methods (Missing)
+
 - [ ] `copy()` - Shallow copy
 - [ ] `clear()` - Remove all items
 - [ ] `pop()` - Remove and return arbitrary element
@@ -143,22 +150,26 @@ Adding arbitrary-precision integers (BigInt) to support:
 ### Priority 2: Usability Improvements 🟡
 
 #### 2.1 Better Error Messages
+
 - [ ] Include type names in error messages
 - [ ] Add suggestions for common mistakes
 - [ ] Better stack traces with source_location
 
 #### 2.2 Iterator Protocol
+
 - [ ] `iter()` function to create iterators
 - [ ] `next()` function
 - [ ] StopIteration exception
 - [ ] Generator support (yield-like behavior)
 
 #### 2.3 Context Managers
+
 - [ ] `with_statement` macro/helper
 - [ ] Resource cleanup guarantees
 - [ ] Exception-safe cleanup
 
 #### 2.4 Tuple Support
+
 - [ ] Immutable tuple type
 - [ ] Tuple unpacking
 - [ ] Named tuples (like Python's namedtuple)
@@ -166,23 +177,27 @@ Adding arbitrary-precision integers (BigInt) to support:
 ### Priority 3: Advanced Features 🟢
 
 #### 3.1 Regular Expressions
+
 - [ ] `re_match()`, `re_search()`
 - [ ] `re_findall()`, `re_sub()`
 - [ ] Compiled pattern caching
 
 #### 3.2 JSON Support
+
 - [ ] `json_loads()` - Parse JSON string to var
 - [ ] `json_dumps()` - Serialize var to JSON string
 - [ ] Pretty printing options
 - [ ] JSON file read/write
 
 #### 3.3 Date/Time
+
 - [ ] `datetime` type
 - [ ] Date arithmetic
 - [ ] Formatting and parsing
 - [ ] Timezone support
 
 #### 3.4 More Math Functions
+
 - [ ] `ceil()`, `floor()` (may exist but verify)
 - [ ] `copysign()`, `fmod()`
 - [ ] `isnan()`, `isinf()`, `isfinite()`
@@ -191,12 +206,14 @@ Adding arbitrary-precision integers (BigInt) to support:
 - [ ] Statistics: `mean()`, `median()`, `stdev()`, `variance()`
 
 #### 3.5 Collections Module
+
 - [ ] `Counter` - Count hashable objects
 - [ ] `defaultdict` - Dict with default factory
 - [ ] `deque` - Double-ended queue
 - [ ] `ChainMap` - Group dicts together
 
 #### 3.6 Itertools Module
+
 - [ ] `chain()` - Chain iterables
 - [ ] `cycle()` - Infinite cycling
 - [ ] `repeat()` - Repeat value
@@ -208,35 +225,41 @@ Adding arbitrary-precision integers (BigInt) to support:
 ### Priority 4: Performance & Optimization 🔵
 
 #### 4.1 Memory Optimization
+
 - [ ] Small string optimization
 - [ ] Custom allocator support
 - [ ] Move semantics audit
 - [ ] Copy-on-write for large containers
 
 #### 4.2 Parallel Processing
+
 - [ ] Parallel map/filter/reduce
 - [ ] Thread-safe containers
 - [ ] Async file I/O
 
 #### 4.3 SIMD Optimization
+
 - [ ] Vectorized arithmetic operations
 - [ ] Batch processing helpers
 
 ### Priority 5: Ecosystem 🟣
 
 #### 5.1 Testing
+
 - [ ] Comprehensive unit test suite
 - [ ] Integration tests
 - [ ] Fuzz testing
 - [ ] Property-based testing
 
 #### 5.2 Documentation
+
 - [ ] API reference (Doxygen)
 - [ ] More examples
 - [ ] Performance guide
 - [ ] Migration guide from Python
 
 #### 5.3 Build System
+
 - [ ] Package managers (vcpkg, Conan)
 - [ ] CI/CD pipeline
 - [ ] Code coverage
@@ -246,7 +269,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 ## Implementation Order Recommendation
 
 1. **Phase 1: Core Completeness** (1-2 weeks)
-   - Complete string methods (join, format, is* methods)
+   - Complete string methods (join, format, is\* methods)
    - Complete list methods (insert, index, count)
    - Complete dict methods (get, setdefault, pop)
    - Fix known bugs
@@ -274,6 +297,7 @@ Adding arbitrary-precision integers (BigInt) to support:
 ## Benchmark Notes
 
 Run benchmarks with:
+
 ```bash
 cd benchmark
 cmake .
@@ -282,6 +306,7 @@ make
 ```
 
 Also run Python benchmarks for comparison:
+
 ```bash
 python benchmark.py
 ```
