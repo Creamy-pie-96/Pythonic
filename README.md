@@ -174,6 +174,16 @@ if (isinstance<int>(x)) {
     int n = x.get<int>();
 }
 
+// Or use the `is<T>()` helper for concise compile-time checks
+if (x.is<int>()) {
+    int n = x.get<int>();
+}
+
+// Check for any integral type (int, long, unsigned, etc.)
+if (x.isIntegral()) {
+    print("x is some integer type");
+}
+
 // Type conversion helpers
 var a = Int("123");      // "123" -> 123
 var b = Float("3.14");   // "3.14" -> 3.14
@@ -1383,6 +1393,20 @@ print("The result is:", x, "and the flag is:", true);
 // Automatic spacing between arguments
 print(1, 2, 3, 4, 5);
 // Output: 1 2 3 4 5
+
+// Look at this fun thing you can do:
+var boyosh = Int(input("enter your boyosh: "));
+print("variable boyosh value :", boyosh);
+print("variable boyosh type :", boyosh.type());
+print("Previously boyosh was :",boyosh, "new boyosh is :", boyosh+=2, "now boyosh becomes:",boyosh);
+    //Note for user:
+    // say initial boyosh = 19
+    //You thought doing print("Previously boyosh was :",boyosh, "new boyosh is :", boyosh+=2, "now boyosh becomes:",boyosh); will make print:
+    //Previously boyosh was : 19 new boyosh is : 21 now boyosh becomes: 21
+    //But it will print:
+    //Previously boyosh was : 21 new boyosh is : 21 now boyosh becomes: 21
+    //So if you are doing inplace assignment op in print(), make sure you don't use that variable anywhere else in the print() function. If you perform an in-place assignment inside print(), the variable's value is updated immediately. Any further use of that variable in the same call will see the new value.
+    //So be careful about using inplace op in print if you want ot
 ```
 
 **String Formatting Behavior:**
@@ -2229,11 +2253,15 @@ Available TypeTag values:
 Implicit conversion now works for most arithmetic and comparison operators:
 
 ```cpp
-// ✓ These all work now!
+// These all work now!
 var x = var(10);
 var y = x + 2;      // Works! Implicit conversion
 var z = x * 3;      // Works!
 var cmp = x > 5;    // Works!
+// String repetition (Python-style): string * int => repeated string
+var s = "hey";
+var a = 4;
+var v = s * a;      // "heyheyheyhey"
 var eq = x == 10;   // Works!
 
 // String concatenation with literals also works:

@@ -40,6 +40,7 @@ make
 ## How It Works
 
 See [HOW_IT_WORKS.md](HOW_IT_WORKS.md) for detailed documentation on:
+
 - Signal propagation mechanics
 - Physics simulation algorithm
 - Visual effects implementation
@@ -56,17 +57,20 @@ See [HOW_IT_WORKS.md](HOW_IT_WORKS.md) for detailed documentation on:
 ## Key Features
 
 ### Residual Networks
+
 - Enable "Use Skip Connections" checkbox
 - Creates cyan-colored skip edges that jump 1-2 layers
 - Helps gradients flow through deep networks (like ResNet)
 
 ### Visual Feedback
+
 - **Yellow signals**: Forward propagation (input → output)
 - **Red signals**: Backpropagation (error gradients)
 - **Cyan edges**: Skip connections (residual paths)
 - **Pulsing edges**: Activity-based brightness and thickness
 
 ### Physics Controls
+
 - **Repulsion**: Node separation strength (10-1000)
 - **Ideal Distance**: Target node spacing (50-500)
 - **Signal Speed**: Propagation velocity (0.1-10.0)
