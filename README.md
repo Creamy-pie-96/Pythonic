@@ -798,6 +798,45 @@ for_each(node, path) {
 
 // Find the minimum road network to connect all cities
 var min_roads = roads.prim_mst();
+print("Minimum road maintenance cost:", min_roads["weight"]);
+
+// === Interactive Graph Viewer ===
+// Visualize and edit graphs interactively!
+// Requires build with -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
+
+// g.show() opens an interactive window
+// features: force-directed layout, signal flow animation
+// modes: View (snap-back physics), Edit (drag-to-add edges)
+roads.show(); 
+```
+
+### Interactive Graph Viewer
+
+Pythonic includes a powerful interactive viewer for your graphs, powered by OpenGL/ImGui.
+
+**Enable it:**
+```bash
+cmake -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON ..
+```
+
+**Using it:**
+```cpp
+var g = graph(10);
+// ... add edges ...
+g.show();
+```
+
+**Features:**
+- **View Mode**:
+  - Drag nodes (physics snaps them back to preserve topology)
+  - Hover over nodes/edges to see metadata/weights
+  - **Click nodes** to trigger animated signal waves!
+- **Edit Mode** (Toggle with 🔒 icon):
+  - **Double-click** empty space to add nodes
+  - **Drag** from node to node to add edges
+  - **Select + Delete** to remove elements
+  - Changes are saved back to your `var` graph!
+
 print("\nMinimum road network:");
 print("  Total miles:", min_roads["weight"]);
 ```

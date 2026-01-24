@@ -80,3 +80,80 @@ install(FILES
 # Example: Add a test executable (if you have test.cpp in test/)
 # add_executable(test_runner test/test.cpp)
 # target_link_libraries(test_runner PRIVATE pythonic)
+
+# ============================================================================
+# Optional: Interactive Graph Viewer
+# ============================================================================
+option(PYTHONIC_ENABLE_GRAPH_VIEWER "Enable interactive graph viewer (requires GLFW, OpenGL)" OFF)
+
+if(PYTHONIC_ENABLE_GRAPH_VIEWER)
+    message(STATUS "Graph viewer enabled, looking for dependencies...")
+    
+    find_package(OpenGL REQUIRED)
+    find_package(glfw3 REQUIRED)
+    
+    message(STATUS "  OpenGL: Found")
+    message(STATUS "  GLFW:   Found")
+    
+    # ImGui sources - bundled in external/imgui
+    set(IMGUI_DIR "${CMAKE_CURRENT_SOURCE_DIR}/external/imgui")
+    
+    if(NOT EXISTS "${IMGUI_DIR}/imgui.h")
+        message(FATAL_ERROR 
+            "ImGui not found at ${IMGUI_DIR}\n"
+            "Please run: git clone https://github.com/ocornut/imgui.git ${IMGUI_DIR}\n"
+            "Or copy ImGui sources from examples/graph_visualization/external/imgui")
+    endif()
+    
+    set(IMGUI_SOURCES
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    )
+    
+    # Graph viewer static library
+    add_library(pythonic_graph_viewer STATIC
+        src/graph_viewer.cpp
+        ${IMGUI_SOURCES}
+    )
+    
+    target_compile_features(pythonic_graph_viewer PUBLIC cxx_std_20)
+    target_compile_definitions(pythonic_graph_viewer PUBLIC PYTHONIC_ENABLE_GRAPH_VIEWER)
+    
+    # Use PRIVATE for external paths to avoid installation path issues
+    target_include_directories(pythonic_graph_viewer
+        PUBLIC
+            $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+            $<INSTALL_INTERFACE:include>
+        PRIVATE
+            ${IMGUI_DIR}
+            ${IMGUI_DIR}/backends
+    )
+    
+    target_link_libraries(pythonic_graph_viewer PUBLIC
+        pythonic
+        glfw
+        OpenGL::GL
+    )
+    
+    # Install graph viewer library
+    install(TARGETS pythonic_graph_viewer EXPORT pythonic-targets
+        ARCHIVE DESTINATION lib
+        LIBRARY DESTINATION lib)
+    
+    message(STATUS "Graph viewer configured successfully!")
+    message(STATUS "  Use: target_link_libraries(your_app pythonic_graph_viewer)")
+    message(STATUS "  In code: var g = graph(5); g.show();")
+
+    # Example Executable
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/examples/graph_viewer_example.cpp")
+        add_executable(graph_viewer_example examples/graph_viewer_example.cpp)
+        target_link_libraries(graph_viewer_example PRIVATE pythonic_graph_viewer)
+    endif()
+else()
+    message(STATUS "Graph viewer disabled (enable with -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON)")
+endif()
