@@ -5435,6 +5435,144 @@ namespace pythonic
                 oss << "Graph(nodes=" << impl.node_count() << ", edges=" << impl.edge_count() << ")";
                 return oss.str();
             }
+
+            // Pretty ASCII tree representation for terminal output
+            std::string pretty_str(size_t start = 0,
+                                   size_t indent_step = 2,
+                                   size_t max_depth = 64,
+                                   bool show_weights = true,
+                                   bool show_node_data = false,
+                                   bool collapse_visited = true,
+                                   bool directed = false) const
+            {
+                std::ostringstream out;
+
+                // Header metadata (compact)
+                out << "Graph: nodes=" << impl.node_count()
+                    << ", edges=" << impl.edge_count()
+                    << ", directed=" << (directed ? "yes" : "no")
+                    << ", cycle=" << (impl.has_cycle() ? "yes" : "no")
+                    << "\n";
+
+                if (impl.node_count() == 0)
+                    return out.str();
+
+                std::unordered_set<size_t> visited;
+                std::vector<char> in_path(impl.node_count(), 0);
+
+                std::function<void(size_t, std::vector<bool> &, size_t, size_t, size_t)> print_node;
+
+                print_node = [&](size_t node, std::vector<bool> &last_stack, size_t depth, size_t parent, size_t idx_in_parent)
+                {
+                    if (depth > max_depth)
+                    {
+                        out << std::string(last_stack.size() * indent_step, ' ') << "...\n";
+                        return;
+                    }
+
+                    // Build prefix using box-drawing style: '│   ', '├── ', '└── '
+                    std::string prefix;
+                    for (size_t i = 0; i + 1 < last_stack.size(); ++i)
+                    {
+                        prefix += last_stack[i] ? std::string("    ") : std::string("│   ");
+                    }
+
+                    if (!last_stack.empty())
+                    {
+                        prefix += last_stack.back() ? std::string("└── ") : std::string("├── ");
+                    }
+
+                    // Node label
+                    out << prefix << node;
+
+                    if (show_node_data)
+                    {
+                        try
+                        {
+                            auto &nd = impl.get_node_data(node);
+                            std::string s = nd.str();
+                            if (s.size() > 80)
+                                s = s.substr(0, 77) + "...";
+                            out << ": " << s;
+                        }
+                        catch (...)
+                        {
+                        }
+                    }
+
+                    out << "\n";
+
+                    if (visited.count(node) && collapse_visited)
+                        return;
+
+                    visited.insert(node);
+                    in_path[node] = 1;
+
+                    auto nbrs = impl.neighbors(node);
+                    for (size_t i = 0; i < nbrs.size(); ++i)
+                    {
+                        size_t nbr = nbrs[i];
+
+                        // In undirected mode, skip parent to avoid trivial back-edge
+                        if (!directed && parent != static_cast<size_t>(-1) && nbr == parent)
+                            continue;
+
+                        bool is_last = (i + 1 == nbrs.size());
+                        last_stack.push_back(is_last);
+
+                        // If neighbor is in current DFS path -> cycle
+                        if (in_path.size() > nbr && in_path[nbr])
+                        {
+                            std::string child_prefix;
+                            for (size_t j = 0; j + 1 < last_stack.size(); ++j)
+                            {
+                                child_prefix += last_stack[j] ? std::string("    ") : std::string("│   ");
+                            }
+                            child_prefix += last_stack.back() ? std::string("└── ") : std::string("├── ");
+                            out << child_prefix << "[Ref] " << nbr << "  <-- (Cycle Detected)\n";
+                            last_stack.pop_back();
+                            continue;
+                        }
+
+                        // If neighbor already visited and collapsing, print a reference line
+                        if (visited.count(nbr) && collapse_visited)
+                        {
+                            std::string child_prefix;
+                            for (size_t j = 0; j + 1 < last_stack.size(); ++j)
+                            {
+                                child_prefix += last_stack[j] ? std::string("    ") : std::string("│   ");
+                            }
+                            child_prefix += last_stack.back() ? std::string("└── ") : std::string("├── ");
+                            out << child_prefix << "[Ref] " << nbr << "\n";
+                            last_stack.pop_back();
+                            continue;
+                        }
+
+                        print_node(nbr, last_stack, depth + 1, node, i);
+                        last_stack.pop_back();
+                    }
+                    in_path[node] = 0;
+                };
+
+                std::vector<bool> empty_stack;
+                print_node(start, empty_stack, 0, static_cast<size_t>(-1), 0);
+
+                // If multiple components exist, and start != 0, list other components
+                if (impl.node_count() > 0 && start != 0)
+                {
+                    for (size_t i = 0; i < impl.node_count(); ++i)
+                    {
+                        if (!visited.count(i))
+                        {
+                            out << "Component starting at " << i << ":\n";
+                            std::vector<bool> st;
+                            print_node(i, st, 0, static_cast<size_t>(-1), 0);
+                        }
+                    }
+                }
+
+                return out.str();
+            }
         };
 
         // ============ var Graph Method Definitions ============
@@ -5463,7 +5601,7 @@ namespace pythonic
         // Helper implementations for str() and operator bool()
         inline std::string var::graph_str_impl() const
         {
-            return graph_ref().str();
+            return graph_ref().pretty_str();
         }
 
         inline bool var::graph_bool_impl() const
