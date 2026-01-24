@@ -5190,6 +5190,23 @@ namespace pythonic
             // ===== Get edges for a node =====
             var get_edges(size_t node);
 
+            // ===== Interactive Graph Viewer =====
+#ifdef PYTHONIC_ENABLE_GRAPH_VIEWER
+            /**
+             * @brief Open interactive graph viewer window
+             * @param blocking If true, blocks until viewer window is closed
+             *
+             * View Mode: Click nodes to trigger signal flow, drag for fun (snaps back)
+             * Edit Mode: Double-click to add nodes, drag node-to-node to add edges
+             *
+             * Usage:
+             *   var g = graph(5);
+             *   g.add_edge(0, 1);
+             *   g.show();  // Opens interactive viewer
+             */
+            void show(bool blocking = true);
+#endif
+
         }; // class var
 
         // ============ Deferred implementations for VarHasher and VarEqual ============
@@ -5827,6 +5844,9 @@ namespace pythonic
             }
             return var(std::move(result));
         }
+
+        // ===== Interactive Graph Viewer =====
+
 
         /**
          * @brief Create a new graph with n nodes.
@@ -6472,6 +6492,17 @@ namespace pythonic
         {
             return tuple_to_list(t);
         }
+
+// ============ Interactive Graph Viewer Implementation ============
+#ifdef PYTHONIC_ENABLE_GRAPH_VIEWER
+    } // namespace vars
+    namespace viewer { void show_graph(pythonic::vars::var&, bool); }
+    namespace vars {
+        inline void var::show(bool blocking)
+        {
+            pythonic::viewer::show_graph(*this, blocking);
+        }
+#endif
 
 // Pythonic variables declaration
 #define let(name) \

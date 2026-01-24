@@ -69,7 +69,7 @@ Now build and install the Pythonic library. The install will be placed in a subf
 ```bash
 mkdir -p build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=../install
+cmake .. -DCMAKE_INSTALL_PREFIX=../install -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
 cmake --build . --target install -j4
 cd ../..    # Go back to pythonic_cpp_lib directory
 pwd         # Remember this path - you'll need it later!
@@ -80,7 +80,7 @@ pwd         # Remember this path - you'll need it later!
 ```cmd
 mkdir build
 cd build
-cmake .. -DCMAKE_INSTALL_PREFIX=..\install
+cmake .. -DCMAKE_INSTALL_PREFIX=..\install -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
 cmake --build . --target install --config Release
 cd ..\..
 cd
@@ -190,6 +190,9 @@ add_executable(myapp main.cpp)
 
 # Link the Pythonic library
 target_link_libraries(myapp PRIVATE pythonic::pythonic)
+
+# If using Graph Viewer:
+# target_link_libraries(myapp PRIVATE pythonic::pythonic_graph_viewer)
 ```
 
 Copy paste it or we have a **CMakeLists.txt** file in **example** directory. You can directly use that too.
