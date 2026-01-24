@@ -1651,7 +1651,7 @@ namespace pythonic
 
             // Type name - returns string like "int", "str", "list", "dict", "NoneType" etc.
             // OPTIMIZED: Use tag for common cases, returns const char* to avoid allocation
-            const char* type_cstr() const noexcept
+            const char *type_cstr() const noexcept
             {
                 switch (tag_)
                 {
@@ -1695,13 +1695,13 @@ namespace pythonic
                     return "unknown";
                 }
             }
-            
+
             // type() returns std::string for compatibility, but prefer type_cstr() for performance
             std::string type() const
             {
                 return std::string(type_cstr());
             }
-            
+
             // Fast type tag accessor for performance-critical code
             TypeTag type_tag() const noexcept { return tag_; }
 
@@ -1849,7 +1849,7 @@ namespace pythonic
 
             // Pretty string with indentation (for pprint)
             // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
-            std::string pretty_str(int indent = 0, int indent_step = 2) const
+            std::string pretty_str(size_t indent = 0, size_t indent_step = 2) const
             {
                 std::string ind(indent, ' ');
                 std::string inner_ind(indent + indent_step, ' ');
@@ -4300,7 +4300,7 @@ namespace pythonic
             const_iterator cend() const { return end(); }
 
             // items() for dict - returns list of [key, value] pairs
-            // Note: For better performance in loops, consider using items_fast() 
+            // Note: For better performance in loops, consider using items_fast()
             // which returns an iterable view instead of materializing a list
             var items() const
             {
@@ -4308,12 +4308,12 @@ namespace pythonic
                 {
                     const Dict &dct = var_get<Dict>();
                     List result;
-                    result.reserve(dct.size());  // Pre-allocate
+                    result.reserve(dct.size()); // Pre-allocate
                     for (const auto &[k, v] : dct)
                     {
                         // Create a [key, value] list pair
                         List pair;
-                        pair.reserve(2);  // Pre-allocate for 2 elements
+                        pair.reserve(2); // Pre-allocate for 2 elements
                         pair.emplace_back(k);
                         pair.emplace_back(v);
                         result.emplace_back(std::move(pair));
@@ -5811,41 +5811,59 @@ namespace pythonic
         }
 
         // Helper: Convert type name string to TypeTag for fast comparison
-        inline TypeTag type_name_to_tag(const char* type_name) noexcept
+        inline TypeTag type_name_to_tag(const char *type_name) noexcept
         {
             // Fast path for common single-char differences
-            if (!type_name || !type_name[0]) return TypeTag::NONE;
-            
-            switch (type_name[0]) {
-                case 'i': return TypeTag::INT;  // "int"
-                case 'f': return TypeTag::FLOAT;  // "float"
-                case 's': 
-                    if (type_name[1] == 't') return TypeTag::STRING;  // "str"
-                    return TypeTag::SET;  // "set"
-                case 'b': return TypeTag::BOOL;  // "bool"
-                case 'd': 
-                    if (type_name[1] == 'i') return TypeTag::DICT;  // "dict"
-                    return TypeTag::DOUBLE;  // "double"
-                case 'l':
-                    if (type_name[1] == 'i') return TypeTag::LIST;  // "list"
-                    if (type_name[1] == 'o' && type_name[2] == 'n' && type_name[3] == 'g') {
-                        if (type_name[4] == ' ') {
-                            if (type_name[5] == 'l') return TypeTag::LONG_LONG;  // "long long"
-                            if (type_name[5] == 'd') return TypeTag::LONG_DOUBLE;  // "long double"
-                        }
-                        return TypeTag::LONG;  // "long"
+            if (!type_name || !type_name[0])
+                return TypeTag::NONE;
+
+            switch (type_name[0])
+            {
+            case 'i':
+                return TypeTag::INT; // "int"
+            case 'f':
+                return TypeTag::FLOAT; // "float"
+            case 's':
+                if (type_name[1] == 't')
+                    return TypeTag::STRING; // "str"
+                return TypeTag::SET;        // "set"
+            case 'b':
+                return TypeTag::BOOL; // "bool"
+            case 'd':
+                if (type_name[1] == 'i')
+                    return TypeTag::DICT; // "dict"
+                return TypeTag::DOUBLE;   // "double"
+            case 'l':
+                if (type_name[1] == 'i')
+                    return TypeTag::LIST; // "list"
+                if (type_name[1] == 'o' && type_name[2] == 'n' && type_name[3] == 'g')
+                {
+                    if (type_name[4] == ' ')
+                    {
+                        if (type_name[5] == 'l')
+                            return TypeTag::LONG_LONG; // "long long"
+                        if (type_name[5] == 'd')
+                            return TypeTag::LONG_DOUBLE; // "long double"
                     }
-                    break;
-                case 'N': return TypeTag::NONE;  // "NoneType"
-                case 'u':
-                    if (type_name[9] == 'i') return TypeTag::UINT;  // "unsigned int"
-                    if (type_name[9] == 'l') {
-                        if (type_name[13] == ' ') return TypeTag::ULONG_LONG;  // "unsigned long long"
-                        return TypeTag::ULONG;  // "unsigned long"
-                    }
-                    break;
-                case 'o': return TypeTag::ORDEREDSET;  // "ordered_set" or "ordereddict"
-                case 'g': return TypeTag::GRAPH;  // "graph"
+                    return TypeTag::LONG; // "long"
+                }
+                break;
+            case 'N':
+                return TypeTag::NONE; // "NoneType"
+            case 'u':
+                if (type_name[9] == 'i')
+                    return TypeTag::UINT; // "unsigned int"
+                if (type_name[9] == 'l')
+                {
+                    if (type_name[13] == ' ')
+                        return TypeTag::ULONG_LONG; // "unsigned long long"
+                    return TypeTag::ULONG;          // "unsigned long"
+                }
+                break;
+            case 'o':
+                return TypeTag::ORDEREDSET; // "ordered_set" or "ordereddict"
+            case 'g':
+                return TypeTag::GRAPH; // "graph"
             }
             return TypeTag::NONE;
         }
@@ -5917,7 +5935,7 @@ namespace pythonic
         {
             if (v.type_tag() == TypeTag::STRING)
             {
-                const std::string& s = v.get<std::string>();
+                const std::string &s = v.get<std::string>();
                 std::ostringstream ss;
                 ss << "'";
                 for (char c : s)

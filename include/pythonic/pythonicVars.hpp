@@ -113,18 +113,11 @@ namespace pythonic
             bool operator!=(const NoneType &) const { return false; }
         };
 
-        // Forward declaration for Graph - actual include is at the end of this file
+        // Forward declaration for Graph actual include is at the end of this file
         // This avoids circular dependency since Graph uses var for node metadata
         class VarGraphWrapper;
         using GraphPtr = std::shared_ptr<VarGraphWrapper>;
-
-        // The main variant type (primitives + all container types + graph)
-        using varType = std::variant<
-            NoneType,
-            int, float, std::string, bool, double,
-            long, long long, long double,
-            unsigned int, unsigned long, unsigned long long,
-            List, Set, Dict, OrderedSet, OrderedDict, GraphPtr>;
+        // TODO: Later I will add std::forward_list as llist() and std::list as dllist() in this just like I have vector container like list I will add linked lists too.
 
         // TypeTag enum for fast type dispatch (avoids repeated var_get_if/holds_alternative calls)
         // Using uint8_t as underlying type to minimize memory overhead (1 byte)
@@ -156,8 +149,9 @@ namespace pythonic
         // - Smaller memory footprint (~24 bytes vs ~80 bytes for variant)
         // - Better cache locality
         //
-        // Non-trivial types (string, containers) are heap-allocated via void* ptr
+        // Non-trivial types (string, containers) are heap-allocated via void* ptr.
         // and require manual lifetime management in var's constructors/destructor.
+        // And as they are heap-allocated memory and heap-allocation is performence costly, need to optimize or minimize frequent allocation and deallocation
 
         union VarData
         {
@@ -171,7 +165,8 @@ namespace pythonic
             float f;
             double d;
             long double ld;
-            void *ptr; // For: string, List, Set, Dict, OrderedSet, OrderedDict, GraphPtr
+            void *ptr; // For: string, List, Set, Dict, OrderedSet, OrderedDict, GraphPtr,
+            // TODO: will add linked list in the void pointer. also maybe will change it to use smart pointer to make sure it's safer . I will use unique pointer if it does not introduce complexities.
 
             // Default constructor (for union, does nothing)
             VarData() : ll(0) {}
@@ -263,6 +258,8 @@ namespace pythonic
             template <typename T>
             const T &var_get() const
             {
+                // constexpr = tells compiler: "hey, figure this out at compile-time, cut the useless branches, no runtime checks, zero cost magic"
+
                 if constexpr (std::is_same_v<T, bool>)
                     return data_.b;
                 else if constexpr (std::is_same_v<T, int>)
@@ -557,14 +554,16 @@ namespace pythonic
 
             // Type promotion helpers
             // Returns the TypeTag that should be used for mixed-type operations
-            // STRING has highest rank - any operation with string converts other to string
-            // For numeric types: bool < uint < int < ulong < long < ulong_long < long_long < float < double < long double
-            // Unsigned types have lower rank than their signed counterparts - this means if EITHER input
-            // is unsigned, the result prefers unsigned containers
+            // STRING has highest rank - any operation with string converts the other to string
+            // For numeric types the ordering (narrow -> wide) is:
+            // bool < uint < int < ulong < long < ulong_long < long_long < float < double < long double
+            // Unsigned types have LOWER rank than their signed counterparts.
+            // Promotion rules:
+            // - If BOTH inputs are unsigned, the result may be unsigned.
+            // - If ANY input is signed, the result will be signed.
 
             // Get promotion rank for a type tag (higher = wider type)
-            // New ranking: unsigned types come before their signed counterparts
-            // bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
+            // Ranking: bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
             static int getTypeRank(TypeTag t) noexcept
             {
                 switch (t)
@@ -894,9 +893,6 @@ namespace pythonic
             }
 
         public:
-            // Fast type tag accessor
-            TypeTag tag() const { return tag_; }
-
             // ============ Constructors ============
             // Default constructor - initializes to int(0)
             var() : data_(0), tag_(TypeTag::INT) {}
@@ -1063,9 +1059,6 @@ namespace pythonic
                     return false; // Unknown type
             }
 
-            // Check if this var holds a graph
-            bool isGraph() const { return tag_ == TypeTag::GRAPH; }
-
             // Helper: Check if this var holds a numeric type
             bool isNumeric() const
             {
@@ -1090,10 +1083,8 @@ namespace pythonic
             }
 
             // ============ Fast Type Checking Methods ============
+            // TODO: these are not properly documented yet. need to reference them in the proper readme
             // These provide O(1) type checks without variant overhead
-
-            // Get the internal type tag (for fast path caching)
-            TypeTag getTag() const noexcept { return tag_; }
 
             bool is_list() const noexcept { return tag_ == TypeTag::LIST; }
             bool is_dict() const noexcept { return tag_ == TypeTag::DICT; }
@@ -1848,8 +1839,8 @@ namespace pythonic
             std::string graph_str_impl() const;
 
             // Pretty string with indentation (for pprint)
-            // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
-            std::string pretty_str(int indent = 0, int indent_step = 2) const
+
+            std::string pretty_str(size_t indent = 0, size_t indent_step = 2) const
             {
                 std::string ind(indent, ' ');
                 std::string inner_ind(indent + indent_step, ' ');

@@ -11,10 +11,10 @@ namespace pythonic
         using namespace pythonic::vars;
 
         // Forward declaration for recursive pretty printing
-        inline std::string format_value(const var &v, int indent = 0, int indent_step = 2, bool top_level = true);
+        inline std::string format_value(const var &v, size_t indent = 0, size_t indent_step = 2, bool top_level = true);
 
         // Helper to format a var value with optional indentation
-        inline std::string format_value(const var &v, int indent, int indent_step, bool top_level)
+        inline std::string format_value(const var &v, size_t indent, size_t indent_step, bool top_level)
         {
             std::string ind(indent, ' ');
             std::string inner_ind(indent + indent_step, ' ');
@@ -177,7 +177,7 @@ namespace pythonic
         }
 
         // pprint - force pretty print with configurable indent
-        inline void pprint(const var &v, int indent_step = 2)
+        inline void pprint(const var &v, size_t indent_step = 2)
         {
             std::cout << v.pretty_str(0, indent_step) << std::endl;
         }
