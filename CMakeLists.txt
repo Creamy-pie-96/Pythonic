@@ -89,6 +89,12 @@ option(PYTHONIC_ENABLE_GRAPH_VIEWER "Enable interactive graph viewer (requires G
 if(PYTHONIC_ENABLE_GRAPH_VIEWER)
     message(STATUS "Graph viewer enabled, looking for dependencies...")
     
+    # Prefer modern GLVND OpenGL implementation and set CMP0072 policy
+    if(POLICY CMP0072)
+        cmake_policy(SET CMP0072 NEW)
+    endif()
+    set(OpenGL_GL_PREFERENCE GLVND)
+
     find_package(OpenGL REQUIRED)
     find_package(glfw3 REQUIRED)
     
