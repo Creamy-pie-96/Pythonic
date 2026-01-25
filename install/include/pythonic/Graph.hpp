@@ -1246,6 +1246,77 @@ namespace pythonic
             size_t node_count() const { return nodes; }
 
             /**
+             * @brief Remove a node from the graph.
+             *
+             * Removes the node at index `node`, deletes all incident edges,
+             * and renumbers remaining nodes so indices remain contiguous
+             * (0..nodes-1). Metadata keys are updated accordingly.
+             *
+             * Note: This operation is O(V + E) because edges must be scanned
+             * to remove incoming references and remap indices.
+             */
+            void remove_node(size_t node)
+            {
+                if (node >= nodes)
+                    throw pythonic::PythonicGraphError("remove_node: invalid node");
+
+                // Remove outgoing edges from the node and update counters
+                for (const auto &e : edges[node])
+                {
+                    if (e.weight != 0.0)
+                        --non_zero_edge;
+                    if (e.weight < 0.0)
+                        --negative_edges;
+                }
+
+                // Erase the adjacency list for the node
+                edges.erase(edges.begin() + node);
+
+                // Remove incoming edges to `node`, and remap ids > node -> id-1
+                for (size_t u = 0; u < edges.size(); ++u)
+                {
+                    auto &adj = edges[u];
+                    for (auto it = adj.begin(); it != adj.end();)
+                    {
+                        if (it->id == node)
+                        {
+                            if (it->weight != 0.0)
+                                --non_zero_edge;
+                            if (it->weight < 0.0)
+                                --negative_edges;
+                            it = adj.erase(it);
+                        }
+                        else
+                        {
+                            if (it->id > node)
+                                --(it->id);
+                            ++it;
+                        }
+                    }
+                }
+
+                // Rebuild metadata map with shifted indices
+                std::unordered_map<size_t, NODE_data<T>> new_meta;
+                new_meta.reserve(meta_data.size());
+                for (auto &p : meta_data)
+                {
+                    size_t k = p.first;
+                    if (k == node)
+                        continue;
+                    if (k > node)
+                        new_meta[k - 1] = p.second;
+                    else
+                        new_meta[k] = p.second;
+                }
+                meta_data.swap(new_meta);
+
+                // Decrement node count and update flags
+                --nodes;
+                is_weighted = (non_zero_edge > 0);
+                has_negative_weight = (negative_edges > 0);
+            }
+
+            /**
              * @brief Get the total number of edges in the graph.
              */
             size_t edge_count() const
