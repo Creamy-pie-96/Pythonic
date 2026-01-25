@@ -188,7 +188,8 @@ namespace pythonic
                 try
                 {
                     // Run topological_sort in a separate thread and timeout if it takes too long.
-                    std::packaged_task<pythonic::vars::var()> task([&]() { return graph_var_.topological_sort(); });
+                    std::packaged_task<pythonic::vars::var()> task([&]()
+                                                                   { return graph_var_.topological_sort(); });
                     auto fut = task.get_future();
                     std::thread(std::move(task)).detach();
 
@@ -432,7 +433,6 @@ namespace pythonic
                     glfwTerminate();
                     return false;
                 }
-
 
                 glfwMakeContextCurrent(window_);
                 glfwSwapInterval(1); // VSync
