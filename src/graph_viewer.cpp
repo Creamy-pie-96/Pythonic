@@ -140,6 +140,14 @@ namespace pythonic
             char new_node_label_[256] = "";
             char new_node_metadata_[1024] = "";
 
+            // Selected-edge UI state (copied from snapshot when selection changes)
+            int last_selected_edge_idx_ = -1;
+            bool selected_edge_directed_ui_ = false;
+            double selected_edge_w1_ui_ = 1.0;
+            double selected_edge_w2_ui_ = 0.0;
+            size_t selected_edge_node_from_id_ = (size_t)-1;
+            size_t selected_edge_node_to_id_ = (size_t)-1;
+
             // Signal system
             std::vector<Signal> signals_;
             std::mutex signals_mutex_;
@@ -371,6 +379,102 @@ namespace pythonic
 
                 // Center camera on the graph
                 center_camera_on_graph();
+            }
+
+            // Clear all selections (nodes, edges) and UI selection state
+            void clear_all_selections()
+            {
+                std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                for (auto &n : back_snapshot_.nodes)
+                    n.is_selected = false;
+                for (auto &n : front_snapshot_.nodes)
+                    n.is_selected = false;
+                for (auto &e : back_snapshot_.edges)
+                    e.is_selected = false;
+                for (auto &e : front_snapshot_.edges)
+                    e.is_selected = false;
+                back_snapshot_.selected_node = -1;
+                front_snapshot_.selected_node = -1;
+                back_snapshot_.selected_edge = -1;
+                front_snapshot_.selected_edge = -1;
+                last_selected_edge_idx_ = -1;
+                selected_edge_node_from_id_ = (size_t)-1;
+                selected_edge_node_to_id_ = (size_t)-1;
+            }
+
+            void set_selected_edge(int idx)
+            {
+                std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                // Clear node selections
+                for (auto &n : back_snapshot_.nodes)
+                    n.is_selected = false;
+                for (auto &n : front_snapshot_.nodes)
+                    n.is_selected = false;
+                // Clear edge selections then set the requested one
+                for (auto &e : back_snapshot_.edges)
+                    e.is_selected = false;
+                for (auto &e : front_snapshot_.edges)
+                    e.is_selected = false;
+                if (idx >= 0)
+                {
+                    if ((size_t)idx < back_snapshot_.edges.size())
+                        back_snapshot_.edges[idx].is_selected = true;
+                    if ((size_t)idx < front_snapshot_.edges.size())
+                        front_snapshot_.edges[idx].is_selected = true;
+                    back_snapshot_.selected_edge = idx;
+                    front_snapshot_.selected_edge = idx;
+                    back_snapshot_.selected_node = -1;
+                    front_snapshot_.selected_node = -1;
+                }
+                else
+                {
+                    back_snapshot_.selected_edge = -1;
+                    front_snapshot_.selected_edge = -1;
+                }
+                last_selected_edge_idx_ = -1; // force UI state refresh on next render
+            }
+
+            void set_selected_node(int idx)
+            {
+                std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                // Clear edge selections
+                for (auto &e : back_snapshot_.edges)
+                    e.is_selected = false;
+                for (auto &e : front_snapshot_.edges)
+                    e.is_selected = false;
+                // Clear node selections then set requested one
+                for (auto &n : back_snapshot_.nodes)
+                    n.is_selected = false;
+                for (auto &n : front_snapshot_.nodes)
+                    n.is_selected = false;
+                if (idx >= 0)
+                {
+                    if ((size_t)idx < back_snapshot_.nodes.size())
+                        back_snapshot_.nodes[idx].is_selected = true;
+                    if ((size_t)idx < front_snapshot_.nodes.size())
+                        front_snapshot_.nodes[idx].is_selected = true;
+                    back_snapshot_.selected_node = idx;
+                    front_snapshot_.selected_node = idx;
+                    back_snapshot_.selected_edge = -1;
+                    front_snapshot_.selected_edge = -1;
+                }
+                else
+                {
+                    back_snapshot_.selected_node = -1;
+                    front_snapshot_.selected_node = -1;
+                }
+                last_selected_edge_idx_ = -1;
+            }
+
+            void on_mode_set(ViewerMode new_mode)
+            {
+                // When switching to view mode, clear all selections and in-progress edits
+                if (new_mode == ViewerMode::VIEW)
+                {
+                    clear_all_selections();
+                    creating_edge_ = false;
+                    edge_start_node_ = -1;
+                }
             }
 
             void center_camera_on_graph()
@@ -852,7 +956,11 @@ namespace pythonic
                     float width = (config_.edge_thickness + tension_boost) * zoom_;
                     ImU32 col;
 
-                    if (edge.is_hovered || n1.is_hovered || n2.is_hovered)
+                    if (edge.is_selected)
+                    {
+                        col = IM_COL32(80, 220, 120, 255); // selected edge (green)
+                    }
+                    else if (edge.is_hovered || n1.is_hovered || n2.is_hovered)
                     {
                         col = IM_COL32(200, 100, 255, 255); // Purple
                     }
@@ -1069,6 +1177,7 @@ namespace pythonic
                 if (ImGui::Button(mode_icon))
                 {
                     mode_ = (mode_ == ViewerMode::VIEW) ? ViewerMode::EDIT : ViewerMode::VIEW;
+                    on_mode_set(mode_);
                 }
                 ImGui::SameLine();
                 // Shortest-path quick toggle button (small, visible)
@@ -1213,6 +1322,9 @@ namespace pythonic
                     }
 
                     ImGui::SameLine();
+                    // (Edge properties are editable per-selected-edge below)
+
+                    ImGui::SameLine();
                     int selected_idx;
                     {
                         std::lock_guard<std::mutex> lock(snapshot_mutex_);
@@ -1236,6 +1348,156 @@ namespace pythonic
                     if (ImGui::Button("Relayout (Topological)"))
                     {
                         do_topological_relayout();
+                    }
+                }
+
+                // Edge property editor for selected edge (edit mode)
+                {
+                    int sedge = -1;
+                    {
+                        std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                        sedge = back_snapshot_.selected_edge;
+                    }
+
+                    if (mode_ == ViewerMode::EDIT && sedge >= 0)
+                    {
+                        // If selection changed, copy properties into UI state under lock
+                        if (sedge != last_selected_edge_idx_)
+                        {
+                            std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                            if (sedge < (int)back_snapshot_.edges.size())
+                            {
+                                auto es = back_snapshot_.edges[sedge];
+                                last_selected_edge_idx_ = sedge;
+                                selected_edge_directed_ui_ = es.directed;
+                                selected_edge_w1_ui_ = es.weight;
+                                selected_edge_w2_ui_ = 0.0;
+                                // find reverse weight if undirected
+                                if (!es.directed)
+                                {
+                                    for (const auto &rev : back_snapshot_.edges)
+                                    {
+                                        if (rev.from == es.to && rev.to == es.from)
+                                        {
+                                            selected_edge_w2_ui_ = rev.weight;
+                                            break;
+                                        }
+                                    }
+                                }
+                                // store underlying node ids for later operations
+                                if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size())
+                                {
+                                    selected_edge_node_from_id_ = back_snapshot_.nodes[es.from].node_id;
+                                    selected_edge_node_to_id_ = back_snapshot_.nodes[es.to].node_id;
+                                }
+                                else
+                                {
+                                    selected_edge_node_from_id_ = (size_t)-1;
+                                    selected_edge_node_to_id_ = (size_t)-1;
+                                }
+                            }
+                        }
+
+                        // Render editor using UI state variables
+                        ImGui::Separator();
+                        ImGui::Text("Selected Edge: %d", sedge);
+                        ImGui::Text("From: %zu   To: %zu", selected_edge_node_from_id_, selected_edge_node_to_id_);
+                        bool directed = selected_edge_directed_ui_;
+                        double w1 = selected_edge_w1_ui_;
+                        double w2 = selected_edge_w2_ui_;
+
+                        // Allow flipping endpoints so user can choose which is 'from' and which is 'to'
+                        // Allow flipping endpoints so user can choose which is 'from' and which is 'to'
+                        ImGui::SameLine();
+                        if (ImGui::SmallButton("Swap Direction (Flip)"))
+                        {
+                            std::swap(selected_edge_node_from_id_, selected_edge_node_to_id_);
+                            std::swap(w1, w2);
+                            // Update directed flag remains; flipping endpoints changes semantics appropriately on apply
+                        }
+
+                        ImGui::Checkbox("Directed", &directed);
+                        ImGui::InputDouble("W u->v", &w1, 0.1, 1.0, "%.2f");
+                        if (!directed)
+                            ImGui::InputDouble("W v->u", &w2, 0.1, 1.0, "%.2f");
+
+                        if (ImGui::Button("Apply Edge Changes"))
+                        {
+                            // perform graph ops outside the snapshot lock
+                            size_t orig_u = (size_t)-1;
+                            size_t orig_v = (size_t)-1;
+                            
+                            // Retrieve original edge IDs from the snapshot index
+                            // This ensures we remove the ACTUAL existing edge, not the potentially-swapped UI values
+                            if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
+                                const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
+                                if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
+                                    orig_u = back_snapshot_.nodes[es.from].node_id;
+                                    orig_v = back_snapshot_.nodes[es.to].node_id;
+                                }
+                            }
+
+                            if (selected_edge_node_from_id_ != (size_t)-1 && selected_edge_node_to_id_ != (size_t)-1 &&
+                                orig_u != (size_t)-1 && orig_v != (size_t)-1)
+                            {
+                                try
+                                {
+                                    // Remove original edge(s) completely to avoid duplicates/residue
+                                    graph_var_.remove_edge(orig_u, orig_v, true);
+                                    graph_var_.remove_edge(orig_v, orig_u, true);
+                                    
+                                    if (directed)
+                                        graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, w1, std::numeric_limits<double>::quiet_NaN(), true);
+                                    else
+                                        graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, w1, w2, false);
+                                }
+                                catch (...)
+                                {
+                                }
+                                // Refresh snapshots from graph
+                                sync_from_graph();
+                                clear_all_selections();
+                            }
+                        }
+                        ImGui::SameLine();
+                        if (ImGui::Button("Remove Edge"))
+                        {
+                             // Use original IDs for removal to ensure it works even if UI was flipped
+                            size_t orig_u = (size_t)-1;
+                            size_t orig_v = (size_t)-1;
+                            
+                            if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
+                                const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
+                                if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
+                                    orig_u = back_snapshot_.nodes[es.from].node_id;
+                                    orig_v = back_snapshot_.nodes[es.to].node_id;
+                                }
+                            }
+
+                            if (orig_u != (size_t)-1 && orig_v != (size_t)-1)
+                            {
+                                try
+                                {
+                                    graph_var_.remove_edge(orig_u, orig_v, true);
+                                    graph_var_.remove_edge(orig_v, orig_u, true);
+                                }
+                                catch (...)
+                                {
+                                }
+                                sync_from_graph();
+                                clear_all_selections();
+                            }
+                        }
+
+                        // Save back any UI edits into the fields for consistency
+                        selected_edge_directed_ui_ = directed;
+                        selected_edge_w1_ui_ = w1;
+                        selected_edge_w2_ui_ = w2;
+                    }
+                    else
+                    {
+                        // no selection
+                        last_selected_edge_idx_ = -1;
                     }
                 }
 
@@ -1388,13 +1650,18 @@ namespace pythonic
                 }
 
                 // Add to actual graph using node_id (not index!)
-                graph_var_.add_edge(from_id, to_id, 1.0, 0.0, true);
+                // Default: create a directed edge with unit weight. Edge-specific
+                // properties can be edited after creation by selecting the edge.
+                double w1 = 1.0;
+                double w2 = std::numeric_limits<double>::quiet_NaN();
+                bool directional = true;
+                graph_var_.add_edge(from_id, to_id, w1, w2, directional);
 
                 EdgeState es;
                 es.from = from_idx; // Store index for snapshot rendering
                 es.to = to_idx;
-                es.weight = 1.0;
-                es.directed = true;
+                es.weight = w1;
+                es.directed = directional;
 
                 {
                     std::lock_guard<std::mutex> lock(snapshot_mutex_);
@@ -1589,6 +1856,63 @@ namespace pythonic
                     front_snapshot_.hovered_node = hovered;
                 }
 
+                // Edge hover detection (hit-test against segments in world coords)
+                int hovered_edge = -1;
+                float min_edge_dist = 12.0f / zoom_; // pixels threshold in world-space approx
+                {
+                    std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                    for (size_t ei = 0; ei < front_snapshot_.edges.size(); ++ei)
+                    {
+                        const auto &e = front_snapshot_.edges[ei];
+                        if (e.from >= front_snapshot_.nodes.size() || e.to >= front_snapshot_.nodes.size())
+                            continue;
+                        const auto &n1 = front_snapshot_.nodes[e.from];
+                        const auto &n2 = front_snapshot_.nodes[e.to];
+
+                        // Compute distance from world point to segment
+                        auto point_segment_dist = [&](float px, float py, float x1, float y1, float x2, float y2)
+                        {
+                            float vx = x2 - x1, vy = y2 - y1;
+                            float wx = px - x1, wy = py - y1;
+                            float c1 = vx * wx + vy * wy;
+                            float c2 = vx * vx + vy * vy;
+                            float t = (c2 <= 0.0f) ? 0.0f : (c1 / c2);
+                            if (t < 0)
+                                t = 0;
+                            if (t > 1)
+                                t = 1;
+                            float cx = x1 + vx * t;
+                            float cy = y1 + vy * t;
+                            float dx = px - cx;
+                            float dy = py - cy;
+                            return std::sqrt(dx * dx + dy * dy);
+                        };
+
+                        float d = point_segment_dist(world_x, world_y, n1.x, n1.y, n2.x, n2.y);
+                        if (d < min_edge_dist && (hovered_edge < 0 || d < min_edge_dist))
+                        {
+                            hovered_edge = (int)ei;
+                            min_edge_dist = d;
+                        }
+                    }
+
+                    // Clear previous edge hover flags
+                    for (auto &ee : back_snapshot_.edges)
+                        ee.is_hovered = false;
+                    for (auto &ee : front_snapshot_.edges)
+                        ee.is_hovered = false;
+
+                    if (hovered_edge >= 0)
+                    {
+                        if ((size_t)hovered_edge < back_snapshot_.edges.size())
+                            back_snapshot_.edges[hovered_edge].is_hovered = true;
+                        if ((size_t)hovered_edge < front_snapshot_.edges.size())
+                            front_snapshot_.edges[hovered_edge].is_hovered = true;
+                    }
+                    back_snapshot_.hovered_edge = hovered_edge;
+                    front_snapshot_.hovered_edge = hovered_edge;
+                }
+
                 // Mouse wheel zoom
                 if (io.MouseWheel != 0)
                 {
@@ -1635,6 +1959,17 @@ namespace pythonic
                         {
                             edge_start_node_ = -1;
                             creating_edge_ = false;
+                        }
+
+                        // Check for edge click (select edge)
+                        int hovered_edge = -1;
+                        {
+                            std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                            hovered_edge = front_snapshot_.hovered_edge;
+                        }
+                        if (mode_ == ViewerMode::EDIT && hovered_edge >= 0)
+                        {
+                            set_selected_edge(hovered_edge);
                         }
 
                         // Check if hitting center handle (use front_snapshot_ for stability)
@@ -1847,27 +2182,21 @@ namespace pythonic
                     {
                         trigger_signal_at(hovered);
                     }
-                    else if (mode_ == ViewerMode::EDIT)
+                    if (mode_ == ViewerMode::EDIT)
                     {
-                        std::lock_guard<std::mutex> lock(snapshot_mutex_);
-                        // Clear old selection in BOTH snapshots
-                        for (auto &n : back_snapshot_.nodes)
-                            n.is_selected = false;
-                        for (auto &n : front_snapshot_.nodes)
-                            n.is_selected = false;
-                        if (hovered >= 0)
+                        int he = front_snapshot_.hovered_edge;
+                        if (he >= 0)
                         {
-                            if (hovered < back_snapshot_.nodes.size())
-                                back_snapshot_.nodes[hovered].is_selected = true;
-                            if (hovered < front_snapshot_.nodes.size())
-                                front_snapshot_.nodes[hovered].is_selected = true;
-                            back_snapshot_.selected_node = hovered;
-                            front_snapshot_.selected_node = hovered;
+                            set_selected_edge(he);
+                        }
+                        else if (hovered >= 0)
+                        {
+                            set_selected_node(hovered);
                         }
                         else
                         {
-                            back_snapshot_.selected_node = -1;
-                            front_snapshot_.selected_node = -1;
+                            // clicked empty: clear selections
+                            clear_all_selections();
                         }
                     }
                 }
@@ -1878,7 +2207,47 @@ namespace pythonic
                 {
                     if (mode_ == ViewerMode::EDIT)
                     {
-                        delete_selected_node();
+                        // If an edge is selected, remove that edge first
+                        int sedge = -1;
+                        {
+                            std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                            sedge = back_snapshot_.selected_edge;
+                        }
+                        if (sedge >= 0)
+                        {
+                            // Map snapshot indices to node ids and remove from graph
+                            size_t from_idx, to_idx;
+                            bool was_directed = true;
+                            {
+                                std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                                if ((size_t)sedge < back_snapshot_.edges.size())
+                                {
+                                    auto es = back_snapshot_.edges[sedge];
+                                    from_idx = back_snapshot_.nodes[es.from].node_id;
+                                    to_idx = back_snapshot_.nodes[es.to].node_id;
+                                    was_directed = es.directed;
+                                }
+                                else
+                                {
+                                    sedge = -1;
+                                }
+                            }
+                            if (sedge >= 0)
+                            {
+                                try
+                                {
+                                    graph_var_.remove_edge(from_idx, to_idx, !was_directed);
+                                }
+                                catch (...)
+                                {
+                                }
+                                sync_from_graph();
+                            }
+                        }
+                        else
+                        {
+                            delete_selected_node();
+                        }
                     }
                 }
 
@@ -1970,11 +2339,13 @@ namespace pythonic
         void GraphViewer::set_mode(ViewerMode mode)
         {
             impl_->mode_ = mode;
+            impl_->on_mode_set(mode);
         }
 
         void GraphViewer::toggle_mode()
         {
             impl_->mode_ = (impl_->mode_ == ViewerMode::VIEW) ? ViewerMode::EDIT : ViewerMode::VIEW;
+            impl_->on_mode_set(impl_->mode_);
         }
 
         ViewerConfig &GraphViewer::config()
