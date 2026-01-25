@@ -27,6 +27,7 @@ desktop.ini
 # Build artifacts
 # =========================
 build/
+examples/graph_visualization/external/
 dist/
 out/
 bin/

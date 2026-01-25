@@ -72,8 +72,8 @@ namespace pythonic
             float fy = 0.0f;
 
             // Visual state
-            float activation = 0.0f;   ///< Glow intensity
-            float glow_decay = 0.95f;  ///< Decay factor per frame
+            float activation = 0.0f;  ///< Glow intensity
+            float glow_decay = 0.95f; ///< Decay factor per frame
             bool is_hovered = false;
             bool is_selected = false;
             bool is_dragging = false;
@@ -109,7 +109,7 @@ namespace pythonic
             size_t to = 0;
             float progress = 0.0f; ///< 0.0 = at source, 1.0 = at dest
             float strength = 1.0f;
-            int wave = 0;          ///< Wave number (outgoing=0, incoming=1, etc.)
+            int wave = 0; ///< Wave number (outgoing=0, incoming=1, etc.)
             bool active = true;
         };
 
@@ -178,7 +178,7 @@ namespace pythonic
 
             // Behavior
             bool snap_to_pinned_in_view = true; ///< Nodes snap back in view mode
-            bool auto_topo_sort = true;         ///< Auto-sort on topology change
+            bool auto_topo_sort = false;        ///< Auto-sort on topology change (disabled by default to avoid disruption during interactive editing)
         };
 
         // ============ GRAPH VIEWER CLASS ============
@@ -195,7 +195,7 @@ namespace pythonic
              * @brief Construct viewer for a graph var
              * @param graph_var Reference to var containing a graph
              */
-            explicit GraphViewer(pythonic::vars::var& graph_var);
+            explicit GraphViewer(pythonic::vars::var &graph_var);
 
             /**
              * @brief Destructor - stops threads and cleans up
@@ -203,10 +203,10 @@ namespace pythonic
             ~GraphViewer();
 
             // Non-copyable, non-movable
-            GraphViewer(const GraphViewer&) = delete;
-            GraphViewer& operator=(const GraphViewer&) = delete;
-            GraphViewer(GraphViewer&&) = delete;
-            GraphViewer& operator=(GraphViewer&&) = delete;
+            GraphViewer(const GraphViewer &) = delete;
+            GraphViewer &operator=(const GraphViewer &) = delete;
+            GraphViewer(GraphViewer &&) = delete;
+            GraphViewer &operator=(GraphViewer &&) = delete;
 
             /**
              * @brief Run the viewer
@@ -245,7 +245,7 @@ namespace pythonic
             /**
              * @brief Get mutable configuration
              */
-            ViewerConfig& config();
+            ViewerConfig &config();
 
             /**
              * @brief Trigger signal flow from a node
@@ -278,14 +278,14 @@ namespace pythonic
          *   pythonic::viewer::show_graph(g);  // Opens viewer
          *   // After closing, g may have been modified
          */
-        void show_graph(pythonic::vars::var& g, bool blocking = true);
+        void show_graph(pythonic::vars::var &g, bool blocking = true);
 
         /**
          * @brief Show an interactive viewer for a graph (const version)
          *
          * Opens in View mode only since graph cannot be modified.
          */
-        void show_graph(const pythonic::vars::var& g, bool blocking = true);
+        void show_graph(const pythonic::vars::var &g, bool blocking = true);
 
     } // namespace viewer
 
@@ -306,20 +306,20 @@ namespace pythonic
         class GraphViewer
         {
         public:
-            explicit GraphViewer(pythonic::vars::var&)
+            explicit GraphViewer(pythonic::vars::var &)
             {
                 throw std::runtime_error(
                     "Graph viewer not enabled. Rebuild with -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON");
             }
         };
 
-        inline void show_graph(pythonic::vars::var&, bool = true)
+        inline void show_graph(pythonic::vars::var &, bool = true)
         {
             throw std::runtime_error(
                 "Graph viewer not enabled. Rebuild with -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON");
         }
 
-        inline void show_graph(const pythonic::vars::var&, bool = true)
+        inline void show_graph(const pythonic::vars::var &, bool = true)
         {
             throw std::runtime_error(
                 "Graph viewer not enabled. Rebuild with -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON");
