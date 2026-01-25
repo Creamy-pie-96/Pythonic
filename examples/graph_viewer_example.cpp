@@ -15,7 +15,7 @@
 
 using namespace py;
 
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
     // Check for test mode
     bool test_mode = (argc > 1 && std::string(argv[1]) == "--test");
@@ -26,13 +26,13 @@ int main(int argc, char** argv)
     var g = graph(6);
 
     // Add some edges to create a DAG structure
-    g.add_edge(0, 1, 1.0, 0.0, true);  // 0 -> 1 (directed)
-    g.add_edge(0, 2, 1.5, 0.0, true);  // 0 -> 2 (directed)
-    g.add_edge(1, 3, 2.0, 0.0, true);  // 1 -> 3 (directed)
-    g.add_edge(2, 3, 1.0, 0.0, true);  // 2 -> 3 (directed)
-    g.add_edge(2, 4, 0.5, 0.0, true);  // 2 -> 4 (directed)
-    g.add_edge(3, 5, 1.0, 0.0, true);  // 3 -> 5 (directed)
-    g.add_edge(4, 5, 2.0, 0.0, true);  // 4 -> 5 (directed)
+    g.add_edge(0, 1, 1.0, 0.0, true); // 0 -> 1 (directed)
+    g.add_edge(0, 2, 1.5, 0.0, true); // 0 -> 2 (directed)
+    g.add_edge(1, 3, 2.0, 0.0, true); // 1 -> 3 (directed)
+    g.add_edge(2, 3, 1.0, 0.0, true); // 2 -> 3 (directed)
+    g.add_edge(2, 4, 0.5, 0.0, true); // 2 -> 4 (directed)
+    g.add_edge(3, 5, 1.0, 0.0, true); // 3 -> 5 (directed)
+    g.add_edge(4, 5, 2.0, 0.0, true); // 4 -> 5 (directed)
 
     // Add some node metadata
     g.set_node_data(0, "Input");
