@@ -1294,60 +1294,37 @@ namespace pythonic
 
             void delete_selected_node()
             {
-                if (back_snapshot_.selected_node < 0)
-                    return;
-
-                // Note: Graph class may not support node removal
-                // For now, we just hide it from the snapshot
-                // Full implementation would need Graph::remove_node()
-
-                size_t node_to_remove = back_snapshot_.selected_node;
-
+                // Read selected node under lock, then perform actual graph removal
+                int sel = -1;
                 {
                     std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                    sel = back_snapshot_.selected_node;
+                }
+                if (sel < 0)
+                    return;
 
-                    // Remove edges connected to this node in BOTH snapshots
-                    back_snapshot_.edges.erase(
-                        std::remove_if(back_snapshot_.edges.begin(), back_snapshot_.edges.end(),
-                                       [node_to_remove](const EdgeState &e)
-                                       {
-                                           return e.from == node_to_remove || e.to == node_to_remove;
-                                       }),
-                        back_snapshot_.edges.end());
+                size_t node_to_remove = static_cast<size_t>(sel);
 
-                    front_snapshot_.edges.erase(
-                        std::remove_if(front_snapshot_.edges.begin(), front_snapshot_.edges.end(),
-                                       [node_to_remove](const EdgeState &e)
-                                       {
-                                           return e.from == node_to_remove || e.to == node_to_remove;
-                                       }),
-                        front_snapshot_.edges.end());
+                // Remove from the underlying graph (this renumbers nodes)
+                try
+                {
+                    graph_var_.remove_node(node_to_remove);
+                }
+                catch (...)
+                {
+                    // If removal failed for any reason, fall back to hiding
+                    sync_from_graph();
+                    return;
+                }
 
-                    // Mark node as hidden in BOTH snapshots
-                    if (node_to_remove < back_snapshot_.nodes.size())
-                    {
-                        back_snapshot_.nodes[node_to_remove].x = -10000;
-                        back_snapshot_.nodes[node_to_remove].y = -10000;
-                        back_snapshot_.nodes[node_to_remove].pinned_x = -10000;
-                        back_snapshot_.nodes[node_to_remove].pinned_y = -10000;
-                        back_snapshot_.nodes[node_to_remove].is_selected = false;
-                        back_snapshot_.nodes[node_to_remove].is_hovered = false;
-                        back_snapshot_.nodes[node_to_remove].is_dragging = false;
-                    }
-                    if (node_to_remove < front_snapshot_.nodes.size())
-                    {
-                        front_snapshot_.nodes[node_to_remove].x = -10000;
-                        front_snapshot_.nodes[node_to_remove].y = -10000;
-                        front_snapshot_.nodes[node_to_remove].pinned_x = -10000;
-                        front_snapshot_.nodes[node_to_remove].pinned_y = -10000;
-                        front_snapshot_.nodes[node_to_remove].is_selected = false;
-                        front_snapshot_.nodes[node_to_remove].is_hovered = false;
-                        front_snapshot_.nodes[node_to_remove].is_dragging = false;
-                    }
+                // Rebuild snapshots to reflect new node numbering and edges
+                sync_from_graph();
 
+                // Clear selection and any in-progress edge creation
+                {
+                    std::lock_guard<std::mutex> lock(snapshot_mutex_);
                     back_snapshot_.selected_node = -1;
                     front_snapshot_.selected_node = -1;
-                    // Also cancel any in-progress edge creation that referenced this node
                     creating_edge_ = false;
                     edge_start_node_ = -1;
                 }
