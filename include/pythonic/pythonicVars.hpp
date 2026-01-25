@@ -5153,6 +5153,7 @@ namespace pythonic
             // ===== Node Manipulation =====
             size_t add_node();
             size_t add_node(const var &data);
+            void remove_node(size_t node);
             var neighbors(size_t node) const;
 
             // ===== Graph Modification =====
@@ -5327,6 +5328,12 @@ namespace pythonic
             size_t add_node() { return impl.add_node(); }
             size_t add_node(const var &data) { return impl.add_node(data); }
             std::vector<size_t> neighbors(size_t node) const { return impl.neighbors(node); }
+            
+            // Remove a node from the graph (renumbers subsequent nodes)
+            void remove_node(size_t node)
+            {
+                impl.remove_node(node);
+            }
 
             // ===== Graph Modification =====
             void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directed = false)
@@ -5631,6 +5638,7 @@ namespace pythonic
         // ===== Node Manipulation =====
         inline size_t var::add_node() { return graph_ref().add_node(); }
         inline size_t var::add_node(const var &data) { return graph_ref().add_node(data); }
+        inline void var::remove_node(size_t node) { graph_ref().remove_node(node); }
         inline var var::neighbors(size_t node) const
         {
             auto nbrs = graph_ref().neighbors(node);
