@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <chrono>
 #include <random>
+#include <future>
 #include <queue>
 #include <sstream>
 
@@ -186,30 +187,42 @@ namespace pythonic
 
                 try
                 {
-                    auto topo = graph_var_.topological_sort();
-                    // Assign layers based on longest path from source
-                    std::vector<size_t> max_pred_layer(n, 0);
+                    // Run topological_sort in a separate thread and timeout if it takes too long.
+                    std::packaged_task<pythonic::vars::var()> task([&]() { return graph_var_.topological_sort(); });
+                    auto fut = task.get_future();
+                    std::thread(std::move(task)).detach();
 
-                    for (size_t i = 0; i < topo.len(); ++i)
+                    if (fut.wait_for(std::chrono::milliseconds(250)) == std::future_status::ready)
                     {
-                        size_t node_id = static_cast<size_t>(topo[i].toInt());
-                        // Find max layer of all predecessors
-                        size_t max_layer = 0;
-                        for (size_t pred = 0; pred < n; ++pred)
+                        auto topo = fut.get();
+                        // Assign layers based on longest path from source
+                        std::vector<size_t> max_pred_layer(n, 0);
+
+                        for (size_t i = 0; i < topo.len(); ++i)
                         {
-                            auto edges = graph_var_.get_edges(pred);
-                            for (size_t ei = 0; ei < edges.len(); ++ei)
+                            size_t node_id = static_cast<size_t>(topo[i].toInt());
+                            // Find max layer of all predecessors
+                            size_t max_layer = 0;
+                            for (size_t pred = 0; pred < n; ++pred)
                             {
-                                auto e = edges[ei];
-                                if (static_cast<size_t>(e["to"].toInt()) == node_id)
+                                auto edges = graph_var_.get_edges(pred);
+                                for (size_t ei = 0; ei < edges.len(); ++ei)
                                 {
-                                    max_layer = std::max(max_layer, layers[pred] + 1);
+                                    auto e = edges[ei];
+                                    if (static_cast<size_t>(e["to"].toInt()) == node_id)
+                                    {
+                                        max_layer = std::max(max_layer, layers[pred] + 1);
+                                    }
                                 }
                             }
+                            layers[node_id] = max_layer;
                         }
-                        layers[node_id] = max_layer;
+                        has_layers = true;
                     }
-                    has_layers = true;
+                    else
+                    {
+                        has_layers = false;
+                    }
                 }
                 catch (...)
                 {
@@ -355,8 +368,7 @@ namespace pythonic
 
             void center_camera_on_graph()
             {
-                std::lock_guard<std::mutex> lock(snapshot_mutex_);
-
+                // NOTE: caller should hold `snapshot_mutex_` to avoid races.
                 if (back_snapshot_.nodes.empty())
                     return;
 
@@ -396,7 +408,9 @@ namespace pythonic
             bool init_window()
             {
                 if (!glfwInit())
+                {
                     return false;
+                }
 
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
                 glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
@@ -419,10 +433,11 @@ namespace pythonic
                     return false;
                 }
 
+
                 glfwMakeContextCurrent(window_);
                 glfwSwapInterval(1); // VSync
 
-                // Enable multisampling
+                // Enable multisampling (after context is current)
                 if (config_.antialiasing)
                 {
                     glEnable(GL_MULTISAMPLE);
@@ -436,7 +451,8 @@ namespace pythonic
 
                 ImGui::StyleColorsDark();
                 ImGui_ImplGlfw_InitForOpenGL(window_, true);
-                ImGui_ImplOpenGL3_Init("#version 130");
+                // Use a GLSL version compatible with requested context
+                ImGui_ImplOpenGL3_Init("#version 330 core");
 
                 return true;
             }
