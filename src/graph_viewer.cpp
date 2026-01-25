@@ -129,6 +129,12 @@ namespace pythonic
             int edge_start_node_ = -1;
             bool creating_edge_ = false;
 
+            // Shortest path helper state
+            bool shortest_path_mode_ = false;     // If true, next two node clicks compute shortest path
+            int sp_first_ = -1;                   // snapshot index of first endpoint
+            int sp_second_ = -1;                  // snapshot index of second endpoint
+            std::vector<size_t> sp_path_indices_; // node indices (snapshot indices) along the path
+
             // Sidebar state
             bool sidebar_open_ = false;
             char new_node_label_[256] = "";
@@ -857,7 +863,38 @@ namespace pythonic
                         col = IM_COL32(100, 100, 120, alpha);
                     }
 
-                    dl->AddLine(p1, p2, col, width);
+                    // If a shortest-path is active and this edge is part of it, draw neon highlight
+                    bool is_sp_edge = false;
+                    if (!sp_path_indices_.empty())
+                    {
+                        for (size_t i = 0; i + 1 < sp_path_indices_.size(); ++i)
+                        {
+                            if ((size_t)edge.from == sp_path_indices_[i] && (size_t)edge.to == sp_path_indices_[i + 1])
+                            {
+                                is_sp_edge = true;
+                                break;
+                            }
+                            // also handle undirected appearance
+                            if (!edge.directed && (size_t)edge.from == sp_path_indices_[i + 1] && (size_t)edge.to == sp_path_indices_[i])
+                            {
+                                is_sp_edge = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (is_sp_edge)
+                    {
+                        // Neon color and thicker
+                        dl->AddLine(p1, p2, IM_COL32(50, 255, 200, 255), width * 2.0f);
+                        // add glow rings
+                        dl->AddCircleFilled(p1, 4.0f * zoom_, IM_COL32(50, 255, 200, 120));
+                        dl->AddCircleFilled(p2, 4.0f * zoom_, IM_COL32(50, 255, 200, 120));
+                    }
+                    else
+                    {
+                        dl->AddLine(p1, p2, col, width);
+                    }
 
                     // Arrow for directed edges
                     if (edge.directed)
@@ -949,7 +986,25 @@ namespace pythonic
                             255);
                     }
 
+                    // If this node is on the shortest-path, draw an additional neon ring
+                    bool is_sp_node = false;
+                    if (!sp_path_indices_.empty())
+                    {
+                        for (size_t idx : sp_path_indices_)
+                        {
+                            if (idx == node_idx)
+                            {
+                                is_sp_node = true;
+                                break;
+                            }
+                        }
+                    }
+
                     dl->AddCircleFilled(pos, visual_rad, fill_col);
+                    if (is_sp_node)
+                    {
+                        dl->AddCircle(pos, visual_rad * 1.4f, IM_COL32(50, 255, 200, 180), 0, 3.0f * zoom_);
+                    }
                     dl->AddCircle(pos, visual_rad, border_col, 0, 1.5f * zoom_);
 
                     // Label
@@ -1016,6 +1071,30 @@ namespace pythonic
                     mode_ = (mode_ == ViewerMode::VIEW) ? ViewerMode::EDIT : ViewerMode::VIEW;
                 }
                 ImGui::SameLine();
+                // Shortest-path quick toggle button (small, visible)
+                {
+                    ImVec2 btn_size(110, 0);
+                    ImU32 col = shortest_path_mode_ ? IM_COL32(50, 200, 150, 255) : IM_COL32(120, 120, 120, 255);
+                    ImGui::PushStyleColor(ImGuiCol_Button, col);
+                    if (ImGui::Button(shortest_path_mode_ ? "SP: ON" : "SP: OFF", btn_size))
+                    {
+                        shortest_path_mode_ = !shortest_path_mode_;
+                        if (!shortest_path_mode_)
+                        {
+                            std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                            sp_first_ = sp_second_ = -1;
+                            sp_path_indices_.clear();
+                            for (auto &n : back_snapshot_.nodes)
+                                n.is_selected = false;
+                            for (auto &n : front_snapshot_.nodes)
+                                n.is_selected = false;
+                        }
+                    }
+                    ImGui::PopStyleColor();
+                    ImGui::SameLine();
+                    ImGui::TextDisabled("(Shortest Path)");
+                }
+                ImGui::SameLine();
                 ImGui::TextDisabled("(Click to toggle)");
 
                 ImGui::Separator();
@@ -1074,6 +1153,47 @@ namespace pythonic
                     ImGui::Checkbox("Glow Effects", &config_.glow_enabled);
                     ImGui::SliderFloat("Node Radius", &config_.node_radius, 5.0f, 30.0f);
                     ImGui::SliderFloat("Edge Thickness", &config_.edge_thickness, 1.0f, 5.0f);
+                }
+
+                // Shortest-path mode (global)
+                ImGui::Separator();
+                if (ImGui::Checkbox("Shortest Path Mode", &shortest_path_mode_))
+                {
+                    // toggled - clear any previous selections when disabling
+                    if (!shortest_path_mode_)
+                    {
+                        std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                        sp_first_ = -1;
+                        sp_second_ = -1;
+                        sp_path_indices_.clear();
+                        // clear selected flags
+                        for (auto &n : back_snapshot_.nodes)
+                            n.is_selected = false;
+                        for (auto &n : front_snapshot_.nodes)
+                            n.is_selected = false;
+                    }
+                }
+
+                if (shortest_path_mode_)
+                {
+                    ImGui::TextWrapped("Click two nodes to compute shortest path. Selected endpoints:");
+                    ImGui::Indent();
+                    std::string sa = (sp_first_ >= 0) ? std::to_string(sp_first_) : std::string("(none)");
+                    std::string sb = (sp_second_ >= 0) ? std::to_string(sp_second_) : std::string("(none)");
+                    ImGui::Text("A: %s", sa.c_str());
+                    ImGui::Text("B: %s", sb.c_str());
+                    ImGui::Unindent();
+                    ImGui::SameLine();
+                    if (ImGui::Button("Clear Path"))
+                    {
+                        std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                        sp_first_ = sp_second_ = -1;
+                        sp_path_indices_.clear();
+                        for (auto &n : back_snapshot_.nodes)
+                            n.is_selected = false;
+                        for (auto &n : front_snapshot_.nodes)
+                            n.is_selected = false;
+                    }
                 }
 
                 // Edit mode controls
@@ -1660,7 +1780,70 @@ namespace pythonic
                 // Click to select (view mode: trigger signal)
                 if (ImGui::IsMouseClicked(ImGuiMouseButton_Left) && !ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left))
                 {
-                    if (mode_ == ViewerMode::VIEW && hovered >= 0)
+                    // Shortest-path selection has priority when enabled
+                    if (shortest_path_mode_)
+                    {
+                        std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                        // If clicked a node, register endpoints
+                        if (hovered >= 0)
+                        {
+                            // set first if not set
+                            if (sp_first_ < 0)
+                            {
+                                sp_first_ = hovered;
+                                // mark visually
+                                if (sp_first_ < back_snapshot_.nodes.size())
+                                    back_snapshot_.nodes[sp_first_].is_selected = true;
+                                if (sp_first_ < front_snapshot_.nodes.size())
+                                    front_snapshot_.nodes[sp_first_].is_selected = true;
+                            }
+                            else if (sp_second_ < 0 && hovered != sp_first_)
+                            {
+                                sp_second_ = hovered;
+                                if (sp_second_ < back_snapshot_.nodes.size())
+                                    back_snapshot_.nodes[sp_second_].is_selected = true;
+                                if (sp_second_ < front_snapshot_.nodes.size())
+                                    front_snapshot_.nodes[sp_second_].is_selected = true;
+
+                                // Both endpoints selected -> compute shortest path
+                                try
+                                {
+                                    size_t src_id = back_snapshot_.nodes[sp_first_].node_id;
+                                    size_t dst_id = back_snapshot_.nodes[sp_second_].node_id;
+                                    auto res = graph_var_.get_shortest_path(src_id, dst_id);
+                                    // res is a var dict {"path": [...], "distance": d}
+                                    sp_path_indices_.clear();
+                                    auto path_var = res["path"];
+                                    for (size_t i = 0; i < path_var.len(); ++i)
+                                    {
+                                        size_t nid = static_cast<size_t>(path_var[i].toInt());
+                                        // nid corresponds to snapshot index ordering
+                                        sp_path_indices_.push_back(nid);
+                                    }
+                                    // give activation to nodes in path for glow
+                                    for (size_t idx : sp_path_indices_)
+                                    {
+                                        if (idx < back_snapshot_.nodes.size())
+                                            back_snapshot_.nodes[idx].activation = 1.0f;
+                                        if (idx < front_snapshot_.nodes.size())
+                                            front_snapshot_.nodes[idx].activation = 1.0f;
+                                    }
+                                }
+                                catch (...)
+                                {
+                                    // ignore failures
+                                    sp_path_indices_.clear();
+                                }
+                            }
+                        }
+                        else
+                        {
+                            // clicked empty resets second selection
+                        }
+
+                        // don't process normal selection while in shortest-path mode
+                    }
+                    else if (mode_ == ViewerMode::VIEW && hovered >= 0)
                     {
                         trigger_signal_at(hovered);
                     }

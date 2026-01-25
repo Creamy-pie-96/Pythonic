@@ -9,6 +9,13 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # package requires OpenGL to be found by CMake before importing
 # the `pythonic` config. Ensure OpenGL is available for downstream
 # projects that link `pythonic::pythonic_graph_viewer`.
+
+# Prefer modern GLVND OpenGL implementation and set CMP0072 policy
+if(POLICY CMP0072)
+    cmake_policy(SET CMP0072 NEW)
+endif()
+set(OpenGL_GL_PREFERENCE GLVND)
+
 find_package(OpenGL REQUIRED)
 
 # Find the Pythonic library (header-only)
