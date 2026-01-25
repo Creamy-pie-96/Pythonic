@@ -1330,6 +1330,9 @@ namespace pythonic
                         back_snapshot_.nodes[node_to_remove].y = -10000;
                         back_snapshot_.nodes[node_to_remove].pinned_x = -10000;
                         back_snapshot_.nodes[node_to_remove].pinned_y = -10000;
+                        back_snapshot_.nodes[node_to_remove].is_selected = false;
+                        back_snapshot_.nodes[node_to_remove].is_hovered = false;
+                        back_snapshot_.nodes[node_to_remove].is_dragging = false;
                     }
                     if (node_to_remove < front_snapshot_.nodes.size())
                     {
@@ -1337,10 +1340,16 @@ namespace pythonic
                         front_snapshot_.nodes[node_to_remove].y = -10000;
                         front_snapshot_.nodes[node_to_remove].pinned_x = -10000;
                         front_snapshot_.nodes[node_to_remove].pinned_y = -10000;
+                        front_snapshot_.nodes[node_to_remove].is_selected = false;
+                        front_snapshot_.nodes[node_to_remove].is_hovered = false;
+                        front_snapshot_.nodes[node_to_remove].is_dragging = false;
                     }
 
                     back_snapshot_.selected_node = -1;
                     front_snapshot_.selected_node = -1;
+                    // Also cancel any in-progress edge creation that referenced this node
+                    creating_edge_ = false;
+                    edge_start_node_ = -1;
                 }
             }
 
