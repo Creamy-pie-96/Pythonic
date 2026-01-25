@@ -823,7 +823,7 @@ namespace pythonic
              */
             var operator()(const var &a, const var &b)
             {
-                TypePairKey current_key{a.getTag(), b.getTag()};
+                TypePairKey current_key{a.type_tag(), b.type_tag()};
 
                 // Fast path: cache hit
                 if (current_key == cached_key_ && cached_fn_ != nullptr) [[likely]]
@@ -833,7 +833,7 @@ namespace pythonic
 
                 // Slow path: cache miss - need to look up
                 cached_key_ = current_key;
-                cached_fn_ = lookup_fast_path(a.getTag(), b.getTag());
+                cached_fn_ = lookup_fast_path(a.type_tag(), b.type_tag());
 
                 if (cached_fn_ != nullptr)
                 {

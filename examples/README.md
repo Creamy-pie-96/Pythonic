@@ -66,14 +66,73 @@ Now build and install the Pythonic library. The install will be placed in a subf
 
 ### Linux / macOS:
 
-```bash
+````bash
 mkdir -p build
 cd build
 cmake .. -DCMAKE_INSTALL_PREFIX=../install -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
 cmake --build . --target install -j4
 cd ../..    # Go back to pythonic_cpp_lib directory
 pwd         # Remember this path - you'll need it later!
+
+If you want to use the interactive Graph Viewer (`var::show()`), build
+the library with graph viewer support enabled. This will compile the
+GLFW/OpenGL/ImGui-backed viewer and expose the CMake target
+`pythonic::pythonic_graph_viewer` for downstream projects.
+
+Enable the viewer during configuration:
+
+```bash
+cmake .. -DCMAKE_INSTALL_PREFIX=../install -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
+cmake --build . --target install -j4
+````
+
+Required system dependencies (example on Debian/Ubuntu):
+
+```bash
+sudo apt update && sudo apt install -y build-essential cmake libglfw3-dev libx11-dev \
+    libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev libglu1-mesa-dev libgl1-mesa-dev
 ```
+
+ImGui is included in the Pythonic repository under `external/imgui`.
+If you vendor or replace it, ensure the viewer build picks up a compatible
+ImGui + OpenGL loader.
+
+## Platform notes and install hints
+
+macOS (Homebrew)
+
+```bash
+# Install dependencies via Homebrew
+brew update
+brew install cmake glfw
+# OpenGL is provided by the system (via frameworks). Build as usual with CMake.
+```
+
+Windows (Visual Studio + vcpkg)
+
+Option A — vcpkg (recommended):
+
+```powershell
+git clone https://github.com/microsoft/vcpkg.git
+cd vcpkg
+./bootstrap-vcpkg.bat   # or bootstrap-vcpkg.sh on WSL
+
+# Install GLFW and other deps for x64
+./vcpkg install glfw3:x64-windows
+
+# Configure CMake to use vcpkg toolchain when building your project
+cmake .. -DCMAKE_TOOLCHAIN_FILE=/path/to/vcpkg/scripts/buildsystems/vcpkg.cmake -DCMAKE_PREFIX_PATH=<path-to-pythonic-install>
+```
+
+Option B — Visual Studio without vcpkg:
+
+1. Install the "Desktop development with C++" workload in Visual Studio.
+2. Download prebuilt GLFW binaries or build GLFW from source and point CMake
+   to the GLFW install location via `CMAKE_PREFIX_PATH` or `-DGLFW_ROOT`.
+
+On Windows, OpenGL is available via `opengl32.lib` (FindOpenGL handles it).
+
+````
 
 ### Windows (Command Prompt):
 
@@ -84,7 +143,7 @@ cmake .. -DCMAKE_INSTALL_PREFIX=..\install -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
 cmake --build . --target install --config Release
 cd ..\..
 cd
-```
+````
 
 ### Windows (PowerShell):
 
@@ -182,6 +241,11 @@ project(MyApp)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# If you plan to link the optional Graph Viewer (to enable `var::show()`),
+# CMake needs to find OpenGL before importing the installed `pythonic`
+# package because the exported viewer target references `OpenGL::GL`.
+find_package(OpenGL REQUIRED)
+
 # Find the Pythonic library
 find_package(pythonic REQUIRED)
 
@@ -191,8 +255,9 @@ add_executable(myapp main.cpp)
 # Link the Pythonic library
 target_link_libraries(myapp PRIVATE pythonic::pythonic)
 
-# If using Graph Viewer:
-# target_link_libraries(myapp PRIVATE pythonic::pythonic_graph_viewer)
+# If you built and installed Pythonic with the Graph Viewer enabled,
+# link the viewer target to enable `var::show()` in your app:
+target_link_libraries(myapp PRIVATE pythonic::pythonic_graph_viewer)
 ```
 
 Copy paste it or we have a **CMakeLists.txt** file in **example** directory. You can directly use that too.
@@ -291,6 +356,46 @@ Get-ChildItem -Path $HOME -Filter "pythonicConfig.cmake" -Recurse -ErrorAction S
 ---
 
 ## Step 6: Run Your Application
+
+## Using the Graph Viewer (`var::show()`)
+
+If you built and installed Pythonic with `-DPYTHONIC_ENABLE_GRAPH_VIEWER=ON`,
+your installed package exports the target `pythonic::pythonic_graph_viewer`.
+Link that target in your project's `CMakeLists.txt` to enable the
+interactive viewer API. Example CMake configuration:
+
+```cmake
+find_package(pythonic REQUIRED)
+add_executable(myapp main.cpp)
+target_link_libraries(myapp PRIVATE pythonic::pythonic pythonic::pythonic_graph_viewer)
+```
+
+Minimal example that uses the viewer:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace pythonic::vars;
+
+int main() {
+        var g = graph(3);
+        g.add_edge(0, 1, 1.0, 0.0, true);
+        g.add_edge(1, 2, 1.0, 0.0, true);
+
+        // Show opens an interactive window (may block until closed)
+        g.show();
+
+        return 0;
+}
+```
+
+Runtime notes:
+
+- The viewer opens a desktop window: ensure a graphical session (DISPLAY)
+  is available on Linux. Headless servers without an X/Wayland display
+  cannot show the GUI unless you use a virtual framebuffer (Xvfb).
+- If you see missing link symbols when building your application, confirm
+  system GLFW/OpenGL development packages were available when Pythonic was
+  built and that Pythonic was installed with the viewer enabled.
 
 Finally, run your compiled program:
 

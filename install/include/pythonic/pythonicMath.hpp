@@ -133,7 +133,7 @@ namespace pythonic
         // Get type rank from var (uses var::getTypeRank internally)
         inline int getTypeRankFromVar(const var &v)
         {
-            return var::getTypeRank(v.getTag());
+            return var::getTypeRank(v.type_tag());
         }
 
         // Get max rank from two vars

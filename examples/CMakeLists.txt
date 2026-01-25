@@ -5,9 +5,20 @@ project(UsingPythonic)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# The graph viewer target that can be exported by the installed
+# package requires OpenGL to be found by CMake before importing
+# the `pythonic` config. Ensure OpenGL is available for downstream
+# projects that link `pythonic::pythonic_graph_viewer`.
+find_package(OpenGL REQUIRED)
+
 # Find the Pythonic library (header-only)
 # FAILS if not installed
 find_package(pythonic REQUIRED)
+
+# The viewer also depends on GLFW at link/config time; projects that
+# link `pythonic::pythonic_graph_viewer` may want to ensure GLFW is
+# available. Find it here to provide clearer error messages early.
+find_package(GLFW REQUIRED)
 
 # Add your executable
 # --> Replace 'demoapp' with your project executable name
@@ -21,6 +32,17 @@ add_executable(demoapp demo.cpp)
 # Link libraries to your target
 # --> Add other libraries here if your project depends on them
 target_link_libraries(demoapp PRIVATE pythonic::pythonic)
+
+# If you installed Pythonic with the optional Graph Viewer enabled
+# (build/install Pythonic with `-DPYTHONIC_ENABLE_GRAPH_VIEWER=ON`),
+# you can link the viewer target to enable `var::show()` GUI support:
+#
+#    target_link_libraries(demoapp PRIVATE pythonic::pythonic_graph_viewer)
+#
+# Note: The Graph Viewer requires an OpenGL/GLFW environment at runtime.
+# Make sure development packages for GLFW/OpenGL are available when
+# building Pythonic and that a desktop display (DISPLAY) is present
+# when running the produced binary.
 
 # ============================================================================
 # Optional: Enable automatic SVG generation when using Graph::to_dot()
