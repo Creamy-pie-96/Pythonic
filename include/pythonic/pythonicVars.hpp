@@ -5328,7 +5328,7 @@ namespace pythonic
             size_t add_node() { return impl.add_node(); }
             size_t add_node(const var &data) { return impl.add_node(data); }
             std::vector<size_t> neighbors(size_t node) const { return impl.neighbors(node); }
-            
+
             // Remove a node from the graph (renumbers subsequent nodes)
             void remove_node(size_t node)
             {
@@ -5854,7 +5854,6 @@ namespace pythonic
         }
 
         // ===== Interactive Graph Viewer =====
-
 
         /**
          * @brief Create a new graph with n nodes.
@@ -6504,8 +6503,12 @@ namespace pythonic
 // ============ Interactive Graph Viewer Implementation ============
 #ifdef PYTHONIC_ENABLE_GRAPH_VIEWER
     } // namespace vars
-    namespace viewer { void show_graph(pythonic::vars::var&, bool); }
-    namespace vars {
+    namespace viewer
+    {
+        void show_graph(pythonic::vars::var &, bool);
+    }
+    namespace vars
+    {
         inline void var::show(bool blocking)
         {
             pythonic::viewer::show_graph(*this, blocking);
