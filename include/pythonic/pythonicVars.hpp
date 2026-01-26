@@ -1973,7 +1973,7 @@ namespace pythonic
                 }
                 case TypeTag::GRAPH:
                 {
-                    return graph_str_impl(); // Graphs don't have nested pretty printing
+                    return graph_str_impl(); // Graphs don't have nested pretty printing . Maybe this comment is old and Now we have pretty print for graph or atleast print for graph
                 }
                 default:
                     return "[unknown]";
