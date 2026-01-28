@@ -1,30 +1,34 @@
 [⬅ Back to main readme file](../README.md)
+
 # Pythonic Documentation
 
 Central table of contents for the project documentation.
 
 Recommended reading order:
-
-- [Print](Print/print.md)
-- [Var](Var/comparison_and_boolean.md)
-- [Math](Math/math.md)
-- [Error](Errors/errors.md)
-- [Iteration](Loops/iteration.md)
-- [Functional](Functional/functional.md)
-- [File-I/O](File_io/File_io.md)
-- [QuickStart](examples/quickstart.md)
-
-Links to other docs in this folder.
-
-## Files
-
-- var.md — Core `var` API and ownership model
-- types.md — TypeTag and primitive mapping
-- arithmetic.md — Promotion and overflow rules
-- strings.md — String behavior and operators
-- containers.md — Lists, dicts, sets and methods
-- graph.md — Graph API and integration
-- performance.md — internal storage and performance advice
-- errors.md — exception model
-- design_notes.md — rationale and tradeoffs
-- examples/ — worked examples and cookbook
+- **Var** — core `var` type and related topics
+- [Core API](Var/var.md) — `var` fundamentals, ownership, type model
+  - [Types & DTypes](Var/dtypes.md)
+  - [Construction & Lifetime](Var/construction_and_lifetime.md)
+  - [Type Introspection & Conversion](Var/type_introspection_and_conversion.md)
+  - [Containers & Sequences](Var/container_and_sequence_operations.md)
+  - [String-like Methods](Var/string_like_methods.md)
+  - [Numeric & Arithmetic](Var/numeric_arithmetic.md)
+  - [Comparison & Boolean](Var/comparison_and_boolean.md)
+  - [Iterators, Mapping & Functional Helpers](iterators_mapping_functional.md)
+  - [Graph Helpers](Var/graph_helpers.md)
+- [Math](Math/math.md) — math library (trig, logs, random, checked arithmetic)
+- [Errors](Errors/errors.md) — exception hierarchy and idiomatic handling
+- [Iteration & Loops](Loops/iteration.md) — `range`, `enumerate`, `zip`, macros
+- [Functional](Functional/functional.md) — `map`, `filter`, `reduce`, comprehensions
+- [File I/O](File_io/File_io.md) — `File`, `open()`, quick helpers
+- [Containers Reference](dtypes.md) — list/set/dict/ordered variants and notes
+- [Performance](performance.md) — internal storage, hot-path tips
+- [API Reference](api_reference.md) — generated API surface (where available)
+- [Graph](graph.md) — Graph API and integration examples
+- [Design Notes](design_notes.md) — rationale and tradeoffs
+- [Contributing](contributing.md) — how to help and submit changes
+- [Changelog](changelog.md) — release notes
+- **Examples & Quickstart**
+  - [QuickStart](examples/quickstart.md)
+  - [Operators Example](examples/operators.md)
+  - [Cookbook](examples/cookbook.md)

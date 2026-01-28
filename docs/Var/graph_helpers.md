@@ -6,6 +6,64 @@ This page documents all user-facing graph APIs for `var` when holding a graph, i
 
 ---
 
+---
+
+## Interactive Graph Viewer (GUI)
+
+Pythonic provides a powerful interactive viewer for your graphs, powered by OpenGL/ImGui. This lets you visualize, edit, and explore graphs in real time.
+
+### Enabling the Viewer
+
+To use the interactive viewer, build with the following CMake option:
+
+```bash
+cmake -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON ..
+```
+
+### Usage
+
+Once enabled, simply call:
+
+```cpp
+g.show();
+```
+
+or
+
+```cpp
+g.show(false); // disables auto-layout, preserves current node positions
+```
+
+### Features
+
+- **View Mode**:
+  - Drag nodes (physics snaps them back to preserve topology)
+  - Hover over nodes/edges to see metadata/weights
+  - **Click nodes** to trigger animated signal waves
+- **Edit Mode** (toggle with 🔒 icon):
+  - **Double-click** empty space to add nodes
+  - **Drag** from node to node to add edges
+  - **Select + Delete** to remove nodes/edges
+  - All changes are saved back to your `var` graph
+
+### Controls & Tips
+
+| Action                    | Effect                              |
+| ------------------------- | ----------------------------------- |
+| Drag node                 | Move node (snaps back in View mode) |
+| Hover node/edge           | Show metadata/weight                |
+| Click node                | Trigger animated signal wave        |
+| Double-click empty space  | Add new node (Edit mode)            |
+| Drag from node to node    | Add edge (Edit mode)                |
+| Select node/edge + Delete | Remove element (Edit mode)          |
+| 🔒 icon (top bar)         | Toggle between View/Edit mode       |
+| Mouse wheel               | Zoom in/out                         |
+| Right-click background    | Pan view                            |
+
+**Note:** The viewer is only available if built with the appropriate CMake flag. If `g.show()` does nothing, check your build configuration.
+
+---
+
 ## Graph Properties & Queries
 
 | Method                                                          | Description                  | Example                   |
