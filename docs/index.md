@@ -1,15 +1,18 @@
+[⬅ Back to main readme file](../README.md)
 # Pythonic Documentation
 
 Central table of contents for the project documentation.
 
 Recommended reading order:
 
-- quickstart.md
-- var.md
-- types.md
-- containers.md
-- arithmetic.md
-- examples/operators.md
+- [Print](Print/print.md)
+- [Var](Var/comparison_and_boolean.md)
+- [Math](Math/math.md)
+- [Error](Errors/errors.md)
+- [Iteration](Loops/iteration.md)
+- [Functional](Functional/functional.md)
+- [File-I/O](File_io/File_io.md)
+- [QuickStart](examples/quickstart.md)
 
 Links to other docs in this folder.
 

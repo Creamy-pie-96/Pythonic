@@ -76,6 +76,55 @@ for (auto it = vdict.begin(); it != vdict.end(); ++it) {
 
 ---
 
+## Functional Helpers
+
+| Function                      | Description                                                             | Example(s)                                                        |
+| ----------------------------- | ----------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| `reversed_var(list)`          | Return a new list with elements in reverse order                        | `reversed_var(list(1,2,3)) // [3,2,1]`                            |
+| `reversed_var(str)`           | Return a new string with characters reversed                            | `reversed_var("abc") // "cba"`                                    |
+| `all_var(list)`               | True if all elements are truthy                                         | `all_var(list(1,2,3)) // true`<br>`all_var(list(1,0,3)) // false` |
+| `any_var(list)`               | True if any element is truthy                                           | `any_var(list(0,0,3)) // true`<br>`any_var(list(0,0,0)) // false` |
+| `map(func, list)`             | Apply a function to each element, return new list                       | <pre>map(lambda x: x+1, list(1,2,3)) // [2,3,4]</pre>             |
+| `filter(pred, list)`          | Filter elements by predicate, return new list                           | <pre>filter(lambda x: x>1, list(1,2,3)) // [2,3]</pre>            |
+| `reduce(func, list, initial)` | Reduce list to single value with binary function, starting from initial | <pre>reduce(lambda a,b: a+b, list(1,2,3), 10) // 16</pre>         |
+| `reduce(func, list)`          | Reduce list to single value with binary function                        | <pre>reduce(lambda a,b: a+b, list(1,2,3)) // 6</pre>              |
+
+---
+
+## Examples
+
+```cpp
+#include "pythonic/pythonic.hpp"
+using namespace py;
+
+// --- reversed_var ---
+var vlist = list(1, 2, 3);
+var vstr = "hello";
+var revlist = reversed_var(vlist);    // [3, 2, 1]
+var revstr = reversed_var(vstr);      // "olleh"
+
+// --- all_var / any_var ---
+var alltrue = all_var(list(1, 2, 3)); // true
+var somefalse = all_var(list(1, 0, 3)); // false
+var anytrue = any_var(list(0, 0, 3)); // true
+var allfalse = any_var(list(0, 0, 0)); // false
+
+// --- map ---
+auto add1 = [](const var &x) { return x + 1; };
+var mapped = map(add1, list(1, 2, 3)); // [2, 3, 4]
+
+// --- filter ---
+auto greater1 = [](const var &x) { return x > 1; };
+var filtered = filter(greater1, list(1, 2, 3)); // [2, 3]
+
+// --- reduce ---
+auto sum2 = [](const var &a, const var &b) { return a + b; };
+var reduced = reduce(sum2, list(1, 2, 3)); // 6
+var reduced_init = reduce(sum2, list(1, 2, 3), 10); // 16
+
+```
+
+---
 ## Notes
 
 - Use `len(v)` or `v.size()` for container length.

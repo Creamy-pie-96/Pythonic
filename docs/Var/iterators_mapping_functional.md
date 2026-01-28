@@ -2,8 +2,86 @@
 
 # Iterators, Mapping & Functional Helpers
 
-Functional and iterator helpers for `var`.
+This page documents all user-facing iterator, mapping, and functional APIs for `var`, including STL-style iteration, dict helpers, slicing, and functional utilities, in a clear tabular format with concise examples.
 
-- `template <typename Func> map`, `filter`, `reduce`
-- `template <typename... Args> var list(Args&&...)`, `set`, `ordered_set`, and inline empty constructors `list()`, `set()`, `dict()`, `ordered_set()`, `ordered_dict()`
-- `template <typename... Ts> var tuple_to_list(const std::tuple<Ts...>&)` and `unpack` helpers
+---
+
+## Iteration Methods
+
+| Method(s)                                | Description                                                                                                                       | Example                                 |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| `begin()`, `end()`, `cbegin()`, `cend()` | STL-style and range-based for loop support for `var` containers (`list`, `set`, `dict`, `string`, `ordered_set`, `ordered_dict`). | `for (auto &v : list(1,2,3)) print(v);` |
+
+---
+
+## Dict Iteration Helpers
+
+| Method     | Description                              | Example                                        |
+| ---------- | ---------------------------------------- | ---------------------------------------------- |
+| `items()`  | List of `[key, value]` pairs from a dict | `for (auto &p : d.items()) print(p[0], p[1]);` |
+| `keys()`   | List of keys from a dict                 | `for (auto &k : d.keys()) print(k);`           |
+| `values()` | List of values from a dict               | `for (auto &v : d.values()) print(v);`         |
+
+---
+
+## Slicing
+
+| Method                    | Description                                                           | Example                                                                                |
+| ------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `slice(start, end, step)` | Python-like slicing for lists and strings (supports negative indices) | `list(10,20,30,40,50).slice(1,4) // [20,30,40]`<br>`var("abcdef").slice(2,5) // "cde"` |
+
+---
+
+## Functional Helpers
+
+| Function                        | Description                                     | Example                                            |
+| ------------------------------- | ----------------------------------------------- | -------------------------------------------------- |
+| `map(func, list)`               | Apply function to each element, return new list | `map(lambda x: x+1, list(1,2,3)) // [2,3,4]`       |
+| `filter(pred, list)`            | Filter elements by predicate, return new list   | `filter(lambda x: x>1, list(1,2,3)) // [2,3]`      |
+| `reduce(func, list[, initial])` | Reduce list with binary function                | `reduce(lambda a,b: a+b, list(1,2,3)) // 6`        |
+| `tuple_to_list(tuple)`          | Convert C++ tuple to var list                   | `tuple_to_list(std::make_tuple(1,2,3)) // [1,2,3]` |
+| `unpack(tuple)`                 | Unpack tuple to var list                        | `unpack(std::make_tuple(1,2,3)) // [1,2,3]`        |
+
+---
+
+## Examples
+
+```cpp
+#include "pythonic/pythonic.hpp"
+using namespace py;
+
+// Iteration
+var l = list(1,2,3);
+for (auto it = l.begin(); it != l.end(); ++it) print(*it);
+for (auto &v : l) print(v);
+
+// Dict helpers
+var d = dict({{"a", 1}, {"b", 2}});
+for (auto &pair : d.items()) print(pair[0], pair[1]);
+for (auto &k : d.keys()) print(k);
+for (auto &v : d.values()) print(v);
+
+// Slicing
+var s = var("abcdef");
+print(s.slice(2, 5)); // "cde"
+var l2 = list(10, 20, 30, 40, 50);
+print(l2.slice(1, 4)); // [20, 30, 40]
+
+// Functional helpers
+auto plus1 = [](const var &x) { return x + 1; };
+print(map(plus1, list(1,2,3))); // [2,3,4]
+auto gt1 = [](const var &x) { return x > 1; };
+print(filter(gt1, list(1,2,3))); // [2,3]
+auto add = [](const var &a, const var &b) { return a + b; };
+print(reduce(add, list(1,2,3))); // 6
+print(tuple_to_list(std::make_tuple(1,2,3))); // [1,2,3]
+print(unpack(std::make_tuple(1,2,3))); // [1,2,3]
+```
+
+---
+
+## Notes
+
+- All major iterator, mapping, and functional helpers are available for `var`.
+- Dict helpers (`items`, `keys`, `values`) only work for dict types.
+- Slicing supports negative indices and works for lists and strings.

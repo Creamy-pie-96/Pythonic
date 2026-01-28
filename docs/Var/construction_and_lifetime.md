@@ -48,6 +48,14 @@ This page documents all ways to construct and manage the lifetime of a `var` obj
 
 ---
 
+## Input
+
+| Function           | Description                                                     | Example                  |
+| ------------------ | --------------------------------------------------------------- | ------------------------ |
+| `input(prompt="")` | Read a line from standard input, optionally displaying a prompt | `input("Enter value: ")` |
+
+---
+
 ## Copy / Move Semantics
 
 | Operation        | Description                   | Example                 |
@@ -119,6 +127,10 @@ var fdict = dict({{"a", 1}, {"b", 2}});
 var fodict = ordered_dict({{"k1", 1}, {"k2", 2}});
 var fgraph = graph(5);
 auto loaded = load_graph("/path/to/graph.file");
+
+
+// --- input ---
+ var user_input = input("Enter value: ");
 
 // --- Copy / Move / Destructor ---
 var copy = flist;               // copy
