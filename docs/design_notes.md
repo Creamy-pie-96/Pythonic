@@ -1,3 +1,4 @@
+[⬅ Back to Table of Contents](index.md)
 # Design Notes
 
 Rationale, tradeoffs, and internal design decisions.
@@ -10,3 +11,7 @@ Topics:
 - Technical debt and recommended refactors (remove unused helpers, consider smart pointers)
 
 Notes for maintainers and contributors.
+
+## Next check
+
+[Contributing](contributing.md)

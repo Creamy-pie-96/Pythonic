@@ -1,3 +1,5 @@
+[⬅ Back to Table of Contents](index.md)
+[⬅ Back to Table of Contents](index.md)
 # Performance
 
 Check out [benchmark data](../benchmark/benchmark_report.md)
