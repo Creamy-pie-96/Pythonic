@@ -33,8 +33,7 @@ Please open Issues or Discussions with any bug reports, questions, or feature id
 
 ---
 
-**AUTHOR:** MD. NASIF SADIK PRITHU  
-**EMAIL:** nasifsadik9@gmail.com  
+**AUTHOR:** MD. NASIF SADIK PRITHU
 **GITHUB:** [Creamy-pie-96](https://github.com/Creamy-pie-96)
 
 ---
