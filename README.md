@@ -25,8 +25,20 @@ Welcome! Pythonic is a modern C++20 library that brings the expressive power and
 - **Note:** If you don't want to install, you can simply add the `include/pythonic` directory to your project's include path and use `target_include_directories` in your CMakeLists.txt.
 - For a detailed user guide, [check out the documentation](docs/index.md).
 
+## Disclaimer:
+
+We’re looking for users to test the library and provide feedback!
+Please open Issues or Discussions with any bug reports, questions, or feature ideas.
+**Note:** Direct code contributions are not accepted at this time.
+
 ---
 
 **AUTHOR:** MD. NASIF SADIK PRITHU  
 **EMAIL:** nasifsadik9@gmail.com  
 **GITHUB:** [Creamy-pie-96](https://github.com/Creamy-pie-96)
+
+---
+
+## Acknowledgments
+
+Parts of this project, including some code generation and documentation, were assisted by GitHub Copilot (AI programming assistant). Copilot provided suggestions and support throughout the development process.
