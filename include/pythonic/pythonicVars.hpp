@@ -210,6 +210,200 @@ namespace pythonic
             TypeTag tag_;  // Type discriminator
 
         public:
+            // ============ Container Methods (Pythonic/C++ idioms) ============
+
+            // front() - return first element (list, ordered_set, ordered_dict, string)
+            var front() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                {
+                    const auto &lst = var_get<List>();
+                    if (lst.empty())
+                        throw pythonic::PythonicIndexError("list is empty");
+                    return lst.front();
+                }
+                case TypeTag::ORDEREDSET:
+                {
+                    const auto &os = var_get<OrderedSet>();
+                    if (os.empty())
+                        throw pythonic::PythonicIndexError("ordered_set is empty");
+                    return *os.begin();
+                }
+                case TypeTag::ORDEREDDICT:
+                {
+                    const auto &od = var_get<OrderedDict>();
+                    if (od.empty())
+                        throw pythonic::PythonicIndexError("ordereddict is empty");
+                    return var(od.begin()->first);
+                }
+                case TypeTag::STRING:
+                {
+                    const auto &s = var_get<std::string>();
+                    if (s.empty())
+                        throw pythonic::PythonicIndexError("string is empty");
+                    return var(std::string(1, s.front()));
+                }
+                default:
+                    throw pythonic::PythonicAttributeError("front() not supported for this type");
+                }
+            }
+
+            // back() - return last element (list, ordered_set, ordered_dict, string)
+            var back() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                {
+                    const auto &lst = var_get<List>();
+                    if (lst.empty())
+                        throw pythonic::PythonicIndexError("list is empty");
+                    return lst.back();
+                }
+                case TypeTag::ORDEREDSET:
+                {
+                    const auto &os = var_get<OrderedSet>();
+                    if (os.empty())
+                        throw pythonic::PythonicIndexError("ordered_set is empty");
+                    return *os.rbegin();
+                }
+                case TypeTag::ORDEREDDICT:
+                {
+                    const auto &od = var_get<OrderedDict>();
+                    if (od.empty())
+                        throw pythonic::PythonicIndexError("ordereddict is empty");
+                    auto it = od.end();
+                    --it;
+                    return var(it->first);
+                }
+                case TypeTag::STRING:
+                {
+                    const auto &s = var_get<std::string>();
+                    if (s.empty())
+                        throw pythonic::PythonicIndexError("string is empty");
+                    return var(std::string(1, s.back()));
+                }
+                default:
+                    throw pythonic::PythonicAttributeError("back() not supported for this type");
+                }
+            }
+
+            // at(index) - safe element access (list, string)
+            var at(size_t index) const
+            {
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                {
+                    const auto &lst = var_get<List>();
+                    if (index >= lst.size())
+                        throw pythonic::PythonicIndexError("list", index, lst.size());
+                    return lst[index];
+                }
+                case TypeTag::STRING:
+                {
+                    const auto &s = var_get<std::string>();
+                    if (index >= s.size())
+                        throw pythonic::PythonicIndexError("string", index, s.size());
+                    return var(std::string(1, s[index]));
+                }
+                default:
+                    throw pythonic::PythonicAttributeError("at() not supported for this type");
+                }
+            }
+
+            // empty() - check if container is empty (list, set, dict, ordered_set, ordered_dict, string)
+            bool empty() const noexcept
+            {
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                    return var_get<List>().empty();
+                case TypeTag::SET:
+                    return var_get<Set>().empty();
+                case TypeTag::DICT:
+                    return var_get<Dict>().empty();
+                case TypeTag::ORDEREDSET:
+                    return var_get<OrderedSet>().empty();
+                case TypeTag::ORDEREDDICT:
+                    return var_get<OrderedDict>().empty();
+                case TypeTag::STRING:
+                    return var_get<std::string>().empty();
+                default:
+                    return true;
+                }
+            }
+
+            // clear() - clear container (list, set, dict, ordered_set, ordered_dict, string)
+            void clear()
+            {
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                    var_get<List>().clear();
+                    break;
+                case TypeTag::SET:
+                    var_get<Set>().clear();
+                    break;
+                case TypeTag::DICT:
+                    var_get<Dict>().clear();
+                    break;
+                case TypeTag::ORDEREDSET:
+                    var_get<OrderedSet>().clear();
+                    break;
+                case TypeTag::ORDEREDDICT:
+                    var_get<OrderedDict>().clear();
+                    break;
+                case TypeTag::STRING:
+                    var_get<std::string>().clear();
+                    break;
+                default:
+                    throw pythonic::PythonicAttributeError("clear() not supported for this type");
+                }
+            }
+
+            // pop() - remove and return last element (list, ordered_set, ordered_dict)
+            var pop()
+            {
+                switch (tag_)
+                {
+                case TypeTag::LIST:
+                {
+                    auto &lst = var_get<List>();
+                    if (lst.empty())
+                        throw pythonic::PythonicIndexError("pop from empty list");
+                    var v = lst.back();
+                    lst.pop_back();
+                    return v;
+                }
+                case TypeTag::ORDEREDSET:
+                {
+                    auto &os = var_get<OrderedSet>();
+                    if (os.empty())
+                        throw pythonic::PythonicIndexError("pop from empty ordered_set");
+                    auto it = os.end();
+                    --it;
+                    var v = *it;
+                    os.erase(it);
+                    return v;
+                }
+                case TypeTag::ORDEREDDICT:
+                {
+                    auto &od = var_get<OrderedDict>();
+                    if (od.empty())
+                        throw pythonic::PythonicIndexError("pop from empty ordereddict");
+                    auto it = od.end();
+                    --it;
+                    var v = var(it->first);
+                    od.erase(it);
+                    return v;
+                }
+                default:
+                    throw pythonic::PythonicAttributeError("pop() not supported for this type");
+                }
+            }
             // ============ Internal Accessors for Union ============
             // These provide type-safe access to the union data
             // Template specializations handle each type
@@ -6856,7 +7050,7 @@ namespace pythonic
             }
         }
 
-                // min() - minimum of list or two values
+        // min() - minimum of list or two values
         inline var min(const var &a, const var &b)
         {
             if (a < b)
@@ -6980,77 +7174,6 @@ namespace pythonic
             return var(false);
         }
 
-        // map() - apply function to each element, return new list
-        template <typename Func>
-        inline var map(Func func, const var &lst)
-        {
-            if (lst.type() != "list")
-            {
-                throw pythonic::PythonicTypeError("map() expects a list");
-            }
-            List result;
-            const auto &l = lst.get<List>();
-            for (const auto &item : l)
-            {
-                result.push_back(func(item));
-            }
-            return var(result);
-        }
-
-        // filter() - filter elements by predicate, return new list
-        template <typename Func>
-        inline var filter(Func predicate, const var &lst)
-        {
-            if (lst.type() != "list")
-            {
-                throw pythonic::PythonicTypeError("filter() expects a list");
-            }
-            List result;
-            const auto &l = lst.get<List>();
-            for (const auto &item : l)
-            {
-                if (predicate(item))
-                {
-                    result.push_back(item);
-                }
-            }
-            return var(result);
-        }
-
-        // reduce() - reduce list with binary function
-        template <typename Func>
-        inline var reduce(Func func, const var &lst, const var &initial)
-        {
-            if (lst.type() != "list")
-            {
-                throw pythonic::PythonicTypeError("reduce() expects a list");
-            }
-            var result = initial;
-            const auto &l = lst.get<List>();
-            for (const auto &item : l)
-            {
-                result = func(result, item);
-            }
-            return result;
-        }
-
-        template <typename Func>
-        inline var reduce(Func func, const var &lst)
-        {
-            if (lst.type() != "list")
-            {
-                throw pythonic::PythonicTypeError("reduce() expects a list");
-            }
-            const auto &l = lst.get<List>();
-            if (l.empty())
-                throw pythonic::PythonicValueError("reduce() of empty sequence with no initial value");
-            var result = l[0];
-            for (size_t i = 1; i < l.size(); ++i)
-            {
-                result = func(result, l[i]);
-            }
-            return result;
-        }
 
         // Python-like input() function
 
