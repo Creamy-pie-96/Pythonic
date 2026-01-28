@@ -7170,10 +7170,10 @@ namespace pythonic
             {
                 if (Bool(item).get<bool>())
                     return var(true);
+                WWW
             }
             return var(false);
         }
-
 
         // Python-like input() function
 
