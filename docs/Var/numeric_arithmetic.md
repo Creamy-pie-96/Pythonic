@@ -105,3 +105,7 @@ print(sum(list(1,2,3)));            // 6
 - All arithmetic and bitwise operators are overloaded for `var` and work with numeric types and containers where appropriate.
 - Compound assignment operators (`+=`, `-=`, etc.) are supported.
 - Use `abs`, `min`, `max`, `sum` for numeric helpers.
+
+## Next check
+
+- [Comparison & Boolean](comparison_and_boolean.md)

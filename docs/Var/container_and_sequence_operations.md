@@ -133,3 +133,7 @@ var reduced_init = reduce(sum2, list(1, 2, 3), 10); // 16
 - Use `slice` or call syntax for sublists.
 - Use `items`, `keys`, `values` for dicts.
 - Iterators allow C++-style for loops over containers.
+
+## Next check
+
+- [String-like Methods (on string `var`)](string_like_methods.md)

@@ -96,3 +96,7 @@ try {
 - Comparison operators return `var` for Python-like chaining and high-level APIs.
 - Use `==`/`!=` for structural equality. Use `operator<(const var&)` for container ordering only.
 - Truthiness is determined by `operator bool()`; use in `if` or cast to `bool` as needed.
+
+## Next check
+
+- [Iterators, Mapping & Functional Helpers](iterators_mapping_functional.md)

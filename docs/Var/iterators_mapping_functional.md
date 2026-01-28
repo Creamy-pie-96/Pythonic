@@ -85,3 +85,7 @@ print(unpack(std::make_tuple(1,2,3))); // [1,2,3]
 - All major iterator, mapping, and functional helpers are available for `var`.
 - Dict helpers (`items`, `keys`, `values`) only work for dict types.
 - Slicing supports negative indices and works for lists and strings.
+
+## Next check
+
+- [Graph Helpers (if using graph type)](graph_helpers.md)

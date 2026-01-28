@@ -152,3 +152,7 @@ print(copy, moved);
 - Use converter helpers for explicit conversion or factory creation.
 - Prefer move for large containers to avoid unnecessary copies.
 - All containers and graphs are stored as heap-backed types inside `var`.
+
+## Next check
+
+- [Type Introspection & Conversion](type_introspection_and_conversion.md)

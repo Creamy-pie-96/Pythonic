@@ -31,13 +31,14 @@ We’re looking for users to test the library and provide feedback!
 Please open Issues or Discussions with any bug reports, questions, or feature ideas.
 **Note:** Direct code contributions are not accepted at this time.
 
+
+## Acknowledgments
+
+Parts of this project, including some code generation and much of documentation, were assisted by GitHub Copilot (AI programming assistant). Copilot provided suggestions and support throughout the development process.
+
 ---
 
 **AUTHOR:** MD. NASIF SADIK PRITHU
 **GITHUB:** [Creamy-pie-96](https://github.com/Creamy-pie-96)
 
 ---
-
-## Acknowledgments
-
-Parts of this project, including some code generation and much of documentation, were assisted by GitHub Copilot (AI programming assistant). Copilot provided suggestions and support throughout the development process.
