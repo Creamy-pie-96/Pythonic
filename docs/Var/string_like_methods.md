@@ -2,12 +2,72 @@
 
 # String-like Methods (on string `var`)
 
-String operations available on `var` objects holding strings.
+This page documents all user-facing string methods available on `var` objects holding strings, in a clear tabular format with concise examples.
 
-- `var upper()` / `var lower()`
-- `var strip()` / `var lstrip()` / `var rstrip()`
-- `var replace(const var &old_str, const var &new_str)`
-- `var find(const var &substr)` / `var startswith(const var &prefix)` / `var endswith(const var &suffix)`
-- `var isdigit()` / `var isalpha()` / `var isalnum()` / `var isspace()`
-- `var capitalize()` / `var sentence_case()` / `var title()`
-- `var count(const var &substr)` / `var reverse()` / `var split(const var &delim = var(" "))` / `var join(const var &lst)` / `var center(int width, const var &fillchar = var(" "))` / `var zfill(int width)`
+---
+
+## String Methods
+
+| Method                          | Description                         | Example                                   |
+| ------------------------------- | ----------------------------------- | ----------------------------------------- |
+| `upper()`                       | Uppercase                           | `var("abc").upper() // "ABC"`             |
+| `lower()`                       | Lowercase                           | `var("ABC").lower() // "abc"`             |
+| `strip()`                       | Strip whitespace                    | `var("  hi ").strip() // "hi"`            |
+| `lstrip()`                      | Strip left                          | `var("  hi").lstrip() // "hi"`            |
+| `rstrip()`                      | Strip right                         | `var("hi  ").rstrip() // "hi"`            |
+| `replace(old, new)`             | Replace substring                   | `var("aabb").replace("a","b") // "bbbb"`  |
+| `find(substr)`                  | Find substring index                | `var("abc").find("b") // 1`               |
+| `startswith(prefix)`            | Starts with prefix                  | `var("abc").startswith("a") // true`      |
+| `endswith(suffix)`              | Ends with suffix                    | `var("abc").endswith("c") // true`        |
+| `isdigit()`                     | Is all digits                       | `var("123").isdigit() // true`            |
+| `isalpha()`                     | Is all alpha                        | `var("abc").isalpha() // true`            |
+| `isalnum()`                     | Is alphanumeric                     | `var("a1b2").isalnum() // true`           |
+| `isspace()`                     | Is all whitespace                   | `var("   ").isspace() // true`            |
+| `capitalize()`                  | Capitalize first letter             | `var("abc").capitalize() // "Abc"`        |
+| `sentence_case()`               | Capitalize first letter, rest lower | `var("hELLO").sentence_case() // "Hello"` |
+| `title()`                       | Title case                          | `var("hi there").title() // "Hi There"`   |
+| `count(substr)`                 | Count substring occurrences         | `var("aaba").count("a") // 3`             |
+| `reverse()`                     | Reverse string                      | `var("abc").reverse() // "cba"`           |
+| `split(delim = " ")`            | Split by delimiter                  | `var("a b").split() // ["a","b"]`         |
+| `join(list)`                    | Join list with string as separator  | `var(",").join(list("a","b")) // "a,b"`   |
+| `center(width, fillchar = " ")` | Center string                       | `var("hi").center(5,"-") // "-hi--"`      |
+| `zfill(width)`                  | Pad with zeros on left              | `var("7").zfill(3) // "007"`              |
+
+---
+
+## Examples
+
+```cpp
+#include "pythonic/pythonic.hpp"
+using namespace py;
+
+var s = "  hello world  ";
+print(s.strip());           // "hello world"
+print(s.upper());           // "  HELLO WORLD  "
+print(s.lower());           // "  hello world  "
+print(s.replace(" ", "_")); // "__hello_world__"
+print(s.find("world"));    // 8
+print(s.startswith("  h")); // true
+print(s.endswith("d  "));   // true
+print(var("123").isdigit()); // true
+print(var("abc").isalpha()); // true
+print(var("a1b2").isalnum()); // true
+print(var("   ").isspace()); // true
+print(var("abc").capitalize()); // "Abc"
+print(var("hELLO").sentence_case()); // "Hello"
+print(var("hi there").title()); // "Hi There"
+print(var("aaba").count("a")); // 3
+print(var("abc").reverse()); // "cba"
+print(var("a b c").split()); // ["a","b","c"]
+print(var(",").join(list("a","b","c"))); // "a,b,c"
+print(var("hi").center(5,"-")); // "-hi--"
+print(var("7").zfill(3)); // "007"
+```
+
+---
+
+## Notes
+
+- All methods return a new `var` (string or list) and do not modify the original.
+- Use `split`/`join` for conversion between strings and lists.
+- Most methods match Python string semantics.
