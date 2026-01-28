@@ -564,6 +564,7 @@ namespace pythonic
 
             // Get promotion rank for a type tag (higher = wider type)
             // Ranking: bool=0 < uint=1 < int=2 < ulong=3 < long=4 < ulong_long=5 < long_long=6 < float=7 < double=8 < long_double=9
+            // TODO: I will Consider assigning enum values directly for type ranking to optimize performance and reduce function call overhead in the future.
             static int getTypeRank(TypeTag t) noexcept
             {
                 switch (t)
@@ -1710,7 +1711,6 @@ namespace pythonic
             }
 
             // String conversion
-            // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
             std::string str() const
             {
                 switch (tag_)
@@ -1973,7 +1973,7 @@ namespace pythonic
                 }
                 case TypeTag::GRAPH:
                 {
-                    return graph_str_impl(); // Graphs don't have nested pretty printing
+                    return graph_str_impl(); // Graphs don't have nested pretty printing . Maybe this comment is old and Now we have pretty print for graph or atleast print for graph
                 }
                 default:
                     return "[unknown]";
@@ -2254,7 +2254,10 @@ namespace pythonic
                             double b = other.var_get<double>();
                             if (b == 0.0)
                                 throw pythonic::PythonicZeroDivisionError::division();
-                            return var(var_get<double>() / b);
+                            double result = var_get<double>() / b;
+                            if (std::isinf(result))
+                                throw pythonic::PythonicOverflowError("floating point division overflow");
+                            return var(result);
                         }
                     case TypeTag::LONG_LONG:
                     {
@@ -2273,7 +2276,10 @@ namespace pythonic
                         float b = other.var_get<float>();
                         if (b == 0.0f)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(var_get<float>() / b);
+                        float result = var_get<float>() / b;
+                        if (std::isinf(result))
+                            throw pythonic::PythonicOverflowError("floating point division overflow");
+                        return var(result);
                     }
                     case TypeTag::LONG:
                     {
@@ -2316,7 +2322,10 @@ namespace pythonic
                         long double b = other.var_get<long double>();
                         if (b == 0.0L)
                             throw pythonic::PythonicZeroDivisionError::division();
-                        return var(var_get<long double>() / b);
+                        long double result = var_get<long double>() / b;
+                        if (std::isinf(result))
+                            throw pythonic::PythonicOverflowError("floating point division overflow");
+                        return var(result);
                     }
                     default:
                         break;
@@ -2426,6 +2435,18 @@ namespace pythonic
                     case TypeTag::STRING:
                         var_get<std::string>() += other.var_get<std::string>();
                         return *this;
+                    case TypeTag::UINT:
+                        var_get<unsigned int>() += other.var_get<unsigned int>();
+                        return *this;
+                    case TypeTag::ULONG:
+                        var_get<unsigned long>() += other.var_get<unsigned long>();
+                        return *this;
+                    case TypeTag::ULONG_LONG:
+                        var_get<unsigned long long>() += other.var_get<unsigned long long>();
+                        return *this;
+                    case TypeTag::LONG_DOUBLE:
+                        var_get<long double>() += other.var_get<long double>();
+                        return *this;
                     default:
                         break;
                     }
@@ -2457,6 +2478,18 @@ namespace pythonic
                     case TypeTag::LONG:
                         var_get<long>() -= other.var_get<long>();
                         return *this;
+                    case TypeTag::UINT:
+                        var_get<unsigned int>() -= other.var_get<unsigned int>();
+                        return *this;
+                    case TypeTag::ULONG:
+                        var_get<unsigned long>() -= other.var_get<unsigned long>();
+                        return *this;
+                    case TypeTag::ULONG_LONG:
+                        var_get<unsigned long long>() -= other.var_get<unsigned long long>();
+                        return *this;
+                    case TypeTag::LONG_DOUBLE:
+                        var_get<long double>() -= other.var_get<long double>();
+                        return *this;
                     default:
                         break;
                     }
@@ -2487,6 +2520,18 @@ namespace pythonic
                         return *this;
                     case TypeTag::LONG:
                         var_get<long>() *= other.var_get<long>();
+                        return *this;
+                    case TypeTag::UINT:
+                        var_get<unsigned int>() *= other.var_get<unsigned int>();
+                        return *this;
+                    case TypeTag::ULONG:
+                        var_get<unsigned long>() *= other.var_get<unsigned long>();
+                        return *this;
+                    case TypeTag::ULONG_LONG:
+                        var_get<unsigned long long>() *= other.var_get<unsigned long long>();
+                        return *this;
+                    case TypeTag::LONG_DOUBLE:
+                        var_get<long double>() *= other.var_get<long double>();
                         return *this;
                     default:
                         break;
@@ -2536,6 +2581,38 @@ namespace pythonic
                         var_get<float>() /= b;
                         return *this;
                     }
+                    case TypeTag::UINT:
+                    {
+                        unsigned int b = other.var_get<unsigned int>();
+                        if (b == 0.0f)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        var_get<unsigned int>() /= b;
+                        return *this;
+                    }
+                    case TypeTag::ULONG:
+                    {
+                        unsigned long b = other.var_get<unsigned long>();
+                        if (b == 0.0f)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        var_get<unsigned long>() /= b;
+                        return *this;
+                    }
+                    case TypeTag::ULONG_LONG:
+                    {
+                        long double b = other.var_get<unsigned long long>();
+                        if (b == 0.0f)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        var_get<unsigned int>() /= b;
+                        return *this;
+                    }
+                    case TypeTag::LONG_DOUBLE:
+                    {
+                        unsigned long long b = other.var_get<long double>();
+                        if (b == 0.0f)
+                            throw pythonic::PythonicZeroDivisionError::division();
+                        var_get<long double>() /= b;
+                        return *this;
+                    }
                     default:
                         break;
                     }
@@ -2560,12 +2637,44 @@ namespace pythonic
                         var_get<int>() %= b;
                         return *this;
                     }
+                    case TypeTag::LONG:
+                    {
+                        long b = other.var_get<long>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        var_get<long>() %= b;
+                        return *this;
+                    }
                     case TypeTag::LONG_LONG:
                     {
                         long long b = other.var_get<long long>();
                         if (b == 0)
                             throw pythonic::PythonicZeroDivisionError::modulo();
                         var_get<long long>() %= b;
+                        return *this;
+                    }
+                    case TypeTag::UINT:
+                    {
+                        unsigned int b = other.var_get<unsigned int>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        var_get<unsigned int>() %= b;
+                        return *this;
+                    }
+                    case TypeTag::ULONG:
+                    {
+                        unsigned long b = other.var_get<unsigned long>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        var_get<unsigned long>() %= b;
+                        return *this;
+                    }
+                    case TypeTag::ULONG_LONG:
+                    {
+                        unsigned long long b = other.var_get<unsigned long long>();
+                        if (b == 0)
+                            throw pythonic::PythonicZeroDivisionError::modulo();
+                        var_get<unsigned long long>() %= b;
                         return *this;
                     }
                     default:
@@ -2577,25 +2686,41 @@ namespace pythonic
                 return *this;
             }
 
-            // In-place operators with native types
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var &operator+=(T other)
             {
-                if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
+                switch (tag_)
                 {
-                    var_get<int>() += other;
-                }
-                else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
-                {
-                    var_get<double>() += static_cast<double>(other);
-                }
-                else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
-                {
+                case TypeTag::INT:
+                    var_get<int>() += static_cast<int>(other);
+                    break;
+                case TypeTag::LONG:
+                    var_get<long>() += static_cast<long>(other);
+                    break;
+                case TypeTag::LONG_LONG:
                     var_get<long long>() += static_cast<long long>(other);
-                }
-                else
-                {
+                    break;
+                case TypeTag::UINT:
+                    var_get<unsigned int>() += static_cast<unsigned int>(other);
+                    break;
+                case TypeTag::ULONG:
+                    var_get<unsigned long>() += static_cast<unsigned long>(other);
+                    break;
+                case TypeTag::ULONG_LONG:
+                    var_get<unsigned long long>() += static_cast<unsigned long long>(other);
+                    break;
+                case TypeTag::FLOAT:
+                    var_get<float>() += static_cast<float>(other);
+                    break;
+                case TypeTag::DOUBLE:
+                    var_get<double>() += static_cast<double>(other);
+                    break;
+                case TypeTag::LONG_DOUBLE:
+                    var_get<long double>() += static_cast<long double>(other);
+                    break;
+                default:
                     *this = *this + var(other);
+                    break;
                 }
                 return *this;
             }
@@ -2603,21 +2728,38 @@ namespace pythonic
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var &operator-=(T other)
             {
-                if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
+                switch (tag_)
                 {
-                    var_get<int>() -= other;
-                }
-                else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
-                {
-                    var_get<double>() -= static_cast<double>(other);
-                }
-                else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
-                {
+                case TypeTag::INT:
+                    var_get<int>() -= static_cast<int>(other);
+                    break;
+                case TypeTag::LONG:
+                    var_get<long>() -= static_cast<long>(other);
+                    break;
+                case TypeTag::LONG_LONG:
                     var_get<long long>() -= static_cast<long long>(other);
-                }
-                else
-                {
+                    break;
+                case TypeTag::UINT:
+                    var_get<unsigned int>() -= static_cast<unsigned int>(other);
+                    break;
+                case TypeTag::ULONG:
+                    var_get<unsigned long>() -= static_cast<unsigned long>(other);
+                    break;
+                case TypeTag::ULONG_LONG:
+                    var_get<unsigned long long>() -= static_cast<unsigned long long>(other);
+                    break;
+                case TypeTag::FLOAT:
+                    var_get<float>() -= static_cast<float>(other);
+                    break;
+                case TypeTag::DOUBLE:
+                    var_get<double>() -= static_cast<double>(other);
+                    break;
+                case TypeTag::LONG_DOUBLE:
+                    var_get<long double>() -= static_cast<long double>(other);
+                    break;
+                default:
                     *this = *this - var(other);
+                    break;
                 }
                 return *this;
             }
@@ -2625,21 +2767,38 @@ namespace pythonic
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var &operator*=(T other)
             {
-                if (tag_ == TypeTag::INT && std::is_same_v<T, int>)
+                switch (tag_)
                 {
-                    var_get<int>() *= other;
-                }
-                else if (tag_ == TypeTag::DOUBLE && std::is_floating_point_v<T>)
-                {
-                    var_get<double>() *= static_cast<double>(other);
-                }
-                else if (tag_ == TypeTag::LONG_LONG && std::is_integral_v<T>)
-                {
+                case TypeTag::INT:
+                    var_get<int>() *= static_cast<int>(other);
+                    break;
+                case TypeTag::LONG:
+                    var_get<long>() *= static_cast<long>(other);
+                    break;
+                case TypeTag::LONG_LONG:
                     var_get<long long>() *= static_cast<long long>(other);
-                }
-                else
-                {
+                    break;
+                case TypeTag::UINT:
+                    var_get<unsigned int>() *= static_cast<unsigned int>(other);
+                    break;
+                case TypeTag::ULONG:
+                    var_get<unsigned long>() *= static_cast<unsigned long>(other);
+                    break;
+                case TypeTag::ULONG_LONG:
+                    var_get<unsigned long long>() *= static_cast<unsigned long long>(other);
+                    break;
+                case TypeTag::FLOAT:
+                    var_get<float>() *= static_cast<float>(other);
+                    break;
+                case TypeTag::DOUBLE:
+                    var_get<double>() *= static_cast<double>(other);
+                    break;
+                case TypeTag::LONG_DOUBLE:
+                    var_get<long double>() *= static_cast<long double>(other);
+                    break;
+                default:
                     *this = *this * var(other);
+                    break;
                 }
                 return *this;
             }
@@ -2657,16 +2816,26 @@ namespace pythonic
                         return var(true); // None == None is always true
                     case TypeTag::INT:
                         return var(var_get<int>() == other.var_get<int>());
+                    case TypeTag::LONG:
+                        return var(var_get<long>() == other.var_get<long>());
+                    case TypeTag::LONG_LONG:
+                        return var(var_get<long long>() == other.var_get<long long>());
+                    case TypeTag::UINT:
+                        return var(var_get<unsigned int>() == other.var_get<unsigned int>());
+                    case TypeTag::ULONG:
+                        return var(var_get<unsigned long>() == other.var_get<unsigned long>());
+                    case TypeTag::ULONG_LONG:
+                        return var(var_get<unsigned long long>() == other.var_get<unsigned long long>());
+                    case TypeTag::FLOAT:
+                        return var(var_get<float>() == other.var_get<float>());
                     case TypeTag::DOUBLE:
                         return var(var_get<double>() == other.var_get<double>());
+                    case TypeTag::LONG_DOUBLE:
+                        return var(var_get<long double>() == other.var_get<long double>());
                     case TypeTag::STRING:
                         return var(var_get<std::string>() == other.var_get<std::string>());
                     case TypeTag::BOOL:
                         return var(var_get<bool>() == other.var_get<bool>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() == other.var_get<long long>());
-                    case TypeTag::FLOAT:
-                        return var(var_get<float>() == other.var_get<float>());
                     case TypeTag::LIST:
                     {
                         const auto &lst1 = var_get<List>();
@@ -2767,14 +2936,26 @@ namespace pythonic
                         return var(false); // None != None is always false
                     case TypeTag::INT:
                         return var(var_get<int>() != other.var_get<int>());
+                    case TypeTag::LONG:
+                        return var(var_get<long>() != other.var_get<long>());
+                    case TypeTag::LONG_LONG:
+                        return var(var_get<long long>() != other.var_get<long long>());
+                    case TypeTag::UINT:
+                        return var(var_get<unsigned int>() != other.var_get<unsigned int>());
+                    case TypeTag::ULONG:
+                        return var(var_get<unsigned long>() != other.var_get<unsigned long>());
+                    case TypeTag::ULONG_LONG:
+                        return var(var_get<unsigned long long>() != other.var_get<unsigned long long>());
+                    case TypeTag::FLOAT:
+                        return var(var_get<float>() != other.var_get<float>());
                     case TypeTag::DOUBLE:
                         return var(var_get<double>() != other.var_get<double>());
+                    case TypeTag::LONG_DOUBLE:
+                        return var(var_get<long double>() != other.var_get<long double>());
                     case TypeTag::STRING:
                         return var(var_get<std::string>() != other.var_get<std::string>());
                     case TypeTag::BOOL:
                         return var(var_get<bool>() != other.var_get<bool>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() != other.var_get<long long>());
                     case TypeTag::LIST:
                     {
                         const auto &lst1 = var_get<List>();
@@ -2866,14 +3047,28 @@ namespace pythonic
                 {
                     switch (tag_)
                     {
+                    case TypeTag::NONE:
+                        return var(false); // None > None is always false
                     case TypeTag::INT:
                         return var(var_get<int>() > other.var_get<int>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() > other.var_get<double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() > other.var_get<std::string>());
+                    case TypeTag::LONG:
+                        return var(var_get<long>() > other.var_get<long>());
                     case TypeTag::LONG_LONG:
                         return var(var_get<long long>() > other.var_get<long long>());
+                    case TypeTag::UINT:
+                        return var(var_get<unsigned int>() > other.var_get<unsigned int>());
+                    case TypeTag::ULONG:
+                        return var(var_get<unsigned long>() > other.var_get<unsigned long>());
+                    case TypeTag::ULONG_LONG:
+                        return var(var_get<unsigned long long>() > other.var_get<unsigned long long>());
+                    case TypeTag::FLOAT:
+                        return var(var_get<float>() > other.var_get<float>());
+                    case TypeTag::DOUBLE:
+                        return var(var_get<double>() > other.var_get<double>());
+                    case TypeTag::LONG_DOUBLE:
+                        return var(var_get<long double>() > other.var_get<long double>());
+                    case TypeTag::STRING:
+                        return var(var_get<std::string>() > other.var_get<std::string>());
                     default:
                         break;
                     }
@@ -2891,14 +3086,28 @@ namespace pythonic
                 {
                     switch (tag_)
                     {
+                    case TypeTag::NONE:
+                        return var(true); // None >= None is always true
                     case TypeTag::INT:
                         return var(var_get<int>() >= other.var_get<int>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() >= other.var_get<double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() >= other.var_get<std::string>());
+                    case TypeTag::LONG:
+                        return var(var_get<long>() >= other.var_get<long>());
                     case TypeTag::LONG_LONG:
                         return var(var_get<long long>() >= other.var_get<long long>());
+                    case TypeTag::UINT:
+                        return var(var_get<unsigned int>() >= other.var_get<unsigned int>());
+                    case TypeTag::ULONG:
+                        return var(var_get<unsigned long>() >= other.var_get<unsigned long>());
+                    case TypeTag::ULONG_LONG:
+                        return var(var_get<unsigned long long>() >= other.var_get<unsigned long long>());
+                    case TypeTag::FLOAT:
+                        return var(var_get<float>() >= other.var_get<float>());
+                    case TypeTag::DOUBLE:
+                        return var(var_get<double>() >= other.var_get<double>());
+                    case TypeTag::LONG_DOUBLE:
+                        return var(var_get<long double>() >= other.var_get<long double>());
+                    case TypeTag::STRING:
+                        return var(var_get<std::string>() >= other.var_get<std::string>());
                     default:
                         break;
                     }
@@ -2916,14 +3125,28 @@ namespace pythonic
                 {
                     switch (tag_)
                     {
+                    case TypeTag::NONE:
+                        return var(true); // None <= None is always true
                     case TypeTag::INT:
                         return var(var_get<int>() <= other.var_get<int>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() <= other.var_get<double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() <= other.var_get<std::string>());
+                    case TypeTag::LONG:
+                        return var(var_get<long>() <= other.var_get<long>());
                     case TypeTag::LONG_LONG:
                         return var(var_get<long long>() <= other.var_get<long long>());
+                    case TypeTag::UINT:
+                        return var(var_get<unsigned int>() <= other.var_get<unsigned int>());
+                    case TypeTag::ULONG:
+                        return var(var_get<unsigned long>() <= other.var_get<unsigned long>());
+                    case TypeTag::ULONG_LONG:
+                        return var(var_get<unsigned long long>() <= other.var_get<unsigned long long>());
+                    case TypeTag::FLOAT:
+                        return var(var_get<float>() <= other.var_get<float>());
+                    case TypeTag::DOUBLE:
+                        return var(var_get<double>() <= other.var_get<double>());
+                    case TypeTag::LONG_DOUBLE:
+                        return var(var_get<long double>() <= other.var_get<long double>());
+                    case TypeTag::STRING:
+                        return var(var_get<std::string>() <= other.var_get<std::string>());
                     default:
                         break;
                     }
@@ -2937,6 +3160,7 @@ namespace pythonic
 
             // ============ OPTIMIZED Implicit Conversion Operators for Arithmetic Types ============
             // Fast-path: directly operate on primitives using TypeTag
+            // TODO: need to add all the dtypes. These fast paths currently only impliments the int and long long and fallback for all others
 
             // Addition with primitives
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
@@ -3074,7 +3298,7 @@ namespace pythonic
             }
 
             // Division with primitives
-            // Note: Python semantics - / always returns float, even for int/int
+            // Note: Python semantics - / always returns float, even for int/int TODO: But I need to keep is consistent, so need to check what my main operator overload does.
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator/(T other) const
             {
@@ -3272,7 +3496,7 @@ namespace pythonic
             }
 
             // Bitwise operators (only for integral types)
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+
             var operator~() const
             {
                 switch (tag_)
@@ -3294,7 +3518,6 @@ namespace pythonic
                 }
             }
 
-            // OPTIMIZED: Uses TypeTag for fast dispatch
             var operator&(const var &other) const
             {
                 // Fast-path: same type using tag
@@ -3330,14 +3553,28 @@ namespace pythonic
                     }
                     case TypeTag::ORDEREDSET:
                     {
+                        // Merge-based intersection for sorted sets
                         const auto &a = var_get<OrderedSet>();
                         const auto &b = other.var_get<OrderedSet>();
                         OrderedSet result;
-                        for (const auto &item : a)
+                        auto it_a = a.begin();
+                        auto it_b = b.begin();
+                        while (it_a != a.end() && it_b != b.end())
                         {
-                            if (b.find(item) != b.end())
+                            if (*it_a < *it_b)
                             {
-                                result.insert(item);
+                                ++it_a;
+                            }
+                            else if (*it_b < *it_a)
+                            {
+                                ++it_b;
+                            }
+                            else
+                            {
+                                // Equal, add to result
+                                result.insert(*it_a);
+                                ++it_a;
+                                ++it_b;
                             }
                         }
                         return var(std::move(result));
@@ -3426,10 +3663,43 @@ namespace pythonic
                     }
                     case TypeTag::ORDEREDSET:
                     {
+                        // Merge-based union for sorted sets
                         const auto &a = var_get<OrderedSet>();
                         const auto &b = other.var_get<OrderedSet>();
-                        OrderedSet result = a;
-                        result.insert(b.begin(), b.end());
+                        OrderedSet result;
+                        auto it_a = a.begin();
+                        auto it_b = b.begin();
+                        while (it_a != a.end() && it_b != b.end())
+                        {
+                            if (*it_a < *it_b)
+                            {
+                                result.insert(*it_a);
+                                ++it_a;
+                            }
+                            else if (*it_b < *it_a)
+                            {
+                                result.insert(*it_b);
+                                ++it_b;
+                            }
+                            else
+                            {
+                                // Equal, add one
+                                result.insert(*it_a);
+                                ++it_a;
+                                ++it_b;
+                            }
+                        }
+                        // Insert remaining elements
+                        while (it_a != a.end())
+                        {
+                            result.insert(*it_a);
+                            ++it_a;
+                        }
+                        while (it_b != b.end())
+                        {
+                            result.insert(*it_b);
+                            ++it_b;
+                        }
                         return var(std::move(result));
                     }
                     case TypeTag::LIST:
@@ -3476,7 +3746,6 @@ namespace pythonic
                 throw pythonic::PythonicTypeError("operator| requires integral types or containers");
             }
 
-            // OPTIMIZED: Uses TypeTag for fast dispatch
             var operator^(const var &other) const
             {
                 // Fast-path: same type using tag
@@ -3522,19 +3791,37 @@ namespace pythonic
                         const auto &a = var_get<OrderedSet>();
                         const auto &b = other.var_get<OrderedSet>();
                         OrderedSet result;
-                        for (const auto &item : a)
+                        auto it_a = a.begin();
+                        auto it_b = b.begin();
+                        while (it_a != a.end() && it_b != b.end())
                         {
-                            if (b.find(item) == b.end())
+                            if (*it_a < *it_b)
                             {
-                                result.insert(item);
+                                result.insert(*it_a);
+                                ++it_a;
+                            }
+                            else if (*it_b < *it_a)
+                            {
+                                result.insert(*it_b);
+                                ++it_b;
+                            }
+                            else
+                            {
+                                // Equal, skip both
+                                ++it_a;
+                                ++it_b;
                             }
                         }
-                        for (const auto &item : b)
+                        // Insert remaining elements
+                        while (it_a != a.end())
                         {
-                            if (a.find(item) == a.end())
-                            {
-                                result.insert(item);
-                            }
+                            result.insert(*it_a);
+                            ++it_a;
+                        }
+                        while (it_b != b.end())
+                        {
+                            result.insert(*it_b);
+                            ++it_b;
                         }
                         return var(std::move(result));
                     }
@@ -3574,7 +3861,6 @@ namespace pythonic
             }
 
             // Bool conversion
-            // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
             operator bool() const
             {
                 switch (tag_)
@@ -3622,33 +3908,27 @@ namespace pythonic
 
             // Explicit integer conversion operator
             // Allows: int i = static_cast<int>(some_var);
-            // Note: Use explicit to prevent implicit conversion in mixed expressions
+            // Note: I should use explicit to prevent implicit conversion in mixed expressions
             explicit operator int() const
             {
                 return toInt();
             }
 
-            // Explicit long long conversion operator
             explicit operator long long() const
             {
                 return toLongLong();
             }
 
-            // Explicit double conversion operator
-            // Allows: double d = static_cast<double>(some_var);
             explicit operator double() const
             {
                 return toDouble();
             }
 
-            // Explicit float conversion operator
             explicit operator float() const
             {
                 return static_cast<float>(toDouble());
             }
 
-            // Explicit size_t conversion operator (useful for indexing)
-            // Allows: size_t idx = static_cast<size_t>(some_var);
             explicit operator size_t() const
             {
                 long long v = toLongLong();
@@ -3658,8 +3938,10 @@ namespace pythonic
                 }
                 return static_cast<size_t>(v);
             }
-
-            // Explicit string conversion operator
+            explicit operator long double() const
+            {
+                return toLongDouble();
+            }
             explicit operator std::string() const
             {
                 return toString();
@@ -3669,7 +3951,7 @@ namespace pythonic
             bool graph_bool_impl() const;
 
             // Container access - operator[] for list and dict
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+
             var &operator[](size_t index)
             {
                 if (tag_ == TypeTag::LIST)
@@ -3717,7 +3999,6 @@ namespace pythonic
             }
 
             // len() support
-            // OPTIMIZED: Uses TypeTag for fast dispatch instead of std::visit
             var len() const
             {
                 switch (tag_)
@@ -3740,7 +4021,7 @@ namespace pythonic
             }
 
             // append for list
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+
             void append(const var &v)
             {
                 if (tag_ == TypeTag::LIST)
@@ -3768,7 +4049,7 @@ namespace pythonic
             }
 
             // add for set or ordered_set
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+
             void add(const var &v)
             {
                 if (tag_ == TypeTag::SET)
@@ -3804,7 +4085,7 @@ namespace pythonic
             }
 
             // extend for list - adds all elements from another iterable
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+
             void extend(const var &other)
             {
                 if (tag_ != TypeTag::LIST)
@@ -3844,7 +4125,7 @@ namespace pythonic
             }
 
             // update for set - adds all elements from another iterable (like Python's set.update())
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+
             void update(const var &other)
             {
                 if (tag_ != TypeTag::SET)
@@ -3874,8 +4155,8 @@ namespace pythonic
                 }
             }
 
-            // contains check (in operator simulation)
-            // OPTIMIZED: Uses TypeTag for fast dispatch
+            // contains check
+
             var contains(const var &v) const
             {
                 switch (tag_)
@@ -3960,6 +4241,7 @@ namespace pythonic
             // ============ Iterator Support ============
 
             // Generic iterator wrapper that works with different container types
+            // TODO: currently uses std:variant. I need to make it use type tag based as it will be much faster and memory efficient. but i have to be careful about memory leaks or pointer misuse. Same goes for const_iterator
             class iterator
             {
             public:
@@ -4347,8 +4629,7 @@ namespace pythonic
             }
 
             // ============ Slicing Support ============
-            // Python-like slicing: var.slice(start, end, step)
-            // Supports negative indices like Python
+            // Python-like slicing: var.slice(start, end, step). supports neg indices too.
 
             var slice(long long start = 0, long long end = LLONG_MAX, long long step = 1) const
             {
@@ -4666,15 +4947,26 @@ namespace pythonic
                 {
                     std::string result = *s;
                     // Left trim
-                    result.erase(result.begin(), std::find_if(result.begin(), result.end(),
-                                                              [](unsigned char ch)
-                                                              { return !std::isspace(ch); }));
+                    result.erase(
+                        result.begin(),
+                        std::find_if(
+                            result.begin(),
+                            result.end(),
+                            [](unsigned char ch)
+                            {
+                                return !std::isspace(ch);
+                            }));
                     // Right trim
-                    result.erase(std::find_if(result.rbegin(), result.rend(),
-                                              [](unsigned char ch)
-                                              { return !std::isspace(ch); })
-                                     .base(),
-                                 result.end());
+                    result.erase(
+                        std::find_if(
+                            result.rbegin(),
+                            result.rend(),
+                            [](unsigned char ch)
+                            {
+                                return !std::isspace(ch);
+                            })
+                            .base(),
+                        result.end());
                     return var(result);
                 }
                 throw pythonic::PythonicAttributeError("strip() requires a string");
@@ -4686,9 +4978,15 @@ namespace pythonic
                 if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
-                    result.erase(result.begin(), std::find_if(result.begin(), result.end(),
-                                                              [](unsigned char ch)
-                                                              { return !std::isspace(ch); }));
+                    result.erase(
+                        result.begin(),
+                        std::find_if(
+                            result.begin(),
+                            result.end(),
+                            [](unsigned char ch)
+                            {
+                                return !std::isspace(ch);
+                            }));
                     return var(result);
                 }
                 throw pythonic::PythonicAttributeError("lstrip() requires a string");
@@ -4700,11 +4998,16 @@ namespace pythonic
                 if (auto *s = var_get_if<std::string>())
                 {
                     std::string result = *s;
-                    result.erase(std::find_if(result.rbegin(), result.rend(),
-                                              [](unsigned char ch)
-                                              { return !std::isspace(ch); })
-                                     .base(),
-                                 result.end());
+                    result.erase(
+                        std::find_if(
+                            result.rbegin(),
+                            result.rend(),
+                            [](unsigned char ch)
+                            {
+                                return !std::isspace(ch);
+                            })
+                            .base(),
+                        result.end());
                     return var(result);
                 }
                 throw pythonic::PythonicAttributeError("rstrip() requires a string");
@@ -4865,6 +5168,33 @@ namespace pythonic
                 throw pythonic::PythonicAttributeError("capitalize() requires a string");
             }
 
+            // capitalizes the 1st char of each sentence
+            var sentence_case() const
+            {
+                if (auto *s = var_get_if<std::string>())
+                {
+                    if (s->empty())
+                        return var(*s);
+                    std::string result = *s;
+                    bool cap = true;
+                    for (size_t i = 0; i < result.length(); ++i)
+                    {
+                        if (cap && std::isalpha(static_cast<unsigned char>(result[i])))
+                        {
+                            result[i] = std::toupper(static_cast<unsigned char>(result[i]));
+                            cap = false;
+                        }
+                        else
+                        {
+                            result[i] = std::tolower(static_cast<unsigned char>(result[i]));
+                        }
+                        if (result[i] == '.' || result[i] == '!' || result[i] == '?')
+                            cap = true;
+                    }
+                    return var(result);
+                }
+                throw pythonic::PythonicAttributeError("sentence_case() requires a string");
+            }
             // title() - title case (first letter of each word capitalized)
             var title() const
             {
@@ -4894,6 +5224,7 @@ namespace pythonic
             }
 
             // count(substring) - count occurrences of substring
+            // Works for string and list
             var count(const var &substr) const
             {
                 if (auto *s = var_get_if<std::string>())
@@ -4910,7 +5241,7 @@ namespace pythonic
                     }
                     return var(count);
                 }
-                // Also works for List - count occurrences of element
+                // for List count occurrences of element
                 if (auto *lst = var_get_if<List>())
                 {
                     int count = 0;
@@ -5900,6 +6231,7 @@ namespace pythonic
 
         // ============ Runtime variable table ============
 
+        // TODO:  It was my initial design prototype. I don't rememer if i use it anymore or not.
         inline std::unordered_map<std::string, var> _vars;
 
         // Proxy Wrapper for variables
@@ -6018,7 +6350,10 @@ namespace pythonic
                 }
                 break;
             case 'o':
-                return TypeTag::ORDEREDSET; // "ordered_set" or "ordereddict"
+                if (type_name[7] == 's')
+                    return TypeTag::ORDEREDSET; // "ordered_set"
+                if (type_name[7] == 'd')
+                    return TypeTag::ORDEREDDICT; // "ordereddict"
             case 'g':
                 return TypeTag::GRAPH; // "graph"
             }
@@ -6042,7 +6377,6 @@ namespace pythonic
 
         // bool() - Python truthiness rules
         // Empty containers, 0, empty string = False; else True
-        // OPTIMIZED: Uses TypeTag for fast dispatch instead of string comparison
         inline var Bool(const var &v)
         {
             switch (v.type_tag())
@@ -6087,7 +6421,7 @@ namespace pythonic
         }
 
         // repr() - String representation with quotes and escapes
-        // OPTIMIZED: Uses TypeTag for fast dispatch
+
         inline var repr(const var &v)
         {
             if (v.type_tag() == TypeTag::STRING)
@@ -6131,7 +6465,7 @@ namespace pythonic
         }
 
         // int() - convert to int
-        // OPTIMIZED: Uses TypeTag for fast dispatch
+
         inline var Int(const var &v)
         {
             switch (v.type_tag())
@@ -6170,15 +6504,215 @@ namespace pythonic
             }
         }
 
-        // float() - convert to float/double
-        // OPTIMIZED: Uses TypeTag for fast dispatch
-        inline var Float(const var &v)
+        // Long() - convert to Long
+
+        inline var Long(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::LONG:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<long>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<long>(v.get<double>()));
+            case TypeTag::INT:
+                return var(static_cast<long>(v.get<int>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<long>(v.get<long long>()));
+            case TypeTag::UINT:
+                return var(static_cast<long>(v.get<unsigned int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<long>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<long>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<long>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(std::stol(v.get<std::string>()));
+                }
+                catch (...)
+                {
+                    throw pythonic::PythonicValueError("invalid literal for long(): '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to long");
+            }
+        }
+
+        // LongLong() - convert to long long
+
+        inline var LongLong(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::LONG_LONG:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<long long>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<long long>(v.get<double>()));
+            case TypeTag::LONG:
+                return var(static_cast<long long>(v.get<long>()));
+            case TypeTag::INT:
+                return var(static_cast<long long>(v.get<int>()));
+            case TypeTag::UINT:
+                return var(static_cast<long long>(v.get<unsigned int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<long long>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<long long>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<long long>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(std::stoll(v.get<std::string>()));
+                }
+                catch (...)
+                {
+                    throw pythonic::PythonicValueError("invalid literal for long long(): '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to long long");
+            }
+        }
+
+        // UInt() - convert to unsigned int
+
+        inline var UInt(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::UINT:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<unsigned int>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<unsigned int>(v.get<double>()));
+            case TypeTag::LONG:
+                return var(static_cast<unsigned int>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<unsigned int>(v.get<long long>()));
+            case TypeTag::INT:
+                return var(static_cast<unsigned int>(v.get<int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<unsigned int>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<unsigned int>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<unsigned int>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(static_cast<unsigned int>(std::stoul(v.get<std::string>())));
+                }
+                catch (...)
+                {
+                    throw pythonic::PythonicValueError("invalid literal for unsigned int(): '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to unsigned int");
+            }
+        }
+
+        // ULong() - convert to unsigned long
+
+        inline var ULong(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::ULONG:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<unsigned long>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<unsigned long>(v.get<double>()));
+            case TypeTag::LONG:
+                return var(static_cast<unsigned long>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<unsigned long>(v.get<long long>()));
+            case TypeTag::INT:
+                return var(static_cast<unsigned long>(v.get<int>()));
+            case TypeTag::UINT:
+                return var(static_cast<unsigned long>(v.get<unsigned int>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<unsigned long>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<unsigned long>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(static_cast<unsigned long>(std::stoul(v.get<std::string>())));
+                }
+                catch (...)
+                {
+                    throw pythonic::PythonicValueError("invalid literal for unsigned long(): '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to unsigned long");
+            }
+        }
+
+        // ULongLong() - convert to int
+
+        inline var ULongLong(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::ULONG_LONG:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<unsigned long long>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<unsigned long long>(v.get<double>()));
+            case TypeTag::LONG:
+                return var(static_cast<unsigned long long>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<unsigned long long>(v.get<long long>()));
+            case TypeTag::INT:
+                return var(static_cast<unsigned long long>(v.get<int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<unsigned long long>(v.get<unsigned long>()));
+            case TypeTag::UINT:
+                return var(static_cast<unsigned long long>(v.get<unsigned int>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<unsigned long long>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(std::stoull(v.get<std::string>()));
+                }
+                catch (...)
+                {
+                    throw pythonic::PythonicValueError("invalid literal for unsigned long long(): '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to unsigned long long");
+            }
+        }
+        // Double() - convert to double
+
+        inline var Double(const var &v)
         {
             switch (v.type_tag())
             {
             case TypeTag::DOUBLE:
-            case TypeTag::FLOAT:
                 return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<double>(v.get<float>()));
             case TypeTag::INT:
                 return var(static_cast<double>(v.get<int>()));
             case TypeTag::LONG:
@@ -6202,15 +6736,105 @@ namespace pythonic
                 }
                 catch (...)
                 {
+                    throw pythonic::PythonicValueError("could not convert string to double: '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to double");
+            }
+        }
+        // Converts to float
+        inline var Float(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::FLOAT:
+                return v;
+            case TypeTag::DOUBLE:
+                return var(static_cast<float>(v.get<double>()));
+            case TypeTag::INT:
+                return var(static_cast<float>(v.get<int>()));
+            case TypeTag::LONG:
+                return var(static_cast<float>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<float>(v.get<long long>()));
+            case TypeTag::UINT:
+                return var(static_cast<float>(v.get<unsigned int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<float>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<float>(v.get<unsigned long long>()));
+            case TypeTag::LONG_DOUBLE:
+                return var(static_cast<float>(v.get<long double>()));
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1.0 : 0.0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(std::stof(v.get<std::string>()));
+                }
+                catch (...)
+                {
                     throw pythonic::PythonicValueError("could not convert string to float: '" + v.get<std::string>() + "'");
                 }
             default:
                 throw pythonic::PythonicValueError("cannot convert " + v.type() + " to float");
             }
         }
+        // Converts to long double
+        inline var LongDouble(const var &v)
+        {
+            switch (v.type_tag())
+            {
+            case TypeTag::LONG_DOUBLE:
+                return v;
+            case TypeTag::FLOAT:
+                return var(static_cast<long double>(v.get<float>()));
+            case TypeTag::DOUBLE:
+                return var(static_cast<long double>(v.get<double>()));
+            case TypeTag::INT:
+                return var(static_cast<long double>(v.get<int>()));
+            case TypeTag::LONG:
+                return var(static_cast<long double>(v.get<long>()));
+            case TypeTag::LONG_LONG:
+                return var(static_cast<long double>(v.get<long long>()));
+            case TypeTag::UINT:
+                return var(static_cast<long double>(v.get<unsigned int>()));
+            case TypeTag::ULONG:
+                return var(static_cast<long double>(v.get<unsigned long>()));
+            case TypeTag::ULONG_LONG:
+                return var(static_cast<long double>(v.get<unsigned long long>()));
+
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1.0 : 0.0);
+            case TypeTag::STRING:
+                try
+                {
+                    return var(std::stold(v.get<std::string>()));
+                }
+                catch (...)
+                {
+                    throw pythonic::PythonicValueError("could not convert string to long double: '" + v.get<std::string>() + "'");
+                }
+            default:
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to long double");
+            }
+        }
+
+        // converts to string
+        inline var String(const var &v)
+        {
+            try
+            {
+                return var(v.str());
+            }
+            catch (...)
+            {
+                throw pythonic::PythonicValueError("cannot convert " + v.type() + " to string");
+            }
+        }
 
         // abs() - absolute value
-        // OPTIMIZED: Uses TypeTag for fast dispatch
+
         inline var abs(const var &v)
         {
             switch (v.type_tag())
@@ -6232,7 +6856,7 @@ namespace pythonic
             }
         }
 
-        // min() - minimum of list or two values
+                // min() - minimum of list or two values
         inline var min(const var &a, const var &b)
         {
             if (a < b)
@@ -6240,7 +6864,6 @@ namespace pythonic
             return b;
         }
 
-        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var min(const var &lst)
         {
             if (lst.type_tag() != TypeTag::LIST)
@@ -6267,7 +6890,6 @@ namespace pythonic
             return a;
         }
 
-        // OPTIMIZED: Uses TypeTag for fast dispatch
         inline var max(const var &lst)
         {
             if (lst.type_tag() != TypeTag::LIST)
@@ -6287,7 +6909,7 @@ namespace pythonic
         }
 
         // sum() - sum of list elements
-        // OPTIMIZED: Uses TypeTag for fast dispatch
+
         inline var sum(const var &lst, const var &start = var(0))
         {
             if (lst.type_tag() != TypeTag::LIST)
