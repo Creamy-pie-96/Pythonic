@@ -41,4 +41,4 @@ Please open Issues or Discussions with any bug reports, questions, or feature id
 
 ## Acknowledgments
 
-Parts of this project, including some code generation and documentation, were assisted by GitHub Copilot (AI programming assistant). Copilot provided suggestions and support throughout the development process.
+Parts of this project, including some code generation and much of documentation, were assisted by GitHub Copilot (AI programming assistant). Copilot provided suggestions and support throughout the development process.
