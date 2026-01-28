@@ -1,5 +1,5 @@
 [⬅ Back to Table of Contents](../index.md)
-[⬅ Back to Table of Contents](var.md)
+[⬅ Back to Var](var.md)
 [⬅ Back to Data types](dtypes.md)
 
 # Construction & Lifetime
