@@ -138,9 +138,11 @@ var d = dict({{"a", 1}, {"b", 2}});
 d.is_dict();           // true
 d.as_dict()["a"]      // 1
 
-var f = var(3.14);
-f.toInt();             // 3
-Double(f);             // 3.14
+var f = 3.1415;
+var x = f.toInt(); // x is 3
+print(x,x.type()); // 3 int
+var y = Double(x);
+print(y,y.type()); // 3.0 double
 
 // Safe pointer access
 if (auto *p = l.var_get_if<List>()) {

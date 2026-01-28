@@ -46,7 +46,7 @@ var vlist = list(1, 2, 3);
 vlist.append(4);           // [1,2,3,4]
 vlist.extend(list(5,6));   // [1,2,3,4,5,6]
 vlist.remove(2);           // [1,3,4,5,6]
-print(vlist.size());       // 5
+print(vlist.len());       // 5
 print(vlist.front());      // 1
 print(vlist.back());       // 6
 print(vlist.at(2));        // 4
