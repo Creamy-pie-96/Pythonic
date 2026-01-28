@@ -130,8 +130,6 @@ print(f(3)); // 7
 
 ---
 
-## See Also
+## Next Check
 
-- [Iteration Helpers](iteration.md)
-- [Math Functions](math.md)
-- [Containers](containers.md)
+- [File-I/O](../File_io/File_io.md)

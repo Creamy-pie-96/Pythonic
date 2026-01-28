@@ -116,4 +116,4 @@ for (auto line : f) {
 
 ## Next check
 
-- [QuickStart](examples/quickstart.md)
+- [QuickStart](../examples/quickstart.md)

@@ -7,6 +7,7 @@ This library brings Python's most beloved features to C++ - dynamic typing, easy
 ## Table of Contents
 
 - [Installation & Build](#installation--build)
+- [Learn](docs/index.md) 
 
 - [Quick Start](#quick-start)
   - [The Easy Way (Recommended)](#the-easy-way-recommended)

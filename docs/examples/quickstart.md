@@ -1,4 +1,4 @@
-
+[⬅ Back to Table of Contents](../index.md)
 # Quick Start
 
 ### The Easy Way (Recommended)
@@ -67,3 +67,5 @@ var flag = true;      // bool
 x = "now I'm a string";
 x = list(1, 2, 3);    // now I'm a list!
 ```
+
+[⬅ Back to main readme](../../README.md)
