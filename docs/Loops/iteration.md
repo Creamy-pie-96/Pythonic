@@ -113,8 +113,6 @@ print(all(list(1,1,1)));
 
 ---
 
-## See Also
+## Next Check
 
-- [Math Functions](math.md)
-- [Containers](containers.md)
-- [Construction & Lifetime](Var/construction_and_lifetime.md)
+- [Functional](../Functional/functional.md)
