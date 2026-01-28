@@ -1,4 +1,4 @@
-[⬅ Back to main readme file](../README.md)
+[⬅ Back to main readme file](../../README.md)
 # Pythonic C++ Library - Quick Start Guide
 
 This guide shows you how to use the Pythonic C++ library in your own projects.
@@ -621,7 +621,7 @@ dot -Tpng my_graph.dot -o my_graph.png
 
 ## What's Next?
 
-Check out the full documentation in the main [README.md](../../README.md) for all the features:
+Check out the full documentation in the [Documentation](../index.md) for all the features:
 
 - Dynamic typing with `var`
 - Python-style containers (lists, dicts, sets)
