@@ -1,10 +1,69 @@
-# Quickstart
 
-Short tutorial:
+# Quick Start
 
-- Install or include `include/pythonic`
-- `#include "pythonic/pythonic.hpp"`
-- `using namespace pythonic::vars;` or `using namespace Pythonic;`
-- Create simple program showing `var` creation, print, and loop
+### The Easy Way (Recommended)
 
-Minimal example and expected output.
+Just include the main header - it pulls in everything under the `Pythonic` (or `py`) namespace:
+
+```cpp
+#include "pythonic/pythonic.hpp"
+
+using namespace Pythonic;
+// or
+using namespace py;
+```
+
+### The Manual Way
+
+Or pick exactly what you need:
+
+```cpp
+#include "pythonicVars.hpp"      // var, list, dict, set
+#include "pythonicPrint.hpp"     // print(), pprint()
+#include "pythonicLoop.hpp"      // range(), enumerate(), zip() + macros
+#include "pythonicFunction.hpp"  // map, filter, comprehensions
+#include "pythonicFile.hpp"      // File I/O
+#include "pythonicMath.hpp"      // Math functions (trig, logarithms, etc.)
+
+using namespace pythonic::vars;
+using namespace pythonic::print;
+using namespace pythonic::loop;
+using namespace pythonic::math;
+using namespace pythonic::file;
+using namespace pythonic::func;
+using namespace pythonic::graph;
+using namespace pythonic::fast;
+using namespace pythonic::overflow;
+
+using namespace pythonic::error;
+```
+
+**Caution:** If you use namespaces and import them globally, be careful with using std names and other namespaces, as they might clash or cause ambiguity and multiple definition errors. We recommend using std:: explicitly if you make the pythonic namespace global.
+
+**About Namespaces:**
+
+- `pythonic::vars` - Core `var` type, containers, type conversion
+- `pythonic::print` - Printing and formatting (`print()`, `pprint()`)
+- `pythonic::loop` - Iteration helpers (`range()`, `enumerate()`, `zip()`, `reversed()`)
+- `pythonic::func` - Functional programming (`map()`, `filter()`, comprehensions)
+- `pythonic::file` - File I/O
+- `pythonic::math` - Comprehensive math library (`trig`, `logarithms`, `random`, etc.)
+- `pythonic::graph` - Graph data structure and algorithms
+- `pythonic::error` - Exception hierarchy and error handling
+- `pythonic::fast` - Hot-loop optimizations
+- `pythonic::overflow` - Checked arithmetic helpers
+
+You can use them all at once with `using namespace Pythonic;` or `using namespace py;`.
+
+This is the heart of the library - a dynamic variable that can hold anything.
+
+```cpp
+var x = 42;           // int
+var y = 3.14;         // double
+var name = "Alice";   // string
+var flag = true;      // bool
+
+// Changes type whenever you want
+x = "now I'm a string";
+x = list(1, 2, 3);    // now I'm a list!
+```

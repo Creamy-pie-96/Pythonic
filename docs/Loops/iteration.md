@@ -1,0 +1,120 @@
+[⬅ Back to Table of Contents](index.md)
+
+# Iteration Helpers
+
+This page documents all user-facing iteration helpers in Pythonic, including range, enumerate, zip, reversed, loop macros, and utility functions, with concise examples.
+
+---
+
+## Range & Views
+
+| Function / Macro                 | Description                    | Example                                                |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------ |
+| `range(end)`                     | Range from 0 to end-1          | `for_range(i, 10) { ... }`                             |
+| `range(start, end)`              | Range from start to end-1      | `for_range(i, 1, 10) { ... }`                          |
+| `range(start, end, step)`        | Range with explicit step       | `for_range(i, 10, 0, -1) { ... }`                      |
+| `views::take_n(r, n)`            | View of first n elements       | `for (auto x : views::take_n(lst, 5)) { ... }`         |
+| `views::drop_n(r, n)`            | View dropping first n elements | `for (auto x : views::drop_n(lst, 2)) { ... }`         |
+| `views::filter_view(r, pred)`    | Filtered view by predicate     | `for (auto x : views::filter_view(lst, pred)) { ... }` |
+| `views::transform_view(r, func)` | Transformed view by function   | `for (auto x : views::transform_view(lst, f)) { ... }` |
+| `views::reverse_view(r)`         | Reverse view (lazy, no copy)   | `for (auto x : views::reverse_view(lst)) { ... }`      |
+| `views::iota_view(start, end)`   | Integer range view             | `for (auto i : views::iota_view(0, 5)) { ... }`        |
+
+---
+
+## Enumerate & Zip
+
+| Function / Macro                | Description             | Example                                                  |
+| ------------------------------- | ----------------------- | -------------------------------------------------------- |
+| `enumerate(container, start=0)` | Index/value pairs       | `for_enumerate(i, x, lst) { ... }`                       |
+| `views::enumerate_view(r)`      | Enumerated view (C++20) | `for (auto [i, x] : views::enumerate_view(lst)) { ... }` |
+| `zip(a, b, ...)`                | Zip multiple containers | `for (auto [x, y] : zip(lst1, lst2)) { ... }`            |
+
+---
+
+## Reversed
+
+| Function / Macro         | Description                  | Example                                           |
+| ------------------------ | ---------------------------- | ------------------------------------------------- |
+| `reversed(container)`    | Reverse iteration            | `for (auto x : reversed(lst)) { ... }`            |
+| `views::reverse_view(r)` | Reverse view (lazy, no copy) | `for (auto x : views::reverse_view(lst)) { ... }` |
+
+---
+
+## Loop Macros
+
+| Macro                                | Description                              | Example                            |
+| ------------------------------------ | ---------------------------------------- | ---------------------------------- |
+| `for_each(var, container)`           | Range-based for loop                     | `for_each(x, lst) { ... }`         |
+| `for_index(idx, container)`          | Loop with index                          | `for_index(i, lst) { ... }`        |
+| `for_enumerate(idx, val, container)` | Enumerate style loop                     | `for_enumerate(i, x, lst) { ... }` |
+| `for_range(var, ...)`                | Python-like for in range                 | `for_range(i, 10) { ... }`         |
+| `while_true`                         | Infinite loop (like Python's while True) | `while_true { ... }`               |
+
+---
+
+## Utility Functions
+
+| Function            | Description                      | Example             |
+| ------------------- | -------------------------------- | ------------------- |
+| `len(container)`    | Get length of container or range | `len(lst)`          |
+| `to_list(iterable)` | Convert any iterable to a list   | `to_list(range(5))` |
+| `sum(iterable)`     | Sum of elements                  | `sum(list(1,2,3))`  |
+| `min(iterable)`     | Minimum element                  | `min(list(1,2,3))`  |
+| `max(iterable)`     | Maximum element                  | `max(list(1,2,3))`  |
+| `any(iterable)`     | True if any element is truthy    | `any(list(0,1,0))`  |
+| `all(iterable)`     | True if all elements are truthy  | `all(list(1,1,1))`  |
+
+---
+
+## Examples
+
+```cpp
+#include "pythonic/pythonicLoop.hpp"
+using namespace pythonic::loop;
+
+// --- Range ---
+for_range(i, 5) { print(i); } // 0 1 2 3 4
+for_range(i, 1, 5) { print(i); } // 1 2 3 4
+for_range(i, 10, 0, -2) { print(i); } // 10 8 6 4 2
+
+// --- Enumerate ---
+for_enumerate(i, x, list(10, 20, 30)) { print(i, x); }
+
+// --- Zip ---
+for (auto [x, y] : zip(list(1,2,3), list("a","b","c"))) { print(x, y); }
+
+// --- Reversed ---
+for (auto x : reversed(list(1,2,3))) { print(x); }
+
+// --- Loop Macros ---
+for_each(x, list(1,2,3)) { print(x); }
+for_index(i, list(1,2,3)) { print(i, list(1,2,3)[i]); }
+while_true { break; }
+
+// --- Utility Functions ---
+print(len(list(1,2,3)));
+print(to_list(range(5)));
+print(sum(list(1,2,3)));
+print(min(list(1,2,3)));
+print(max(list(1,2,3)));
+print(any(list(0,1,0)));
+print(all(list(1,1,1)));
+```
+
+---
+
+## Notes
+
+- All iteration helpers work with standard containers, Pythonic containers, and C++20 ranges.
+- Loop macros provide Python-like syntax for common iteration patterns.
+- Views are lazy and efficient; use them for large data or pipelines.
+- Utility functions operate on any iterable, including ranges and views.
+
+---
+
+## See Also
+
+- [Math Functions](math.md)
+- [Containers](containers.md)
+- [Construction & Lifetime](Var/construction_and_lifetime.md)

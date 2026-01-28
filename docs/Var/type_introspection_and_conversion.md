@@ -1,4 +1,4 @@
-[⬅ Back to Table of Contents](var.md)
+[⬅ Back to Var Table of Contents](var.md)
 
 # Type Introspection & Conversion
 
