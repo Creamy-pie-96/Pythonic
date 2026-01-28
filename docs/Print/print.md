@@ -1,4 +1,5 @@
 [⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Include and namespaces](../Includes_and_namespaces/incl_name.md)
 
 # Print and Pretty Print
 
@@ -14,15 +15,22 @@ The `print` and `pprint` helpers in Pythonic provide a convenient way to output 
 
 ## `print`
 
-The `print` function is used for standard output of `var` objects and other types. It supports multiple arguments, custom separators, and end characters.
+### Function Signatures and Parameters
 
-### Features
+| Function                              | Description                                                                                                                                         |
+| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `print(args...)`                      | Prints any number of arguments (of any type), separated by a space, ending with a newline. For `var` types, uses the simple `str()` representation. |
+| `pprint(var v, size_t indent_step=2)` | Pretty-prints a `var` object with indentation. `indent_step` sets the number of spaces per indent level (default: 2).                               |
 
-- Outputs `var` objects and other types using `str()` or `operator<<`.
-- Supports multiple arguments, separated by a customizable separator (default is a space).
-- Allows customization of the end character (default is a newline `\n`).
+**Parameters:**
 
-### Example
+- `args...` (print): Any number of arguments of any type.
+- `v` (pprint): The `var` object to pretty-print.
+- `indent_step` (pprint): (Optional) Number of spaces for each indentation level. Default is 2.
+
+> **Note:** The current implementation does not support custom separators or end characters for `print`. Output always ends with a newline, and arguments are separated by a single space.
+
+### Usage Examples
 
 ```cpp
 #include "pythonicPrint.hpp"
@@ -44,13 +52,23 @@ int main() {
 
 ## `pprint`
 
-The `pprint` function is designed for pretty-printing complex or nested structures. It uses `pretty_str()` to format the output with indentation and line breaks for better readability.
+### Function Signature
+
+```cpp
+pprint(const var& v, size_t indent_step = 2);
+```
+
+### Parameters
+
+- `v`: The `var` object to pretty-print.
+- `indent_step`: (Optional) Number of spaces to use for each indentation level. Default is 2. Increase for wider indentation.
 
 ### Features
 
 - Outputs nested structures in a human-readable format.
 - Automatically applies indentation and line breaks for clarity.
 - Ideal for debugging and inspecting large or deeply nested data.
+- Allows customizing indentation width via `indent_step`.
 
 ### Example
 

@@ -5,6 +5,8 @@
 Central table of contents for the project documentation.
 
 Recommended reading order:
+
+- [Include and namespaces](Includes_and_namespaces/incl_name.md) — Talkes about the namespaces and include files
 - [Print](Print/print.md) — `print` Python style printing
 - [Variable](Var/var.md) — `var` fundamentals, ownership, type model
   - [Types & DTypes](Var/dtypes.md)
