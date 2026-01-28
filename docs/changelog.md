@@ -1,5 +1,5 @@
 # Changelog
 
-Keep release notes and notable changes here.
+Will keep release notes and notable changes here.
 
-Use semantic versioning and short incremental notes for each release.
+Will use semantic versioning and short incremental notes for each release.

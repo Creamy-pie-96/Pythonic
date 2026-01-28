@@ -1,5 +1,6 @@
 # Performance
 
+Check out [benchmark data](../benchmark/benchmark_report.md)
 Internals that affect performance and recommended hot-path strategies.
 
 Topics:
