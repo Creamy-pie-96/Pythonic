@@ -1,4 +1,6 @@
-[⬅ Back to Table of Contents](var.md)
+[⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Var Table of Contents](var.md)
+[⬅ Back to Type Introspection & Conversion](type_introspection_and_conversion.md)
 
 # Container & Sequence Operations
 

@@ -1,4 +1,6 @@
-[⬅ Back to Table of Contents](var.md)
+[⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Var Table of Contents](var.md)
+[⬅ Back to Comparison and boolean](comparison_and_boolean.md)
 
 # Iterators, Mapping & Functional Helpers
 

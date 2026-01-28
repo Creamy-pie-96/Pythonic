@@ -1,4 +1,6 @@
+[⬅ Back to Table of Contents](../index.md)
 [⬅ Back to Var Table of Contents](var.md)
+[⬅ Back to Construction & Lifetime](construction_and_lifetime.md)
 
 # Type Introspection & Conversion
 

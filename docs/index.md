@@ -5,7 +5,7 @@
 Central table of contents for the project documentation.
 
 Recommended reading order:
-- **Var** — core `var` type and related topics
+- [Print](Print/print.md) — `print` Python style printing
 - [Variable](Var/var.md) — `var` fundamentals, ownership, type model
   - [Types & DTypes](Var/dtypes.md)
   - [Construction & Lifetime](Var/construction_and_lifetime.md)
@@ -22,9 +22,11 @@ Recommended reading order:
 - [Functional](Functional/functional.md) — `map`, `filter`, `reduce`, comprehensions
 - [File I/O](File_io/File_io.md) — `File`, `open()`, quick helpers
 - [Performance](performance.md) — internal storage, hot-path tips
-- [Design Notes](design_notes.md) — rationale and tradeoffs
-- [Contributing](contributing.md) — how to help and submit changes
-- [Changelog](changelog.md) — release notes
 - **Examples & Quickstart**
   - [QuickStart](examples/quickstart.md)
   - [Cookbook](examples/cookbook.md)
+
+**For Devs**
+- [Design Notes](design_notes.md) — rationale and tradeoffs
+- [Contributing](contributing.md) — how to help and submit changes
+- [Changelog](changelog.md) — release notes

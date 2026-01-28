@@ -1,3 +1,5 @@
+[⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Quick Start](quickstart.md)
 # Cookbook
 
 Practical recipes:
@@ -112,3 +114,5 @@ print(list<int>(doubled)); // [2, 4, 6, 8, 10]
 - Functional helpers like `map` for concise operations.
 
 ---
+## That's all, Now get out and touch grass!
+[⬅ Back to main readme](../../README.md)

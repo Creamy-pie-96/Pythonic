@@ -1,4 +1,6 @@
-[⬅ Back to Table of Contents](var.md)
+[⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Var Table of Contents](var.md)
+[⬅ Back to Containers and Sequence operations](container_and_sequence_operations.md)
 
 # String-like Methods (on string `var`)
 

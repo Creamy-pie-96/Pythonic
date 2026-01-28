@@ -1,4 +1,6 @@
-[⬅ Back to Table of Contents](var.md)
+[⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Var Table of Contents](var.md)
+[⬅ Back to String methods](string_like_methods.md)
 
 # Numeric / Arithmetic
 
