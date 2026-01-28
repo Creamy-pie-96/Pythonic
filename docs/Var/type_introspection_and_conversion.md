@@ -155,3 +155,7 @@ if (auto *p = l.var_get_if<List>()) {
 - Use `get<T>()` or `var_get_if<T>()` for value access. These are the only user-facing accessors.
 - Use `to*()` or free functions for conversion.
 - All conversions throw on invalid types.
+
+## Next check
+
+- [Container & Sequence Operations](container_and_sequence_operations.md)

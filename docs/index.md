@@ -27,5 +27,4 @@ Recommended reading order:
 - [Changelog](changelog.md) — release notes
 - **Examples & Quickstart**
   - [QuickStart](examples/quickstart.md)
-  - [Operators Example](examples/operators.md)
   - [Cookbook](examples/cookbook.md)

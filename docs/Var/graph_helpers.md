@@ -156,3 +156,8 @@ g.show(false);
 - For advanced graph algorithms, see the full API or source.
 
 - `show(layout)` — If `layout` is true (default), the viewer will automatically arrange the graph layout. If false, the current node positions are preserved.
+
+
+# Next Check
+
+- [Math](../Math/math.md)

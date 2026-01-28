@@ -71,3 +71,7 @@ print(var("7").zfill(3)); // "007"
 - All methods return a new `var` (string or list) and do not modify the original.
 - Use `split`/`join` for conversion between strings and lists.
 - Most methods match Python string semantics.
+
+## Next check
+
+- [Numeric / Arithmetic](numeric_arithmetic.md)

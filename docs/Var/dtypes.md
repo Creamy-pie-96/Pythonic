@@ -51,11 +51,11 @@ This page lists all the data types and containers supported by `var` in Pythonic
 - For construction and API usage, see:
   - [Construction & Lifetime](Var/construction_and_lifetime.md)
   - [Container & Sequence Operations](Var/container_and_sequence_operations.md)
-- Graph support is provided via `VarGraph` (see graph.md).
+- Graph support is provided via [`VarGraph`](graph_helpers.md).
 - Additional container types (e.g., linked lists) may be added in the future.
 
 ---
 
-## See Also
+## Next check
 
 - [Construction & Lifetime](construction_and_lifetime.md)

@@ -24,4 +24,5 @@ Table of Contents
 - [Graph Helpers (if using graph type)](graph_helpers.md)
 
 # Next Check
+
 - [Math](../Math/math.md)
