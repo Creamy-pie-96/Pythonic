@@ -69,22 +69,68 @@ This page documents all type-checking, type-introspection, and conversion APIs f
 | `get<T>()`        | Returns value as T (throws if wrong type)          | `v.get<int>()`                            |
 | `var_get_if<T>()` | Returns pointer to T if type matches, else nullptr | `if (auto *p = v.var_get_if<List>()) ...` |
 
+### Internal Accessors: var_get Methods
+
+These methods provide direct access to the underlying value or container inside a `var`. They are intended for advanced use and require the user to know the exact type held by the `var` (no type checking is performed).
+
+| Method               | Description                                                                  | Example                                          |
+| -------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------ |
+| `var_get<T>()`       | Returns a reference to the value of type `T` stored in the `var`.            | `auto &lst = vlist.var_get<List>();`             |
+| `var_get<const T>()` | Returns a const reference to the value of type `T` stored in the `var`.      | `const auto &lst = vlist.var_get<const List>();` |
+| `var_get_if<T>()`    | Returns pointer to value if type matches, else nullptr (safe checked access) | `if (auto *p = v.var_get_if<Dict>()) ...`        |
+
+**Note:**
+
+- `var_get<T>()` is unsafe if the type does not match; it is for expert/advanced use when you are certain of the type.
+- For safe access, prefer `get<T>()` (throws on wrong type) or `var_get_if<T>()` (returns nullptr if wrong type).
+
 ---
 
-## Conversion Methods (Member)
+## Conversion Methods (Member vs Free Function)
 
-| API              | Description                   | Example            |
-| ---------------- | ----------------------------- | ------------------ |
-| `toInt()`        | Convert to int                | `v.toInt()`        |
-| `toUInt()`       | Convert to unsigned int       | `v.toUInt()`       |
-| `toLong()`       | Convert to long               | `v.toLong()`       |
-| `toULong()`      | Convert to unsigned long      | `v.toULong()`      |
-| `toLongLong()`   | Convert to long long          | `v.toLongLong()`   |
-| `toULongLong()`  | Convert to unsigned long long | `v.toULongLong()`  |
-| `toFloat()`      | Convert to float              | `v.toFloat()`      |
-| `toDouble()`     | Convert to double             | `v.toDouble()`     |
-| `toLongDouble()` | Convert to long double        | `v.toLongDouble()` |
-| `toString()`     | Convert to string             | `v.toString()`     |
+There are two main ways to convert types:
+
+- **Member methods** (e.g., `toInt()`): Return the value as a native C++ type (e.g., `int`).
+- **Free functions** (e.g., `Int(v)`): Return a new `var` holding the converted value.
+
+**Key difference:**
+
+- `v.toInt()` returns an `int` (native type), does not wrap in `var`.
+- `Int(v)` returns a `var` holding an int value.
+
+| API              | Description                                                       | Example                                  |
+| ---------------- | ----------------------------------------------------------------- | ---------------------------------------- |
+| `toInt()`        | Returns value as native int (does not modify in-place, not a var) | `int x = v.toInt()`                      |
+| `toUInt()`       | Returns value as native unsigned int                              | `unsigned int x = v.toUInt()`            |
+| `toLong()`       | Returns value as native long                                      | `long x = v.toLong()`                    |
+| `toULong()`      | Returns value as native unsigned long                             | `unsigned long x = v.toULong()`          |
+| `toLongLong()`   | Returns value as native long long                                 | `long long x = v.toLongLong()`           |
+| `toULongLong()`  | Returns value as native unsigned long long                        | `unsigned long long x = v.toULongLong()` |
+| `toFloat()`      | Returns value as native float                                     | `float x = v.toFloat()`                  |
+| `toDouble()`     | Returns value as native double                                    | `double x = v.toDouble()`                |
+| `toLongDouble()` | Returns value as native long double                               | `long double x = v.toLongDouble()`       |
+| `toString()`     | Returns value as native std::string                               | `std::string x = v.toString()`           |
+
+## Built-in Conversion Helpers (Free Functions)
+
+| API            | Description                                   | Example                |
+| -------------- | --------------------------------------------- | ---------------------- |
+| `Int(v)`       | Returns a `var` holding an int                | `var x = Int(v)`       |
+| `Long(v)`      | Returns a `var` holding a long                | `var x = Long(v)`      |
+| `LongLong(v)`  | Returns a `var` holding a long long           | `var x = LongLong(v)`  |
+| `UInt(v)`      | Returns a `var` holding an unsigned int       | `var x = UInt(v)`      |
+| `ULong(v)`     | Returns a `var` holding an unsigned long      | `var x = ULong(v)`     |
+| `ULongLong(v)` | Returns a `var` holding an unsigned long long | `var x = ULongLong(v)` |
+| ...            | ...                                           | ...                    |
+
+**Summary Table:**
+
+| Usage       | Returns     | Example              |
+| ----------- | ----------- | -------------------- |
+| `v.toInt()` | `int`       | `int x = v.toInt();` |
+| `Int(v)`    | `var` (int) | `var x = Int(v);`    |
+
+This distinction applies to all similar conversions (Long, Double, etc.).
 
 ---
 
@@ -117,36 +163,42 @@ This page documents all type-checking, type-introspection, and conversion APIs f
 ## Examples
 
 ```cpp
-using namespace pythonic::vars;
+#include <pythonic/pythonic.hpp>
+using namespace py;
 
+int main()
+{
 var v = 42;
-v.is<int>();           // true
-isinstance<std::string>(v); // false
-isinstance(v, "int"); // true
-v.type();              // "int"
-v.type_tag() == TypeTag::INT;
+print(v.is<int>());           // true
+print(isinstance<std::string>(v)); // false
+print(isinstance(v, "int")); // true
+print(v.type());              // "int"
+print(v.type_tag() == TypeTag::INT); // true
 
 var s = var("hello");
-s.is_string();         // true
-s.as_string();         // "hello"
+print(s.is_string());         // true
+print(s);         // "hello"
 
 var l = list(1, 2, 3);
-l.is_list();           // true
-l.as_list().size();    // 3
+print(l.is_list());           // true
+print(l.len());    // 3
 
 var d = dict({{"a", 1}, {"b", 2}});
-d.is_dict();           // true
-d.as_dict()["a"]      // 1
+d["a"] = 42;           // set value
+var x = d["a"];        // get value (x is var)
+print(x,x.type()); // 42 int
 
 var f = 3.1415;
-var x = f.toInt(); // x is 3
-print(x,x.type()); // 3 int
 var y = Double(x);
 print(y,y.type()); // 3.0 double
+
 
 // Safe pointer access
 if (auto *p = l.var_get_if<List>()) {
 	// use *p
+}
+
+return 0;
 }
 ```
 

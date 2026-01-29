@@ -39,41 +39,56 @@ This page documents all user-facing container and sequence APIs for `var`, in a 
 ## Examples
 
 ```cpp
-#include "pythonic/pythonic.hpp"
+#include <pythonic/pythonic.hpp>
 using namespace py;
 
-var vlist = list(1, 2, 3);
-vlist.append(4);           // [1,2,3,4]
-vlist.extend(list(5,6));   // [1,2,3,4,5,6]
-vlist.remove(2);           // [1,3,4,5,6]
-print(vlist.len());       // 5
-print(vlist.front());      // 1
-print(vlist.back());       // 6
-print(vlist.at(2));        // 4
-print(vlist[1]);           // 3
-print(vlist.slice(1,4));   // [3,4,5]
-print(vlist(1,4));         // [3,4,5]
-print(vlist.empty());      // false
-vlist.clear();
-print(vlist.empty());      // true
+int main()
+{
+    var vlist = list(1, 2, 3);
+    vlist.append(4);           // [1,2,3,4]
+    vlist.extend(list(5,6));   // [1,2,3,4,5,6]
+    vlist.remove(2);           // [1,3,4,5,6]
+    print(vlist.len());       // 5
+    print(vlist.front());      // 1
+    print(vlist.back());       // 6
+    print(vlist.at(2));        // 4
+    print(vlist[1]);           // 3
+    print(vlist.slice(1,4));   // [3,4,5]
+    print(vlist(1,4));         // [3,4,5]
+    print(vlist.empty());      // false
+    vlist.clear();
+    print(vlist.empty());      // true
 
-var vset = set(1,2,3);
-vset.add(4);
-vset.update(set(5,6));
-print(vset.contains(3));    // true
-print(vset.has(5));        // true
-vset.remove(1);
+    var vset = set(1,2,3);
+    vset.add(4);
+    vset.update(set(5,6));
+    print(vset.contains(3));    // true
+    print(vset.has(5));        // true
+    vset.remove(1);
 
-var vdict = dict({{"a", 1}, {"b", 2}});
-print(vdict["a"]);        // 1
-print(vdict.keys());       // ["a", "b"]
-print(vdict.values());     // [1,2]
-print(vdict.items());      // [("a",1), ("b",2)]
-
-// Iteration
-for (auto it = vdict.begin(); it != vdict.end(); ++it) {
-    // ...
+    var vdict = dict({{"a", 1}, {"b", 2}});
+    print(vdict["a"]);        // 1
+    print(vdict.keys());       // ["a", "b"]
+    print(vdict.values());     // [1,2]
+    print(vdict.items());      // [("a",1), ("b",2)]
+    for (auto it = vdict.get<Dict>().begin(); it != vdict.get<Dict>().end(); ++it) 
+    {
+        print("key: ", it->first);  // key (std::string)
+        print("value: ", it->second); // value (var)
+    }
+    for (auto [key,value] : vdict.get<Dict>())
+    {
+        print("key: ", key);  // key (std::string)
+        print("value: ", value); // value (var)
+    }
+    for (auto it = vdict.begin(); it != vdict.end(); ++it) 
+    {
+        print(1);
+        // but you can't use it->first and it->second here as the vdict is not a std::map. also you can not do auto[key,value] like iteration directly on vdict, you have to use vdict.get<Dict>() to get the underlying std::map
+    }
+    return 0;
 }
+
 ```
 
 ---

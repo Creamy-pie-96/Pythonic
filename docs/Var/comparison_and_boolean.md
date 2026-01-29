@@ -47,15 +47,24 @@ This page documents all comparison and boolean operations for `var`, using a cle
 ## Examples
 
 ```cpp
-#include "pythonic/pythonicVars.hpp"
-#include "pythonic/pythonicPrint.hpp"
-using namespace pythonic::vars;
-using pythonic::print::print;
+#include <pythonic/pythonic.hpp>
+using namespace py;
 
-var a = 10;
+int main()
+{
+    var a = 10;
 var b = 10.0;
 print(a == b);       // true (numeric promotion)
 print(a != b);       // false
+if(a) // any non-zero number is true
+{
+    print("any non-zero number is true");
+}
+
+if(!(b - 10))
+{
+    print("Any var with value 0 is false");
+}
 
 var s1 = "abc";
 var s2 = "abc";
@@ -84,11 +93,16 @@ print(list(1) || list()); // true
 std::set<var> st = { var(2), var(1) };
 for (auto &v : st) print(v); // 1 2
 
+// Btw a lot of you might try do do this! And you will get an error! So be careful who you compare
+
 try {
     print(dict({{"a",1}}) > list(1));
 } catch (const pythonic::PythonicTypeError &e) {
     print("comparison error:", e.what());
 }
+    return 0;
+}
+
 ```
 
 ---

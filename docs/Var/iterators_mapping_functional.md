@@ -49,19 +49,21 @@ This page documents all user-facing iterator, mapping, and functional APIs for `
 ## Examples
 
 ```cpp
-#include "pythonic/pythonic.hpp"
+#include <pythonic/pythonic.hpp>
 using namespace py;
 
-// Iteration
+int main()
+{
+    // Iteration
 var l = list(1,2,3);
 for (auto it = l.begin(); it != l.end(); ++it) print(*it);
-for (auto &v : l) print(v);
+for (const auto &v : l) print(v);
 
 // Dict helpers
 var d = dict({{"a", 1}, {"b", 2}});
-for (auto &pair : d.items()) print(pair[0], pair[1]);
-for (auto &k : d.keys()) print(k);
-for (auto &v : d.values()) print(v);
+for (const auto &pair : d.items()) print(pair.at(0), pair.at(1)); // Use const if you want reference or you will get binding error
+for (const auto &k : d.keys()) print(k);
+for (const auto &v : d.values()) print(v);
 
 // Slicing
 var s = var("abcdef");
@@ -78,6 +80,9 @@ auto add = [](const var &a, const var &b) { return a + b; };
 print(reduce(add, list(1,2,3))); // 6
 print(tuple_to_list(std::make_tuple(1,2,3))); // [1,2,3]
 print(unpack(std::make_tuple(1,2,3))); // [1,2,3]
+    return 0;
+}
+
 ```
 
 ---
