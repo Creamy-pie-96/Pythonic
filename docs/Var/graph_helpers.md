@@ -1,3 +1,7 @@
+[⬅ Back to Table of Contents](../index.md)
+[⬅ Back to Var Table of Contents](var.md)
+[⬅ Back to Iterators, Mapping & Functional Helpers](iterators_mapping_functional.md)
+
 # Graph Helpers
 
 This page documents all user-facing graph APIs for `var` when holding a graph, in a clear, tabular format with concise, non-redundant examples. Multi-step and real-world examples are at the end.
@@ -196,3 +200,115 @@ custom.reserve_edges_by_counts(counts);
 - Most methods return `var` or standard types; see API for details.
 - For advanced graph algorithms, see the full API or source.
 - `show(layout)` — If `layout` is true (default), the viewer will automatically arrange the graph layout. If false, the current node positions are preserved.
+
+## Example for you:
+```cpp
+// Test file for all graph_helpers.md documentation examples
+#include <pythonic/pythonic.hpp>
+#include <iostream>
+using namespace py;
+
+int main()
+{
+    // Basic Graph Creation & Manipulation
+    {
+        var g = graph(0);
+        auto n0 = g.add_node("A");
+        auto n1 = g.add_node("B");
+        g.add_edge(n0, n1, 1.5);
+        g.set_node_data(n0, "Alpha");
+        std::cout << g.node_count() << std::endl;
+        std::cout << g.edge_count() << std::endl;
+        std::cout << g.has_edge(n0, n1) << std::endl;
+        std::cout << g.get_edge_weight(n0, n1).value_or(-1) << std::endl;
+        std::cout << g.get_node_data(n0) << std::endl;
+        std::cout << g.dfs(n0) << std::endl;
+        g.save_graph("/tmp/g.txt");
+        g.to_dot("/tmp/g.dot");
+    }
+    // Graph Properties & Traversals
+    {
+        var g = graph(5);
+        g.add_edge(0, 1);
+        g.add_edge(1, 2);
+        g.add_edge(2, 3);
+        g.add_edge(3, 4);
+        std::cout << g.is_connected() << std::endl;
+        std::cout << g.has_cycle() << std::endl;
+        g.add_edge(4, 0);
+        std::cout << g.has_cycle() << std::endl;
+        std::cout << g.out_degree(0) << std::endl;
+        std::cout << g.in_degree(0) << std::endl;
+        std::cout << g.neighbors(0) << std::endl;
+        std::cout << g.get_edges(0) << std::endl;
+    }
+    // Shortest Paths & Algorithms
+    {
+        var g = graph(5);
+        g.add_edge(0, 1, 4.0);
+        g.add_edge(0, 2, 1.0);
+        g.add_edge(1, 3, 1.0);
+        g.add_edge(2, 1, 2.0);
+        g.add_edge(2, 3, 5.0);
+        g.add_edge(3, 4, 3.0);
+        var result = g.get_shortest_path(0, 4);
+        std::cout << result["path"] << std::endl;
+        std::cout << result["distance"] << std::endl;
+        var bf = g.bellman_ford(0);
+        std::cout << bf["distances"] << std::endl;
+        var fw = g.floyd_warshall();
+        for (const auto &row : fw)
+            std::cout << row << std::endl;
+    }
+    // Components, Topological Sort, MST
+    {
+        var dag = graph(4);
+        dag.add_edge(0, 1, 1.0, 0.0, true);
+        dag.add_edge(0, 2, 1.0, 0.0, true);
+        dag.add_edge(1, 3, 1.0, 0.0, true);
+        dag.add_edge(2, 3, 1.0, 0.0, true);
+        std::cout << dag.topological_sort() << std::endl;
+        var network = graph(6);
+        network.add_edge(0, 1);
+        network.add_edge(1, 2);
+        network.add_edge(3, 4);
+        network.add_edge(4, 5);
+        std::cout << network.connected_components() << std::endl;
+        var city_network = graph(4);
+        city_network.add_edge(0, 1, 1.0);
+        city_network.add_edge(0, 2, 4.0);
+        city_network.add_edge(1, 2, 2.0);
+        city_network.add_edge(1, 3, 5.0);
+        city_network.add_edge(2, 3, 3.0);
+        var mst = city_network.prim_mst();
+        std::cout << mst["weight"] << std::endl;
+        std::cout << mst["edges"] << std::endl;
+    }
+    // Serialization & Loading
+    {
+        var g = graph(3);
+        g.add_edge(0, 1, 1.5);
+        g.add_edge(1, 2, 2.5);
+        g.set_node_data(0, "Start");
+        g.save_graph("/tmp/my_graph.txt");
+        var loaded = load_graph("/tmp/my_graph.txt");
+        std::cout << loaded.str() << std::endl;
+        g.to_dot("/tmp/my_graph.dot");
+    }
+    // Performance Optimization
+    {
+        var g = graph(1000);
+        g.reserve_edges_per_node(10);
+        for (size_t i = 0; i < 1000; i++)
+            for (int j = 0; j < 10; j++)
+                g.add_edge(i, (i + j + 1) % 1000, 1.0);
+        var counts = list(5, 10, 3, 8, 2);
+        var custom = graph(5);
+        custom.reserve_edges_by_counts(counts);
+    }
+    return 0;
+}
+```
+## Next check
+
+- [Math](../Math/math.md)
