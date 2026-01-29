@@ -4092,6 +4092,44 @@ namespace pythonic
                 }
                 throw pythonic::PythonicTypeError("operator^ requires integral types or sets/lists");
             }
+            // In-place bitwise AND
+                    var &operator&=(const var &other) {
+                        *this = *this & other;
+                        return *this;
+                    }
+
+                    // In-place bitwise OR
+                    var &operator|=(const var &other) {
+                        *this = *this | other;
+                        return *this;
+                    }
+
+                    // In-place bitwise XOR
+                    var &operator^=(const var &other) {
+                        *this = *this ^ other;
+                        return *this;
+                    }
+
+                    // In-place bitwise AND with primitive
+                    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+                    var &operator&=(T other) {
+                        *this = *this & var(other);
+                        return *this;
+                    }
+
+                    // In-place bitwise OR with primitive
+                    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+                    var &operator|=(T other) {
+                        *this = *this | var(other);
+                        return *this;
+                    }
+
+                    // In-place bitwise XOR with primitive
+                    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+                    var &operator^=(T other) {
+                        *this = *this ^ var(other);
+                        return *this;
+                    }
 
             // Bool conversion
             operator bool() const
