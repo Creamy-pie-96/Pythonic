@@ -153,6 +153,16 @@ namespace pythonic
         // and require manual lifetime management in var's constructors/destructor.
         // And as they are heap-allocated memory and heap-allocation is performence costly, need to optimize or minimize frequent allocation and deallocation
 
+        // ============================================================================
+        // TODO: Rule of Five: Destructor, copy/move constructor, assignment for var (see memory safety notes below)
+        // TODO: Audit all unchecked union accesses (e.g., as_int_unchecked) for type safety
+        // TODO: Consider using std::shared_ptr or copy-on-write for heap objects to avoid ghost/dangling references in views/enumerate/zip
+        // TODO: Dict/Set: Detect mutation during iteration and throw, like Python (avoid iterator invalidation crashes)
+        // TODO: Enforce deep const-correctness (const var should not allow mutation of underlying data)
+        // TODO: Refactor operator+/-/* etc. to use a dispatch table (function pointer matrix) for efficiency and extensibility
+        // TODO: Audit string-numeric promotion logic for Pythonic strictness
+        // ============================================================================
+
         union VarData
         {
             bool b;
