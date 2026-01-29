@@ -4143,6 +4143,63 @@ namespace pythonic
                 }
                 throw pythonic::PythonicTypeError("operator^ requires integral types or sets/lists. Cannot perform '" + type() + " ^ " + other.type() + "'.");
             }
+
+            // Bitwise shift helpers
+            template <typename T, typename U>
+            static auto shift_left(T lhs, U rhs)
+            {
+                static_assert(std::is_integral_v<T> && std::is_integral_v<U>,
+                              "Bitwise shift requires integral types");
+                using ResultType = std::common_type_t<T, U>;
+                return static_cast<ResultType>(lhs) << static_cast<ResultType>(rhs);
+            }
+
+            template <typename T, typename U>
+            static auto shift_right(T lhs, U rhs)
+            {
+                static_assert(std::is_integral_v<T> && std::is_integral_v<U>,
+                              "Bitwise shift requires integral types");
+                using ResultType = std::common_type_t<T, U>;
+                return static_cast<ResultType>(lhs) >> static_cast<ResultType>(rhs);
+            }
+
+            template <typename Int = long long>
+            Int get_integral() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return static_cast<Int>(var_get<int>());
+                case TypeTag::LONG:
+                    return static_cast<Int>(var_get<long>());
+                case TypeTag::LONG_LONG:
+                    return static_cast<Int>(var_get<long long>());
+                case TypeTag::UINT:
+                    return static_cast<Int>(var_get<unsigned int>());
+                case TypeTag::ULONG:
+                    return static_cast<Int>(var_get<unsigned long>());
+                case TypeTag::ULONG_LONG:
+                    return static_cast<Int>(var_get<unsigned long long>());
+                default:
+                    throw pythonic::PythonicTypeError("Value is not an integral type: '" + type() + "'.");
+                }
+            }
+
+            var operator<<(const var &other) const
+            {
+                if (!isIntegral() || !other.isIntegral())
+                    throw pythonic::PythonicTypeError(
+                        "operator<< requires integral types. Cannot perform '" + type() + " << " + other.type() + "'.");
+                return var(shift_left(get_integral(), other.get_integral()));
+            }
+
+            var operator>>(const var &other) const
+            {
+                if (!isIntegral() || !other.isIntegral())
+                    throw pythonic::PythonicTypeError(
+                        "operator>> requires integral types. Cannot perform '" + type() + " >> " + other.type() + "'.");
+                return var(shift_right(get_integral(), other.get_integral()));
+            }
             // In-place bitwise AND
             var &operator&=(const var &other)
             {
