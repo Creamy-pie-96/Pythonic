@@ -207,39 +207,55 @@ When using `Overflow::Promote`, types are promoted in the following order:
 ## Examples
 
 ```cpp
-#include "pythonic/pythonicMath.hpp"
-using namespace pythonic::math;
+#include <pythonic/pythonic.hpp>
+using namespace py;
 
-var a = 10, b = 3;
-print(add(a, b));           // 13
-print(sub(a, b));           // 7
-print(mul(a, b));           // 30
-print(div(a, b));           // 3
-print(mod(a, b));           // 1
-print(pow(a, b));           // 1000
-print(sqrt(16));            // 4
-print(round(3.1415));       // 3
-print(floor(3.7));          // 3
-print(ceil(3.1));           // 4
-print(trunc(-3.7));         // -3
-print(fabs(-5));            // 5
-print(hypot(3, 4));         // 5
-print(exp(1));              // 2.718...
-print(log(e()));            // 1
-print(log10(100));          // 2
-print(log2(8));             // 3
-print(sin(pi()));           // 0
-print(cos(0));              // 1
-print(tan(pi()/4));         // 1
-print(gcd(12, 18));         // 6
-print(lcm(6, 8));           // 24
-print(factorial(5));        // 120
-print(random_int(1, 6));    // random int 1-6
-print(random_float(0, 1));  // random float 0-1
-print(random_choice(list(1,2,3)));
-print(product(list(1,2,3,4)));// 24
-print(radians(180));        // 3.1415...
-print(degrees(pi()));       // 180
+int main()
+{
+
+    var a = 10, b = 3, c = std::numeric_limits<int>::max();
+    print(add(a, b));           // 13
+    try 
+    {
+        print(add(a, c)); // overflow
+    } 
+    catch (const pythonic::error::PythonicOverflowError& e) 
+    {
+        print("Overflow error: ", e.what());
+    }
+    print(a,"+",c,"=",add(a,c,Overflow::Wrap)); // wrap -2147483639
+    print(a,"+",c,"=",add(a,c,Overflow::Promote)); // promote 2147483657
+    print(sub(a, b));           // 7
+    print(mul(a, b));           // 30
+    print(div(a, b));           // 3
+    print(mod(a, b));           // 1
+    print(pow(a, b));           // 1000
+    print(sqrt(16));            // 4
+    print(round(3.1415));       // 3
+    print(floor(3.7));          // 3
+    print(ceil(3.1));           // 4
+    print(trunc(-3.7));         // -3
+    print(fabs(-5));            // 5
+    print(hypot(3, 4));         // 5
+    print(exp(1));              // 2.718...
+    print(log(e()));            // 1
+    print(log10(100));          // 2
+    print(log2(8));             // 3
+    print(sin(pi()));           // 0
+    print(cos(0));              // 1
+    print(tan(pi()/4));         // 1
+    print(gcd(12, 18));         // 6
+    print(lcm(6, 8));           // 24
+    print(factorial(5));        // 120
+    print(random_int(1, 6));    // random int 1-6
+    print(random_float(0, 1));  // random float 0-1
+    print(random_choice(list(1,2,3)));
+    print(product(list(1,2,3,4)));// 24
+    print(radians(180));        // 3.1415...
+    print(degrees(pi()));       // 180
+    return 0;
+}
+
 ```
 
 ---
