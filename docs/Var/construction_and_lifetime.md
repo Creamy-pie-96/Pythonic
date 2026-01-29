@@ -20,7 +20,7 @@ This page documents all ways to construct and manage the lifetime of a `var` obj
 | `var(const char*)`        | String                   | `var s("hello"); // "hello"`        |
 | `var(const std::string&)` | String                   | `var s(std::string("hi")); // "hi"` |
 | `var(List/Set/Dict/...)`  | Container types          | `var vlist(list(1,2,3));`           |
-| `var(Graph)`              | Graph (VarGraph wrapper) | `var vg(Graph(5));`                 |
+| `graph(n)`                | Graph (VarGraph wrapper) | `var vg = graph(5);`                |
 
 ---
 
@@ -103,8 +103,9 @@ OrderedDict od = { {"k1", var(1)}, {"k2", var(2)} };
 var vod(od);
 
 // --- Graph Constructor ---
-Graph g(5); g.add_edge(0, 1);
-var vg(g);
+var vg = graph(5); // recommended
+vg.add_edge(0, 1);
+vg.save_graph("mygraph.txt"); // save the graph to a file
 
 // --- Converter Helpers ---
 var vstr = "123";
@@ -128,7 +129,8 @@ var fodset = ordered_set(3, 1, 2);
 var fdict = dict({{"a", 1}, {"b", 2}});
 var fodict = ordered_dict({{"k1", 1}, {"k2", 2}});
 var fgraph = graph(5);
-auto loaded = load_graph("/path/to/graph.file");
+var loaded = load_graph("mygraph.txt"); // load the graph from the file
+//auto loaded = load_graph("/path/to/graph.file");
 
 
 // --- input ---

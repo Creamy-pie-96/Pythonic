@@ -40,15 +40,20 @@ This page documents all user-facing string methods available on `var` objects ho
 ## Examples
 
 ```cpp
-#include "pythonic/pythonic.hpp"
+#include <pythonic/pythonic.hpp>
 using namespace py;
 
-var s = "  hello world  ";
-print(s.strip());           // "hello world"
-print(s.upper());           // "  HELLO WORLD  "
-print(s.lower());           // "  hello world  "
-print(s.replace(" ", "_")); // "__hello_world__"
-print(s.find("world"));    // 8
+int main()
+{
+var s = "  hello pythonic  ";
+print(s);                   // "  hello pythonic  "
+print(s.strip());           // "hello pythonic"
+print(s.lstrip());          // "hello pythonic  "
+print(s.rstrip());          // "  hello pythonic"
+print(s.upper());           // "  HELLO pythonic  "
+print(s.lower());           // "  hello pythonic  "
+print(s.replace(" ", "_")); // "__hello_pythonic__"
+print(s.find("pythonic"));    // 8
 print(s.startswith("  h")); // true
 print(s.endswith("d  "));   // true
 print(var("123").isdigit()); // true
@@ -56,7 +61,7 @@ print(var("abc").isalpha()); // true
 print(var("a1b2").isalnum()); // true
 print(var("   ").isspace()); // true
 print(var("abc").capitalize()); // "Abc"
-print(var("hELLO").sentence_case()); // "Hello"
+print(var("hELLO.i aM PrItHu.").sentence_case()); // "Hello. I am Prithu."
 print(var("hi there").title()); // "Hi There"
 print(var("aaba").count("a")); // 3
 print(var("abc").reverse()); // "cba"
@@ -64,6 +69,9 @@ print(var("a b c").split()); // ["a","b","c"]
 print(var(",").join(list("a","b","c"))); // "a,b,c"
 print(var("hi").center(5,"-")); // "-hi--"
 print(var("7").zfill(3)); // "007"
+    return 0;
+}
+
 ```
 
 ---

@@ -59,15 +59,19 @@ This page documents all user-facing numeric and arithmetic APIs and operators fo
 ## Examples
 
 ```cpp
-#include "pythonic/pythonic.hpp"
+#include <pythonic/pythonic.hpp>
 using namespace py;
 
-// Scalar arithmetic
-var a = 5, b = 2;
+int main()
+{
+    var a = 5, b = 2;
 print(a + b);         // 7
 print(a - b);         // 3
 print(a * b);         // 10
-print(a / b);         // 2
+print(a / b);         // 2.5
+//Btw it will automatically promote types and will not do int division. Like check this out:
+var c = a/b;
+print("a : ","(",a,",",a.type(),")","b : ","(",b,",",b.type(),")","c : ","(",c,",",c.type(),")");             // a :  (5,int) b :  (2,int) c :  (2.5,double)
 print(a % b);         // 1
 print(-a);            // -5
 print(+a);            // 5
@@ -79,7 +83,7 @@ print(l + list(3,4)); // [1,2,3,4]
 l *= 2; print(l);     // [1,2,1,2]
 
 var s = set(1,2,3);
-print(s + set(2,4));  // {1,2,3,4}
+//print(s + set(2,4));  // {1,2,3,4}
 print(s - set(2));    // {1,3}
 s -= set(3); print(s);// {1,2}
 
@@ -92,12 +96,20 @@ sa &= set(2); print(sa); // {2}
 
 // Numeric helpers
 print(abs(var(-7)));              // 7
-print(abs(list(-1,2,-3)));        // [1,2,3]
-print(min(var(1), var(2), var(3))); // 1
-print(max(var(1), var(2), var(3))); // 3
+//print(abs(list(-1,2,-3)));        // [1,2,3] is this what you thought will happen? What am I supposed to abs anyway? Don't be silly or I will crash you program
+print(min(var(1), var(2), var(3),3.13)); // 1
+print(max(var(1), var(2), var(3),3.13)); // 3.13
+//print(max(var(1), var(2), var(3),3.13,"hello")); 
+/* Do not try this at home, at office or at any place or the ghost of error will haunt you : terminate called after throwing an instance of 'pythonic::error::PythonicTypeError'
+  what():  pythonic: TypeError: operator> not supported for these types. Cannot perform 'str > double'.
+Aborted (core dumped)*/
 print(min(list(3,1,2)));            // 1
 print(max(list(3,1,2)));            // 3
 print(sum(list(1,2,3)));            // 6
+    return 0;
+}
+
+
 ```
 
 ---
