@@ -948,7 +948,7 @@ namespace pythonic
                 }
                 if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
-                    throw pythonic::PythonicTypeError("cannot multiply two strings");
+                    throw pythonic::PythonicTypeError("operator* not supported for strings. Cannot perform '" + type() + " * " + other.type() + "'.");
                 }
 
                 // Check if any input is floating point
@@ -1006,7 +1006,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
-                    throw pythonic::PythonicTypeError("cannot divide strings");
+                    throw pythonic::PythonicTypeError("operator/ not supported for strings. Cannot perform '" + type() + " / " + other.type() + "'.");
                 }
 
                 long double divisor = other.toLongDouble();
@@ -1032,7 +1032,7 @@ namespace pythonic
             {
                 if (tag_ == TypeTag::STRING || other.tag_ == TypeTag::STRING)
                 {
-                    throw pythonic::PythonicTypeError("cannot perform modulo on strings");
+                    throw pythonic::PythonicTypeError("operator% not supported for strings. Cannot perform '" + type() + " % " + other.type() + "'.");
                 }
 
                 long double divisor = other.toLongDouble();
@@ -2260,7 +2260,9 @@ namespace pythonic
                     }
                 }
                 // Mixed types - use type promotion (handles numeric + numeric, string + anything, etc.)
-                return addPromoted(other);
+                if ((is_string() || isNumeric()) && (other.is_string() || other.isNumeric()))
+                    return addPromoted(other);
+                throw pythonic::PythonicTypeError("operator+ not supported for these types. Cannot perform '" + type() + " + " + other.type() + "'.");
             }
 
             // Unary plus: returns a copy (Python semantics)
@@ -2341,6 +2343,55 @@ namespace pythonic
                         }
                         return var(std::move(result));
                     }
+                    case TypeTag::ORDEREDSET:
+                    {
+                        // Both are ordered sets, use merge-like difference
+                        const auto &a = var_get<OrderedSet>();
+                        const auto &b = other.var_get<OrderedSet>();
+                        OrderedSet result;
+                        auto it_a = a.begin();
+                        auto it_b = b.begin();
+                        while (it_a != a.end() && it_b != b.end())
+                        {
+                            if (*it_a < *it_b)
+                            {
+                                result.insert(*it_a);
+                                ++it_a;
+                            }
+                            else if (*it_b < *it_a)
+                            {
+                                ++it_b;
+                            }
+                            else
+                            {
+                                // Equal, skip
+                                ++it_a;
+                                ++it_b;
+                            }
+                        }
+                        // Insert remaining elements from a
+                        while (it_a != a.end())
+                        {
+                            result.insert(*it_a);
+                            ++it_a;
+                        }
+                        return var(std::move(result));
+                    }
+                    case TypeTag::ORDEREDDICT:
+                    {
+                        // Both are ordered dicts, remove keys in b from a, preserve order
+                        const auto &a = var_get<OrderedDict>();
+                        const auto &b = other.var_get<OrderedDict>();
+                        OrderedDict result;
+                        for (const auto &kv : a)
+                        {
+                            if (b.find(kv.first) == b.end())
+                            {
+                                result.insert(kv);
+                            }
+                        }
+                        return var(std::move(result));
+                    }
                     case TypeTag::LIST:
                     {
                         const auto &a = var_get<List>();
@@ -2379,7 +2430,7 @@ namespace pythonic
                 {
                     return subPromoted(other);
                 }
-                throw pythonic::PythonicTypeError("operator- requires arithmetic types or containers");
+                throw pythonic::PythonicTypeError("operator- requires arithmetic types or containers. Cannot perform '" + type() + " - " + other.type() + "'.");
             }
 
             var operator*(const var &other) const
@@ -2457,7 +2508,7 @@ namespace pythonic
                     }
                     return var(std::move(result));
                 }
-                throw pythonic::PythonicTypeError("unsupported types for multiplication");
+                throw pythonic::PythonicTypeError("operator* not supported for these types. Cannot perform '" + type() + " * " + other.type() + "'.");
             }
 
             var operator/(const var &other) const
@@ -2569,7 +2620,7 @@ namespace pythonic
                 {
                     return divPromoted(other);
                 }
-                throw pythonic::PythonicTypeError("unsupported types for division");
+                throw pythonic::PythonicTypeError("operator/ not supported for these types. Cannot perform '" + type() + " / " + other.type() + "'.");
             }
 
             var operator%(const var &other) const
@@ -2636,7 +2687,7 @@ namespace pythonic
                 {
                     return modPromoted(other);
                 }
-                throw pythonic::PythonicTypeError("unsupported types for modulo");
+                throw pythonic::PythonicTypeError("operator% not supported for these types. Cannot perform '" + type() + " % " + other.type() + "'.");
             }
 
             // ============ In-Place Arithmetic Operators ============
@@ -3154,8 +3205,8 @@ namespace pythonic
                 {
                     return var(toDouble() == other.toDouble());
                 }
-                // Different types (except numeric) are not equal
-                return var(false);
+                // Different types (except numeric) are not equal: throw for clarity
+                throw pythonic::PythonicTypeError("operator== not supported for these types. Cannot perform '" + type() + " == " + other.type() + "'.");
             }
 
             var operator!=(const var &other) const
@@ -3271,7 +3322,7 @@ namespace pythonic
                 {
                     return var(toDouble() != other.toDouble());
                 }
-                return var(true);
+                throw pythonic::PythonicTypeError("operator!= not supported for these types. Cannot perform '" + type() + " != " + other.type() + "'.");
             }
 
             var operator>(const var &other) const
@@ -3310,7 +3361,7 @@ namespace pythonic
                 {
                     return var(toDouble() > other.toDouble());
                 }
-                throw pythonic::PythonicTypeError("unsupported types for comparison");
+                throw pythonic::PythonicTypeError("operator> not supported for these types. Cannot perform '" + type() + " > " + other.type() + "'.");
             }
 
             var operator>=(const var &other) const
@@ -3349,7 +3400,7 @@ namespace pythonic
                 {
                     return var(toDouble() >= other.toDouble());
                 }
-                throw pythonic::PythonicTypeError("unsupported types for comparison");
+                throw pythonic::PythonicTypeError("operator>= not supported for these types. Cannot perform '" + type() + " >= " + other.type() + "'.");
             }
 
             var operator<=(const var &other) const
@@ -3388,7 +3439,7 @@ namespace pythonic
                 {
                     return var(toDouble() <= other.toDouble());
                 }
-                throw pythonic::PythonicTypeError("unsupported types for comparison");
+                throw pythonic::PythonicTypeError("operator<= not supported for these types. Cannot perform '" + type() + " <= " + other.type() + "'.");
             }
 
             // ============ OPTIMIZED Implicit Conversion Operators for Arithmetic Types ============
@@ -3747,7 +3798,7 @@ namespace pythonic
                 case TypeTag::ULONG_LONG:
                     return var(~var_get<unsigned long long>());
                 default:
-                    throw pythonic::PythonicTypeError("bitwise NOT requires integral type");
+                    throw pythonic::PythonicTypeError("operator~ requires integral type. Cannot perform '~" + type() + "'.");
                 }
             }
 
@@ -3864,7 +3915,7 @@ namespace pythonic
                 {
                     return var(toLongLong() & other.toLongLong());
                 }
-                throw pythonic::PythonicTypeError("operator& requires integral types or containers");
+                throw pythonic::PythonicTypeError("operator& requires integral types or containers. Cannot perform '" + type() + " & " + other.type() + "'.");
             }
 
             var operator|(const var &other) const
@@ -3976,7 +4027,7 @@ namespace pythonic
                 {
                     return var(toLongLong() | other.toLongLong());
                 }
-                throw pythonic::PythonicTypeError("operator| requires integral types or containers");
+                throw pythonic::PythonicTypeError("operator| requires integral types or containers. Cannot perform '" + type() + " | " + other.type() + "'.");
             }
 
             var operator^(const var &other) const
@@ -4090,46 +4141,52 @@ namespace pythonic
                 {
                     return var(toLongLong() ^ other.toLongLong());
                 }
-                throw pythonic::PythonicTypeError("operator^ requires integral types or sets/lists");
+                throw pythonic::PythonicTypeError("operator^ requires integral types or sets/lists. Cannot perform '" + type() + " ^ " + other.type() + "'.");
             }
             // In-place bitwise AND
-                    var &operator&=(const var &other) {
-                        *this = *this & other;
-                        return *this;
-                    }
+            var &operator&=(const var &other)
+            {
+                *this = *this & other;
+                return *this;
+            }
 
-                    // In-place bitwise OR
-                    var &operator|=(const var &other) {
-                        *this = *this | other;
-                        return *this;
-                    }
+            // In-place bitwise OR
+            var &operator|=(const var &other)
+            {
+                *this = *this | other;
+                return *this;
+            }
 
-                    // In-place bitwise XOR
-                    var &operator^=(const var &other) {
-                        *this = *this ^ other;
-                        return *this;
-                    }
+            // In-place bitwise XOR
+            var &operator^=(const var &other)
+            {
+                *this = *this ^ other;
+                return *this;
+            }
 
-                    // In-place bitwise AND with primitive
-                    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-                    var &operator&=(T other) {
-                        *this = *this & var(other);
-                        return *this;
-                    }
+            // In-place bitwise AND with primitive
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator&=(T other)
+            {
+                *this = *this & var(other);
+                return *this;
+            }
 
-                    // In-place bitwise OR with primitive
-                    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-                    var &operator|=(T other) {
-                        *this = *this | var(other);
-                        return *this;
-                    }
+            // In-place bitwise OR with primitive
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator|=(T other)
+            {
+                *this = *this | var(other);
+                return *this;
+            }
 
-                    // In-place bitwise XOR with primitive
-                    template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-                    var &operator^=(T other) {
-                        *this = *this ^ var(other);
-                        return *this;
-                    }
+            // In-place bitwise XOR with primitive
+            template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
+            var &operator^=(T other)
+            {
+                *this = *this ^ var(other);
+                return *this;
+            }
 
             // Bool conversion
             operator bool() const
@@ -4234,7 +4291,7 @@ namespace pythonic
                     }
                     return lst[index];
                 }
-                throw pythonic::PythonicTypeError("operator[] requires a list");
+                throw pythonic::PythonicTypeError("operator[] requires a list. Cannot perform '" + type() + "[index]'.");
             }
 
             const var &operator[](size_t index) const
@@ -4248,7 +4305,7 @@ namespace pythonic
                     }
                     return lst[index];
                 }
-                throw pythonic::PythonicTypeError("operator[] requires a list");
+                throw pythonic::PythonicTypeError("operator[] requires a list. Cannot perform '" + type() + "[index]'.");
             }
 
             var &operator[](const std::string &key)
@@ -4261,7 +4318,7 @@ namespace pythonic
                 {
                     return var_get<OrderedDict>()[key];
                 }
-                throw pythonic::PythonicTypeError("operator[] requires a dict or ordered_dict");
+                throw pythonic::PythonicTypeError("operator[] requires a dict or ordered_dict. Cannot perform '" + type() + "[key]'.");
             }
 
             var &operator[](const char *key)
