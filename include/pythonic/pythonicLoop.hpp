@@ -15,6 +15,13 @@
 namespace pythonic
 {
     // ============================================================================
+    // TODOs for future improvements:
+    // - enumerate and for_enumerate macro are not safe for dynamic containers (pythonic::vars::var/list). Consider a class-based or type-trait-based solution for future.
+    // - reverse_view and reversed are not supported for pythonic::vars::var/list. Consider adding bidirectional iterator support or a custom reverse adaptor for dynamic containers.
+    // - Refactor all loop macros (for_each, for_index, for_enumerate, etc.) to class-based or constexpr function-based implementations for better type safety and IDE support.
+    // ============================================================================
+
+    // ============================================================================
     // C++20 Concepts for Pythonic Containers and Iterables
     // ============================================================================
     // These concepts enable user-defined containers to work seamlessly with
