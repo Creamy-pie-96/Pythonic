@@ -2263,6 +2263,45 @@ namespace pythonic
                 return addPromoted(other);
             }
 
+            // Unary plus: returns a copy (Python semantics)
+            var operator+() const
+            {
+                if (isNumeric())
+                {
+                    return *this;
+                }
+                throw pythonic::PythonicTypeError("bad operand type for unary +: '" + type() + "'");
+            }
+
+            // Unary minus: returns negated value (Python semantics, type-preserving)
+            var operator-() const
+            {
+                switch (tag_)
+                {
+                case TypeTag::INT:
+                    return var(-var_get<int>());
+                case TypeTag::LONG:
+                    return var(-var_get<long>());
+                case TypeTag::LONG_LONG:
+                    return var(-var_get<long long>());
+                case TypeTag::FLOAT:
+                    return var(-var_get<float>());
+                case TypeTag::DOUBLE:
+                    return var(-var_get<double>());
+                case TypeTag::LONG_DOUBLE:
+                    return var(-var_get<long double>());
+                case TypeTag::UINT:
+                    return var(-static_cast<int>(var_get<unsigned int>()));
+                case TypeTag::ULONG:
+                    return var(-static_cast<long>(var_get<unsigned long>()));
+                case TypeTag::ULONG_LONG:
+                    return var(-static_cast<long long>(var_get<unsigned long long>()));
+                case TypeTag::BOOL:
+                    return var(-static_cast<int>(var_get<bool>()));
+                default:
+                    throw pythonic::PythonicTypeError("bad operand type for unary -: '" + type() + "'");
+                }
+            }
             var operator-(const var &other) const
             {
                 // Fast-path: same type
