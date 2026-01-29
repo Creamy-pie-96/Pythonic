@@ -7252,17 +7252,18 @@ namespace pythonic
         }
 
         // min() - minimum of list or many values
- template<typename... Ts>
-var min(Ts&&... args) {
-    std::vector<var> v{ var(std::forward<Ts>(args))... };
+        template <typename... Ts>
+        var min(Ts &&...args)
+        {
+            std::vector<var> v{var(std::forward<Ts>(args))...};
 
-    var m = v[0];
-    for (size_t i = 1; i < v.size(); ++i)
-        if (v[i] < m)
-            m = v[i];
+            var m = v[0];
+            for (size_t i = 1; i < v.size(); ++i)
+                if (v[i] < m)
+                    m = v[i];
 
-    return m;
-}
+            return m;
+        }
 
         inline var min(const var &lst)
         {
@@ -7283,17 +7284,18 @@ var min(Ts&&... args) {
         }
 
         // max() - maximum of list or many values
- template<typename... Ts>
-var max(Ts&&... args) {
-    std::vector<var> v{ var(std::forward<Ts>(args))... };
+        template <typename... Ts>
+        var max(Ts &&...args)
+        {
+            std::vector<var> v{var(std::forward<Ts>(args))...};
 
-    var m = v[0];
-    for (size_t i = 1; i < v.size(); ++i)
-        if (v[i] > m)
-            m = v[i];
+            var m = v[0];
+            for (size_t i = 1; i < v.size(); ++i)
+                if (v[i] > m)
+                    m = v[i];
 
-    return m;
-}
+            return m;
+        }
 
         inline var max(const var &lst)
         {
