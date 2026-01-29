@@ -9,36 +9,35 @@ This page documents all user-facing iteration helpers in Pythonic, including ran
 
 ## Range & Views
 
-| Function / Macro                 | Description                    | Example                                                |
-| -------------------------------- | ------------------------------ | ------------------------------------------------------ |
-| `range(end)`                     | Range from 0 to end-1          | `for_range(i, 10) { ... }`                             |
-| `range(start, end)`              | Range from start to end-1      | `for_range(i, 1, 10) { ... }`                          |
-| `range(start, end, step)`        | Range with explicit step       | `for_range(i, 10, 0, -1) { ... }`                      |
-| `views::take_n(r, n)`            | View of first n elements       | `for (auto x : views::take_n(lst, 5)) { ... }`         |
-| `views::drop_n(r, n)`            | View dropping first n elements | `for (auto x : views::drop_n(lst, 2)) { ... }`         |
-| `views::filter_view(r, pred)`    | Filtered view by predicate     | `for (auto x : views::filter_view(lst, pred)) { ... }` |
-| `views::transform_view(r, func)` | Transformed view by function   | `for (auto x : views::transform_view(lst, f)) { ... }` |
-| `views::reverse_view(r)`         | Reverse view (lazy, no copy)   | `for (auto x : views::reverse_view(lst)) { ... }`      |
-| `views::iota_view(start, end)`   | Integer range view             | `for (auto i : views::iota_view(0, 5)) { ... }`        |
+| Function / Macro                 | Description                                                            | Example                                                |
+| -------------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------ |
+| `range(end)`                     | Range from 0 to end-1                                                  | `for_range(i, 10) { ... }`                             |
+| `range(start, end)`              | Range from start to end-1                                              | `for_range(i, 1, 10) { ... }`                          |
+| `range(start, end, step)`        | Range with explicit step                                               | `for_range(i, 10, 0, -1) { ... }`                      |
+| `views::take_n(r, n)`            | View of first n elements                                               | `for (auto x : views::take_n(lst, 5)) { ... }`         |
+| `views::drop_n(r, n)`            | View dropping first n elements                                         | `for (auto x : views::drop_n(lst, 2)) { ... }`         |
+| `views::filter_view(r, pred)`    | Filtered view by predicate                                             | `for (auto x : views::filter_view(lst, pred)) { ... }` |
+| `views::transform_view(r, func)` | Transformed view by function                                           | `for (auto x : views::transform_view(lst, f)) { ... }` |
+| `views::reverse_view(r)`         | Reverse view (lazy, no copy, only for std containers with rbegin/rend) | _Not supported for pythonic::vars::var or list_        |
+| `views::iota_view(start, end)`   | Integer range view                                                     | `for (auto i : views::iota_view(0, 5)) { ... }`        |
 
 ---
 
 ## Enumerate & Zip
 
-| Function / Macro                | Description             | Example                                                  |
-| ------------------------------- | ----------------------- | -------------------------------------------------------- |
-| `enumerate(container, start=0)` | Index/value pairs       | `for_enumerate(i, x, lst) { ... }`                       |
-| `views::enumerate_view(r)`      | Enumerated view (C++20) | `for (auto [i, x] : views::enumerate_view(lst)) { ... }` |
-| `zip(a, b, ...)`                | Zip multiple containers | `for (auto [x, y] : zip(lst1, lst2)) { ... }`            |
+| Function / Macro                | Description                                                              | Example                                                                          |
+| ------------------------------- | ------------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `enumerate(container, start=0)` | Index/value pairs (not for pythonic::vars::var or dynamic list)          | `for_enumerate(i, x, lst) { ... }` (not for pythonic::vars::var or dynamic list) |
+| `views::enumerate_view(r)`      | Enumerated view (C++20, works with pythonic::vars::var and dynamic list) | `for (auto [i, x] : views::enumerate_view(lst)) { ... }`                         |
+| `zip(a, b, ...)`                | Zip multiple containers                                                  | `for (auto [x, y] : zip(lst1, lst2)) { ... }`                                    |
 
 ---
 
 ## Reversed
 
-| Function / Macro         | Description                  | Example                                           |
-| ------------------------ | ---------------------------- | ------------------------------------------------- |
-| `reversed(container)`    | Reverse iteration            | `for (auto x : reversed(lst)) { ... }`            |
-| `views::reverse_view(r)` | Reverse view (lazy, no copy) | `for (auto x : views::reverse_view(lst)) { ... }` |
+| Function / Macro      | Description                                                  | Example                                         |
+| --------------------- | ------------------------------------------------------------ | ----------------------------------------------- |
+| `reversed(container)` | Reverse iteration (only for std containers with rbegin/rend) | _Not supported for pythonic::vars::var or list_ |
 
 ---
 
@@ -80,13 +79,16 @@ for_range(i, 1, 5) { print(i); } // 1 2 3 4
 for_range(i, 10, 0, -2) { print(i); } // 10 8 6 4 2
 
 // --- Enumerate ---
-for_enumerate(i, x, list(10, 20, 30)) { print(i, x); }
+// NOTE: for_enumerate macro is not compatible with pythonic::vars::var or dynamic list. Use enumerate_view for those.
+for_enumerate(i, x, std::vector<int>{10, 20, 30}) { print(i, x); }
+for (auto [i, x] : views::enumerate_view(list(10, 20, 30))) { print(i, x); }
 
 // --- Zip ---
 for (auto [x, y] : zip(list(1,2,3), list("a","b","c"))) { print(x, y); }
 
 // --- Reversed ---
-for (auto x : reversed(list(1,2,3))) { print(x); }
+// Not supported for pythonic::vars::var or list. Use slicing with negative step for reverse iteration:
+for (auto x : list(1,2,3).slice(var(), var(), -1)) { print(x); } // 3 2 1
 
 // --- Loop Macros ---
 for_each(x, list(1,2,3)) { print(x); }
@@ -107,7 +109,7 @@ print(all(list(1,1,1)));
 
 ## Notes
 
-- All iteration helpers work with standard containers, Pythonic containers, and C++20 ranges.
+- All iteration helpers work with standard containers, Pythonic containers, and C++20 ranges, except reverse iteration for pythonic::vars::var/list (use .slice with negative step instead). -**Negative indices and negative step are supported in pythonic::vars::var/list slicing:** - `lst[-1]` gives the last element, `lst.slice(var(), var(), -1)` reverses the list, etc.
 - Loop macros provide Python-like syntax for common iteration patterns.
 - Views are lazy and efficient; use them for large data or pipelines.
 - Utility functions operate on any iterable, including ranges and views.
