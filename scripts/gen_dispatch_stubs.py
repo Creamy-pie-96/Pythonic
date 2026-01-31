@@ -106,6 +106,113 @@ for opname in ops.values():
                         print(f"    return var(a.var_get<std::string>() < b.var_get<std::string>());")
                     elif opname == "le":
                         print(f"    return var(a.var_get<std::string>() <= b.var_get<std::string>());")
+                # container compare (lists, sets, orderedset, dicts, ordereddict)
+                elif left == "list" and right == "list":
+                    print(f"    const auto &lst1 = a.var_get<{qualified['list']}>();")
+                    print(f"    const auto &lst2 = b.var_get<{qualified['list']}>();")
+                    if opname == "eq":
+                        print(f"    if (lst1.size() != lst2.size()) return var(false);")
+                        print(f"    return var(std::equal(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));")
+                    elif opname == "ne":
+                        print(f"    if (lst1.size() != lst2.size()) return var(true);")
+                        print(f"    return var(!std::equal(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));")
+                    elif opname == "lt":
+                        print(f"    return var(std::lexicographical_compare(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));")
+                    elif opname == "le":
+                        print(f"    return var(!std::lexicographical_compare(lst2.begin(), lst2.end(), lst1.begin(), lst1.end()));")
+                    elif opname == "gt":
+                        print(f"    return var(std::lexicographical_compare(lst2.begin(), lst2.end(), lst1.begin(), lst1.end()));")
+                    elif opname == "ge":
+                        print(f"    return var(!std::lexicographical_compare(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));")
+                elif left == "set" and right == "set":
+                    print(f"    const auto &set1 = a.var_get<{qualified['set']}>();")
+                    print(f"    const auto &set2 = b.var_get<{qualified['set']}>();")
+                    if opname == "eq":
+                        print(f"    if (set1.size() != set2.size()) return var(false);")
+                        print("    for (const auto &elem : set1) {")
+                        print("        if (set2.find(elem) == set2.end()) return var(false);")
+                        print("    }")
+                        print(f"    return var(true);")
+                    elif opname == "ne":
+                        print(f"    if (set1.size() != set2.size()) return var(true);")
+                        print("    for (const auto &elem : set1) {")
+                        print("        if (set2.find(elem) == set2.end()) return var(true);")
+                        print("    }")
+                        print(f"    return var(false);")
+                    elif opname == "lt":
+                        print(f"    if (set1.size() >= set2.size()) return var(false);")
+                        print("    for (const auto &elem : set1) {")
+                        print("        if (set2.find(elem) == set2.end()) return var(false);")
+                        print("    }")
+                        print(f"    return var(true);")
+                    elif opname == "le":
+                        print("    for (const auto &elem : set1) {")
+                        print("        if (set2.find(elem) == set2.end()) return var(false);")
+                        print("    }")
+                        print(f"    return var(true);")
+                    elif opname == "gt":
+                        print(f"    if (set2.size() >= set1.size()) return var(false);")
+                        print("    for (const auto &elem : set2) {")
+                        print("        if (set1.find(elem) == set1.end()) return var(false);")
+                        print("    }")
+                        print(f"    return var(true);")
+                    elif opname == "ge":
+                        print("    for (const auto &elem : set2) {")
+                        print("        if (set1.find(elem) == set1.end()) return var(false);")
+                        print("    }")
+                        print(f"    return var(true);")
+                elif left == "orderedset" and right == "orderedset":
+                    print(f"    const auto &set1 = a.var_get<{qualified['orderedset']}>();")
+                    print(f"    const auto &set2 = b.var_get<{qualified['orderedset']}>();")
+                    if opname == "eq":
+                        print(f"    return var(std::equal(set1.begin(), set1.end(), set2.begin(), set2.end()));")
+                    elif opname == "ne":
+                        print(f"    return var(!std::equal(set1.begin(), set1.end(), set2.begin(), set2.end()));")
+                    elif opname == "lt":
+                        print(f"    return var(std::lexicographical_compare(set1.begin(), set1.end(), set2.begin(), set2.end()));")
+                    elif opname == "le":
+                        print(f"    return var(!std::lexicographical_compare(set2.begin(), set2.end(), set1.begin(), set1.end()));")
+                    elif opname == "gt":
+                        print(f"    return var(std::lexicographical_compare(set2.begin(), set2.end(), set1.begin(), set1.end()));")
+                    elif opname == "ge":
+                        print(f"    return var(!std::lexicographical_compare(set1.begin(), set1.end(), set2.begin(), set2.end()));")
+                elif left == "dict" and right == "dict":
+                    if opname in ("eq", "ne"):
+                        print(f"    const auto &dict1 = a.var_get<{qualified['dict']}>();")
+                        print(f"    const auto &dict2 = b.var_get<{qualified['dict']}>();")
+                        if opname == "eq":
+                            print(f"    if (dict1.size() != dict2.size()) return var(false);")
+                            print("    for (const auto &kv : dict1) {")
+                            print("        const auto &key = kv.first; const auto &val = kv.second;")
+                            print("        auto it = dict2.find(key);")
+                            print("        if (it == dict2.end() || !static_cast<bool>(val == it->second)) return var(false);")
+                            print("    }")
+                            print(f"    return var(true);")
+                        else:
+                            print(f"    if (dict1.size() != dict2.size()) return var(true);")
+                            print("    for (const auto &kv : dict1) {")
+                            print("        const auto &key = kv.first; const auto &val = kv.second;")
+                            print("        auto it = dict2.find(key);")
+                            print("        if (it == dict2.end() || static_cast<bool>(val != it->second)) return var(true);")
+                            print("    }")
+                            print(f"    return var(false);")
+                    else:
+                        print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {opname}: 'dict' and 'dict'\");")
+                elif left == "ordereddict" and right == "ordereddict":
+                    print(f"    const auto &dict1 = a.var_get<{qualified['ordereddict']}>();")
+                    print(f"    const auto &dict2 = b.var_get<{qualified['ordereddict']}>();")
+                    if opname == "eq":
+                        print(f"    return var(std::equal(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));")
+                    elif opname == "ne":
+                        print(f"    return var(!std::equal(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));")
+                    elif opname == "lt":
+                        print(f"    return var(std::lexicographical_compare(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));")
+                    elif opname == "le":
+                        print(f"    return var(!std::lexicographical_compare(dict2.begin(), dict2.end(), dict1.begin(), dict1.end()));")
+                    elif opname == "gt":
+                        print(f"    return var(std::lexicographical_compare(dict2.begin(), dict2.end(), dict1.begin(), dict1.end()));")
+                    elif opname == "ge":
+                        print(f"    return var(!std::lexicographical_compare(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));")
                 # numeric compare
                 elif is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
