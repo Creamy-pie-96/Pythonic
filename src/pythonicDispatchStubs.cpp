@@ -12939,61 +12939,61 @@ var mod__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow p
 
 // Stub definitions for eq
 var eq__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'none'");
 }
 var eq__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'int'");
 }
 var eq__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'float'");
 }
 var eq__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'string'");
 }
 var eq__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'bool'");
 }
 var eq__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'double'");
 }
 var eq__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'long'");
 }
 var eq__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'long_long'");
 }
 var eq__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'long_double'");
 }
 var eq__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'uint'");
 }
 var eq__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'ulong'");
 }
 var eq__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'ulong_long'");
 }
 var eq__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'list'");
 }
 var eq__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'set'");
 }
 var eq__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'dict'");
 }
 var eq__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'orderedset'");
 }
 var eq__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'ordereddict'");
 }
 var eq__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'none' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'none' and 'graph'");
 }
 var eq__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'none'");
 }
 var eq__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -13006,7 +13006,7 @@ var eq__int__float(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(la == lb);
 }
 var eq__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'string'");
 }
 var eq__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -13049,25 +13049,25 @@ var eq__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow
     return var(la == lb);
 }
 var eq__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'list'");
 }
 var eq__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'set'");
 }
 var eq__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'dict'");
 }
 var eq__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'orderedset'");
 }
 var eq__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'ordereddict'");
 }
 var eq__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'int' and 'graph'");
 }
 var eq__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'none'");
 }
 var eq__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -13080,7 +13080,7 @@ var eq__float__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la == lb);
 }
 var eq__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'string'");
 }
 var eq__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -13123,79 +13123,79 @@ var eq__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la == lb);
 }
 var eq__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'list'");
 }
 var eq__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'set'");
 }
 var eq__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'dict'");
 }
 var eq__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'orderedset'");
 }
 var eq__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'ordereddict'");
 }
 var eq__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'float' and 'graph'");
 }
 var eq__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'none'");
 }
 var eq__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'int'");
 }
 var eq__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'float'");
 }
 var eq__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     return var(a.var_get<std::string>() == b.var_get<std::string>());
 }
 var eq__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'bool'");
 }
 var eq__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'double'");
 }
 var eq__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'long'");
 }
 var eq__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'long_long'");
 }
 var eq__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'long_double'");
 }
 var eq__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'uint'");
 }
 var eq__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'ulong'");
 }
 var eq__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'ulong_long'");
 }
 var eq__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'list'");
 }
 var eq__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'set'");
 }
 var eq__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'dict'");
 }
 var eq__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'orderedset'");
 }
 var eq__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'ordereddict'");
 }
 var eq__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'string' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'string' and 'graph'");
 }
 var eq__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'none'");
 }
 var eq__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -13208,7 +13208,7 @@ var eq__bool__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la == lb);
 }
 var eq__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'string'");
 }
 var eq__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -13251,25 +13251,25 @@ var eq__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la == lb);
 }
 var eq__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'list'");
 }
 var eq__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'set'");
 }
 var eq__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'dict'");
 }
 var eq__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'orderedset'");
 }
 var eq__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'ordereddict'");
 }
 var eq__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'bool' and 'graph'");
 }
 var eq__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'none'");
 }
 var eq__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -13282,7 +13282,7 @@ var eq__double__float(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(la == lb);
 }
 var eq__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'string'");
 }
 var eq__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -13325,25 +13325,25 @@ var eq__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overf
     return var(la == lb);
 }
 var eq__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'list'");
 }
 var eq__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'set'");
 }
 var eq__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'dict'");
 }
 var eq__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'orderedset'");
 }
 var eq__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'ordereddict'");
 }
 var eq__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'double' and 'graph'");
 }
 var eq__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'none'");
 }
 var eq__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -13356,7 +13356,7 @@ var eq__long__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la == lb);
 }
 var eq__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'string'");
 }
 var eq__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -13399,25 +13399,25 @@ var eq__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la == lb);
 }
 var eq__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'list'");
 }
 var eq__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'set'");
 }
 var eq__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'dict'");
 }
 var eq__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'orderedset'");
 }
 var eq__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'ordereddict'");
 }
 var eq__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long' and 'graph'");
 }
 var eq__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'none'");
 }
 var eq__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -13430,7 +13430,7 @@ var eq__long_long__float(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la == lb);
 }
 var eq__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'string'");
 }
 var eq__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -13473,25 +13473,25 @@ var eq__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Ov
     return var(la == lb);
 }
 var eq__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'list'");
 }
 var eq__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'set'");
 }
 var eq__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'dict'");
 }
 var eq__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'orderedset'");
 }
 var eq__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'ordereddict'");
 }
 var eq__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_long' and 'graph'");
 }
 var eq__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'none'");
 }
 var eq__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -13504,7 +13504,7 @@ var eq__long_double__float(const var& a, const var& b, pythonic::overflow::Overf
     return var(la == lb);
 }
 var eq__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'string'");
 }
 var eq__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -13547,25 +13547,25 @@ var eq__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::
     return var(la == lb);
 }
 var eq__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'list'");
 }
 var eq__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'set'");
 }
 var eq__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'dict'");
 }
 var eq__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'orderedset'");
 }
 var eq__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'ordereddict'");
 }
 var eq__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'long_double' and 'graph'");
 }
 var eq__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'none'");
 }
 var eq__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -13578,7 +13578,7 @@ var eq__uint__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la == lb);
 }
 var eq__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'string'");
 }
 var eq__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -13621,25 +13621,25 @@ var eq__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la == lb);
 }
 var eq__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'list'");
 }
 var eq__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'set'");
 }
 var eq__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'dict'");
 }
 var eq__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'orderedset'");
 }
 var eq__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'ordereddict'");
 }
 var eq__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'uint' and 'graph'");
 }
 var eq__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'none'");
 }
 var eq__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -13652,7 +13652,7 @@ var eq__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la == lb);
 }
 var eq__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'string'");
 }
 var eq__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -13695,25 +13695,25 @@ var eq__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la == lb);
 }
 var eq__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'list'");
 }
 var eq__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'set'");
 }
 var eq__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'dict'");
 }
 var eq__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'orderedset'");
 }
 var eq__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'ordereddict'");
 }
 var eq__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong' and 'graph'");
 }
 var eq__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'none'");
 }
 var eq__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -13726,7 +13726,7 @@ var eq__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la == lb);
 }
 var eq__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'string'");
 }
 var eq__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -13769,58 +13769,58 @@ var eq__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     return var(la == lb);
 }
 var eq__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'list'");
 }
 var eq__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'set'");
 }
 var eq__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'dict'");
 }
 var eq__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'orderedset'");
 }
 var eq__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'ordereddict'");
 }
 var eq__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ulong_long' and 'graph'");
 }
 var eq__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'none'");
 }
 var eq__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'int'");
 }
 var eq__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'float'");
 }
 var eq__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'string'");
 }
 var eq__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'bool'");
 }
 var eq__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'double'");
 }
 var eq__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'long'");
 }
 var eq__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'long_long'");
 }
 var eq__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'long_double'");
 }
 var eq__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'uint'");
 }
 var eq__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'ulong'");
 }
 var eq__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'ulong_long'");
 }
 var eq__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &lst1 = a.var_get<pythonic::vars::List>();
@@ -13829,58 +13829,58 @@ var eq__list__list(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(std::equal(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var eq__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'set'");
 }
 var eq__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'dict'");
 }
 var eq__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'orderedset'");
 }
 var eq__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'ordereddict'");
 }
 var eq__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'list' and 'graph'");
 }
 var eq__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'none'");
 }
 var eq__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'int'");
 }
 var eq__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'float'");
 }
 var eq__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'string'");
 }
 var eq__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'bool'");
 }
 var eq__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'double'");
 }
 var eq__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'long'");
 }
 var eq__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'long_long'");
 }
 var eq__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'long_double'");
 }
 var eq__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'uint'");
 }
 var eq__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'ulong'");
 }
 var eq__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'ulong_long'");
 }
 var eq__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'list'");
 }
 var eq__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::Set>();
@@ -13892,58 +13892,58 @@ var eq__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy
     return var(true);
 }
 var eq__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'dict'");
 }
 var eq__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'orderedset'");
 }
 var eq__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'ordereddict'");
 }
 var eq__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'set' and 'graph'");
 }
 var eq__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'none'");
 }
 var eq__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'int'");
 }
 var eq__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'float'");
 }
 var eq__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'string'");
 }
 var eq__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'bool'");
 }
 var eq__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'double'");
 }
 var eq__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'long'");
 }
 var eq__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'long_long'");
 }
 var eq__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'long_double'");
 }
 var eq__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'uint'");
 }
 var eq__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'ulong'");
 }
 var eq__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'ulong_long'");
 }
 var eq__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'list'");
 }
 var eq__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'set'");
 }
 var eq__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::Dict>();
@@ -13957,58 +13957,58 @@ var eq__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(true);
 }
 var eq__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'orderedset'");
 }
 var eq__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'ordereddict'");
 }
 var eq__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'dict' and 'graph'");
 }
 var eq__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'none'");
 }
 var eq__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'int'");
 }
 var eq__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'float'");
 }
 var eq__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'string'");
 }
 var eq__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'bool'");
 }
 var eq__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'double'");
 }
 var eq__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'long'");
 }
 var eq__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'long_long'");
 }
 var eq__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'long_double'");
 }
 var eq__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'uint'");
 }
 var eq__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'ulong'");
 }
 var eq__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'ulong_long'");
 }
 var eq__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'list'");
 }
 var eq__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'set'");
 }
 var eq__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'dict'");
 }
 var eq__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
@@ -14016,58 +14016,58 @@ var eq__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::O
     return var(std::equal(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var eq__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'ordereddict'");
 }
 var eq__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'orderedset' and 'graph'");
 }
 var eq__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'none'");
 }
 var eq__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'int'");
 }
 var eq__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'float'");
 }
 var eq__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'string'");
 }
 var eq__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'bool'");
 }
 var eq__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'double'");
 }
 var eq__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'long'");
 }
 var eq__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'long_long'");
 }
 var eq__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'long_double'");
 }
 var eq__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'uint'");
 }
 var eq__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'ulong'");
 }
 var eq__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'ulong_long'");
 }
 var eq__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'list'");
 }
 var eq__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'set'");
 }
 var eq__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'dict'");
 }
 var eq__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'orderedset'");
 }
 var eq__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
@@ -14075,120 +14075,120 @@ var eq__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow:
     return var(std::equal(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var eq__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'ordereddict' and 'graph'");
 }
 var eq__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'none'");
 }
 var eq__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'int'");
 }
 var eq__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'float'");
 }
 var eq__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'string'");
 }
 var eq__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'bool'");
 }
 var eq__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'double'");
 }
 var eq__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'long'");
 }
 var eq__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'long_long'");
 }
 var eq__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'long_double'");
 }
 var eq__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'uint'");
 }
 var eq__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'ulong'");
 }
 var eq__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'ulong_long'");
 }
 var eq__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'list'");
 }
 var eq__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'set'");
 }
 var eq__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'dict'");
 }
 var eq__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'orderedset'");
 }
 var eq__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'ordereddict'");
 }
 var eq__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'graph' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ==: 'graph' and 'graph'");
 }
 
 // Stub definitions for ne
 var ne__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'none'");
 }
 var ne__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'int'");
 }
 var ne__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'float'");
 }
 var ne__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'string'");
 }
 var ne__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'bool'");
 }
 var ne__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'double'");
 }
 var ne__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'long'");
 }
 var ne__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'long_long'");
 }
 var ne__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'long_double'");
 }
 var ne__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'uint'");
 }
 var ne__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'ulong'");
 }
 var ne__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'ulong_long'");
 }
 var ne__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'list'");
 }
 var ne__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'set'");
 }
 var ne__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'dict'");
 }
 var ne__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'orderedset'");
 }
 var ne__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'ordereddict'");
 }
 var ne__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'none' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'none' and 'graph'");
 }
 var ne__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'none'");
 }
 var ne__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -14201,7 +14201,7 @@ var ne__int__float(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(la != lb);
 }
 var ne__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'string'");
 }
 var ne__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -14244,25 +14244,25 @@ var ne__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow
     return var(la != lb);
 }
 var ne__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'list'");
 }
 var ne__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'set'");
 }
 var ne__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'dict'");
 }
 var ne__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'orderedset'");
 }
 var ne__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'ordereddict'");
 }
 var ne__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'int' and 'graph'");
 }
 var ne__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'none'");
 }
 var ne__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -14275,7 +14275,7 @@ var ne__float__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la != lb);
 }
 var ne__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'string'");
 }
 var ne__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -14318,79 +14318,79 @@ var ne__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la != lb);
 }
 var ne__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'list'");
 }
 var ne__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'set'");
 }
 var ne__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'dict'");
 }
 var ne__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'orderedset'");
 }
 var ne__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'ordereddict'");
 }
 var ne__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'float' and 'graph'");
 }
 var ne__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'none'");
 }
 var ne__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'int'");
 }
 var ne__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'float'");
 }
 var ne__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     return var(a.var_get<std::string>() != b.var_get<std::string>());
 }
 var ne__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'bool'");
 }
 var ne__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'double'");
 }
 var ne__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'long'");
 }
 var ne__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'long_long'");
 }
 var ne__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'long_double'");
 }
 var ne__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'uint'");
 }
 var ne__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'ulong'");
 }
 var ne__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'ulong_long'");
 }
 var ne__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'list'");
 }
 var ne__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'set'");
 }
 var ne__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'dict'");
 }
 var ne__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'orderedset'");
 }
 var ne__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'ordereddict'");
 }
 var ne__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'string' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'string' and 'graph'");
 }
 var ne__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'none'");
 }
 var ne__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -14403,7 +14403,7 @@ var ne__bool__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la != lb);
 }
 var ne__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'string'");
 }
 var ne__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -14446,25 +14446,25 @@ var ne__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la != lb);
 }
 var ne__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'list'");
 }
 var ne__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'set'");
 }
 var ne__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'dict'");
 }
 var ne__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'orderedset'");
 }
 var ne__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'ordereddict'");
 }
 var ne__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'bool' and 'graph'");
 }
 var ne__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'none'");
 }
 var ne__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -14477,7 +14477,7 @@ var ne__double__float(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(la != lb);
 }
 var ne__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'string'");
 }
 var ne__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -14520,25 +14520,25 @@ var ne__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overf
     return var(la != lb);
 }
 var ne__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'list'");
 }
 var ne__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'set'");
 }
 var ne__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'dict'");
 }
 var ne__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'orderedset'");
 }
 var ne__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'ordereddict'");
 }
 var ne__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'double' and 'graph'");
 }
 var ne__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'none'");
 }
 var ne__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -14551,7 +14551,7 @@ var ne__long__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la != lb);
 }
 var ne__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'string'");
 }
 var ne__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -14594,25 +14594,25 @@ var ne__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la != lb);
 }
 var ne__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'list'");
 }
 var ne__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'set'");
 }
 var ne__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'dict'");
 }
 var ne__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'orderedset'");
 }
 var ne__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'ordereddict'");
 }
 var ne__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long' and 'graph'");
 }
 var ne__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'none'");
 }
 var ne__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -14625,7 +14625,7 @@ var ne__long_long__float(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la != lb);
 }
 var ne__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'string'");
 }
 var ne__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -14668,25 +14668,25 @@ var ne__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Ov
     return var(la != lb);
 }
 var ne__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'list'");
 }
 var ne__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'set'");
 }
 var ne__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'dict'");
 }
 var ne__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'orderedset'");
 }
 var ne__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'ordereddict'");
 }
 var ne__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_long' and 'graph'");
 }
 var ne__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'none'");
 }
 var ne__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -14699,7 +14699,7 @@ var ne__long_double__float(const var& a, const var& b, pythonic::overflow::Overf
     return var(la != lb);
 }
 var ne__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'string'");
 }
 var ne__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -14742,25 +14742,25 @@ var ne__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::
     return var(la != lb);
 }
 var ne__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'list'");
 }
 var ne__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'set'");
 }
 var ne__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'dict'");
 }
 var ne__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'orderedset'");
 }
 var ne__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'ordereddict'");
 }
 var ne__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'long_double' and 'graph'");
 }
 var ne__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'none'");
 }
 var ne__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -14773,7 +14773,7 @@ var ne__uint__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la != lb);
 }
 var ne__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'string'");
 }
 var ne__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -14816,25 +14816,25 @@ var ne__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la != lb);
 }
 var ne__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'list'");
 }
 var ne__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'set'");
 }
 var ne__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'dict'");
 }
 var ne__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'orderedset'");
 }
 var ne__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'ordereddict'");
 }
 var ne__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'uint' and 'graph'");
 }
 var ne__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'none'");
 }
 var ne__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -14847,7 +14847,7 @@ var ne__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la != lb);
 }
 var ne__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'string'");
 }
 var ne__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -14890,25 +14890,25 @@ var ne__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la != lb);
 }
 var ne__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'list'");
 }
 var ne__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'set'");
 }
 var ne__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'dict'");
 }
 var ne__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'orderedset'");
 }
 var ne__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'ordereddict'");
 }
 var ne__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong' and 'graph'");
 }
 var ne__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'none'");
 }
 var ne__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -14921,7 +14921,7 @@ var ne__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la != lb);
 }
 var ne__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'string'");
 }
 var ne__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -14964,58 +14964,58 @@ var ne__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     return var(la != lb);
 }
 var ne__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'list'");
 }
 var ne__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'set'");
 }
 var ne__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'dict'");
 }
 var ne__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'orderedset'");
 }
 var ne__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'ordereddict'");
 }
 var ne__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ulong_long' and 'graph'");
 }
 var ne__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'none'");
 }
 var ne__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'int'");
 }
 var ne__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'float'");
 }
 var ne__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'string'");
 }
 var ne__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'bool'");
 }
 var ne__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'double'");
 }
 var ne__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'long'");
 }
 var ne__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'long_long'");
 }
 var ne__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'long_double'");
 }
 var ne__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'uint'");
 }
 var ne__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'ulong'");
 }
 var ne__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'ulong_long'");
 }
 var ne__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &lst1 = a.var_get<pythonic::vars::List>();
@@ -15024,58 +15024,58 @@ var ne__list__list(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(!std::equal(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var ne__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'set'");
 }
 var ne__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'dict'");
 }
 var ne__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'orderedset'");
 }
 var ne__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'ordereddict'");
 }
 var ne__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'list' and 'graph'");
 }
 var ne__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'none'");
 }
 var ne__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'int'");
 }
 var ne__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'float'");
 }
 var ne__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'string'");
 }
 var ne__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'bool'");
 }
 var ne__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'double'");
 }
 var ne__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'long'");
 }
 var ne__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'long_long'");
 }
 var ne__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'long_double'");
 }
 var ne__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'uint'");
 }
 var ne__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'ulong'");
 }
 var ne__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'ulong_long'");
 }
 var ne__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'list'");
 }
 var ne__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::Set>();
@@ -15087,58 +15087,58 @@ var ne__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy
     return var(false);
 }
 var ne__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'dict'");
 }
 var ne__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'orderedset'");
 }
 var ne__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'ordereddict'");
 }
 var ne__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'set' and 'graph'");
 }
 var ne__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'none'");
 }
 var ne__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'int'");
 }
 var ne__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'float'");
 }
 var ne__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'string'");
 }
 var ne__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'bool'");
 }
 var ne__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'double'");
 }
 var ne__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'long'");
 }
 var ne__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'long_long'");
 }
 var ne__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'long_double'");
 }
 var ne__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'uint'");
 }
 var ne__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'ulong'");
 }
 var ne__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'ulong_long'");
 }
 var ne__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'list'");
 }
 var ne__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'set'");
 }
 var ne__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::Dict>();
@@ -15152,58 +15152,58 @@ var ne__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(false);
 }
 var ne__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'orderedset'");
 }
 var ne__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'ordereddict'");
 }
 var ne__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'dict' and 'graph'");
 }
 var ne__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'none'");
 }
 var ne__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'int'");
 }
 var ne__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'float'");
 }
 var ne__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'string'");
 }
 var ne__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'bool'");
 }
 var ne__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'double'");
 }
 var ne__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'long'");
 }
 var ne__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'long_long'");
 }
 var ne__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'long_double'");
 }
 var ne__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'uint'");
 }
 var ne__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'ulong'");
 }
 var ne__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'ulong_long'");
 }
 var ne__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'list'");
 }
 var ne__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'set'");
 }
 var ne__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'dict'");
 }
 var ne__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
@@ -15211,58 +15211,58 @@ var ne__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::O
     return var(!std::equal(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var ne__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'ordereddict'");
 }
 var ne__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'orderedset' and 'graph'");
 }
 var ne__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'none'");
 }
 var ne__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'int'");
 }
 var ne__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'float'");
 }
 var ne__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'string'");
 }
 var ne__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'bool'");
 }
 var ne__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'double'");
 }
 var ne__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'long'");
 }
 var ne__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'long_long'");
 }
 var ne__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'long_double'");
 }
 var ne__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'uint'");
 }
 var ne__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'ulong'");
 }
 var ne__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'ulong_long'");
 }
 var ne__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'list'");
 }
 var ne__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'set'");
 }
 var ne__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'dict'");
 }
 var ne__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'orderedset'");
 }
 var ne__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
@@ -15270,120 +15270,120 @@ var ne__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow:
     return var(!std::equal(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var ne__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'ordereddict' and 'graph'");
 }
 var ne__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'none'");
 }
 var ne__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'int'");
 }
 var ne__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'float'");
 }
 var ne__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'string'");
 }
 var ne__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'bool'");
 }
 var ne__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'double'");
 }
 var ne__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'long'");
 }
 var ne__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'long_long'");
 }
 var ne__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'long_double'");
 }
 var ne__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'uint'");
 }
 var ne__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'ulong'");
 }
 var ne__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'ulong_long'");
 }
 var ne__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'list'");
 }
 var ne__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'set'");
 }
 var ne__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'dict'");
 }
 var ne__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'orderedset'");
 }
 var ne__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'ordereddict'");
 }
 var ne__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'graph' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for !=: 'graph' and 'graph'");
 }
 
 // Stub definitions for gt
 var gt__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'none'");
 }
 var gt__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'int'");
 }
 var gt__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'float'");
 }
 var gt__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'string'");
 }
 var gt__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'bool'");
 }
 var gt__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'double'");
 }
 var gt__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'long'");
 }
 var gt__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'long_long'");
 }
 var gt__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'long_double'");
 }
 var gt__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'uint'");
 }
 var gt__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'ulong'");
 }
 var gt__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'ulong_long'");
 }
 var gt__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'list'");
 }
 var gt__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'set'");
 }
 var gt__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'dict'");
 }
 var gt__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'orderedset'");
 }
 var gt__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'ordereddict'");
 }
 var gt__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'none' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'none' and 'graph'");
 }
 var gt__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'none'");
 }
 var gt__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -15396,7 +15396,7 @@ var gt__int__float(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(la > lb);
 }
 var gt__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'string'");
 }
 var gt__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -15439,25 +15439,25 @@ var gt__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow
     return var(la > lb);
 }
 var gt__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'list'");
 }
 var gt__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'set'");
 }
 var gt__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'dict'");
 }
 var gt__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'orderedset'");
 }
 var gt__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'ordereddict'");
 }
 var gt__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'int' and 'graph'");
 }
 var gt__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'none'");
 }
 var gt__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -15470,7 +15470,7 @@ var gt__float__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la > lb);
 }
 var gt__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'string'");
 }
 var gt__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -15513,79 +15513,79 @@ var gt__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la > lb);
 }
 var gt__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'list'");
 }
 var gt__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'set'");
 }
 var gt__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'dict'");
 }
 var gt__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'orderedset'");
 }
 var gt__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'ordereddict'");
 }
 var gt__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'float' and 'graph'");
 }
 var gt__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'none'");
 }
 var gt__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'int'");
 }
 var gt__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'float'");
 }
 var gt__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     return var(a.var_get<std::string>() > b.var_get<std::string>());
 }
 var gt__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'bool'");
 }
 var gt__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'double'");
 }
 var gt__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'long'");
 }
 var gt__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'long_long'");
 }
 var gt__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'long_double'");
 }
 var gt__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'uint'");
 }
 var gt__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'ulong'");
 }
 var gt__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'ulong_long'");
 }
 var gt__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'list'");
 }
 var gt__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'set'");
 }
 var gt__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'dict'");
 }
 var gt__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'orderedset'");
 }
 var gt__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'ordereddict'");
 }
 var gt__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'string' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'string' and 'graph'");
 }
 var gt__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'none'");
 }
 var gt__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -15598,7 +15598,7 @@ var gt__bool__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la > lb);
 }
 var gt__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'string'");
 }
 var gt__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -15641,25 +15641,25 @@ var gt__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la > lb);
 }
 var gt__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'list'");
 }
 var gt__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'set'");
 }
 var gt__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'dict'");
 }
 var gt__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'orderedset'");
 }
 var gt__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'ordereddict'");
 }
 var gt__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'bool' and 'graph'");
 }
 var gt__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'none'");
 }
 var gt__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -15672,7 +15672,7 @@ var gt__double__float(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(la > lb);
 }
 var gt__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'string'");
 }
 var gt__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -15715,25 +15715,25 @@ var gt__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overf
     return var(la > lb);
 }
 var gt__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'list'");
 }
 var gt__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'set'");
 }
 var gt__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'dict'");
 }
 var gt__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'orderedset'");
 }
 var gt__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'ordereddict'");
 }
 var gt__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'double' and 'graph'");
 }
 var gt__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'none'");
 }
 var gt__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -15746,7 +15746,7 @@ var gt__long__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la > lb);
 }
 var gt__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'string'");
 }
 var gt__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -15789,25 +15789,25 @@ var gt__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la > lb);
 }
 var gt__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'list'");
 }
 var gt__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'set'");
 }
 var gt__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'dict'");
 }
 var gt__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'orderedset'");
 }
 var gt__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'ordereddict'");
 }
 var gt__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long' and 'graph'");
 }
 var gt__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'none'");
 }
 var gt__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -15820,7 +15820,7 @@ var gt__long_long__float(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la > lb);
 }
 var gt__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'string'");
 }
 var gt__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -15863,25 +15863,25 @@ var gt__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Ov
     return var(la > lb);
 }
 var gt__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'list'");
 }
 var gt__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'set'");
 }
 var gt__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'dict'");
 }
 var gt__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'orderedset'");
 }
 var gt__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'ordereddict'");
 }
 var gt__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_long' and 'graph'");
 }
 var gt__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'none'");
 }
 var gt__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -15894,7 +15894,7 @@ var gt__long_double__float(const var& a, const var& b, pythonic::overflow::Overf
     return var(la > lb);
 }
 var gt__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'string'");
 }
 var gt__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -15937,25 +15937,25 @@ var gt__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::
     return var(la > lb);
 }
 var gt__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'list'");
 }
 var gt__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'set'");
 }
 var gt__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'dict'");
 }
 var gt__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'orderedset'");
 }
 var gt__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'ordereddict'");
 }
 var gt__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'long_double' and 'graph'");
 }
 var gt__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'none'");
 }
 var gt__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -15968,7 +15968,7 @@ var gt__uint__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la > lb);
 }
 var gt__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'string'");
 }
 var gt__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -16011,25 +16011,25 @@ var gt__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la > lb);
 }
 var gt__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'list'");
 }
 var gt__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'set'");
 }
 var gt__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'dict'");
 }
 var gt__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'orderedset'");
 }
 var gt__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'ordereddict'");
 }
 var gt__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'uint' and 'graph'");
 }
 var gt__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'none'");
 }
 var gt__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -16042,7 +16042,7 @@ var gt__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la > lb);
 }
 var gt__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'string'");
 }
 var gt__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -16085,25 +16085,25 @@ var gt__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la > lb);
 }
 var gt__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'list'");
 }
 var gt__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'set'");
 }
 var gt__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'dict'");
 }
 var gt__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'orderedset'");
 }
 var gt__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'ordereddict'");
 }
 var gt__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong' and 'graph'");
 }
 var gt__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'none'");
 }
 var gt__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -16116,7 +16116,7 @@ var gt__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la > lb);
 }
 var gt__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'string'");
 }
 var gt__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -16159,58 +16159,58 @@ var gt__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     return var(la > lb);
 }
 var gt__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'list'");
 }
 var gt__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'set'");
 }
 var gt__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'dict'");
 }
 var gt__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'orderedset'");
 }
 var gt__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'ordereddict'");
 }
 var gt__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ulong_long' and 'graph'");
 }
 var gt__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'none'");
 }
 var gt__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'int'");
 }
 var gt__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'float'");
 }
 var gt__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'string'");
 }
 var gt__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'bool'");
 }
 var gt__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'double'");
 }
 var gt__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'long'");
 }
 var gt__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'long_long'");
 }
 var gt__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'long_double'");
 }
 var gt__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'uint'");
 }
 var gt__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'ulong'");
 }
 var gt__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'ulong_long'");
 }
 var gt__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &lst1 = a.var_get<pythonic::vars::List>();
@@ -16218,58 +16218,58 @@ var gt__list__list(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(std::lexicographical_compare(lst2.begin(), lst2.end(), lst1.begin(), lst1.end()));
 }
 var gt__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'set'");
 }
 var gt__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'dict'");
 }
 var gt__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'orderedset'");
 }
 var gt__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'ordereddict'");
 }
 var gt__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'list' and 'graph'");
 }
 var gt__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'none'");
 }
 var gt__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'int'");
 }
 var gt__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'float'");
 }
 var gt__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'string'");
 }
 var gt__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'bool'");
 }
 var gt__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'double'");
 }
 var gt__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'long'");
 }
 var gt__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'long_long'");
 }
 var gt__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'long_double'");
 }
 var gt__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'uint'");
 }
 var gt__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'ulong'");
 }
 var gt__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'ulong_long'");
 }
 var gt__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'list'");
 }
 var gt__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::Set>();
@@ -16281,115 +16281,115 @@ var gt__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy
     return var(true);
 }
 var gt__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'dict'");
 }
 var gt__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'orderedset'");
 }
 var gt__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'ordereddict'");
 }
 var gt__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'set' and 'graph'");
 }
 var gt__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'none'");
 }
 var gt__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'int'");
 }
 var gt__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'float'");
 }
 var gt__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'string'");
 }
 var gt__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'bool'");
 }
 var gt__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'double'");
 }
 var gt__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'long'");
 }
 var gt__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'long_long'");
 }
 var gt__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'long_double'");
 }
 var gt__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'uint'");
 }
 var gt__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'ulong'");
 }
 var gt__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'ulong_long'");
 }
 var gt__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'list'");
 }
 var gt__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'set'");
 }
 var gt__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'dict'");
 }
 var gt__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'orderedset'");
 }
 var gt__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'ordereddict'");
 }
 var gt__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'dict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'dict' and 'graph'");
 }
 var gt__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'none'");
 }
 var gt__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'int'");
 }
 var gt__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'float'");
 }
 var gt__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'string'");
 }
 var gt__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'bool'");
 }
 var gt__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'double'");
 }
 var gt__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'long'");
 }
 var gt__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'long_long'");
 }
 var gt__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'long_double'");
 }
 var gt__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'uint'");
 }
 var gt__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'ulong'");
 }
 var gt__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'ulong_long'");
 }
 var gt__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'list'");
 }
 var gt__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'set'");
 }
 var gt__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'dict'");
 }
 var gt__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
@@ -16397,58 +16397,58 @@ var gt__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::O
     return var(std::lexicographical_compare(set2.begin(), set2.end(), set1.begin(), set1.end()));
 }
 var gt__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'ordereddict'");
 }
 var gt__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'orderedset' and 'graph'");
 }
 var gt__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'none'");
 }
 var gt__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'int'");
 }
 var gt__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'float'");
 }
 var gt__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'string'");
 }
 var gt__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'bool'");
 }
 var gt__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'double'");
 }
 var gt__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'long'");
 }
 var gt__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'long_long'");
 }
 var gt__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'long_double'");
 }
 var gt__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'uint'");
 }
 var gt__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'ulong'");
 }
 var gt__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'ulong_long'");
 }
 var gt__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'list'");
 }
 var gt__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'set'");
 }
 var gt__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'dict'");
 }
 var gt__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'orderedset'");
 }
 var gt__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
@@ -16456,120 +16456,120 @@ var gt__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow:
     return var(std::lexicographical_compare(dict2.begin(), dict2.end(), dict1.begin(), dict1.end()));
 }
 var gt__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'ordereddict' and 'graph'");
 }
 var gt__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'none'");
 }
 var gt__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'int'");
 }
 var gt__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'float'");
 }
 var gt__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'string'");
 }
 var gt__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'bool'");
 }
 var gt__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'double'");
 }
 var gt__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'long'");
 }
 var gt__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'long_long'");
 }
 var gt__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'long_double'");
 }
 var gt__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'uint'");
 }
 var gt__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'ulong'");
 }
 var gt__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'ulong_long'");
 }
 var gt__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'list'");
 }
 var gt__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'set'");
 }
 var gt__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'dict'");
 }
 var gt__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'orderedset'");
 }
 var gt__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'ordereddict'");
 }
 var gt__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'graph' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >: 'graph' and 'graph'");
 }
 
 // Stub definitions for ge
 var ge__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'none'");
 }
 var ge__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'int'");
 }
 var ge__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'float'");
 }
 var ge__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'string'");
 }
 var ge__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'bool'");
 }
 var ge__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'double'");
 }
 var ge__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'long'");
 }
 var ge__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'long_long'");
 }
 var ge__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'long_double'");
 }
 var ge__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'uint'");
 }
 var ge__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'ulong'");
 }
 var ge__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'ulong_long'");
 }
 var ge__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'list'");
 }
 var ge__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'set'");
 }
 var ge__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'dict'");
 }
 var ge__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'orderedset'");
 }
 var ge__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'ordereddict'");
 }
 var ge__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'none' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'none' and 'graph'");
 }
 var ge__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'none'");
 }
 var ge__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -16582,7 +16582,7 @@ var ge__int__float(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(la >= lb);
 }
 var ge__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'string'");
 }
 var ge__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -16625,25 +16625,25 @@ var ge__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow
     return var(la >= lb);
 }
 var ge__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'list'");
 }
 var ge__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'set'");
 }
 var ge__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'dict'");
 }
 var ge__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'orderedset'");
 }
 var ge__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'ordereddict'");
 }
 var ge__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'int' and 'graph'");
 }
 var ge__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'none'");
 }
 var ge__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -16656,7 +16656,7 @@ var ge__float__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la >= lb);
 }
 var ge__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'string'");
 }
 var ge__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -16699,79 +16699,79 @@ var ge__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la >= lb);
 }
 var ge__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'list'");
 }
 var ge__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'set'");
 }
 var ge__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'dict'");
 }
 var ge__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'orderedset'");
 }
 var ge__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'ordereddict'");
 }
 var ge__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'float' and 'graph'");
 }
 var ge__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'none'");
 }
 var ge__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'int'");
 }
 var ge__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'float'");
 }
 var ge__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     return var(a.var_get<std::string>() >= b.var_get<std::string>());
 }
 var ge__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'bool'");
 }
 var ge__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'double'");
 }
 var ge__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'long'");
 }
 var ge__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'long_long'");
 }
 var ge__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'long_double'");
 }
 var ge__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'uint'");
 }
 var ge__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'ulong'");
 }
 var ge__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'ulong_long'");
 }
 var ge__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'list'");
 }
 var ge__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'set'");
 }
 var ge__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'dict'");
 }
 var ge__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'orderedset'");
 }
 var ge__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'ordereddict'");
 }
 var ge__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'string' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'string' and 'graph'");
 }
 var ge__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'none'");
 }
 var ge__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -16784,7 +16784,7 @@ var ge__bool__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la >= lb);
 }
 var ge__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'string'");
 }
 var ge__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -16827,25 +16827,25 @@ var ge__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la >= lb);
 }
 var ge__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'list'");
 }
 var ge__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'set'");
 }
 var ge__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'dict'");
 }
 var ge__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'orderedset'");
 }
 var ge__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'ordereddict'");
 }
 var ge__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'bool' and 'graph'");
 }
 var ge__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'none'");
 }
 var ge__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -16858,7 +16858,7 @@ var ge__double__float(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(la >= lb);
 }
 var ge__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'string'");
 }
 var ge__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -16901,25 +16901,25 @@ var ge__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overf
     return var(la >= lb);
 }
 var ge__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'list'");
 }
 var ge__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'set'");
 }
 var ge__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'dict'");
 }
 var ge__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'orderedset'");
 }
 var ge__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'ordereddict'");
 }
 var ge__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'double' and 'graph'");
 }
 var ge__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'none'");
 }
 var ge__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -16932,7 +16932,7 @@ var ge__long__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la >= lb);
 }
 var ge__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'string'");
 }
 var ge__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -16975,25 +16975,25 @@ var ge__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la >= lb);
 }
 var ge__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'list'");
 }
 var ge__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'set'");
 }
 var ge__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'dict'");
 }
 var ge__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'orderedset'");
 }
 var ge__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'ordereddict'");
 }
 var ge__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long' and 'graph'");
 }
 var ge__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'none'");
 }
 var ge__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -17006,7 +17006,7 @@ var ge__long_long__float(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la >= lb);
 }
 var ge__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'string'");
 }
 var ge__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -17049,25 +17049,25 @@ var ge__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Ov
     return var(la >= lb);
 }
 var ge__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'list'");
 }
 var ge__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'set'");
 }
 var ge__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'dict'");
 }
 var ge__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'orderedset'");
 }
 var ge__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'ordereddict'");
 }
 var ge__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_long' and 'graph'");
 }
 var ge__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'none'");
 }
 var ge__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -17080,7 +17080,7 @@ var ge__long_double__float(const var& a, const var& b, pythonic::overflow::Overf
     return var(la >= lb);
 }
 var ge__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'string'");
 }
 var ge__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -17123,25 +17123,25 @@ var ge__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::
     return var(la >= lb);
 }
 var ge__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'list'");
 }
 var ge__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'set'");
 }
 var ge__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'dict'");
 }
 var ge__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'orderedset'");
 }
 var ge__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'ordereddict'");
 }
 var ge__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'long_double' and 'graph'");
 }
 var ge__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'none'");
 }
 var ge__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -17154,7 +17154,7 @@ var ge__uint__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la >= lb);
 }
 var ge__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'string'");
 }
 var ge__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -17197,25 +17197,25 @@ var ge__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la >= lb);
 }
 var ge__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'list'");
 }
 var ge__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'set'");
 }
 var ge__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'dict'");
 }
 var ge__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'orderedset'");
 }
 var ge__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'ordereddict'");
 }
 var ge__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'uint' and 'graph'");
 }
 var ge__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'none'");
 }
 var ge__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -17228,7 +17228,7 @@ var ge__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la >= lb);
 }
 var ge__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'string'");
 }
 var ge__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -17271,25 +17271,25 @@ var ge__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la >= lb);
 }
 var ge__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'list'");
 }
 var ge__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'set'");
 }
 var ge__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'dict'");
 }
 var ge__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'orderedset'");
 }
 var ge__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'ordereddict'");
 }
 var ge__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong' and 'graph'");
 }
 var ge__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'none'");
 }
 var ge__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -17302,7 +17302,7 @@ var ge__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la >= lb);
 }
 var ge__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'string'");
 }
 var ge__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -17345,58 +17345,58 @@ var ge__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     return var(la >= lb);
 }
 var ge__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'list'");
 }
 var ge__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'set'");
 }
 var ge__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'dict'");
 }
 var ge__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'orderedset'");
 }
 var ge__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'ordereddict'");
 }
 var ge__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ulong_long' and 'graph'");
 }
 var ge__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'none'");
 }
 var ge__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'int'");
 }
 var ge__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'float'");
 }
 var ge__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'string'");
 }
 var ge__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'bool'");
 }
 var ge__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'double'");
 }
 var ge__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'long'");
 }
 var ge__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'long_long'");
 }
 var ge__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'long_double'");
 }
 var ge__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'uint'");
 }
 var ge__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'ulong'");
 }
 var ge__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'ulong_long'");
 }
 var ge__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &lst1 = a.var_get<pythonic::vars::List>();
@@ -17404,58 +17404,58 @@ var ge__list__list(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(!std::lexicographical_compare(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var ge__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'set'");
 }
 var ge__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'dict'");
 }
 var ge__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'orderedset'");
 }
 var ge__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'ordereddict'");
 }
 var ge__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'list' and 'graph'");
 }
 var ge__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'none'");
 }
 var ge__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'int'");
 }
 var ge__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'float'");
 }
 var ge__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'string'");
 }
 var ge__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'bool'");
 }
 var ge__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'double'");
 }
 var ge__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'long'");
 }
 var ge__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'long_long'");
 }
 var ge__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'long_double'");
 }
 var ge__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'uint'");
 }
 var ge__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'ulong'");
 }
 var ge__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'ulong_long'");
 }
 var ge__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'list'");
 }
 var ge__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::Set>();
@@ -17466,115 +17466,115 @@ var ge__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy
     return var(true);
 }
 var ge__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'dict'");
 }
 var ge__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'orderedset'");
 }
 var ge__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'ordereddict'");
 }
 var ge__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'set' and 'graph'");
 }
 var ge__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'none'");
 }
 var ge__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'int'");
 }
 var ge__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'float'");
 }
 var ge__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'string'");
 }
 var ge__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'bool'");
 }
 var ge__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'double'");
 }
 var ge__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'long'");
 }
 var ge__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'long_long'");
 }
 var ge__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'long_double'");
 }
 var ge__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'uint'");
 }
 var ge__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'ulong'");
 }
 var ge__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'ulong_long'");
 }
 var ge__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'list'");
 }
 var ge__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'set'");
 }
 var ge__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'dict'");
 }
 var ge__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'orderedset'");
 }
 var ge__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'ordereddict'");
 }
 var ge__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'dict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'dict' and 'graph'");
 }
 var ge__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'none'");
 }
 var ge__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'int'");
 }
 var ge__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'float'");
 }
 var ge__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'string'");
 }
 var ge__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'bool'");
 }
 var ge__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'double'");
 }
 var ge__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'long'");
 }
 var ge__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'long_long'");
 }
 var ge__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'long_double'");
 }
 var ge__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'uint'");
 }
 var ge__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'ulong'");
 }
 var ge__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'ulong_long'");
 }
 var ge__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'list'");
 }
 var ge__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'set'");
 }
 var ge__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'dict'");
 }
 var ge__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
@@ -17582,58 +17582,58 @@ var ge__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::O
     return var(!std::lexicographical_compare(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var ge__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'ordereddict'");
 }
 var ge__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'orderedset' and 'graph'");
 }
 var ge__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'none'");
 }
 var ge__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'int'");
 }
 var ge__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'float'");
 }
 var ge__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'string'");
 }
 var ge__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'bool'");
 }
 var ge__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'double'");
 }
 var ge__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'long'");
 }
 var ge__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'long_long'");
 }
 var ge__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'long_double'");
 }
 var ge__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'uint'");
 }
 var ge__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'ulong'");
 }
 var ge__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'ulong_long'");
 }
 var ge__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'list'");
 }
 var ge__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'set'");
 }
 var ge__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'dict'");
 }
 var ge__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'orderedset'");
 }
 var ge__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
@@ -17641,120 +17641,120 @@ var ge__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow:
     return var(!std::lexicographical_compare(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var ge__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'ordereddict' and 'graph'");
 }
 var ge__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'none'");
 }
 var ge__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'int'");
 }
 var ge__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'float'");
 }
 var ge__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'string'");
 }
 var ge__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'bool'");
 }
 var ge__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'double'");
 }
 var ge__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'long'");
 }
 var ge__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'long_long'");
 }
 var ge__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'long_double'");
 }
 var ge__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'uint'");
 }
 var ge__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'ulong'");
 }
 var ge__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'ulong_long'");
 }
 var ge__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'list'");
 }
 var ge__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'set'");
 }
 var ge__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'dict'");
 }
 var ge__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'orderedset'");
 }
 var ge__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'ordereddict'");
 }
 var ge__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'graph' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >=: 'graph' and 'graph'");
 }
 
 // Stub definitions for lt
 var lt__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'none'");
 }
 var lt__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'int'");
 }
 var lt__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'float'");
 }
 var lt__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'string'");
 }
 var lt__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'bool'");
 }
 var lt__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'double'");
 }
 var lt__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'long'");
 }
 var lt__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'long_long'");
 }
 var lt__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'long_double'");
 }
 var lt__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'uint'");
 }
 var lt__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'ulong'");
 }
 var lt__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'ulong_long'");
 }
 var lt__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'list'");
 }
 var lt__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'set'");
 }
 var lt__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'dict'");
 }
 var lt__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'orderedset'");
 }
 var lt__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'ordereddict'");
 }
 var lt__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'none' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'none' and 'graph'");
 }
 var lt__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'none'");
 }
 var lt__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -17767,7 +17767,7 @@ var lt__int__float(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(la < lb);
 }
 var lt__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'string'");
 }
 var lt__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -17810,25 +17810,25 @@ var lt__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow
     return var(la < lb);
 }
 var lt__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'list'");
 }
 var lt__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'set'");
 }
 var lt__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'dict'");
 }
 var lt__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'orderedset'");
 }
 var lt__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'ordereddict'");
 }
 var lt__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'int' and 'graph'");
 }
 var lt__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'none'");
 }
 var lt__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -17841,7 +17841,7 @@ var lt__float__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la < lb);
 }
 var lt__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'string'");
 }
 var lt__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -17884,79 +17884,79 @@ var lt__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la < lb);
 }
 var lt__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'list'");
 }
 var lt__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'set'");
 }
 var lt__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'dict'");
 }
 var lt__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'orderedset'");
 }
 var lt__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'ordereddict'");
 }
 var lt__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'float' and 'graph'");
 }
 var lt__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'none'");
 }
 var lt__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'int'");
 }
 var lt__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'float'");
 }
 var lt__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     return var(a.var_get<std::string>() < b.var_get<std::string>());
 }
 var lt__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'bool'");
 }
 var lt__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'double'");
 }
 var lt__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'long'");
 }
 var lt__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'long_long'");
 }
 var lt__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'long_double'");
 }
 var lt__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'uint'");
 }
 var lt__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'ulong'");
 }
 var lt__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'ulong_long'");
 }
 var lt__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'list'");
 }
 var lt__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'set'");
 }
 var lt__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'dict'");
 }
 var lt__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'orderedset'");
 }
 var lt__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'ordereddict'");
 }
 var lt__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'string' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'string' and 'graph'");
 }
 var lt__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'none'");
 }
 var lt__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -17969,7 +17969,7 @@ var lt__bool__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la < lb);
 }
 var lt__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'string'");
 }
 var lt__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -18012,25 +18012,25 @@ var lt__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la < lb);
 }
 var lt__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'list'");
 }
 var lt__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'set'");
 }
 var lt__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'dict'");
 }
 var lt__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'orderedset'");
 }
 var lt__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'ordereddict'");
 }
 var lt__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'bool' and 'graph'");
 }
 var lt__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'none'");
 }
 var lt__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -18043,7 +18043,7 @@ var lt__double__float(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(la < lb);
 }
 var lt__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'string'");
 }
 var lt__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -18086,25 +18086,25 @@ var lt__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overf
     return var(la < lb);
 }
 var lt__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'list'");
 }
 var lt__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'set'");
 }
 var lt__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'dict'");
 }
 var lt__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'orderedset'");
 }
 var lt__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'ordereddict'");
 }
 var lt__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'double' and 'graph'");
 }
 var lt__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'none'");
 }
 var lt__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -18117,7 +18117,7 @@ var lt__long__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la < lb);
 }
 var lt__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'string'");
 }
 var lt__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -18160,25 +18160,25 @@ var lt__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la < lb);
 }
 var lt__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'list'");
 }
 var lt__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'set'");
 }
 var lt__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'dict'");
 }
 var lt__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'orderedset'");
 }
 var lt__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'ordereddict'");
 }
 var lt__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long' and 'graph'");
 }
 var lt__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'none'");
 }
 var lt__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -18191,7 +18191,7 @@ var lt__long_long__float(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la < lb);
 }
 var lt__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'string'");
 }
 var lt__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -18234,25 +18234,25 @@ var lt__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Ov
     return var(la < lb);
 }
 var lt__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'list'");
 }
 var lt__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'set'");
 }
 var lt__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'dict'");
 }
 var lt__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'orderedset'");
 }
 var lt__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'ordereddict'");
 }
 var lt__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_long' and 'graph'");
 }
 var lt__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'none'");
 }
 var lt__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -18265,7 +18265,7 @@ var lt__long_double__float(const var& a, const var& b, pythonic::overflow::Overf
     return var(la < lb);
 }
 var lt__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'string'");
 }
 var lt__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -18308,25 +18308,25 @@ var lt__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::
     return var(la < lb);
 }
 var lt__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'list'");
 }
 var lt__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'set'");
 }
 var lt__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'dict'");
 }
 var lt__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'orderedset'");
 }
 var lt__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'ordereddict'");
 }
 var lt__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'long_double' and 'graph'");
 }
 var lt__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'none'");
 }
 var lt__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -18339,7 +18339,7 @@ var lt__uint__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la < lb);
 }
 var lt__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'string'");
 }
 var lt__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -18382,25 +18382,25 @@ var lt__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la < lb);
 }
 var lt__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'list'");
 }
 var lt__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'set'");
 }
 var lt__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'dict'");
 }
 var lt__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'orderedset'");
 }
 var lt__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'ordereddict'");
 }
 var lt__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'uint' and 'graph'");
 }
 var lt__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'none'");
 }
 var lt__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -18413,7 +18413,7 @@ var lt__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la < lb);
 }
 var lt__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'string'");
 }
 var lt__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -18456,25 +18456,25 @@ var lt__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la < lb);
 }
 var lt__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'list'");
 }
 var lt__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'set'");
 }
 var lt__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'dict'");
 }
 var lt__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'orderedset'");
 }
 var lt__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'ordereddict'");
 }
 var lt__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong' and 'graph'");
 }
 var lt__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'none'");
 }
 var lt__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -18487,7 +18487,7 @@ var lt__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la < lb);
 }
 var lt__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'string'");
 }
 var lt__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -18530,58 +18530,58 @@ var lt__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     return var(la < lb);
 }
 var lt__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'list'");
 }
 var lt__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'set'");
 }
 var lt__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'dict'");
 }
 var lt__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'orderedset'");
 }
 var lt__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'ordereddict'");
 }
 var lt__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ulong_long' and 'graph'");
 }
 var lt__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'none'");
 }
 var lt__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'int'");
 }
 var lt__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'float'");
 }
 var lt__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'string'");
 }
 var lt__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'bool'");
 }
 var lt__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'double'");
 }
 var lt__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'long'");
 }
 var lt__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'long_long'");
 }
 var lt__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'long_double'");
 }
 var lt__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'uint'");
 }
 var lt__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'ulong'");
 }
 var lt__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'ulong_long'");
 }
 var lt__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &lst1 = a.var_get<pythonic::vars::List>();
@@ -18589,58 +18589,58 @@ var lt__list__list(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(std::lexicographical_compare(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var lt__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'set'");
 }
 var lt__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'dict'");
 }
 var lt__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'orderedset'");
 }
 var lt__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'ordereddict'");
 }
 var lt__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'list' and 'graph'");
 }
 var lt__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'none'");
 }
 var lt__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'int'");
 }
 var lt__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'float'");
 }
 var lt__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'string'");
 }
 var lt__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'bool'");
 }
 var lt__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'double'");
 }
 var lt__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'long'");
 }
 var lt__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'long_long'");
 }
 var lt__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'long_double'");
 }
 var lt__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'uint'");
 }
 var lt__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'ulong'");
 }
 var lt__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'ulong_long'");
 }
 var lt__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'list'");
 }
 var lt__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::Set>();
@@ -18652,115 +18652,115 @@ var lt__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy
     return var(true);
 }
 var lt__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'dict'");
 }
 var lt__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'orderedset'");
 }
 var lt__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'ordereddict'");
 }
 var lt__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'set' and 'graph'");
 }
 var lt__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'none'");
 }
 var lt__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'int'");
 }
 var lt__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'float'");
 }
 var lt__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'string'");
 }
 var lt__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'bool'");
 }
 var lt__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'double'");
 }
 var lt__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'long'");
 }
 var lt__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'long_long'");
 }
 var lt__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'long_double'");
 }
 var lt__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'uint'");
 }
 var lt__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'ulong'");
 }
 var lt__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'ulong_long'");
 }
 var lt__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'list'");
 }
 var lt__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'set'");
 }
 var lt__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'dict'");
 }
 var lt__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'orderedset'");
 }
 var lt__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'ordereddict'");
 }
 var lt__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'dict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'dict' and 'graph'");
 }
 var lt__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'none'");
 }
 var lt__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'int'");
 }
 var lt__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'float'");
 }
 var lt__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'string'");
 }
 var lt__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'bool'");
 }
 var lt__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'double'");
 }
 var lt__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'long'");
 }
 var lt__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'long_long'");
 }
 var lt__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'long_double'");
 }
 var lt__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'uint'");
 }
 var lt__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'ulong'");
 }
 var lt__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'ulong_long'");
 }
 var lt__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'list'");
 }
 var lt__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'set'");
 }
 var lt__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'dict'");
 }
 var lt__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
@@ -18768,58 +18768,58 @@ var lt__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::O
     return var(std::lexicographical_compare(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var lt__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'ordereddict'");
 }
 var lt__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'orderedset' and 'graph'");
 }
 var lt__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'none'");
 }
 var lt__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'int'");
 }
 var lt__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'float'");
 }
 var lt__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'string'");
 }
 var lt__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'bool'");
 }
 var lt__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'double'");
 }
 var lt__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'long'");
 }
 var lt__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'long_long'");
 }
 var lt__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'long_double'");
 }
 var lt__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'uint'");
 }
 var lt__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'ulong'");
 }
 var lt__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'ulong_long'");
 }
 var lt__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'list'");
 }
 var lt__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'set'");
 }
 var lt__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'dict'");
 }
 var lt__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'orderedset'");
 }
 var lt__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
@@ -18827,120 +18827,120 @@ var lt__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow:
     return var(std::lexicographical_compare(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var lt__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'ordereddict' and 'graph'");
 }
 var lt__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'none'");
 }
 var lt__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'int'");
 }
 var lt__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'float'");
 }
 var lt__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'string'");
 }
 var lt__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'bool'");
 }
 var lt__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'double'");
 }
 var lt__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'long'");
 }
 var lt__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'long_long'");
 }
 var lt__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'long_double'");
 }
 var lt__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'uint'");
 }
 var lt__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'ulong'");
 }
 var lt__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'ulong_long'");
 }
 var lt__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'list'");
 }
 var lt__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'set'");
 }
 var lt__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'dict'");
 }
 var lt__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'orderedset'");
 }
 var lt__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'ordereddict'");
 }
 var lt__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'graph' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <: 'graph' and 'graph'");
 }
 
 // Stub definitions for le
 var le__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'none'");
 }
 var le__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'int'");
 }
 var le__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'float'");
 }
 var le__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'string'");
 }
 var le__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'bool'");
 }
 var le__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'double'");
 }
 var le__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'long'");
 }
 var le__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'long_long'");
 }
 var le__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'long_double'");
 }
 var le__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'uint'");
 }
 var le__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'ulong'");
 }
 var le__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'ulong_long'");
 }
 var le__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'list'");
 }
 var le__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'set'");
 }
 var le__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'dict'");
 }
 var le__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'orderedset'");
 }
 var le__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'ordereddict'");
 }
 var le__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'none' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'none' and 'graph'");
 }
 var le__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'none'");
 }
 var le__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -18953,7 +18953,7 @@ var le__int__float(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(la <= lb);
 }
 var le__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'string'");
 }
 var le__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<int>());
@@ -18996,25 +18996,25 @@ var le__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow
     return var(la <= lb);
 }
 var le__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'list'");
 }
 var le__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'set'");
 }
 var le__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'dict'");
 }
 var le__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'orderedset'");
 }
 var le__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'ordereddict'");
 }
 var le__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'int' and 'graph'");
 }
 var le__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'none'");
 }
 var le__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -19027,7 +19027,7 @@ var le__float__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la <= lb);
 }
 var le__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'string'");
 }
 var le__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     float la = static_cast<float>(a.var_get<float>());
@@ -19070,79 +19070,79 @@ var le__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la <= lb);
 }
 var le__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'list'");
 }
 var le__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'set'");
 }
 var le__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'dict'");
 }
 var le__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'orderedset'");
 }
 var le__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'ordereddict'");
 }
 var le__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'float' and 'graph'");
 }
 var le__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'none'");
 }
 var le__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'int'");
 }
 var le__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'float'");
 }
 var le__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     return var(a.var_get<std::string>() <= b.var_get<std::string>());
 }
 var le__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'bool'");
 }
 var le__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'double'");
 }
 var le__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'long'");
 }
 var le__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'long_long'");
 }
 var le__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'long_double'");
 }
 var le__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'uint'");
 }
 var le__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'ulong'");
 }
 var le__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'ulong_long'");
 }
 var le__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'list'");
 }
 var le__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'set'");
 }
 var le__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'dict'");
 }
 var le__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'orderedset'");
 }
 var le__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'ordereddict'");
 }
 var le__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'string' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'string' and 'graph'");
 }
 var le__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'none'");
 }
 var le__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -19155,7 +19155,7 @@ var le__bool__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la <= lb);
 }
 var le__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'string'");
 }
 var le__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<bool>());
@@ -19198,25 +19198,25 @@ var le__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la <= lb);
 }
 var le__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'list'");
 }
 var le__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'set'");
 }
 var le__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'dict'");
 }
 var le__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'orderedset'");
 }
 var le__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'ordereddict'");
 }
 var le__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'bool' and 'graph'");
 }
 var le__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'none'");
 }
 var le__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -19229,7 +19229,7 @@ var le__double__float(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(la <= lb);
 }
 var le__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'string'");
 }
 var le__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -19272,25 +19272,25 @@ var le__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overf
     return var(la <= lb);
 }
 var le__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'list'");
 }
 var le__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'set'");
 }
 var le__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'dict'");
 }
 var le__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'orderedset'");
 }
 var le__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'ordereddict'");
 }
 var le__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'double' and 'graph'");
 }
 var le__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'none'");
 }
 var le__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -19303,7 +19303,7 @@ var le__long__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la <= lb);
 }
 var le__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'string'");
 }
 var le__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long la = static_cast<long>(a.var_get<long>());
@@ -19346,25 +19346,25 @@ var le__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la <= lb);
 }
 var le__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'list'");
 }
 var le__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'set'");
 }
 var le__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'dict'");
 }
 var le__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'orderedset'");
 }
 var le__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'ordereddict'");
 }
 var le__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long' and 'graph'");
 }
 var le__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'none'");
 }
 var le__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -19377,7 +19377,7 @@ var le__long_long__float(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la <= lb);
 }
 var le__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'string'");
 }
 var le__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long long la = static_cast<long long>(a.var_get<long long>());
@@ -19420,25 +19420,25 @@ var le__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Ov
     return var(la <= lb);
 }
 var le__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'list'");
 }
 var le__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'set'");
 }
 var le__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'dict'");
 }
 var le__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'orderedset'");
 }
 var le__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'ordereddict'");
 }
 var le__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_long' and 'graph'");
 }
 var le__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'none'");
 }
 var le__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -19451,7 +19451,7 @@ var le__long_double__float(const var& a, const var& b, pythonic::overflow::Overf
     return var(la <= lb);
 }
 var le__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'string'");
 }
 var le__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -19494,25 +19494,25 @@ var le__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::
     return var(la <= lb);
 }
 var le__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'list'");
 }
 var le__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'set'");
 }
 var le__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'dict'");
 }
 var le__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'orderedset'");
 }
 var le__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'ordereddict'");
 }
 var le__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'long_double' and 'graph'");
 }
 var le__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'none'");
 }
 var le__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -19525,7 +19525,7 @@ var le__uint__float(const var& a, const var& b, pythonic::overflow::Overflow pol
     return var(la <= lb);
 }
 var le__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'string'");
 }
 var le__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     int la = static_cast<int>(a.var_get<unsigned int>());
@@ -19568,25 +19568,25 @@ var le__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     return var(la <= lb);
 }
 var le__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'list'");
 }
 var le__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'set'");
 }
 var le__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'dict'");
 }
 var le__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'orderedset'");
 }
 var le__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'ordereddict'");
 }
 var le__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'uint' and 'graph'");
 }
 var le__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'none'");
 }
 var le__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -19599,7 +19599,7 @@ var le__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(la <= lb);
 }
 var le__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'string'");
 }
 var le__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
@@ -19642,25 +19642,25 @@ var le__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la <= lb);
 }
 var le__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'list'");
 }
 var le__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'set'");
 }
 var le__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'dict'");
 }
 var le__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'orderedset'");
 }
 var le__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'ordereddict'");
 }
 var le__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong' and 'graph'");
 }
 var le__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'none'");
 }
 var le__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -19673,7 +19673,7 @@ var le__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overfl
     return var(la <= lb);
 }
 var le__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'string'");
 }
 var le__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
@@ -19716,58 +19716,58 @@ var le__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     return var(la <= lb);
 }
 var le__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'list'");
 }
 var le__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'set'");
 }
 var le__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'dict'");
 }
 var le__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'orderedset'");
 }
 var le__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'ordereddict'");
 }
 var le__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ulong_long' and 'graph'");
 }
 var le__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'none'");
 }
 var le__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'int'");
 }
 var le__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'float'");
 }
 var le__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'string'");
 }
 var le__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'bool'");
 }
 var le__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'double'");
 }
 var le__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'long'");
 }
 var le__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'long_long'");
 }
 var le__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'long_double'");
 }
 var le__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'uint'");
 }
 var le__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'ulong'");
 }
 var le__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'ulong_long'");
 }
 var le__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &lst1 = a.var_get<pythonic::vars::List>();
@@ -19775,58 +19775,58 @@ var le__list__list(const var& a, const var& b, pythonic::overflow::Overflow poli
     return var(!std::lexicographical_compare(lst2.begin(), lst2.end(), lst1.begin(), lst1.end()));
 }
 var le__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'set'");
 }
 var le__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'dict'");
 }
 var le__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'orderedset'");
 }
 var le__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'ordereddict'");
 }
 var le__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'list' and 'graph'");
 }
 var le__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'none'");
 }
 var le__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'int'");
 }
 var le__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'float'");
 }
 var le__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'string'");
 }
 var le__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'bool'");
 }
 var le__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'double'");
 }
 var le__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'long'");
 }
 var le__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'long_long'");
 }
 var le__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'long_double'");
 }
 var le__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'uint'");
 }
 var le__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'ulong'");
 }
 var le__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'ulong_long'");
 }
 var le__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'list'");
 }
 var le__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::Set>();
@@ -19837,115 +19837,115 @@ var le__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy
     return var(true);
 }
 var le__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'dict'");
 }
 var le__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'orderedset'");
 }
 var le__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'ordereddict'");
 }
 var le__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'set' and 'graph'");
 }
 var le__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'none'");
 }
 var le__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'int'");
 }
 var le__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'float'");
 }
 var le__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'string'");
 }
 var le__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'bool'");
 }
 var le__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'double'");
 }
 var le__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'long'");
 }
 var le__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'long_long'");
 }
 var le__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'long_double'");
 }
 var le__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'uint'");
 }
 var le__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'ulong'");
 }
 var le__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'ulong_long'");
 }
 var le__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'list'");
 }
 var le__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'set'");
 }
 var le__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'dict'");
 }
 var le__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'orderedset'");
 }
 var le__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'ordereddict'");
 }
 var le__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'dict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'dict' and 'graph'");
 }
 var le__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'none'");
 }
 var le__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'int'");
 }
 var le__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'float'");
 }
 var le__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'string'");
 }
 var le__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'bool'");
 }
 var le__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'double'");
 }
 var le__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'long'");
 }
 var le__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'long_long'");
 }
 var le__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'long_double'");
 }
 var le__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'uint'");
 }
 var le__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'ulong'");
 }
 var le__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'ulong_long'");
 }
 var le__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'list'");
 }
 var le__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'set'");
 }
 var le__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'dict'");
 }
 var le__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
@@ -19953,58 +19953,58 @@ var le__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::O
     return var(!std::lexicographical_compare(set2.begin(), set2.end(), set1.begin(), set1.end()));
 }
 var le__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'ordereddict'");
 }
 var le__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'orderedset' and 'graph'");
 }
 var le__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'none'");
 }
 var le__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'int'");
 }
 var le__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'float'");
 }
 var le__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'string'");
 }
 var le__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'bool'");
 }
 var le__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'double'");
 }
 var le__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'long'");
 }
 var le__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'long_long'");
 }
 var le__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'long_double'");
 }
 var le__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'uint'");
 }
 var le__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'ulong'");
 }
 var le__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'ulong_long'");
 }
 var le__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'list'");
 }
 var le__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'set'");
 }
 var le__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'dict'");
 }
 var le__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'orderedset'");
 }
 var le__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
@@ -20012,4931 +20012,5571 @@ var le__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow:
     return var(!std::lexicographical_compare(dict2.begin(), dict2.end(), dict1.begin(), dict1.end()));
 }
 var le__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'ordereddict' and 'graph'");
 }
 var le__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'none'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'none'");
 }
 var le__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'int'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'int'");
 }
 var le__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'float'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'float'");
 }
 var le__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'string'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'string'");
 }
 var le__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'bool'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'bool'");
 }
 var le__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'double'");
 }
 var le__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'long'");
 }
 var le__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'long_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'long_long'");
 }
 var le__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'long_double'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'long_double'");
 }
 var le__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'uint'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'uint'");
 }
 var le__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'ulong'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'ulong'");
 }
 var le__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'ulong_long'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'ulong_long'");
 }
 var le__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'list'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'list'");
 }
 var le__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'set'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'set'");
 }
 var le__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'dict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'dict'");
 }
 var le__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'orderedset'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'orderedset'");
 }
 var le__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'ordereddict'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'ordereddict'");
 }
 var le__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'graph' and 'graph'");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <=: 'graph' and 'graph'");
 }
 
 // Stub definitions for band
 var band__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'none'");
 }
 var band__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'int'");
 }
 var band__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'float'");
 }
 var band__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'string'");
 }
 var band__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'bool'");
 }
 var band__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'double'");
 }
 var band__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'long'");
 }
 var band__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'long_long'");
 }
 var band__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'long_double'");
 }
 var band__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'uint'");
 }
 var band__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'ulong'");
 }
 var band__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'ulong_long'");
 }
 var band__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'list'");
 }
 var band__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'set'");
 }
 var band__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'dict'");
 }
 var band__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'orderedset'");
 }
 var band__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'ordereddict'");
 }
 var band__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for none and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'none' and 'graph'");
 }
 var band__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'none'");
 }
 var band__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and int");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__int__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'float'");
 }
 var band__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'string'");
 }
 var band__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and bool");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'double'");
 }
 var band__int__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and long");
+    long la = static_cast<long>(a.var_get<int>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and long_long");
+    long long la = static_cast<long long>(a.var_get<int>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__int__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'long_double'");
 }
 var band__int__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'list'");
 }
 var band__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'set'");
 }
 var band__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'dict'");
 }
 var band__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'orderedset'");
 }
 var band__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'ordereddict'");
 }
 var band__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for int and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'int' and 'graph'");
 }
 var band__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'none'");
 }
 var band__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'int'");
 }
 var band__float__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'float'");
 }
 var band__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'string'");
 }
 var band__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'bool'");
 }
 var band__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'double'");
 }
 var band__float__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'long'");
 }
 var band__float__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'long_long'");
 }
 var band__float__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'long_double'");
 }
 var band__float__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'uint'");
 }
 var band__float__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'ulong'");
 }
 var band__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'ulong_long'");
 }
 var band__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'list'");
 }
 var band__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'set'");
 }
 var band__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'dict'");
 }
 var band__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'orderedset'");
 }
 var band__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'ordereddict'");
 }
 var band__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for float and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'float' and 'graph'");
 }
 var band__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'none'");
 }
 var band__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'int'");
 }
 var band__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'float'");
 }
 var band__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'string'");
 }
 var band__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'bool'");
 }
 var band__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'double'");
 }
 var band__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'long'");
 }
 var band__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'long_long'");
 }
 var band__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'long_double'");
 }
 var band__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'uint'");
 }
 var band__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'ulong'");
 }
 var band__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'ulong_long'");
 }
 var band__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'list'");
 }
 var band__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'set'");
 }
 var band__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'dict'");
 }
 var band__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'orderedset'");
 }
 var band__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'ordereddict'");
 }
 var band__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for string and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'string' and 'graph'");
 }
 var band__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'none'");
 }
 var band__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and int");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'float'");
 }
 var band__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'string'");
 }
 var band__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and bool");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'double'");
 }
 var band__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and long");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and long_long");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'long_double'");
 }
 var band__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<bool>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'list'");
 }
 var band__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'set'");
 }
 var band__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'dict'");
 }
 var band__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'orderedset'");
 }
 var band__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'ordereddict'");
 }
 var band__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for bool and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'graph'");
 }
 var band__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'none'");
 }
 var band__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'int'");
 }
 var band__double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'float'");
 }
 var band__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'string'");
 }
 var band__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'bool'");
 }
 var band__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'double'");
 }
 var band__double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'long'");
 }
 var band__double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'long_long'");
 }
 var band__double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'long_double'");
 }
 var band__double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'uint'");
 }
 var band__double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'ulong'");
 }
 var band__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'ulong_long'");
 }
 var band__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'list'");
 }
 var band__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'set'");
 }
 var band__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'dict'");
 }
 var band__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'orderedset'");
 }
 var band__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'ordereddict'");
 }
 var band__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'double' and 'graph'");
 }
 var band__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'none'");
 }
 var band__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and int");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'float'");
 }
 var band__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'string'");
 }
 var band__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and bool");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'double'");
 }
 var band__long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and long");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and long_long");
+    long long la = static_cast<long long>(a.var_get<long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'long_double'");
 }
 var band__long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'list'");
 }
 var band__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'set'");
 }
 var band__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'dict'");
 }
 var band__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'orderedset'");
 }
 var band__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'ordereddict'");
 }
 var band__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long' and 'graph'");
 }
 var band__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'none'");
 }
 var band__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and int");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__long_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'float'");
 }
 var band__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'string'");
 }
 var band__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and bool");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'double'");
 }
 var band__long_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__long_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and long_long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__long_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'long_double'");
 }
 var band__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'list'");
 }
 var band__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'set'");
 }
 var band__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'dict'");
 }
 var band__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'orderedset'");
 }
 var band__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'ordereddict'");
 }
 var band__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_long' and 'graph'");
 }
 var band__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'none'");
 }
 var band__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'int'");
 }
 var band__long_double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'float'");
 }
 var band__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'string'");
 }
 var band__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'bool'");
 }
 var band__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'double'");
 }
 var band__long_double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'long'");
 }
 var band__long_double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'long_long'");
 }
 var band__long_double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'long_double'");
 }
 var band__long_double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'uint'");
 }
 var band__long_double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'ulong'");
 }
 var band__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'ulong_long'");
 }
 var band__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'list'");
 }
 var band__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'set'");
 }
 var band__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'dict'");
 }
 var band__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'orderedset'");
 }
 var band__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'ordereddict'");
 }
 var band__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for long_double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'long_double' and 'graph'");
 }
 var band__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'none'");
 }
 var band__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and int");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__uint__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'float'");
 }
 var band__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'string'");
 }
 var band__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and bool");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'double'");
 }
 var band__uint__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and long_long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__uint__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'long_double'");
 }
 var band__uint__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__uint__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'list'");
 }
 var band__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'set'");
 }
 var band__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'dict'");
 }
 var band__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'orderedset'");
 }
 var band__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'ordereddict'");
 }
 var band__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for uint and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'uint' and 'graph'");
 }
 var band__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'none'");
 }
 var band__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and int");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'float'");
 }
 var band__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'string'");
 }
 var band__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and bool");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'double'");
 }
 var band__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and long_long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__ulong__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'long_double'");
 }
 var band__ulong__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and uint");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__ulong__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'list'");
 }
 var band__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'set'");
 }
 var band__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'dict'");
 }
 var band__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'orderedset'");
 }
 var band__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'ordereddict'");
 }
 var band__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong' and 'graph'");
 }
 var band__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'none'");
 }
 var band__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and int");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<int>());
+    return var(la & lb);
 }
 var band__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'float'");
 }
 var band__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'string'");
 }
 var band__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and bool");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la & lb);
 }
 var band__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'double'");
 }
 var band__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long>());
+    return var(la & lb);
 }
 var band__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and long_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long long>());
+    return var(la & lb);
 }
 var band__ulong_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'long_double'");
 }
 var band__ulong_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and uint");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned int>());
+    return var(la & lb);
 }
 var band__ulong_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and ulong");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long>());
+    return var(la & lb);
 }
 var band__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la & lb);
 }
 var band__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'list'");
 }
 var band__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'set'");
 }
 var band__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'dict'");
 }
 var band__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'orderedset'");
 }
 var band__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'ordereddict'");
 }
 var band__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ulong_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ulong_long' and 'graph'");
 }
 var band__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'none'");
 }
 var band__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'int'");
 }
 var band__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'float'");
 }
 var band__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'string'");
 }
 var band__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'bool'");
 }
 var band__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'double'");
 }
 var band__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'long'");
 }
 var band__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'long_long'");
 }
 var band__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'long_double'");
 }
 var band__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'uint'");
 }
 var band__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'ulong'");
 }
 var band__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'ulong_long'");
 }
 var band__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and list");
+    const auto &lhs = a.var_get<pythonic::vars::List>();
+    const auto &rhs = b.var_get<pythonic::vars::List>();
+    pythonic::vars::List result;
+    pythonic::vars::Set rhs_set(rhs.begin(), rhs.end());
+    for (const auto &item : lhs) {
+        if (rhs_set.find(item) != rhs_set.end()) {
+            result.push_back(item);
+        }
+    }
+    return var(std::move(result));
 }
 var band__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'set'");
 }
 var band__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'dict'");
 }
 var band__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'orderedset'");
 }
 var band__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'ordereddict'");
 }
 var band__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for list and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'list' and 'graph'");
 }
 var band__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'none'");
 }
 var band__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'int'");
 }
 var band__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'float'");
 }
 var band__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'string'");
 }
 var band__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'bool'");
 }
 var band__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'double'");
 }
 var band__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'long'");
 }
 var band__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'long_long'");
 }
 var band__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'long_double'");
 }
 var band__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'uint'");
 }
 var band__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'ulong'");
 }
 var band__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'ulong_long'");
 }
 var band__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'list'");
 }
 var band__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and set");
+    const auto &lhs = a.var_get<pythonic::vars::Set>();
+    const auto &rhs = b.var_get<pythonic::vars::Set>();
+    pythonic::vars::Set result;
+    for (const auto &item : lhs) {
+        if (rhs.find(item) != rhs.end()) {
+            result.insert(item);
+        }
+    }
+    return var(std::move(result));
 }
 var band__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'dict'");
 }
 var band__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'orderedset'");
 }
 var band__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'ordereddict'");
 }
 var band__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for set and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'set' and 'graph'");
 }
 var band__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'none'");
 }
 var band__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'int'");
 }
 var band__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'float'");
 }
 var band__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'string'");
 }
 var band__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'bool'");
 }
 var band__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'double'");
 }
 var band__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'long'");
 }
 var band__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'long_long'");
 }
 var band__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'long_double'");
 }
 var band__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'uint'");
 }
 var band__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'ulong'");
 }
 var band__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'ulong_long'");
 }
 var band__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'list'");
 }
 var band__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'set'");
 }
 var band__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and dict");
+    const auto &lhs = a.var_get<pythonic::vars::Dict>();
+    const auto &rhs = b.var_get<pythonic::vars::Dict>();
+    pythonic::vars::Dict result;
+    for (const auto &[key, val] : lhs) {
+        if (rhs.find(key) != rhs.end()) {
+            result[key] = val;
+        }
+    }
+    return var(std::move(result));
 }
 var band__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'orderedset'");
 }
 var band__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'ordereddict'");
 }
 var band__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for dict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'dict' and 'graph'");
 }
 var band__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'none'");
 }
 var band__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'int'");
 }
 var band__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'float'");
 }
 var band__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'string'");
 }
 var band__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'bool'");
 }
 var band__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'double'");
 }
 var band__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'long'");
 }
 var band__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'long_long'");
 }
 var band__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'long_double'");
 }
 var band__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'uint'");
 }
 var band__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'ulong'");
 }
 var band__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'ulong_long'");
 }
 var band__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'list'");
 }
 var band__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'set'");
 }
 var band__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'dict'");
 }
 var band__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and orderedset");
+    const auto &lhs = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &rhs = b.var_get<pythonic::vars::OrderedSet>();
+    pythonic::vars::OrderedSet result;
+    auto it_lhs = lhs.begin();
+    auto it_rhs = rhs.begin();
+    while (it_lhs != lhs.end() && it_rhs != rhs.end()) {
+        if (*it_lhs < *it_rhs) {
+            ++it_lhs;
+        } else if (*it_rhs < *it_lhs) {
+            ++it_rhs;
+        } else {
+            result.insert(*it_lhs);
+            ++it_lhs;
+            ++it_rhs;
+        }
+    }
+    return var(std::move(result));
 }
 var band__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'ordereddict'");
 }
 var band__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for orderedset and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'orderedset' and 'graph'");
 }
 var band__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'none'");
 }
 var band__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'int'");
 }
 var band__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'float'");
 }
 var band__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'string'");
 }
 var band__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'bool'");
 }
 var band__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'double'");
 }
 var band__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'long'");
 }
 var band__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'long_long'");
 }
 var band__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'long_double'");
 }
 var band__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'uint'");
 }
 var band__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'ulong'");
 }
 var band__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'ulong_long'");
 }
 var band__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'list'");
 }
 var band__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'set'");
 }
 var band__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'dict'");
 }
 var band__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'orderedset'");
 }
 var band__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and ordereddict");
+    const auto &lhs = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &rhs = b.var_get<pythonic::vars::OrderedDict>();
+    pythonic::vars::OrderedDict result;
+    for (const auto &[key, val] : lhs) {
+        if (rhs.find(key) != rhs.end()) {
+            result[key] = val;
+        }
+    }
+    return var(std::move(result));
 }
 var band__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for ordereddict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'ordereddict' and 'graph'");
 }
 var band__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'none'");
 }
 var band__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'int'");
 }
 var band__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'float'");
 }
 var band__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'string'");
 }
 var band__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'bool'");
 }
 var band__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'double'");
 }
 var band__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'long'");
 }
 var band__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'long_long'");
 }
 var band__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'long_double'");
 }
 var band__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'uint'");
 }
 var band__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'ulong'");
 }
 var band__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'ulong_long'");
 }
 var band__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'list'");
 }
 var band__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'set'");
 }
 var band__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'dict'");
 }
 var band__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'orderedset'");
 }
 var band__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'ordereddict'");
 }
 var band__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: band for graph and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'graph' and 'graph'");
 }
 
 // Stub definitions for bor
 var bor__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'none'");
 }
 var bor__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'int'");
 }
 var bor__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'float'");
 }
 var bor__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'string'");
 }
 var bor__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'bool'");
 }
 var bor__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'double'");
 }
 var bor__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'long'");
 }
 var bor__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'long_long'");
 }
 var bor__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'long_double'");
 }
 var bor__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'uint'");
 }
 var bor__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'ulong'");
 }
 var bor__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'ulong_long'");
 }
 var bor__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'list'");
 }
 var bor__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'set'");
 }
 var bor__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'dict'");
 }
 var bor__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'orderedset'");
 }
 var bor__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'ordereddict'");
 }
 var bor__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for none and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'none' and 'graph'");
 }
 var bor__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'none'");
 }
 var bor__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and int");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__int__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'float'");
 }
 var bor__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'string'");
 }
 var bor__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and bool");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'double'");
 }
 var bor__int__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and long");
+    long la = static_cast<long>(a.var_get<int>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and long_long");
+    long long la = static_cast<long long>(a.var_get<int>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__int__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'long_double'");
 }
 var bor__int__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'list'");
 }
 var bor__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'set'");
 }
 var bor__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'dict'");
 }
 var bor__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'orderedset'");
 }
 var bor__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'ordereddict'");
 }
 var bor__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for int and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'int' and 'graph'");
 }
 var bor__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'none'");
 }
 var bor__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'int'");
 }
 var bor__float__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'float'");
 }
 var bor__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'string'");
 }
 var bor__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'bool'");
 }
 var bor__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'double'");
 }
 var bor__float__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'long'");
 }
 var bor__float__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'long_long'");
 }
 var bor__float__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'long_double'");
 }
 var bor__float__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'uint'");
 }
 var bor__float__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'ulong'");
 }
 var bor__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'ulong_long'");
 }
 var bor__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'list'");
 }
 var bor__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'set'");
 }
 var bor__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'dict'");
 }
 var bor__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'orderedset'");
 }
 var bor__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'ordereddict'");
 }
 var bor__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for float and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'float' and 'graph'");
 }
 var bor__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'none'");
 }
 var bor__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'int'");
 }
 var bor__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'float'");
 }
 var bor__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'string'");
 }
 var bor__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'bool'");
 }
 var bor__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'double'");
 }
 var bor__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'long'");
 }
 var bor__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'long_long'");
 }
 var bor__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'long_double'");
 }
 var bor__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'uint'");
 }
 var bor__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'ulong'");
 }
 var bor__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'ulong_long'");
 }
 var bor__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'list'");
 }
 var bor__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'set'");
 }
 var bor__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'dict'");
 }
 var bor__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'orderedset'");
 }
 var bor__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'ordereddict'");
 }
 var bor__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for string and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'string' and 'graph'");
 }
 var bor__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'none'");
 }
 var bor__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and int");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'float'");
 }
 var bor__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'string'");
 }
 var bor__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and bool");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'double'");
 }
 var bor__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and long");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and long_long");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'long_double'");
 }
 var bor__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<bool>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'list'");
 }
 var bor__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'set'");
 }
 var bor__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'dict'");
 }
 var bor__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'orderedset'");
 }
 var bor__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'ordereddict'");
 }
 var bor__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for bool and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'graph'");
 }
 var bor__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'none'");
 }
 var bor__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'int'");
 }
 var bor__double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'float'");
 }
 var bor__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'string'");
 }
 var bor__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'bool'");
 }
 var bor__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'double'");
 }
 var bor__double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'long'");
 }
 var bor__double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'long_long'");
 }
 var bor__double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'long_double'");
 }
 var bor__double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'uint'");
 }
 var bor__double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'ulong'");
 }
 var bor__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'ulong_long'");
 }
 var bor__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'list'");
 }
 var bor__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'set'");
 }
 var bor__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'dict'");
 }
 var bor__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'orderedset'");
 }
 var bor__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'ordereddict'");
 }
 var bor__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'double' and 'graph'");
 }
 var bor__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'none'");
 }
 var bor__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and int");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'float'");
 }
 var bor__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'string'");
 }
 var bor__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and bool");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'double'");
 }
 var bor__long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and long");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and long_long");
+    long long la = static_cast<long long>(a.var_get<long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'long_double'");
 }
 var bor__long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'list'");
 }
 var bor__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'set'");
 }
 var bor__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'dict'");
 }
 var bor__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'orderedset'");
 }
 var bor__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'ordereddict'");
 }
 var bor__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long' and 'graph'");
 }
 var bor__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'none'");
 }
 var bor__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and int");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__long_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'float'");
 }
 var bor__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'string'");
 }
 var bor__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and bool");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'double'");
 }
 var bor__long_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__long_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and long_long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__long_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'long_double'");
 }
 var bor__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'list'");
 }
 var bor__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'set'");
 }
 var bor__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'dict'");
 }
 var bor__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'orderedset'");
 }
 var bor__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'ordereddict'");
 }
 var bor__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_long' and 'graph'");
 }
 var bor__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'none'");
 }
 var bor__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'int'");
 }
 var bor__long_double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'float'");
 }
 var bor__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'string'");
 }
 var bor__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'bool'");
 }
 var bor__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'double'");
 }
 var bor__long_double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'long'");
 }
 var bor__long_double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'long_long'");
 }
 var bor__long_double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'long_double'");
 }
 var bor__long_double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'uint'");
 }
 var bor__long_double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'ulong'");
 }
 var bor__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'ulong_long'");
 }
 var bor__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'list'");
 }
 var bor__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'set'");
 }
 var bor__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'dict'");
 }
 var bor__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'orderedset'");
 }
 var bor__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'ordereddict'");
 }
 var bor__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for long_double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'long_double' and 'graph'");
 }
 var bor__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'none'");
 }
 var bor__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and int");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__uint__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'float'");
 }
 var bor__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'string'");
 }
 var bor__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and bool");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'double'");
 }
 var bor__uint__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and long_long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__uint__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'long_double'");
 }
 var bor__uint__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__uint__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'list'");
 }
 var bor__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'set'");
 }
 var bor__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'dict'");
 }
 var bor__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'orderedset'");
 }
 var bor__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'ordereddict'");
 }
 var bor__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for uint and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'uint' and 'graph'");
 }
 var bor__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'none'");
 }
 var bor__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and int");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'float'");
 }
 var bor__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'string'");
 }
 var bor__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and bool");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'double'");
 }
 var bor__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and long_long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__ulong__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'long_double'");
 }
 var bor__ulong__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and uint");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__ulong__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'list'");
 }
 var bor__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'set'");
 }
 var bor__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'dict'");
 }
 var bor__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'orderedset'");
 }
 var bor__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'ordereddict'");
 }
 var bor__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong' and 'graph'");
 }
 var bor__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'none'");
 }
 var bor__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and int");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<int>());
+    return var(la | lb);
 }
 var bor__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'float'");
 }
 var bor__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'string'");
 }
 var bor__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and bool");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la | lb);
 }
 var bor__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'double'");
 }
 var bor__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long>());
+    return var(la | lb);
 }
 var bor__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and long_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long long>());
+    return var(la | lb);
 }
 var bor__ulong_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'long_double'");
 }
 var bor__ulong_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and uint");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned int>());
+    return var(la | lb);
 }
 var bor__ulong_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and ulong");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long>());
+    return var(la | lb);
 }
 var bor__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la | lb);
 }
 var bor__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'list'");
 }
 var bor__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'set'");
 }
 var bor__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'dict'");
 }
 var bor__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'orderedset'");
 }
 var bor__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'ordereddict'");
 }
 var bor__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ulong_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ulong_long' and 'graph'");
 }
 var bor__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'none'");
 }
 var bor__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'int'");
 }
 var bor__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'float'");
 }
 var bor__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'string'");
 }
 var bor__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'bool'");
 }
 var bor__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'double'");
 }
 var bor__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'long'");
 }
 var bor__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'long_long'");
 }
 var bor__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'long_double'");
 }
 var bor__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'uint'");
 }
 var bor__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'ulong'");
 }
 var bor__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'ulong_long'");
 }
 var bor__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and list");
+    const auto &lhs = a.var_get<pythonic::vars::List>();
+    const auto &rhs = b.var_get<pythonic::vars::List>();
+    pythonic::vars::List result;
+    result.reserve(lhs.size() + rhs.size());
+    result.insert(result.end(), lhs.begin(), lhs.end());
+    result.insert(result.end(), rhs.begin(), rhs.end());
+    return var(std::move(result));
 }
 var bor__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'set'");
 }
 var bor__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'dict'");
 }
 var bor__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'orderedset'");
 }
 var bor__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'ordereddict'");
 }
 var bor__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for list and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'list' and 'graph'");
 }
 var bor__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'none'");
 }
 var bor__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'int'");
 }
 var bor__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'float'");
 }
 var bor__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'string'");
 }
 var bor__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'bool'");
 }
 var bor__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'double'");
 }
 var bor__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'long'");
 }
 var bor__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'long_long'");
 }
 var bor__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'long_double'");
 }
 var bor__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'uint'");
 }
 var bor__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'ulong'");
 }
 var bor__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'ulong_long'");
 }
 var bor__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'list'");
 }
 var bor__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and set");
+    const auto &lhs = a.var_get<pythonic::vars::Set>();
+    const auto &rhs = b.var_get<pythonic::vars::Set>();
+    pythonic::vars::Set result = lhs;
+    result.insert(rhs.begin(), rhs.end());
+    return var(std::move(result));
 }
 var bor__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'dict'");
 }
 var bor__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'orderedset'");
 }
 var bor__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'ordereddict'");
 }
 var bor__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for set and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'set' and 'graph'");
 }
 var bor__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'none'");
 }
 var bor__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'int'");
 }
 var bor__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'float'");
 }
 var bor__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'string'");
 }
 var bor__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'bool'");
 }
 var bor__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'double'");
 }
 var bor__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'long'");
 }
 var bor__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'long_long'");
 }
 var bor__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'long_double'");
 }
 var bor__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'uint'");
 }
 var bor__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'ulong'");
 }
 var bor__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'ulong_long'");
 }
 var bor__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'list'");
 }
 var bor__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'set'");
 }
 var bor__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and dict");
+    const auto &lhs = a.var_get<pythonic::vars::Dict>();
+    const auto &rhs = b.var_get<pythonic::vars::Dict>();
+    pythonic::vars::Dict result = lhs;
+    for (const auto &[key, val] : rhs) {
+        result[key] = val;
+    }
+    return var(std::move(result));
 }
 var bor__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'orderedset'");
 }
 var bor__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'ordereddict'");
 }
 var bor__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for dict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'dict' and 'graph'");
 }
 var bor__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'none'");
 }
 var bor__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'int'");
 }
 var bor__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'float'");
 }
 var bor__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'string'");
 }
 var bor__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'bool'");
 }
 var bor__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'double'");
 }
 var bor__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'long'");
 }
 var bor__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'long_long'");
 }
 var bor__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'long_double'");
 }
 var bor__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'uint'");
 }
 var bor__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'ulong'");
 }
 var bor__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'ulong_long'");
 }
 var bor__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'list'");
 }
 var bor__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'set'");
 }
 var bor__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'dict'");
 }
 var bor__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and orderedset");
+    const auto &lhs = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &rhs = b.var_get<pythonic::vars::OrderedSet>();
+    pythonic::vars::OrderedSet result;
+    auto it_lhs = lhs.begin();
+    auto it_rhs = rhs.begin();
+    while (it_lhs != lhs.end() && it_rhs != rhs.end()) {
+        if (*it_lhs < *it_rhs) {
+            result.insert(*it_lhs);
+            ++it_lhs;
+        } else if (*it_rhs < *it_lhs) {
+            result.insert(*it_rhs);
+            ++it_rhs;
+        } else {
+            result.insert(*it_lhs);
+            ++it_lhs;
+            ++it_rhs;
+        }
+    }
+    while (it_lhs != lhs.end()) {
+        result.insert(*it_lhs);
+        ++it_lhs;
+    }
+    while (it_rhs != rhs.end()) {
+        result.insert(*it_rhs);
+        ++it_rhs;
+    }
+    return var(std::move(result));
 }
 var bor__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'ordereddict'");
 }
 var bor__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for orderedset and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'orderedset' and 'graph'");
 }
 var bor__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'none'");
 }
 var bor__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'int'");
 }
 var bor__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'float'");
 }
 var bor__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'string'");
 }
 var bor__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'bool'");
 }
 var bor__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'double'");
 }
 var bor__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'long'");
 }
 var bor__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'long_long'");
 }
 var bor__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'long_double'");
 }
 var bor__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'uint'");
 }
 var bor__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'ulong'");
 }
 var bor__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'ulong_long'");
 }
 var bor__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'list'");
 }
 var bor__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'set'");
 }
 var bor__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'dict'");
 }
 var bor__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'orderedset'");
 }
 var bor__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and ordereddict");
+    const auto &lhs = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &rhs = b.var_get<pythonic::vars::OrderedDict>();
+    pythonic::vars::OrderedDict result = lhs;
+    for (const auto &[key, val] : rhs) {
+        result[key] = val;
+    }
+    return var(std::move(result));
 }
 var bor__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for ordereddict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'ordereddict' and 'graph'");
 }
 var bor__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'none'");
 }
 var bor__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'int'");
 }
 var bor__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'float'");
 }
 var bor__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'string'");
 }
 var bor__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'bool'");
 }
 var bor__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'double'");
 }
 var bor__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'long'");
 }
 var bor__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'long_long'");
 }
 var bor__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'long_double'");
 }
 var bor__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'uint'");
 }
 var bor__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'ulong'");
 }
 var bor__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'ulong_long'");
 }
 var bor__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'list'");
 }
 var bor__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'set'");
 }
 var bor__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'dict'");
 }
 var bor__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'orderedset'");
 }
 var bor__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'ordereddict'");
 }
 var bor__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bor for graph and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'graph' and 'graph'");
 }
 
 // Stub definitions for bxor
 var bxor__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'none'");
 }
 var bxor__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'int'");
 }
 var bxor__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'float'");
 }
 var bxor__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'string'");
 }
 var bxor__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'bool'");
 }
 var bxor__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'double'");
 }
 var bxor__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'long'");
 }
 var bxor__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'long_long'");
 }
 var bxor__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'long_double'");
 }
 var bxor__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'uint'");
 }
 var bxor__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'ulong'");
 }
 var bxor__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'ulong_long'");
 }
 var bxor__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'list'");
 }
 var bxor__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'set'");
 }
 var bxor__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'dict'");
 }
 var bxor__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'orderedset'");
 }
 var bxor__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'ordereddict'");
 }
 var bxor__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for none and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'none' and 'graph'");
 }
 var bxor__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'none'");
 }
 var bxor__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and int");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__int__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'float'");
 }
 var bxor__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'string'");
 }
 var bxor__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and bool");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'double'");
 }
 var bxor__int__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and long");
+    long la = static_cast<long>(a.var_get<int>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and long_long");
+    long long la = static_cast<long long>(a.var_get<int>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__int__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'long_double'");
 }
 var bxor__int__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'list'");
 }
 var bxor__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'set'");
 }
 var bxor__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'dict'");
 }
 var bxor__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'orderedset'");
 }
 var bxor__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'ordereddict'");
 }
 var bxor__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for int and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'int' and 'graph'");
 }
 var bxor__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'none'");
 }
 var bxor__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'int'");
 }
 var bxor__float__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'float'");
 }
 var bxor__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'string'");
 }
 var bxor__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'bool'");
 }
 var bxor__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'double'");
 }
 var bxor__float__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'long'");
 }
 var bxor__float__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'long_long'");
 }
 var bxor__float__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'long_double'");
 }
 var bxor__float__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'uint'");
 }
 var bxor__float__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'ulong'");
 }
 var bxor__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'ulong_long'");
 }
 var bxor__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'list'");
 }
 var bxor__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'set'");
 }
 var bxor__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'dict'");
 }
 var bxor__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'orderedset'");
 }
 var bxor__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'ordereddict'");
 }
 var bxor__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for float and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'float' and 'graph'");
 }
 var bxor__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'none'");
 }
 var bxor__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'int'");
 }
 var bxor__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'float'");
 }
 var bxor__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'string'");
 }
 var bxor__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'bool'");
 }
 var bxor__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'double'");
 }
 var bxor__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'long'");
 }
 var bxor__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'long_long'");
 }
 var bxor__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'long_double'");
 }
 var bxor__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'uint'");
 }
 var bxor__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'ulong'");
 }
 var bxor__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'ulong_long'");
 }
 var bxor__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'list'");
 }
 var bxor__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'set'");
 }
 var bxor__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'dict'");
 }
 var bxor__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'orderedset'");
 }
 var bxor__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'ordereddict'");
 }
 var bxor__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for string and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'string' and 'graph'");
 }
 var bxor__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'none'");
 }
 var bxor__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and int");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'float'");
 }
 var bxor__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'string'");
 }
 var bxor__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and bool");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'double'");
 }
 var bxor__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and long");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and long_long");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'long_double'");
 }
 var bxor__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<bool>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'list'");
 }
 var bxor__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'set'");
 }
 var bxor__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'dict'");
 }
 var bxor__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'orderedset'");
 }
 var bxor__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'ordereddict'");
 }
 var bxor__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for bool and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'graph'");
 }
 var bxor__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'none'");
 }
 var bxor__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'int'");
 }
 var bxor__double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'float'");
 }
 var bxor__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'string'");
 }
 var bxor__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'bool'");
 }
 var bxor__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'double'");
 }
 var bxor__double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'long'");
 }
 var bxor__double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'long_long'");
 }
 var bxor__double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'long_double'");
 }
 var bxor__double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'uint'");
 }
 var bxor__double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'ulong'");
 }
 var bxor__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'ulong_long'");
 }
 var bxor__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'list'");
 }
 var bxor__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'set'");
 }
 var bxor__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'dict'");
 }
 var bxor__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'orderedset'");
 }
 var bxor__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'ordereddict'");
 }
 var bxor__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'double' and 'graph'");
 }
 var bxor__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'none'");
 }
 var bxor__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and int");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'float'");
 }
 var bxor__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'string'");
 }
 var bxor__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and bool");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'double'");
 }
 var bxor__long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and long");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and long_long");
+    long long la = static_cast<long long>(a.var_get<long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'long_double'");
 }
 var bxor__long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'list'");
 }
 var bxor__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'set'");
 }
 var bxor__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'dict'");
 }
 var bxor__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'orderedset'");
 }
 var bxor__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'ordereddict'");
 }
 var bxor__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long' and 'graph'");
 }
 var bxor__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'none'");
 }
 var bxor__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and int");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__long_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'float'");
 }
 var bxor__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'string'");
 }
 var bxor__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and bool");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'double'");
 }
 var bxor__long_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__long_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and long_long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__long_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'long_double'");
 }
 var bxor__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'list'");
 }
 var bxor__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'set'");
 }
 var bxor__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'dict'");
 }
 var bxor__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'orderedset'");
 }
 var bxor__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'ordereddict'");
 }
 var bxor__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_long' and 'graph'");
 }
 var bxor__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'none'");
 }
 var bxor__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'int'");
 }
 var bxor__long_double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'float'");
 }
 var bxor__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'string'");
 }
 var bxor__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'bool'");
 }
 var bxor__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'double'");
 }
 var bxor__long_double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'long'");
 }
 var bxor__long_double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'long_long'");
 }
 var bxor__long_double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'long_double'");
 }
 var bxor__long_double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'uint'");
 }
 var bxor__long_double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'ulong'");
 }
 var bxor__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'ulong_long'");
 }
 var bxor__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'list'");
 }
 var bxor__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'set'");
 }
 var bxor__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'dict'");
 }
 var bxor__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'orderedset'");
 }
 var bxor__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'ordereddict'");
 }
 var bxor__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for long_double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'long_double' and 'graph'");
 }
 var bxor__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'none'");
 }
 var bxor__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and int");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__uint__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'float'");
 }
 var bxor__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'string'");
 }
 var bxor__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and bool");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'double'");
 }
 var bxor__uint__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and long_long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__uint__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'long_double'");
 }
 var bxor__uint__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__uint__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'list'");
 }
 var bxor__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'set'");
 }
 var bxor__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'dict'");
 }
 var bxor__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'orderedset'");
 }
 var bxor__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'ordereddict'");
 }
 var bxor__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for uint and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'uint' and 'graph'");
 }
 var bxor__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'none'");
 }
 var bxor__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and int");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'float'");
 }
 var bxor__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'string'");
 }
 var bxor__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and bool");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'double'");
 }
 var bxor__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and long_long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__ulong__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'long_double'");
 }
 var bxor__ulong__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and uint");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__ulong__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'list'");
 }
 var bxor__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'set'");
 }
 var bxor__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'dict'");
 }
 var bxor__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'orderedset'");
 }
 var bxor__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'ordereddict'");
 }
 var bxor__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong' and 'graph'");
 }
 var bxor__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'none'");
 }
 var bxor__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and int");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<int>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'float'");
 }
 var bxor__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'string'");
 }
 var bxor__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and bool");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'double'");
 }
 var bxor__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and long_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long long>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'long_double'");
 }
 var bxor__ulong_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and uint");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned int>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and ulong");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la ^ lb);
 }
 var bxor__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'list'");
 }
 var bxor__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'set'");
 }
 var bxor__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'dict'");
 }
 var bxor__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'orderedset'");
 }
 var bxor__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'ordereddict'");
 }
 var bxor__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ulong_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ulong_long' and 'graph'");
 }
 var bxor__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'none'");
 }
 var bxor__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'int'");
 }
 var bxor__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'float'");
 }
 var bxor__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'string'");
 }
 var bxor__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'bool'");
 }
 var bxor__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'double'");
 }
 var bxor__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'long'");
 }
 var bxor__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'long_long'");
 }
 var bxor__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'long_double'");
 }
 var bxor__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'uint'");
 }
 var bxor__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'ulong'");
 }
 var bxor__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'ulong_long'");
 }
 var bxor__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and list");
+    const auto &lhs = a.var_get<pythonic::vars::List>();
+    const auto &rhs = b.var_get<pythonic::vars::List>();
+    pythonic::vars::List result;
+    pythonic::vars::Set lhs_set(lhs.begin(), lhs.end());
+    pythonic::vars::Set rhs_set(rhs.begin(), rhs.end());
+    for (const auto &item : lhs) {
+        if (rhs_set.find(item) == rhs_set.end()) {
+            result.push_back(item);
+        }
+    }
+    for (const auto &item : rhs) {
+        if (lhs_set.find(item) == lhs_set.end()) {
+            result.push_back(item);
+        }
+    }
+    return var(std::move(result));
 }
 var bxor__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'set'");
 }
 var bxor__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'dict'");
 }
 var bxor__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'orderedset'");
 }
 var bxor__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'ordereddict'");
 }
 var bxor__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for list and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'list' and 'graph'");
 }
 var bxor__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'none'");
 }
 var bxor__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'int'");
 }
 var bxor__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'float'");
 }
 var bxor__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'string'");
 }
 var bxor__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'bool'");
 }
 var bxor__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'double'");
 }
 var bxor__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'long'");
 }
 var bxor__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'long_long'");
 }
 var bxor__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'long_double'");
 }
 var bxor__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'uint'");
 }
 var bxor__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'ulong'");
 }
 var bxor__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'ulong_long'");
 }
 var bxor__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'list'");
 }
 var bxor__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and set");
+    const auto &lhs = a.var_get<pythonic::vars::Set>();
+    const auto &rhs = b.var_get<pythonic::vars::Set>();
+    pythonic::vars::Set result;
+    for (const auto &item : lhs) {
+        if (rhs.find(item) == rhs.end()) {
+            result.insert(item);
+        }
+    }
+    for (const auto &item : rhs) {
+        if (lhs.find(item) == lhs.end()) {
+            result.insert(item);
+        }
+    }
+    return var(std::move(result));
 }
 var bxor__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'dict'");
 }
 var bxor__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'orderedset'");
 }
 var bxor__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'ordereddict'");
 }
 var bxor__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for set and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'set' and 'graph'");
 }
 var bxor__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'none'");
 }
 var bxor__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'int'");
 }
 var bxor__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'float'");
 }
 var bxor__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'string'");
 }
 var bxor__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'bool'");
 }
 var bxor__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'double'");
 }
 var bxor__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'long'");
 }
 var bxor__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'long_long'");
 }
 var bxor__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'long_double'");
 }
 var bxor__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'uint'");
 }
 var bxor__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'ulong'");
 }
 var bxor__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'ulong_long'");
 }
 var bxor__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'list'");
 }
 var bxor__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'set'");
 }
 var bxor__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'dict'");
 }
 var bxor__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'orderedset'");
 }
 var bxor__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'ordereddict'");
 }
 var bxor__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for dict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'dict' and 'graph'");
 }
 var bxor__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'none'");
 }
 var bxor__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'int'");
 }
 var bxor__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'float'");
 }
 var bxor__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'string'");
 }
 var bxor__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'bool'");
 }
 var bxor__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'double'");
 }
 var bxor__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'long'");
 }
 var bxor__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'long_long'");
 }
 var bxor__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'long_double'");
 }
 var bxor__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'uint'");
 }
 var bxor__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'ulong'");
 }
 var bxor__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'ulong_long'");
 }
 var bxor__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'list'");
 }
 var bxor__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'set'");
 }
 var bxor__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'dict'");
 }
 var bxor__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and orderedset");
+    const auto &lhs = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &rhs = b.var_get<pythonic::vars::OrderedSet>();
+    pythonic::vars::OrderedSet result;
+    auto it_lhs = lhs.begin();
+    auto it_rhs = rhs.begin();
+    while (it_lhs != lhs.end() && it_rhs != rhs.end()) {
+        if (*it_lhs < *it_rhs) {
+            result.insert(*it_lhs);
+            ++it_lhs;
+        } else if (*it_rhs < *it_lhs) {
+            result.insert(*it_rhs);
+            ++it_rhs;
+        } else {
+            ++it_lhs;
+            ++it_rhs;
+        }
+    }
+    while (it_lhs != lhs.end()) {
+        result.insert(*it_lhs);
+        ++it_lhs;
+    }
+    while (it_rhs != rhs.end()) {
+        result.insert(*it_rhs);
+        ++it_rhs;
+    }
+    return var(std::move(result));
 }
 var bxor__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'ordereddict'");
 }
 var bxor__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for orderedset and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'orderedset' and 'graph'");
 }
 var bxor__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'none'");
 }
 var bxor__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'int'");
 }
 var bxor__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'float'");
 }
 var bxor__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'string'");
 }
 var bxor__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'bool'");
 }
 var bxor__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'double'");
 }
 var bxor__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'long'");
 }
 var bxor__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'long_long'");
 }
 var bxor__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'long_double'");
 }
 var bxor__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'uint'");
 }
 var bxor__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'ulong'");
 }
 var bxor__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'ulong_long'");
 }
 var bxor__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'list'");
 }
 var bxor__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'set'");
 }
 var bxor__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'dict'");
 }
 var bxor__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'orderedset'");
 }
 var bxor__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'ordereddict'");
 }
 var bxor__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for ordereddict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'ordereddict' and 'graph'");
 }
 var bxor__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'none'");
 }
 var bxor__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'int'");
 }
 var bxor__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'float'");
 }
 var bxor__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'string'");
 }
 var bxor__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'bool'");
 }
 var bxor__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'double'");
 }
 var bxor__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'long'");
 }
 var bxor__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'long_long'");
 }
 var bxor__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'long_double'");
 }
 var bxor__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'uint'");
 }
 var bxor__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'ulong'");
 }
 var bxor__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'ulong_long'");
 }
 var bxor__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'list'");
 }
 var bxor__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'set'");
 }
 var bxor__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'dict'");
 }
 var bxor__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'orderedset'");
 }
 var bxor__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'ordereddict'");
 }
 var bxor__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: bxor for graph and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'graph' and 'graph'");
 }
 
 // Stub definitions for shl
 var shl__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'none'");
 }
 var shl__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'int'");
 }
 var shl__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'float'");
 }
 var shl__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'string'");
 }
 var shl__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'bool'");
 }
 var shl__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'double'");
 }
 var shl__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'long'");
 }
 var shl__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'long_long'");
 }
 var shl__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'long_double'");
 }
 var shl__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'uint'");
 }
 var shl__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'ulong'");
 }
 var shl__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'ulong_long'");
 }
 var shl__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'list'");
 }
 var shl__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'set'");
 }
 var shl__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'dict'");
 }
 var shl__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'orderedset'");
 }
 var shl__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'ordereddict'");
 }
 var shl__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for none and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'none' and 'graph'");
 }
 var shl__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'none'");
 }
 var shl__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and int");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__int__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'float'");
 }
 var shl__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'string'");
 }
 var shl__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and bool");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'double'");
 }
 var shl__int__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and long");
+    long la = static_cast<long>(a.var_get<int>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and long_long");
+    long long la = static_cast<long long>(a.var_get<int>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__int__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'long_double'");
 }
 var shl__int__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'list'");
 }
 var shl__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'set'");
 }
 var shl__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'dict'");
 }
 var shl__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'orderedset'");
 }
 var shl__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'ordereddict'");
 }
 var shl__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for int and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'int' and 'graph'");
 }
 var shl__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'none'");
 }
 var shl__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'int'");
 }
 var shl__float__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'float'");
 }
 var shl__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'string'");
 }
 var shl__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'bool'");
 }
 var shl__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'double'");
 }
 var shl__float__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'long'");
 }
 var shl__float__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'long_long'");
 }
 var shl__float__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'long_double'");
 }
 var shl__float__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'uint'");
 }
 var shl__float__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'ulong'");
 }
 var shl__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'ulong_long'");
 }
 var shl__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'list'");
 }
 var shl__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'set'");
 }
 var shl__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'dict'");
 }
 var shl__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'orderedset'");
 }
 var shl__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'ordereddict'");
 }
 var shl__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for float and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'float' and 'graph'");
 }
 var shl__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'none'");
 }
 var shl__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'int'");
 }
 var shl__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'float'");
 }
 var shl__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'string'");
 }
 var shl__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'bool'");
 }
 var shl__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'double'");
 }
 var shl__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'long'");
 }
 var shl__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'long_long'");
 }
 var shl__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'long_double'");
 }
 var shl__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'uint'");
 }
 var shl__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'ulong'");
 }
 var shl__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'ulong_long'");
 }
 var shl__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'list'");
 }
 var shl__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'set'");
 }
 var shl__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'dict'");
 }
 var shl__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'orderedset'");
 }
 var shl__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'ordereddict'");
 }
 var shl__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for string and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'string' and 'graph'");
 }
 var shl__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'none'");
 }
 var shl__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and int");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'float'");
 }
 var shl__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'string'");
 }
 var shl__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and bool");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'double'");
 }
 var shl__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and long");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and long_long");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'long_double'");
 }
 var shl__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<bool>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'list'");
 }
 var shl__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'set'");
 }
 var shl__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'dict'");
 }
 var shl__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'orderedset'");
 }
 var shl__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'ordereddict'");
 }
 var shl__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for bool and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'bool' and 'graph'");
 }
 var shl__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'none'");
 }
 var shl__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'int'");
 }
 var shl__double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'float'");
 }
 var shl__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'string'");
 }
 var shl__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'bool'");
 }
 var shl__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'double'");
 }
 var shl__double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'long'");
 }
 var shl__double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'long_long'");
 }
 var shl__double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'long_double'");
 }
 var shl__double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'uint'");
 }
 var shl__double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'ulong'");
 }
 var shl__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'ulong_long'");
 }
 var shl__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'list'");
 }
 var shl__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'set'");
 }
 var shl__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'dict'");
 }
 var shl__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'orderedset'");
 }
 var shl__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'ordereddict'");
 }
 var shl__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'double' and 'graph'");
 }
 var shl__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'none'");
 }
 var shl__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and int");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'float'");
 }
 var shl__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'string'");
 }
 var shl__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and bool");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'double'");
 }
 var shl__long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and long");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and long_long");
+    long long la = static_cast<long long>(a.var_get<long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'long_double'");
 }
 var shl__long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'list'");
 }
 var shl__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'set'");
 }
 var shl__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'dict'");
 }
 var shl__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'orderedset'");
 }
 var shl__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'ordereddict'");
 }
 var shl__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long' and 'graph'");
 }
 var shl__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'none'");
 }
 var shl__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and int");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__long_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'float'");
 }
 var shl__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'string'");
 }
 var shl__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and bool");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'double'");
 }
 var shl__long_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__long_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and long_long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__long_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'long_double'");
 }
 var shl__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'list'");
 }
 var shl__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'set'");
 }
 var shl__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'dict'");
 }
 var shl__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'orderedset'");
 }
 var shl__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'ordereddict'");
 }
 var shl__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_long' and 'graph'");
 }
 var shl__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'none'");
 }
 var shl__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'int'");
 }
 var shl__long_double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'float'");
 }
 var shl__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'string'");
 }
 var shl__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'bool'");
 }
 var shl__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'double'");
 }
 var shl__long_double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'long'");
 }
 var shl__long_double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'long_long'");
 }
 var shl__long_double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'long_double'");
 }
 var shl__long_double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'uint'");
 }
 var shl__long_double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'ulong'");
 }
 var shl__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'ulong_long'");
 }
 var shl__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'list'");
 }
 var shl__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'set'");
 }
 var shl__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'dict'");
 }
 var shl__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'orderedset'");
 }
 var shl__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'ordereddict'");
 }
 var shl__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for long_double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'long_double' and 'graph'");
 }
 var shl__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'none'");
 }
 var shl__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and int");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__uint__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'float'");
 }
 var shl__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'string'");
 }
 var shl__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and bool");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'double'");
 }
 var shl__uint__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and long_long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__uint__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'long_double'");
 }
 var shl__uint__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__uint__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'list'");
 }
 var shl__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'set'");
 }
 var shl__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'dict'");
 }
 var shl__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'orderedset'");
 }
 var shl__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'ordereddict'");
 }
 var shl__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for uint and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'uint' and 'graph'");
 }
 var shl__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'none'");
 }
 var shl__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and int");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'float'");
 }
 var shl__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'string'");
 }
 var shl__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and bool");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'double'");
 }
 var shl__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and long_long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__ulong__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'long_double'");
 }
 var shl__ulong__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and uint");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__ulong__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'list'");
 }
 var shl__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'set'");
 }
 var shl__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'dict'");
 }
 var shl__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'orderedset'");
 }
 var shl__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'ordereddict'");
 }
 var shl__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong' and 'graph'");
 }
 var shl__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'none'");
 }
 var shl__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and int");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<int>());
+    return var(la << lb);
 }
 var shl__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'float'");
 }
 var shl__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'string'");
 }
 var shl__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and bool");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la << lb);
 }
 var shl__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'double'");
 }
 var shl__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long>());
+    return var(la << lb);
 }
 var shl__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and long_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long long>());
+    return var(la << lb);
 }
 var shl__ulong_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'long_double'");
 }
 var shl__ulong_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and uint");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned int>());
+    return var(la << lb);
 }
 var shl__ulong_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and ulong");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long>());
+    return var(la << lb);
 }
 var shl__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la << lb);
 }
 var shl__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'list'");
 }
 var shl__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'set'");
 }
 var shl__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'dict'");
 }
 var shl__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'orderedset'");
 }
 var shl__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'ordereddict'");
 }
 var shl__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ulong_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ulong_long' and 'graph'");
 }
 var shl__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'none'");
 }
 var shl__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'int'");
 }
 var shl__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'float'");
 }
 var shl__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'string'");
 }
 var shl__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'bool'");
 }
 var shl__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'double'");
 }
 var shl__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'long'");
 }
 var shl__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'long_long'");
 }
 var shl__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'long_double'");
 }
 var shl__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'uint'");
 }
 var shl__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'ulong'");
 }
 var shl__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'ulong_long'");
 }
 var shl__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'list'");
 }
 var shl__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'set'");
 }
 var shl__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'dict'");
 }
 var shl__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'orderedset'");
 }
 var shl__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'ordereddict'");
 }
 var shl__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for list and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'list' and 'graph'");
 }
 var shl__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'none'");
 }
 var shl__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'int'");
 }
 var shl__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'float'");
 }
 var shl__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'string'");
 }
 var shl__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'bool'");
 }
 var shl__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'double'");
 }
 var shl__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'long'");
 }
 var shl__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'long_long'");
 }
 var shl__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'long_double'");
 }
 var shl__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'uint'");
 }
 var shl__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'ulong'");
 }
 var shl__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'ulong_long'");
 }
 var shl__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'list'");
 }
 var shl__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'set'");
 }
 var shl__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'dict'");
 }
 var shl__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'orderedset'");
 }
 var shl__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'ordereddict'");
 }
 var shl__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for set and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'set' and 'graph'");
 }
 var shl__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'none'");
 }
 var shl__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'int'");
 }
 var shl__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'float'");
 }
 var shl__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'string'");
 }
 var shl__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'bool'");
 }
 var shl__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'double'");
 }
 var shl__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'long'");
 }
 var shl__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'long_long'");
 }
 var shl__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'long_double'");
 }
 var shl__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'uint'");
 }
 var shl__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'ulong'");
 }
 var shl__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'ulong_long'");
 }
 var shl__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'list'");
 }
 var shl__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'set'");
 }
 var shl__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'dict'");
 }
 var shl__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'orderedset'");
 }
 var shl__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'ordereddict'");
 }
 var shl__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for dict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'dict' and 'graph'");
 }
 var shl__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'none'");
 }
 var shl__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'int'");
 }
 var shl__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'float'");
 }
 var shl__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'string'");
 }
 var shl__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'bool'");
 }
 var shl__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'double'");
 }
 var shl__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'long'");
 }
 var shl__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'long_long'");
 }
 var shl__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'long_double'");
 }
 var shl__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'uint'");
 }
 var shl__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'ulong'");
 }
 var shl__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'ulong_long'");
 }
 var shl__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'list'");
 }
 var shl__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'set'");
 }
 var shl__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'dict'");
 }
 var shl__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'orderedset'");
 }
 var shl__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'ordereddict'");
 }
 var shl__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for orderedset and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'orderedset' and 'graph'");
 }
 var shl__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'none'");
 }
 var shl__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'int'");
 }
 var shl__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'float'");
 }
 var shl__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'string'");
 }
 var shl__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'bool'");
 }
 var shl__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'double'");
 }
 var shl__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'long'");
 }
 var shl__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'long_long'");
 }
 var shl__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'long_double'");
 }
 var shl__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'uint'");
 }
 var shl__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'ulong'");
 }
 var shl__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'ulong_long'");
 }
 var shl__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'list'");
 }
 var shl__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'set'");
 }
 var shl__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'dict'");
 }
 var shl__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'orderedset'");
 }
 var shl__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'ordereddict'");
 }
 var shl__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for ordereddict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'ordereddict' and 'graph'");
 }
 var shl__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'none'");
 }
 var shl__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'int'");
 }
 var shl__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'float'");
 }
 var shl__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'string'");
 }
 var shl__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'bool'");
 }
 var shl__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'double'");
 }
 var shl__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'long'");
 }
 var shl__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'long_long'");
 }
 var shl__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'long_double'");
 }
 var shl__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'uint'");
 }
 var shl__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'ulong'");
 }
 var shl__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'ulong_long'");
 }
 var shl__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'list'");
 }
 var shl__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'set'");
 }
 var shl__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'dict'");
 }
 var shl__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'orderedset'");
 }
 var shl__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'ordereddict'");
 }
 var shl__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shl for graph and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for <<: 'graph' and 'graph'");
 }
 
 // Stub definitions for shr
 var shr__none__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'none'");
 }
 var shr__none__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'int'");
 }
 var shr__none__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'float'");
 }
 var shr__none__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'string'");
 }
 var shr__none__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'bool'");
 }
 var shr__none__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'double'");
 }
 var shr__none__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'long'");
 }
 var shr__none__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'long_long'");
 }
 var shr__none__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'long_double'");
 }
 var shr__none__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'uint'");
 }
 var shr__none__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'ulong'");
 }
 var shr__none__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'ulong_long'");
 }
 var shr__none__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'list'");
 }
 var shr__none__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'set'");
 }
 var shr__none__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'dict'");
 }
 var shr__none__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'orderedset'");
 }
 var shr__none__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'ordereddict'");
 }
 var shr__none__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for none and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'none' and 'graph'");
 }
 var shr__int__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'none'");
 }
 var shr__int__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and int");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__int__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'float'");
 }
 var shr__int__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'string'");
 }
 var shr__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and bool");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'double'");
 }
 var shr__int__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and long");
+    long la = static_cast<long>(a.var_get<int>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and long_long");
+    long long la = static_cast<long long>(a.var_get<int>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__int__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'long_double'");
 }
 var shr__int__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__int__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'list'");
 }
 var shr__int__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'set'");
 }
 var shr__int__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'dict'");
 }
 var shr__int__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'orderedset'");
 }
 var shr__int__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'ordereddict'");
 }
 var shr__int__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for int and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'int' and 'graph'");
 }
 var shr__float__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'none'");
 }
 var shr__float__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'int'");
 }
 var shr__float__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'float'");
 }
 var shr__float__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'string'");
 }
 var shr__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'bool'");
 }
 var shr__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'double'");
 }
 var shr__float__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'long'");
 }
 var shr__float__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'long_long'");
 }
 var shr__float__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'long_double'");
 }
 var shr__float__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'uint'");
 }
 var shr__float__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'ulong'");
 }
 var shr__float__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'ulong_long'");
 }
 var shr__float__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'list'");
 }
 var shr__float__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'set'");
 }
 var shr__float__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'dict'");
 }
 var shr__float__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'orderedset'");
 }
 var shr__float__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'ordereddict'");
 }
 var shr__float__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for float and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'float' and 'graph'");
 }
 var shr__string__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'none'");
 }
 var shr__string__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'int'");
 }
 var shr__string__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'float'");
 }
 var shr__string__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'string'");
 }
 var shr__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'bool'");
 }
 var shr__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'double'");
 }
 var shr__string__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'long'");
 }
 var shr__string__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'long_long'");
 }
 var shr__string__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'long_double'");
 }
 var shr__string__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'uint'");
 }
 var shr__string__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'ulong'");
 }
 var shr__string__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'ulong_long'");
 }
 var shr__string__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'list'");
 }
 var shr__string__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'set'");
 }
 var shr__string__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'dict'");
 }
 var shr__string__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'orderedset'");
 }
 var shr__string__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'ordereddict'");
 }
 var shr__string__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for string and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'string' and 'graph'");
 }
 var shr__bool__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'none'");
 }
 var shr__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and int");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'float'");
 }
 var shr__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'string'");
 }
 var shr__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and bool");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'double'");
 }
 var shr__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and long");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and long_long");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'long_double'");
 }
 var shr__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<bool>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'list'");
 }
 var shr__bool__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'set'");
 }
 var shr__bool__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'dict'");
 }
 var shr__bool__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'orderedset'");
 }
 var shr__bool__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'ordereddict'");
 }
 var shr__bool__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for bool and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'bool' and 'graph'");
 }
 var shr__double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'none'");
 }
 var shr__double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'int'");
 }
 var shr__double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'float'");
 }
 var shr__double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'string'");
 }
 var shr__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'bool'");
 }
 var shr__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'double'");
 }
 var shr__double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'long'");
 }
 var shr__double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'long_long'");
 }
 var shr__double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'long_double'");
 }
 var shr__double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'uint'");
 }
 var shr__double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'ulong'");
 }
 var shr__double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'ulong_long'");
 }
 var shr__double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'list'");
 }
 var shr__double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'set'");
 }
 var shr__double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'dict'");
 }
 var shr__double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'orderedset'");
 }
 var shr__double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'ordereddict'");
 }
 var shr__double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'double' and 'graph'");
 }
 var shr__long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'none'");
 }
 var shr__long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and int");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'float'");
 }
 var shr__long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'string'");
 }
 var shr__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and bool");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'double'");
 }
 var shr__long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and long");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and long_long");
+    long long la = static_cast<long long>(a.var_get<long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'long_double'");
 }
 var shr__long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'list'");
 }
 var shr__long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'set'");
 }
 var shr__long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'dict'");
 }
 var shr__long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'orderedset'");
 }
 var shr__long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'ordereddict'");
 }
 var shr__long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long' and 'graph'");
 }
 var shr__long_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'none'");
 }
 var shr__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and int");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__long_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'float'");
 }
 var shr__long_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'string'");
 }
 var shr__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and bool");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'double'");
 }
 var shr__long_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__long_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and long_long");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__long_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'long_double'");
 }
 var shr__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<long long>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<long long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__long_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'list'");
 }
 var shr__long_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'set'");
 }
 var shr__long_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'dict'");
 }
 var shr__long_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'orderedset'");
 }
 var shr__long_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'ordereddict'");
 }
 var shr__long_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_long' and 'graph'");
 }
 var shr__long_double__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'none'");
 }
 var shr__long_double__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'int'");
 }
 var shr__long_double__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'float'");
 }
 var shr__long_double__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'string'");
 }
 var shr__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'bool'");
 }
 var shr__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'double'");
 }
 var shr__long_double__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'long'");
 }
 var shr__long_double__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'long_long'");
 }
 var shr__long_double__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'long_double'");
 }
 var shr__long_double__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'uint'");
 }
 var shr__long_double__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'ulong'");
 }
 var shr__long_double__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'ulong_long'");
 }
 var shr__long_double__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'list'");
 }
 var shr__long_double__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'set'");
 }
 var shr__long_double__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'dict'");
 }
 var shr__long_double__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'orderedset'");
 }
 var shr__long_double__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'ordereddict'");
 }
 var shr__long_double__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for long_double and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'long_double' and 'graph'");
 }
 var shr__uint__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'none'");
 }
 var shr__uint__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and int");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__uint__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'float'");
 }
 var shr__uint__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'string'");
 }
 var shr__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and bool");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'double'");
 }
 var shr__uint__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and long_long");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__uint__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'long_double'");
 }
 var shr__uint__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and uint");
+    unsigned int la = static_cast<unsigned int>(a.var_get<unsigned int>());
+    unsigned int lb = static_cast<unsigned int>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__uint__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned int>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__uint__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned int>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__uint__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'list'");
 }
 var shr__uint__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'set'");
 }
 var shr__uint__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'dict'");
 }
 var shr__uint__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'orderedset'");
 }
 var shr__uint__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'ordereddict'");
 }
 var shr__uint__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for uint and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'uint' and 'graph'");
 }
 var shr__ulong__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'none'");
 }
 var shr__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and int");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__ulong__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'float'");
 }
 var shr__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'string'");
 }
 var shr__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and bool");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'double'");
 }
 var shr__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and long_long");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__ulong__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'long_double'");
 }
 var shr__ulong__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and uint");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__ulong__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and ulong");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__ulong__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__ulong__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'list'");
 }
 var shr__ulong__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'set'");
 }
 var shr__ulong__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'dict'");
 }
 var shr__ulong__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'orderedset'");
 }
 var shr__ulong__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'ordereddict'");
 }
 var shr__ulong__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong' and 'graph'");
 }
 var shr__ulong_long__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'none'");
 }
 var shr__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and int");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<int>());
+    return var(la >> lb);
 }
 var shr__ulong_long__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'float'");
 }
 var shr__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'string'");
 }
 var shr__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and bool");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la >> lb);
 }
 var shr__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'double'");
 }
 var shr__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long>());
+    return var(la >> lb);
 }
 var shr__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and long_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<long long>());
+    return var(la >> lb);
 }
 var shr__ulong_long__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'long_double'");
 }
 var shr__ulong_long__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and uint");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned int>());
+    return var(la >> lb);
 }
 var shr__ulong_long__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and ulong");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long>());
+    return var(la >> lb);
 }
 var shr__ulong_long__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and ulong_long");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >> lb);
 }
 var shr__ulong_long__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'list'");
 }
 var shr__ulong_long__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'set'");
 }
 var shr__ulong_long__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'dict'");
 }
 var shr__ulong_long__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'orderedset'");
 }
 var shr__ulong_long__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'ordereddict'");
 }
 var shr__ulong_long__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ulong_long and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ulong_long' and 'graph'");
 }
 var shr__list__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'none'");
 }
 var shr__list__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'int'");
 }
 var shr__list__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'float'");
 }
 var shr__list__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'string'");
 }
 var shr__list__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'bool'");
 }
 var shr__list__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'double'");
 }
 var shr__list__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'long'");
 }
 var shr__list__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'long_long'");
 }
 var shr__list__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'long_double'");
 }
 var shr__list__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'uint'");
 }
 var shr__list__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'ulong'");
 }
 var shr__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'ulong_long'");
 }
 var shr__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'list'");
 }
 var shr__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'set'");
 }
 var shr__list__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'dict'");
 }
 var shr__list__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'orderedset'");
 }
 var shr__list__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'ordereddict'");
 }
 var shr__list__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for list and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'list' and 'graph'");
 }
 var shr__set__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'none'");
 }
 var shr__set__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'int'");
 }
 var shr__set__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'float'");
 }
 var shr__set__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'string'");
 }
 var shr__set__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'bool'");
 }
 var shr__set__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'double'");
 }
 var shr__set__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'long'");
 }
 var shr__set__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'long_long'");
 }
 var shr__set__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'long_double'");
 }
 var shr__set__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'uint'");
 }
 var shr__set__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'ulong'");
 }
 var shr__set__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'ulong_long'");
 }
 var shr__set__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'list'");
 }
 var shr__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'set'");
 }
 var shr__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'dict'");
 }
 var shr__set__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'orderedset'");
 }
 var shr__set__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'ordereddict'");
 }
 var shr__set__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for set and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'set' and 'graph'");
 }
 var shr__dict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'none'");
 }
 var shr__dict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'int'");
 }
 var shr__dict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'float'");
 }
 var shr__dict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'string'");
 }
 var shr__dict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'bool'");
 }
 var shr__dict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'double'");
 }
 var shr__dict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'long'");
 }
 var shr__dict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'long_long'");
 }
 var shr__dict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'long_double'");
 }
 var shr__dict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'uint'");
 }
 var shr__dict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'ulong'");
 }
 var shr__dict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'ulong_long'");
 }
 var shr__dict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'list'");
 }
 var shr__dict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'set'");
 }
 var shr__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'dict'");
 }
 var shr__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'orderedset'");
 }
 var shr__dict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'ordereddict'");
 }
 var shr__dict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for dict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'dict' and 'graph'");
 }
 var shr__orderedset__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'none'");
 }
 var shr__orderedset__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'int'");
 }
 var shr__orderedset__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'float'");
 }
 var shr__orderedset__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'string'");
 }
 var shr__orderedset__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'bool'");
 }
 var shr__orderedset__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'double'");
 }
 var shr__orderedset__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'long'");
 }
 var shr__orderedset__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'long_long'");
 }
 var shr__orderedset__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'long_double'");
 }
 var shr__orderedset__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'uint'");
 }
 var shr__orderedset__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'ulong'");
 }
 var shr__orderedset__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'ulong_long'");
 }
 var shr__orderedset__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'list'");
 }
 var shr__orderedset__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'set'");
 }
 var shr__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'dict'");
 }
 var shr__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'orderedset'");
 }
 var shr__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'ordereddict'");
 }
 var shr__orderedset__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for orderedset and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'orderedset' and 'graph'");
 }
 var shr__ordereddict__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'none'");
 }
 var shr__ordereddict__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'int'");
 }
 var shr__ordereddict__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'float'");
 }
 var shr__ordereddict__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'string'");
 }
 var shr__ordereddict__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'bool'");
 }
 var shr__ordereddict__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'double'");
 }
 var shr__ordereddict__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'long'");
 }
 var shr__ordereddict__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'long_long'");
 }
 var shr__ordereddict__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'long_double'");
 }
 var shr__ordereddict__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'uint'");
 }
 var shr__ordereddict__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'ulong'");
 }
 var shr__ordereddict__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'ulong_long'");
 }
 var shr__ordereddict__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'list'");
 }
 var shr__ordereddict__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'set'");
 }
 var shr__ordereddict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'dict'");
 }
 var shr__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'orderedset'");
 }
 var shr__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'ordereddict'");
 }
 var shr__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for ordereddict and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'ordereddict' and 'graph'");
 }
 var shr__graph__none(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and none");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'none'");
 }
 var shr__graph__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and int");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'int'");
 }
 var shr__graph__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and float");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'float'");
 }
 var shr__graph__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and string");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'string'");
 }
 var shr__graph__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and bool");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'bool'");
 }
 var shr__graph__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'double'");
 }
 var shr__graph__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'long'");
 }
 var shr__graph__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and long_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'long_long'");
 }
 var shr__graph__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and long_double");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'long_double'");
 }
 var shr__graph__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and uint");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'uint'");
 }
 var shr__graph__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and ulong");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'ulong'");
 }
 var shr__graph__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and ulong_long");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'ulong_long'");
 }
 var shr__graph__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and list");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'list'");
 }
 var shr__graph__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and set");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'set'");
 }
 var shr__graph__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and dict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'dict'");
 }
 var shr__graph__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and orderedset");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'orderedset'");
 }
 var shr__graph__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and ordereddict");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'ordereddict'");
 }
 var shr__graph__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw std::runtime_error("Not implemented: shr for graph and graph");
+    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for >>: 'graph' and 'graph'");
 }
 
 // Stub definitions for land
