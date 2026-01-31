@@ -84,7 +84,7 @@ var add__int__int(const var& a, const var& b, pythonic::overflow::Overflow polic
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -113,7 +113,24 @@ var add__int__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'int' and 'string'");
 }
 var add__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'int' and 'bool'");
+    // Numeric add with policy-aware handling
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_INT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -150,7 +167,7 @@ var add__int__long(const var& a, const var& b, pythonic::overflow::Overflow poli
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -170,7 +187,7 @@ var add__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -210,7 +227,7 @@ var add__int__uint(const var& a, const var& b, pythonic::overflow::Overflow poli
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -230,7 +247,7 @@ var add__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow pol
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -250,7 +267,7 @@ var add__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -320,7 +337,24 @@ var add__float__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'float' and 'string'");
 }
 var add__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'float' and 'bool'");
+    // Numeric add with policy-aware handling
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_FLOAT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -493,7 +527,7 @@ var add__string__string(const var& a, const var& b, pythonic::overflow::Overflow
     return var(a.var_get<std::string>() + b.var_get<std::string>());
 }
 var add__string__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'string' and 'bool'");
+    return var(a.var_get<std::string>() + (b.var_get<bool>() ? std::string("true") : std::string("false")));
 }
 var add__string__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'string' and 'double'");
@@ -538,37 +572,207 @@ var add__bool__none(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'none'");
 }
 var add__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'int'");
+    // Numeric add with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_INT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'float'");
+    // Numeric add with policy-aware handling
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_FLOAT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'string'");
+    return var((a.var_get<bool>() ? std::string("true") : std::string("false")) + b.var_get<std::string>());
 }
 var add__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'bool'");
+    // Numeric add with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'double'");
+    // Numeric add with policy-aware handling
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'long'");
+    // Numeric add with policy-aware handling
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'long_long'");
+    // Numeric add with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'long_double'");
+    // Numeric add with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'uint'");
+    // Numeric add with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_UINT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'ulong'");
+    // Numeric add with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'ulong_long'");
+    // Numeric add with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'bool' and 'list'");
@@ -635,7 +839,24 @@ var add__double__string(const var& a, const var& b, pythonic::overflow::Overflow
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'double' and 'string'");
 }
 var add__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'double' and 'bool'");
+    // Numeric add with policy-aware handling
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -813,7 +1034,7 @@ var add__long__int(const var& a, const var& b, pythonic::overflow::Overflow poli
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -842,7 +1063,24 @@ var add__long__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'long' and 'string'");
 }
 var add__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'long' and 'bool'");
+    // Numeric add with policy-aware handling
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -879,7 +1117,7 @@ var add__long__long(const var& a, const var& b, pythonic::overflow::Overflow pol
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -899,7 +1137,7 @@ var add__long__long_long(const var& a, const var& b, pythonic::overflow::Overflo
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -939,7 +1177,7 @@ var add__long__uint(const var& a, const var& b, pythonic::overflow::Overflow pol
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -959,7 +1197,7 @@ var add__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow po
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -979,7 +1217,7 @@ var add__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1020,7 +1258,7 @@ var add__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1049,7 +1287,24 @@ var add__long_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'long_long' and 'string'");
 }
 var add__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'long_long' and 'bool'");
+    // Numeric add with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -1086,7 +1341,7 @@ var add__long_long__long(const var& a, const var& b, pythonic::overflow::Overflo
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1106,7 +1361,7 @@ var add__long_long__long_long(const var& a, const var& b, pythonic::overflow::Ov
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1146,7 +1401,7 @@ var add__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflo
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1166,7 +1421,7 @@ var add__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overfl
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1186,7 +1441,7 @@ var add__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1256,7 +1511,24 @@ var add__long_double__string(const var& a, const var& b, pythonic::overflow::Ove
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'long_double' and 'string'");
 }
 var add__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'long_double' and 'bool'");
+    // Numeric add with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -1434,7 +1706,7 @@ var add__uint__int(const var& a, const var& b, pythonic::overflow::Overflow poli
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1463,7 +1735,24 @@ var add__uint__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'uint' and 'string'");
 }
 var add__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'uint' and 'bool'");
+    // Numeric add with policy-aware handling
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_UINT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -1500,7 +1789,7 @@ var add__uint__long(const var& a, const var& b, pythonic::overflow::Overflow pol
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1520,7 +1809,7 @@ var add__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflo
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1641,7 +1930,7 @@ var add__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow pol
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1670,7 +1959,24 @@ var add__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'ulong' and 'string'");
 }
 var add__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'ulong' and 'bool'");
+    // Numeric add with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -1707,7 +2013,7 @@ var add__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow po
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1727,7 +2033,7 @@ var add__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overfl
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1848,7 +2154,7 @@ var add__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflo
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1877,7 +2183,24 @@ var add__ulong_long__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'ulong_long' and 'string'");
 }
 var add__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for +: 'ulong_long' and 'bool'");
+    // Numeric add with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la + lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::add_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::add_wrap(la, lb);
+        return var(res);
+    } else {
+        // Promote: compute in long double then smart-promote
+        long double result = static_cast<long double>(la) + static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var add__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric add with policy-aware handling
@@ -1914,7 +2237,7 @@ var add__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overfl
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -1934,7 +2257,7 @@ var add__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::O
     } else {
         // Promote: compute in long double then smart-promote
         long double result = static_cast<long double>(la) + static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -2439,7 +2762,7 @@ var sub__int__int(const var& a, const var& b, pythonic::overflow::Overflow polic
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -2467,7 +2790,23 @@ var sub__int__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'int' and 'string'");
 }
 var sub__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'int' and 'bool'");
+    // Numeric sub with policy-aware handling
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_INT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -2502,7 +2841,7 @@ var sub__int__long(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -2521,7 +2860,7 @@ var sub__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -2559,7 +2898,7 @@ var sub__int__uint(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -2578,7 +2917,7 @@ var sub__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -2597,7 +2936,7 @@ var sub__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -2665,7 +3004,23 @@ var sub__float__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'float' and 'string'");
 }
 var sub__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'float' and 'bool'");
+    // Numeric sub with policy-aware handling
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_FLOAT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -2876,37 +3231,197 @@ var sub__bool__none(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'none'");
 }
 var sub__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'int'");
+    // Numeric sub with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_INT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'float'");
+    // Numeric sub with policy-aware handling
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_FLOAT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'string'");
 }
 var sub__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'bool'");
+    // Numeric sub with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'double'");
+    // Numeric sub with policy-aware handling
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'long'");
+    // Numeric sub with policy-aware handling
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'long_long'");
+    // Numeric sub with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'long_double'");
+    // Numeric sub with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'uint'");
+    // Numeric sub with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_UINT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'ulong'");
+    // Numeric sub with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'ulong_long'");
+    // Numeric sub with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'bool' and 'list'");
@@ -2971,7 +3486,23 @@ var sub__double__string(const var& a, const var& b, pythonic::overflow::Overflow
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'double' and 'string'");
 }
 var sub__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'double' and 'bool'");
+    // Numeric sub with policy-aware handling
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -3141,7 +3672,7 @@ var sub__long__int(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3169,7 +3700,23 @@ var sub__long__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'long' and 'string'");
 }
 var sub__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'long' and 'bool'");
+    // Numeric sub with policy-aware handling
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -3204,7 +3751,7 @@ var sub__long__long(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3223,7 +3770,7 @@ var sub__long__long_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3261,7 +3808,7 @@ var sub__long__uint(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3280,7 +3827,7 @@ var sub__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow po
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3299,7 +3846,7 @@ var sub__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3339,7 +3886,7 @@ var sub__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3367,7 +3914,23 @@ var sub__long_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'long_long' and 'string'");
 }
 var sub__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'long_long' and 'bool'");
+    // Numeric sub with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -3402,7 +3965,7 @@ var sub__long_long__long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3421,7 +3984,7 @@ var sub__long_long__long_long(const var& a, const var& b, pythonic::overflow::Ov
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3459,7 +4022,7 @@ var sub__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3478,7 +4041,7 @@ var sub__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3497,7 +4060,7 @@ var sub__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3565,7 +4128,23 @@ var sub__long_double__string(const var& a, const var& b, pythonic::overflow::Ove
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'long_double' and 'string'");
 }
 var sub__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'long_double' and 'bool'");
+    // Numeric sub with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -3735,7 +4314,7 @@ var sub__uint__int(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3763,7 +4342,23 @@ var sub__uint__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'uint' and 'string'");
 }
 var sub__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'uint' and 'bool'");
+    // Numeric sub with policy-aware handling
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_UINT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -3798,7 +4393,7 @@ var sub__uint__long(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3817,7 +4412,7 @@ var sub__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3933,7 +4528,7 @@ var sub__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -3961,7 +4556,23 @@ var sub__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'ulong' and 'string'");
 }
 var sub__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'ulong' and 'bool'");
+    // Numeric sub with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -3996,7 +4607,7 @@ var sub__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow po
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -4015,7 +4626,7 @@ var sub__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -4131,7 +4742,7 @@ var sub__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -4159,7 +4770,23 @@ var sub__ulong_long__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'ulong_long' and 'string'");
 }
 var sub__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for -: 'ulong_long' and 'bool'");
+    // Numeric sub with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la - lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::sub_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::sub_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) - static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
+    }
 }
 var sub__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric sub with policy-aware handling
@@ -4194,7 +4821,7 @@ var sub__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -4213,7 +4840,7 @@ var sub__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::O
         return var(res);
     } else {
         long double result = static_cast<long double>(la) - static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);
     }
@@ -4755,7 +5382,7 @@ var mul__int__int(const var& a, const var& b, pythonic::overflow::Overflow polic
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -4788,7 +5415,23 @@ var mul__int__string(const var& a, const var& b, pythonic::overflow::Overflow po
     return var(res);
 }
 var mul__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'int' and 'bool'");
+    // Numeric mul with policy-aware handling
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_INT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -4823,7 +5466,7 @@ var mul__int__long(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -4842,7 +5485,7 @@ var mul__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -4880,7 +5523,7 @@ var mul__int__uint(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -4899,7 +5542,7 @@ var mul__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -4918,7 +5561,7 @@ var mul__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -4991,7 +5634,23 @@ var mul__float__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'float' and 'string'");
 }
 var mul__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'float' and 'bool'");
+    // Numeric mul with policy-aware handling
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_FLOAT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -5217,37 +5876,197 @@ var mul__bool__none(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'none'");
 }
 var mul__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'int'");
+    // Numeric mul with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_INT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'float'");
+    // Numeric mul with policy-aware handling
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_FLOAT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'string'");
 }
 var mul__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'bool'");
+    // Numeric mul with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'double'");
+    // Numeric mul with policy-aware handling
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'long'");
+    // Numeric mul with policy-aware handling
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'long_long'");
+    // Numeric mul with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'long_double'");
+    // Numeric mul with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'uint'");
+    // Numeric mul with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_UINT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'ulong'");
+    // Numeric mul with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'ulong_long'");
+    // Numeric mul with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'bool' and 'list'");
@@ -5312,7 +6131,23 @@ var mul__double__string(const var& a, const var& b, pythonic::overflow::Overflow
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'double' and 'string'");
 }
 var mul__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'double' and 'bool'");
+    // Numeric mul with policy-aware handling
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -5482,7 +6317,7 @@ var mul__long__int(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5515,7 +6350,23 @@ var mul__long__string(const var& a, const var& b, pythonic::overflow::Overflow p
     return var(res);
 }
 var mul__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'long' and 'bool'");
+    // Numeric mul with policy-aware handling
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -5550,7 +6401,7 @@ var mul__long__long(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5569,7 +6420,7 @@ var mul__long__long_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5607,7 +6458,7 @@ var mul__long__uint(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5626,7 +6477,7 @@ var mul__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow po
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5645,7 +6496,7 @@ var mul__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5690,7 +6541,7 @@ var mul__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5723,7 +6574,23 @@ var mul__long_long__string(const var& a, const var& b, pythonic::overflow::Overf
     return var(res);
 }
 var mul__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'long_long' and 'bool'");
+    // Numeric mul with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -5758,7 +6625,7 @@ var mul__long_long__long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5777,7 +6644,7 @@ var mul__long_long__long_long(const var& a, const var& b, pythonic::overflow::Ov
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5815,7 +6682,7 @@ var mul__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5834,7 +6701,7 @@ var mul__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5853,7 +6720,7 @@ var mul__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -5926,7 +6793,23 @@ var mul__long_double__string(const var& a, const var& b, pythonic::overflow::Ove
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'long_double' and 'string'");
 }
 var mul__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'long_double' and 'bool'");
+    // Numeric mul with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -6096,7 +6979,7 @@ var mul__uint__int(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6124,7 +7007,23 @@ var mul__uint__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'uint' and 'string'");
 }
 var mul__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'uint' and 'bool'");
+    // Numeric mul with policy-aware handling
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_UINT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -6159,7 +7058,7 @@ var mul__uint__long(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6178,7 +7077,7 @@ var mul__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6294,7 +7193,7 @@ var mul__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6322,7 +7221,23 @@ var mul__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'ulong' and 'string'");
 }
 var mul__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'ulong' and 'bool'");
+    // Numeric mul with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -6357,7 +7272,7 @@ var mul__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow po
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6376,7 +7291,7 @@ var mul__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6492,7 +7407,7 @@ var mul__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6520,7 +7435,23 @@ var mul__ulong_long__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'ulong_long' and 'string'");
 }
 var mul__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for *: 'ulong_long' and 'bool'");
+    // Numeric mul with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la * lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mul_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mul_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) * static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mul__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric mul with policy-aware handling
@@ -6555,7 +7486,7 @@ var mul__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -6574,7 +7505,7 @@ var mul__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::O
         return var(res);
     } else {
         long double result = static_cast<long double>(la) * static_cast<long double>(lb);
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -7115,7 +8046,24 @@ var div__int__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'int' and 'string'");
 }
 var div__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'int' and 'bool'");
+    // Numeric div with policy-aware handling
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_INT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -7322,7 +8270,24 @@ var div__float__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'float' and 'string'");
 }
 var div__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'float' and 'bool'");
+    // Numeric div with policy-aware handling
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_FLOAT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -7540,37 +8505,207 @@ var div__bool__none(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'none'");
 }
 var div__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'int'");
+    // Numeric div with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_INT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'float'");
+    // Numeric div with policy-aware handling
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_FLOAT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'string'");
 }
 var div__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'bool'");
+    // Numeric div with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'double'");
+    // Numeric div with policy-aware handling
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'long'");
+    // Numeric div with policy-aware handling
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'long_long'");
+    // Numeric div with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'long_double'");
+    // Numeric div with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'uint'");
+    // Numeric div with policy-aware handling
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_UINT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'ulong'");
+    // Numeric div with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'ulong_long'");
+    // Numeric div with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'bool' and 'list'");
@@ -7637,7 +8772,24 @@ var div__double__string(const var& a, const var& b, pythonic::overflow::Overflow
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'double' and 'string'");
 }
 var div__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'double' and 'bool'");
+    // Numeric div with policy-aware handling
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -7844,7 +8996,24 @@ var div__long__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'long' and 'string'");
 }
 var div__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'long' and 'bool'");
+    // Numeric div with policy-aware handling
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -8051,7 +9220,24 @@ var div__long_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'long_long' and 'string'");
 }
 var div__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'long_long' and 'bool'");
+    // Numeric div with policy-aware handling
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -8258,7 +9444,24 @@ var div__long_double__string(const var& a, const var& b, pythonic::overflow::Ove
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'long_double' and 'string'");
 }
 var div__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'long_double' and 'bool'");
+    // Numeric div with policy-aware handling
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -8465,7 +9668,24 @@ var div__uint__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'uint' and 'string'");
 }
 var div__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'uint' and 'bool'");
+    // Numeric div with policy-aware handling
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_UINT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -8672,7 +9892,24 @@ var div__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'ulong' and 'string'");
 }
 var div__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'ulong' and 'bool'");
+    // Numeric div with policy-aware handling
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -8879,7 +10116,24 @@ var div__ulong_long__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'ulong_long' and 'string'");
 }
 var div__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for /: 'ulong_long' and 'bool'");
+    // Numeric div with policy-aware handling
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la / lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::div_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::div_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = static_cast<long double>(la) / static_cast<long double>(lb);
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var div__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     // Numeric div with policy-aware handling
@@ -9436,7 +10690,7 @@ var mod__int__int(const var& a, const var& b, pythonic::overflow::Overflow polic
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -9459,7 +10713,23 @@ var mod__int__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'int' and 'string'");
 }
 var mod__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_INT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -9489,7 +10759,7 @@ var mod__int__long(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -9508,7 +10778,7 @@ var mod__int__long_long(const var& a, const var& b, pythonic::overflow::Overflow
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -9541,7 +10811,7 @@ var mod__int__uint(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -9560,7 +10830,7 @@ var mod__int__ulong(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -9579,7 +10849,7 @@ var mod__int__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_INT, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -9637,7 +10907,18 @@ var mod__float__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'float' and 'string'");
 }
 var mod__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {
+        float res = std::fmod(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_FLOAT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -9813,37 +11094,182 @@ var mod__bool__none(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'none'");
 }
 var mod__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_INT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {
+        float res = std::fmod(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_FLOAT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'string'");
 }
 var mod__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {
+        double res = std::fmod(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {
+        long double res = std::fmod(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(0, pythonic::promotion::RANK_LONG_DOUBLE);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_UINT);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(0, pythonic::promotion::RANK_ULONG_LONG);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'bool' and 'list'");
@@ -9898,7 +11324,18 @@ var mod__double__string(const var& a, const var& b, pythonic::overflow::Overflow
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'double' and 'string'");
 }
 var mod__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {
+        double res = std::fmod(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -10033,7 +11470,7 @@ var mod__long__int(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10056,7 +11493,23 @@ var mod__long__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'long' and 'string'");
 }
 var mod__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -10086,7 +11539,7 @@ var mod__long__long(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10105,7 +11558,7 @@ var mod__long__long_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10138,7 +11591,7 @@ var mod__long__uint(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10157,7 +11610,7 @@ var mod__long__ulong(const var& a, const var& b, pythonic::overflow::Overflow po
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10176,7 +11629,7 @@ var mod__long__ulong_long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10216,7 +11669,7 @@ var mod__long_long__int(const var& a, const var& b, pythonic::overflow::Overflow
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10239,7 +11692,23 @@ var mod__long_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'long_long' and 'string'");
 }
 var mod__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -10269,7 +11738,7 @@ var mod__long_long__long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10288,7 +11757,7 @@ var mod__long_long__long_long(const var& a, const var& b, pythonic::overflow::Ov
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10321,7 +11790,7 @@ var mod__long_long__uint(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_UINT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10340,7 +11809,7 @@ var mod__long_long__ulong(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10359,7 +11828,7 @@ var mod__long_long__ulong_long(const var& a, const var& b, pythonic::overflow::O
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_LONG_LONG, pythonic::promotion::RANK_ULONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10417,7 +11886,18 @@ var mod__long_double__string(const var& a, const var& b, pythonic::overflow::Ove
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'long_double' and 'string'");
 }
 var mod__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError("float division by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {
+        long double res = std::fmod(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Has_float;
+        int min_rank = std::max(pythonic::promotion::RANK_LONG_DOUBLE, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -10552,7 +12032,7 @@ var mod__uint__int(const var& a, const var& b, pythonic::overflow::Overflow poli
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10575,7 +12055,23 @@ var mod__uint__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'uint' and 'string'");
 }
 var mod__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_UINT, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -10605,7 +12101,7 @@ var mod__uint__long(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10624,7 +12120,7 @@ var mod__uint__long_long(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_UINT, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10735,7 +12231,7 @@ var mod__ulong__int(const var& a, const var& b, pythonic::overflow::Overflow pol
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10758,7 +12254,23 @@ var mod__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'ulong' and 'string'");
 }
 var mod__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -10788,7 +12300,7 @@ var mod__ulong__long(const var& a, const var& b, pythonic::overflow::Overflow po
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10807,7 +12319,7 @@ var mod__ulong__long_long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10918,7 +12430,7 @@ var mod__ulong_long__int(const var& a, const var& b, pythonic::overflow::Overflo
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_INT);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10941,7 +12453,23 @@ var mod__ulong_long__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'ulong_long' and 'string'");
 }
 var mod__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for %: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    if (lb == 0) throw pythonic::PythonicZeroDivisionError("integer division or modulo by zero");
+    if (policy == pythonic::overflow::Overflow::None_of_them) {
+        return var(la % lb);
+    } else if (policy == pythonic::overflow::Overflow::Throw) {
+        auto res = pythonic::overflow::mod_throw(la, lb);
+        return var(res);
+    } else if (policy == pythonic::overflow::Overflow::Wrap) {
+        auto res = pythonic::overflow::mod_wrap(la, lb);
+        return var(res);
+    } else {
+        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
+        auto ptype = pythonic::promotion::Signed;
+        int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, 0);
+        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
+    }
 }
 var mod__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());
@@ -10971,7 +12499,7 @@ var mod__ulong_long__long(const var& a, const var& b, pythonic::overflow::Overfl
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -10990,7 +12518,7 @@ var mod__ulong_long__long_long(const var& a, const var& b, pythonic::overflow::O
         return var(res);
     } else {
         long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));
-        auto ptype = pythonic::promotion::Others;
+        auto ptype = pythonic::promotion::Signed;
         int min_rank = std::max(pythonic::promotion::RANK_ULONG_LONG, pythonic::promotion::RANK_LONG_LONG);
         return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);
     }
@@ -11481,7 +13009,9 @@ var eq__int__string(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'string'");
 }
 var eq__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -11553,7 +13083,9 @@ var eq__float__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'string'");
 }
 var eq__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -11666,37 +13198,57 @@ var eq__bool__none(const var& a, const var& b, pythonic::overflow::Overflow poli
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'none'");
 }
 var eq__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la == lb);
 }
 var eq__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    return var(la == lb);
 }
 var eq__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'string'");
 }
 var eq__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    return var(la == lb);
 }
 var eq__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la == lb);
 }
 var eq__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la == lb);
 }
 var eq__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    return var(la == lb);
 }
 var eq__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    return var(la == lb);
 }
 var eq__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la == lb);
 }
 var eq__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la == lb);
 }
 var eq__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'bool' and 'list'");
@@ -11733,7 +13285,9 @@ var eq__double__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'string'");
 }
 var eq__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -11805,7 +13359,9 @@ var eq__long__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'string'");
 }
 var eq__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -11877,7 +13433,9 @@ var eq__long_long__string(const var& a, const var& b, pythonic::overflow::Overfl
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'string'");
 }
 var eq__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -11949,7 +13507,9 @@ var eq__long_double__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'string'");
 }
 var eq__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -12021,7 +13581,9 @@ var eq__uint__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'string'");
 }
 var eq__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -12093,7 +13655,9 @@ var eq__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'string'");
 }
 var eq__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -12165,7 +13729,9 @@ var eq__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'string'");
 }
 var eq__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la == lb);
 }
 var eq__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());
@@ -12617,7 +14183,9 @@ var ne__int__string(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'string'");
 }
 var ne__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -12689,7 +14257,9 @@ var ne__float__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'string'");
 }
 var ne__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -12802,37 +14372,57 @@ var ne__bool__none(const var& a, const var& b, pythonic::overflow::Overflow poli
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'none'");
 }
 var ne__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la != lb);
 }
 var ne__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    return var(la != lb);
 }
 var ne__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'string'");
 }
 var ne__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    return var(la != lb);
 }
 var ne__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la != lb);
 }
 var ne__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la != lb);
 }
 var ne__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    return var(la != lb);
 }
 var ne__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    return var(la != lb);
 }
 var ne__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la != lb);
 }
 var ne__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la != lb);
 }
 var ne__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'bool' and 'list'");
@@ -12869,7 +14459,9 @@ var ne__double__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'string'");
 }
 var ne__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -12941,7 +14533,9 @@ var ne__long__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'string'");
 }
 var ne__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -13013,7 +14607,9 @@ var ne__long_long__string(const var& a, const var& b, pythonic::overflow::Overfl
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'string'");
 }
 var ne__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -13085,7 +14681,9 @@ var ne__long_double__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'string'");
 }
 var ne__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -13157,7 +14755,9 @@ var ne__uint__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'string'");
 }
 var ne__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -13229,7 +14829,9 @@ var ne__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'string'");
 }
 var ne__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -13301,7 +14903,9 @@ var ne__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'string'");
 }
 var ne__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la != lb);
 }
 var ne__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());
@@ -13753,7 +15357,9 @@ var gt__int__string(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'string'");
 }
 var gt__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -13825,7 +15431,9 @@ var gt__float__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'string'");
 }
 var gt__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -13938,37 +15546,57 @@ var gt__bool__none(const var& a, const var& b, pythonic::overflow::Overflow poli
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'none'");
 }
 var gt__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la > lb);
 }
 var gt__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    return var(la > lb);
 }
 var gt__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'string'");
 }
 var gt__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    return var(la > lb);
 }
 var gt__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la > lb);
 }
 var gt__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la > lb);
 }
 var gt__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    return var(la > lb);
 }
 var gt__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    return var(la > lb);
 }
 var gt__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la > lb);
 }
 var gt__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la > lb);
 }
 var gt__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'bool' and 'list'");
@@ -14005,7 +15633,9 @@ var gt__double__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'string'");
 }
 var gt__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -14077,7 +15707,9 @@ var gt__long__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'string'");
 }
 var gt__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -14149,7 +15781,9 @@ var gt__long_long__string(const var& a, const var& b, pythonic::overflow::Overfl
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'string'");
 }
 var gt__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -14221,7 +15855,9 @@ var gt__long_double__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'string'");
 }
 var gt__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -14293,7 +15929,9 @@ var gt__uint__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'string'");
 }
 var gt__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -14365,7 +16003,9 @@ var gt__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'string'");
 }
 var gt__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -14437,7 +16077,9 @@ var gt__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'string'");
 }
 var gt__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la > lb);
 }
 var gt__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());
@@ -14889,7 +16531,9 @@ var ge__int__string(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'string'");
 }
 var ge__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -14961,7 +16605,9 @@ var ge__float__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'string'");
 }
 var ge__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -15074,37 +16720,57 @@ var ge__bool__none(const var& a, const var& b, pythonic::overflow::Overflow poli
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'none'");
 }
 var ge__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la >= lb);
 }
 var ge__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    return var(la >= lb);
 }
 var ge__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'string'");
 }
 var ge__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    return var(la >= lb);
 }
 var ge__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la >= lb);
 }
 var ge__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la >= lb);
 }
 var ge__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    return var(la >= lb);
 }
 var ge__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    return var(la >= lb);
 }
 var ge__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la >= lb);
 }
 var ge__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la >= lb);
 }
 var ge__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'bool' and 'list'");
@@ -15141,7 +16807,9 @@ var ge__double__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'string'");
 }
 var ge__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -15213,7 +16881,9 @@ var ge__long__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'string'");
 }
 var ge__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -15285,7 +16955,9 @@ var ge__long_long__string(const var& a, const var& b, pythonic::overflow::Overfl
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'string'");
 }
 var ge__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -15357,7 +17029,9 @@ var ge__long_double__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'string'");
 }
 var ge__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -15429,7 +17103,9 @@ var ge__uint__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'string'");
 }
 var ge__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -15501,7 +17177,9 @@ var ge__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'string'");
 }
 var ge__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -15573,7 +17251,9 @@ var ge__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'string'");
 }
 var ge__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la >= lb);
 }
 var ge__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());
@@ -16025,7 +17705,9 @@ var lt__int__string(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'string'");
 }
 var lt__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -16097,7 +17779,9 @@ var lt__float__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'string'");
 }
 var lt__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -16210,37 +17894,57 @@ var lt__bool__none(const var& a, const var& b, pythonic::overflow::Overflow poli
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'none'");
 }
 var lt__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la < lb);
 }
 var lt__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    return var(la < lb);
 }
 var lt__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'string'");
 }
 var lt__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    return var(la < lb);
 }
 var lt__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la < lb);
 }
 var lt__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la < lb);
 }
 var lt__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    return var(la < lb);
 }
 var lt__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    return var(la < lb);
 }
 var lt__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la < lb);
 }
 var lt__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la < lb);
 }
 var lt__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'bool' and 'list'");
@@ -16277,7 +17981,9 @@ var lt__double__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'string'");
 }
 var lt__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -16349,7 +18055,9 @@ var lt__long__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'string'");
 }
 var lt__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -16421,7 +18129,9 @@ var lt__long_long__string(const var& a, const var& b, pythonic::overflow::Overfl
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'string'");
 }
 var lt__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -16493,7 +18203,9 @@ var lt__long_double__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'string'");
 }
 var lt__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -16565,7 +18277,9 @@ var lt__uint__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'string'");
 }
 var lt__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -16637,7 +18351,9 @@ var lt__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'string'");
 }
 var lt__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -16709,7 +18425,9 @@ var lt__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'string'");
 }
 var lt__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la < lb);
 }
 var lt__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());
@@ -17161,7 +18879,9 @@ var le__int__string(const var& a, const var& b, pythonic::overflow::Overflow pol
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'string'");
 }
 var le__int__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'int' and 'bool'");
+    int la = static_cast<int>(a.var_get<int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__int__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<int>());
@@ -17233,7 +18953,9 @@ var le__float__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'string'");
 }
 var le__float__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'float' and 'bool'");
+    float la = static_cast<float>(a.var_get<float>());
+    float lb = static_cast<float>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__float__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<float>());
@@ -17346,37 +19068,57 @@ var le__bool__none(const var& a, const var& b, pythonic::overflow::Overflow poli
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'none'");
 }
 var le__bool__int(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'int'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<int>());
+    return var(la <= lb);
 }
 var le__bool__float(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'float'");
+    float la = static_cast<float>(a.var_get<bool>());
+    float lb = static_cast<float>(b.var_get<float>());
+    return var(la <= lb);
 }
 var le__bool__string(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'string'");
 }
 var le__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'bool'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'double'");
+    double la = static_cast<double>(a.var_get<bool>());
+    double lb = static_cast<double>(b.var_get<double>());
+    return var(la <= lb);
 }
 var le__bool__long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'long'");
+    long la = static_cast<long>(a.var_get<bool>());
+    long lb = static_cast<long>(b.var_get<long>());
+    return var(la <= lb);
 }
 var le__bool__long_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'long_long'");
+    long long la = static_cast<long long>(a.var_get<bool>());
+    long long lb = static_cast<long long>(b.var_get<long long>());
+    return var(la <= lb);
 }
 var le__bool__long_double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'long_double'");
+    long double la = static_cast<long double>(a.var_get<bool>());
+    long double lb = static_cast<long double>(b.var_get<long double>());
+    return var(la <= lb);
 }
 var le__bool__uint(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'uint'");
+    int la = static_cast<int>(a.var_get<bool>());
+    int lb = static_cast<int>(b.var_get<unsigned int>());
+    return var(la <= lb);
 }
 var le__bool__ulong(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'ulong'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<bool>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<unsigned long>());
+    return var(la <= lb);
 }
 var le__bool__ulong_long(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'ulong_long'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<bool>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<unsigned long long>());
+    return var(la <= lb);
 }
 var le__bool__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'bool' and 'list'");
@@ -17413,7 +19155,9 @@ var le__double__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'string'");
 }
 var le__double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'double' and 'bool'");
+    double la = static_cast<double>(a.var_get<double>());
+    double lb = static_cast<double>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<double>());
@@ -17485,7 +19229,9 @@ var le__long__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'string'");
 }
 var le__long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long' and 'bool'");
+    long la = static_cast<long>(a.var_get<long>());
+    long lb = static_cast<long>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long>());
@@ -17557,7 +19303,9 @@ var le__long_long__string(const var& a, const var& b, pythonic::overflow::Overfl
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'string'");
 }
 var le__long_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_long' and 'bool'");
+    long long la = static_cast<long long>(a.var_get<long long>());
+    long long lb = static_cast<long long>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__long_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<long long>());
@@ -17629,7 +19377,9 @@ var le__long_double__string(const var& a, const var& b, pythonic::overflow::Over
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'string'");
 }
 var le__long_double__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'long_double' and 'bool'");
+    long double la = static_cast<long double>(a.var_get<long double>());
+    long double lb = static_cast<long double>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__long_double__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     long double la = static_cast<long double>(a.var_get<long double>());
@@ -17701,7 +19451,9 @@ var le__uint__string(const var& a, const var& b, pythonic::overflow::Overflow po
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'string'");
 }
 var le__uint__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'uint' and 'bool'");
+    int la = static_cast<int>(a.var_get<unsigned int>());
+    int lb = static_cast<int>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__uint__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned int>());
@@ -17773,7 +19525,9 @@ var le__ulong__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'string'");
 }
 var le__ulong__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong' and 'bool'");
+    unsigned long la = static_cast<unsigned long>(a.var_get<unsigned long>());
+    unsigned long lb = static_cast<unsigned long>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__ulong__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long>());
@@ -17845,7 +19599,9 @@ var le__ulong_long__string(const var& a, const var& b, pythonic::overflow::Overf
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'string'");
 }
 var le__ulong_long__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ulong_long' and 'bool'");
+    unsigned long long la = static_cast<unsigned long long>(a.var_get<unsigned long long>());
+    unsigned long long lb = static_cast<unsigned long long>(b.var_get<bool>());
+    return var(la <= lb);
 }
 var le__ulong_long__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     double la = static_cast<double>(a.var_get<unsigned long long>());

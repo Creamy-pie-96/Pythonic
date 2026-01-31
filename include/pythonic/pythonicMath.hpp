@@ -490,7 +490,7 @@ namespace pythonic
             else if(is_unsigned_type(base) && is_unsigned_type(exponent))
                 t = pythonic::promotion::Both_unsigned;
             else 
-                t = pythonic::promotion::Others;
+                t = pythonic::promotion::Signed;
 
             // Get max rank of inputs (for smallest_fit=false)
             int min_rank = getMaxRank(base, exponent);
@@ -1163,7 +1163,7 @@ namespace pythonic
                     result = result * static_cast<long double>(i);
                 }
                 // All inputs are integers (factorial is always positive), use signed containers
-                return smart_promote(result, pythonic::promotion::Others , true, 0, false); // no floating, not both unsigned, smallest_fit=true
+                return smart_promote(result, pythonic::promotion::Signed , true, 0, false); // no floating, not both unsigned, smallest_fit=true
             }
             case Overflow::Wrap:
             {
