@@ -2187,46 +2187,14 @@ namespace pythonic
                 return os;
             }
 
-            // Comparison operator for use in containers (std::set)
-            // OPTIMIZED: Uses TypeTag for fast same-type dispatch
-            bool operator<(const var &other) const
-            {
-                // Fast-path: same type comparison using tag
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        return var_get<int>() < other.var_get<int>();
-                    case TypeTag::DOUBLE:
-                        return var_get<double>() < other.var_get<double>();
-                    case TypeTag::STRING:
-                        return var_get<std::string>() < other.var_get<std::string>();
-                    case TypeTag::LONG_LONG:
-                        return var_get<long long>() < other.var_get<long long>();
-                    case TypeTag::FLOAT:
-                        return var_get<float>() < other.var_get<float>();
-                    case TypeTag::LONG:
-                        return var_get<long>() < other.var_get<long>();
-                    case TypeTag::BOOL:
-                        return var_get<bool>() < other.var_get<bool>();
-                    default:
-                        break;
-                    }
-                }
-                // Mixed numeric types - promote to double
-                if (isNumeric() && other.isNumeric())
-                {
-                    return toDouble() < other.toDouble();
-                }
-                // Different types: compare by type index
-                return static_cast<int>(tag_) < static_cast<int>(other.tag_);
-            }
-
             // Arithmetic operators
             // OPTIMIZED: Uses TypeTag for fast same-type dispatch, falls back to type promotion
             // Arithmetic operators
-            var operator+(const var &other) const;
+            inline var operator+(const var &other) const
+            {
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Add>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+            }
 
             // Unary plus: returns a copy (Python semantics)
             var operator+() const
@@ -2267,11 +2235,27 @@ namespace pythonic
                     throw pythonic::PythonicTypeError("bad operand type for unary -: '" + type() + "'");
                 }
             }
-            var operator-(const var &other) const;
+            inline var operator-(const var &other) const
+            {
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Sub>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+            }
 
-            var operator*(const var &other) const;
-            var operator/(const var &other) const;
-            var operator%(const var &other) const;
+            inline var operator*(const var &other) const
+            {
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Mul>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+            }
+            inline var operator/(const var &other) const
+            {
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Div>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+            }
+            inline var operator%(const var &other) const
+            {
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Mod>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+            }
 
             // ============ In-Place Arithmetic Operators ============
             // These modify the value in-place for better performance
@@ -2674,355 +2658,38 @@ namespace pythonic
             // OPTIMIZED: Uses TypeTag for fast same-type dispatch
             var operator==(const var &other) const
             {
-                // Fast-path: same type
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::NONE:
-                        return var(true); // None == None is always true
-                    case TypeTag::INT:
-                        return var(var_get<int>() == other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() == other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() == other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() == other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() == other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() == other.var_get<unsigned long long>());
-                    case TypeTag::FLOAT:
-                        return var(var_get<float>() == other.var_get<float>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() == other.var_get<double>());
-                    case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() == other.var_get<long double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() == other.var_get<std::string>());
-                    case TypeTag::BOOL:
-                        return var(var_get<bool>() == other.var_get<bool>());
-                    case TypeTag::LIST:
-                    {
-                        const auto &lst1 = var_get<List>();
-                        const auto &lst2 = other.var_get<List>();
-                        if (lst1.size() != lst2.size())
-                            return var(false);
-                        for (size_t i = 0; i < lst1.size(); ++i)
-                        {
-                            // Recursively compare elements
-                            if (!static_cast<bool>(lst1[i] == lst2[i]))
-                                return var(false);
-                        }
-                        return var(true);
-                    }
-                    case TypeTag::SET:
-                    {
-                        const auto &set1 = var_get<Set>();
-                        const auto &set2 = other.var_get<Set>();
-                        if (set1.size() != set2.size())
-                            return var(false);
-                        // Check if all elements in set1 are in set2
-                        for (const auto &elem : set1)
-                        {
-                            if (set2.find(elem) == set2.end())
-                                return var(false);
-                        }
-                        return var(true);
-                    }
-                    case TypeTag::ORDEREDSET:
-                    {
-                        const auto &set1 = var_get<OrderedSet>();
-                        const auto &set2 = other.var_get<OrderedSet>();
-                        if (set1.size() != set2.size())
-                            return var(false);
-                        auto it1 = set1.begin();
-                        auto it2 = set2.begin();
-                        while (it1 != set1.end())
-                        {
-                            if (!static_cast<bool>(*it1 == *it2))
-                                return var(false);
-                            ++it1;
-                            ++it2;
-                        }
-                        return var(true);
-                    }
-                    case TypeTag::DICT:
-                    {
-                        const auto &dict1 = var_get<Dict>();
-                        const auto &dict2 = other.var_get<Dict>();
-                        if (dict1.size() != dict2.size())
-                            return var(false);
-                        for (const auto &[key, val] : dict1)
-                        {
-                            auto it = dict2.find(key);
-                            if (it == dict2.end() || !static_cast<bool>(val == it->second))
-                                return var(false);
-                        }
-                        return var(true);
-                    }
-                    case TypeTag::ORDEREDDICT:
-                    {
-                        const auto &dict1 = var_get<OrderedDict>();
-                        const auto &dict2 = other.var_get<OrderedDict>();
-                        if (dict1.size() != dict2.size())
-                            return var(false);
-                        auto it1 = dict1.begin();
-                        auto it2 = dict2.begin();
-                        while (it1 != dict1.end())
-                        {
-                            if (it1->first != it2->first || !static_cast<bool>(it1->second == it2->second))
-                                return var(false);
-                            ++it1;
-                            ++it2;
-                        }
-                        return var(true);
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed numeric types - promote to double
-                if (isNumeric() && other.isNumeric())
-                {
-                    return var(toDouble() == other.toDouble());
-                }
-                // Different types (except numeric) are not equal: throw for clarity
-                throw pythonic::PythonicTypeError("operator== not supported for these types. Cannot perform '" + type() + " == " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Eq>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::None_of_them, false);
             }
 
             var operator!=(const var &other) const
             {
-                // Fast-path: same type
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::NONE:
-                        return var(false); // None != None is always false
-                    case TypeTag::INT:
-                        return var(var_get<int>() != other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() != other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() != other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() != other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() != other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() != other.var_get<unsigned long long>());
-                    case TypeTag::FLOAT:
-                        return var(var_get<float>() != other.var_get<float>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() != other.var_get<double>());
-                    case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() != other.var_get<long double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() != other.var_get<std::string>());
-                    case TypeTag::BOOL:
-                        return var(var_get<bool>() != other.var_get<bool>());
-                    case TypeTag::LIST:
-                    {
-                        const auto &lst1 = var_get<List>();
-                        const auto &lst2 = other.var_get<List>();
-                        if (lst1.size() != lst2.size())
-                            return var(true);
-                        for (size_t i = 0; i < lst1.size(); ++i)
-                        {
-                            if (static_cast<bool>(lst1[i] != lst2[i]))
-                                return var(true);
-                        }
-                        return var(false);
-                    }
-                    case TypeTag::SET:
-                    {
-                        const auto &set1 = var_get<Set>();
-                        const auto &set2 = other.var_get<Set>();
-                        if (set1.size() != set2.size())
-                            return var(true);
-                        for (const auto &elem : set1)
-                        {
-                            if (set2.find(elem) == set2.end())
-                                return var(true);
-                        }
-                        return var(false);
-                    }
-                    case TypeTag::ORDEREDSET:
-                    {
-                        const auto &set1 = var_get<OrderedSet>();
-                        const auto &set2 = other.var_get<OrderedSet>();
-                        if (set1.size() != set2.size())
-                            return var(true);
-                        auto it1 = set1.begin();
-                        auto it2 = set2.begin();
-                        while (it1 != set1.end())
-                        {
-                            if (static_cast<bool>(*it1 != *it2))
-                                return var(true);
-                            ++it1;
-                            ++it2;
-                        }
-                        return var(false);
-                    }
-                    case TypeTag::DICT:
-                    {
-                        const auto &dict1 = var_get<Dict>();
-                        const auto &dict2 = other.var_get<Dict>();
-                        if (dict1.size() != dict2.size())
-                            return var(true);
-                        for (const auto &[key, val] : dict1)
-                        {
-                            auto it = dict2.find(key);
-                            if (it == dict2.end() || static_cast<bool>(val != it->second))
-                                return var(true);
-                        }
-                        return var(false);
-                    }
-                    case TypeTag::ORDEREDDICT:
-                    {
-                        const auto &dict1 = var_get<OrderedDict>();
-                        const auto &dict2 = other.var_get<OrderedDict>();
-                        if (dict1.size() != dict2.size())
-                            return var(true);
-                        auto it1 = dict1.begin();
-                        auto it2 = dict2.begin();
-                        while (it1 != dict1.end())
-                        {
-                            if (it1->first != it2->first || static_cast<bool>(it1->second != it2->second))
-                                return var(true);
-                            ++it1;
-                            ++it2;
-                        }
-                        return var(false);
-                    }
-                    default:
-                        break;
-                    }
-                }
-                if (isNumeric() && other.isNumeric())
-                {
-                    return var(toDouble() != other.toDouble());
-                }
-                throw pythonic::PythonicTypeError("operator!= not supported for these types. Cannot perform '" + type() + " != " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Ne>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::None_of_them, false);
+            }
+
+            var operator<(const var &other) const
+            {
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Lt>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::None_of_them, false);
             }
 
             var operator>(const var &other) const
             {
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::NONE:
-                        return var(false); // None > None is always false
-                    case TypeTag::INT:
-                        return var(var_get<int>() > other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() > other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() > other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() > other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() > other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() > other.var_get<unsigned long long>());
-                    case TypeTag::FLOAT:
-                        return var(var_get<float>() > other.var_get<float>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() > other.var_get<double>());
-                    case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() > other.var_get<long double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() > other.var_get<std::string>());
-                    default:
-                        break;
-                    }
-                }
-                if (isNumeric() && other.isNumeric())
-                {
-                    return var(toDouble() > other.toDouble());
-                }
-                throw pythonic::PythonicTypeError("operator> not supported for these types. Cannot perform '" + type() + " > " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Gt>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::None_of_them, false);
             }
 
             var operator>=(const var &other) const
             {
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::NONE:
-                        return var(true); // None >= None is always true
-                    case TypeTag::INT:
-                        return var(var_get<int>() >= other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() >= other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() >= other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() >= other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() >= other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() >= other.var_get<unsigned long long>());
-                    case TypeTag::FLOAT:
-                        return var(var_get<float>() >= other.var_get<float>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() >= other.var_get<double>());
-                    case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() >= other.var_get<long double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() >= other.var_get<std::string>());
-                    default:
-                        break;
-                    }
-                }
-                if (isNumeric() && other.isNumeric())
-                {
-                    return var(toDouble() >= other.toDouble());
-                }
-                throw pythonic::PythonicTypeError("operator>= not supported for these types. Cannot perform '" + type() + " >= " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Ge>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::None_of_them, false);
             }
 
             var operator<=(const var &other) const
             {
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::NONE:
-                        return var(true); // None <= None is always true
-                    case TypeTag::INT:
-                        return var(var_get<int>() <= other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() <= other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() <= other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() <= other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() <= other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() <= other.var_get<unsigned long long>());
-                    case TypeTag::FLOAT:
-                        return var(var_get<float>() <= other.var_get<float>());
-                    case TypeTag::DOUBLE:
-                        return var(var_get<double>() <= other.var_get<double>());
-                    case TypeTag::LONG_DOUBLE:
-                        return var(var_get<long double>() <= other.var_get<long double>());
-                    case TypeTag::STRING:
-                        return var(var_get<std::string>() <= other.var_get<std::string>());
-                    default:
-                        break;
-                    }
-                }
-                if (isNumeric() && other.isNumeric())
-                {
-                    return var(toDouble() <= other.toDouble());
-                }
-                throw pythonic::PythonicTypeError("operator<= not supported for these types. Cannot perform '" + type() + " <= " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Le>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::None_of_them, false);
             }
 
             // ============ OPTIMIZED Implicit Conversion Operators for Arithmetic Types ============
@@ -3301,7 +2968,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend bool operator>(T lhs, const var &rhs) { return var(lhs) > rhs; }
+            friend bool operator>(T lhs, const var &rhs) { return static_cast<bool>(var(lhs) > rhs); }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator>=(T other) const
@@ -3315,7 +2982,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend bool operator>=(T lhs, const var &rhs) { return var(lhs) >= rhs; }
+            friend bool operator>=(T lhs, const var &rhs) { return static_cast<bool>(var(lhs) >= rhs); }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator<(T other) const
@@ -3330,7 +2997,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend bool operator<(T lhs, const var &rhs) { return var(lhs) < rhs; }
+            friend bool operator<(T lhs, const var &rhs) { return static_cast<bool>(var(lhs) < rhs); }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
             var operator<=(T other) const
@@ -3344,7 +3011,7 @@ namespace pythonic
             }
 
             template <typename T, typename = std::enable_if_t<std::is_arithmetic_v<T>>>
-            friend bool operator<=(T lhs, const var &rhs) { return var(lhs) <= rhs; }
+            friend bool operator<=(T lhs, const var &rhs) { return static_cast<bool>(var(lhs) <= rhs); }
 
             // Logical operators
             var operator&&(const var &other) const
@@ -3387,344 +3054,20 @@ namespace pythonic
 
             var operator&(const var &other) const
             {
-                // Fast-path: same type using tag
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        return var(var_get<int>() & other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() & other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() & other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() & other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() & other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() & other.var_get<unsigned long long>());
-                    case TypeTag::SET:
-                    {
-                        const auto &a = var_get<Set>();
-                        const auto &b = other.var_get<Set>();
-                        Set result;
-                        for (const auto &item : a)
-                        {
-                            if (b.find(item) != b.end())
-                            {
-                                result.insert(item);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDSET:
-                    {
-                        // Merge-based intersection for sorted sets
-                        const auto &a = var_get<OrderedSet>();
-                        const auto &b = other.var_get<OrderedSet>();
-                        OrderedSet result;
-                        auto it_a = a.begin();
-                        auto it_b = b.begin();
-                        while (it_a != a.end() && it_b != b.end())
-                        {
-                            if (*it_a < *it_b)
-                            {
-                                ++it_a;
-                            }
-                            else if (*it_b < *it_a)
-                            {
-                                ++it_b;
-                            }
-                            else
-                            {
-                                // Equal, add to result
-                                result.insert(*it_a);
-                                ++it_a;
-                                ++it_b;
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::LIST:
-                    {
-                        const auto &a = var_get<List>();
-                        const auto &b = other.var_get<List>();
-                        List result;
-                        Set b_set(b.begin(), b.end());
-                        for (const auto &item : a)
-                        {
-                            if (b_set.find(item) != b_set.end())
-                            {
-                                result.push_back(item);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::DICT:
-                    {
-                        const auto &a = var_get<Dict>();
-                        const auto &b = other.var_get<Dict>();
-                        Dict result;
-                        for (const auto &[key, val] : a)
-                        {
-                            if (b.find(key) != b.end())
-                            {
-                                result[key] = val;
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDDICT:
-                    {
-                        const auto &a = var_get<OrderedDict>();
-                        const auto &b = other.var_get<OrderedDict>();
-                        OrderedDict result;
-                        for (const auto &[key, val] : a)
-                        {
-                            if (b.find(key) != b.end())
-                            {
-                                result[key] = val;
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed integer types - promote to long long
-                if (isIntegral() && other.isIntegral())
-                {
-                    return var(toLongLong() & other.toLongLong());
-                }
-                throw pythonic::PythonicTypeError("operator& requires integral types or containers. Cannot perform '" + type() + " & " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::BitAnd>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
             }
 
             var operator|(const var &other) const
             {
-                // Fast-path: same type using tag
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        return var(var_get<int>() | other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() | other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() | other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() | other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() | other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() | other.var_get<unsigned long long>());
-                    case TypeTag::SET:
-                    {
-                        const auto &a = var_get<Set>();
-                        const auto &b = other.var_get<Set>();
-                        Set result = a;
-                        result.insert(b.begin(), b.end());
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDSET:
-                    {
-                        // Merge-based union for sorted sets
-                        const auto &a = var_get<OrderedSet>();
-                        const auto &b = other.var_get<OrderedSet>();
-                        OrderedSet result;
-                        auto it_a = a.begin();
-                        auto it_b = b.begin();
-                        while (it_a != a.end() && it_b != b.end())
-                        {
-                            if (*it_a < *it_b)
-                            {
-                                result.insert(*it_a);
-                                ++it_a;
-                            }
-                            else if (*it_b < *it_a)
-                            {
-                                result.insert(*it_b);
-                                ++it_b;
-                            }
-                            else
-                            {
-                                // Equal, add one
-                                result.insert(*it_a);
-                                ++it_a;
-                                ++it_b;
-                            }
-                        }
-                        // Insert remaining elements
-                        while (it_a != a.end())
-                        {
-                            result.insert(*it_a);
-                            ++it_a;
-                        }
-                        while (it_b != b.end())
-                        {
-                            result.insert(*it_b);
-                            ++it_b;
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::LIST:
-                    {
-                        const auto &a = var_get<List>();
-                        const auto &b = other.var_get<List>();
-                        List result;
-                        result.reserve(a.size() + b.size());
-                        result.insert(result.end(), a.begin(), a.end());
-                        result.insert(result.end(), b.begin(), b.end());
-                        return var(std::move(result));
-                    }
-                    case TypeTag::DICT:
-                    {
-                        const auto &a = var_get<Dict>();
-                        const auto &b = other.var_get<Dict>();
-                        Dict result = a;
-                        for (const auto &[key, val] : b)
-                        {
-                            result[key] = val;
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDDICT:
-                    {
-                        const auto &a = var_get<OrderedDict>();
-                        const auto &b = other.var_get<OrderedDict>();
-                        OrderedDict result = a;
-                        for (const auto &[key, val] : b)
-                        {
-                            result[key] = val;
-                        }
-                        return var(std::move(result));
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed integer types - promote to long long
-                if (isIntegral() && other.isIntegral())
-                {
-                    return var(toLongLong() | other.toLongLong());
-                }
-                throw pythonic::PythonicTypeError("operator| requires integral types or containers. Cannot perform '" + type() + " | " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::BitOr>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
             }
 
             var operator^(const var &other) const
             {
-                // Fast-path: same type using tag
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        return var(var_get<int>() ^ other.var_get<int>());
-                    case TypeTag::LONG:
-                        return var(var_get<long>() ^ other.var_get<long>());
-                    case TypeTag::LONG_LONG:
-                        return var(var_get<long long>() ^ other.var_get<long long>());
-                    case TypeTag::UINT:
-                        return var(var_get<unsigned int>() ^ other.var_get<unsigned int>());
-                    case TypeTag::ULONG:
-                        return var(var_get<unsigned long>() ^ other.var_get<unsigned long>());
-                    case TypeTag::ULONG_LONG:
-                        return var(var_get<unsigned long long>() ^ other.var_get<unsigned long long>());
-                    case TypeTag::SET:
-                    {
-                        const auto &a = var_get<Set>();
-                        const auto &b = other.var_get<Set>();
-                        Set result;
-                        for (const auto &item : a)
-                        {
-                            if (b.find(item) == b.end())
-                            {
-                                result.insert(item);
-                            }
-                        }
-                        for (const auto &item : b)
-                        {
-                            if (a.find(item) == a.end())
-                            {
-                                result.insert(item);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDSET:
-                    {
-                        const auto &a = var_get<OrderedSet>();
-                        const auto &b = other.var_get<OrderedSet>();
-                        OrderedSet result;
-                        auto it_a = a.begin();
-                        auto it_b = b.begin();
-                        while (it_a != a.end() && it_b != b.end())
-                        {
-                            if (*it_a < *it_b)
-                            {
-                                result.insert(*it_a);
-                                ++it_a;
-                            }
-                            else if (*it_b < *it_a)
-                            {
-                                result.insert(*it_b);
-                                ++it_b;
-                            }
-                            else
-                            {
-                                // Equal, skip both
-                                ++it_a;
-                                ++it_b;
-                            }
-                        }
-                        // Insert remaining elements
-                        while (it_a != a.end())
-                        {
-                            result.insert(*it_a);
-                            ++it_a;
-                        }
-                        while (it_b != b.end())
-                        {
-                            result.insert(*it_b);
-                            ++it_b;
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::LIST:
-                    {
-                        const auto &a = var_get<List>();
-                        const auto &b = other.var_get<List>();
-                        List result;
-                        Set a_set(a.begin(), a.end());
-                        Set b_set(b.begin(), b.end());
-                        for (const auto &item : a)
-                        {
-                            if (b_set.find(item) == b_set.end())
-                            {
-                                result.push_back(item);
-                            }
-                        }
-                        for (const auto &item : b)
-                        {
-                            if (a_set.find(item) == a_set.end())
-                            {
-                                result.push_back(item);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed integer types - promote to long long
-                if (isIntegral() && other.isIntegral())
-                {
-                    return var(toLongLong() ^ other.toLongLong());
-                }
-                throw pythonic::PythonicTypeError("operator^ requires integral types or sets/lists. Cannot perform '" + type() + " ^ " + other.type() + "'.");
+                auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::BitXor>(tag_, other.tag_);
+                return func(*this, other, pythonic::overflow::Overflow::Throw, false);
             }
 
             // Bitwise shift helpers
@@ -7050,43 +6393,6 @@ namespace pythonic
     pythonic::vars::DynamicVar { #name }
 
     } // namespace vars
-} // namespace pythonic
-#include "pythonicDispatch.hpp"
-
-namespace pythonic {
-namespace vars {
-
-inline var var::operator+(const var &other) const
-{
-    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Add>(tag_, other.tag_);
-    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
-}
-
-inline var var::operator-(const var &other) const
-{
-    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Sub>(tag_, other.tag_);
-    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
-}
-
-inline var var::operator*(const var &other) const
-{
-    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Mul>(tag_, other.tag_);
-    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
-}
-
-inline var var::operator/(const var &other) const
-{
-    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Div>(tag_, other.tag_);
-    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
-}
-
-inline var var::operator%(const var &other) const
-{
-    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Mod>(tag_, other.tag_);
-    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
-}
-
-} // namespace vars
 } // namespace pythonic
 
 // std::hash specialization for var - enables use in std::unordered_set and std::unordered_map
