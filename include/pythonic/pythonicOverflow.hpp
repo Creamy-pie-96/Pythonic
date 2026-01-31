@@ -236,7 +236,7 @@ namespace pythonic
         }
 
         template <Integral T>
-        T div_throw(T a, T b)
+        double div_throw(T a, T b)
         {
             if (b == 0)
             {
@@ -250,7 +250,7 @@ namespace pythonic
                     throw PythonicOverflowError("integer division overflow");
                 }
             }
-            return a / b;
+            return static_cast<double>(a) / static_cast<double>(b);
         }
 
         template <FloatingPoint T>
@@ -345,7 +345,7 @@ namespace pythonic
         }
 
         template <Integral T>
-        T div_wrap(T a, T b)
+        double div_wrap(T a, T b)
         {
             if (b == 0)
             {
@@ -356,10 +356,10 @@ namespace pythonic
             {
                 if (a == std::numeric_limits<T>::min() && b == T(-1))
                 {
-                    return a; // Wraps to INT_MIN
+                    return static_cast<double>(a); // Wraps to INT_MIN
                 }
             }
-            return a / b;
+            return static_cast<double>(a) / static_cast<double>(b);
         }
 
         template <FloatingPoint T>
