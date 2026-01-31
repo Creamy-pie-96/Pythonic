@@ -22,11 +22,19 @@ for k, v in cpp_types.items():
     else:
         qualified[k] = v
 
+# TODO: For now I am keeping land and lor in the var class and simple. if someday i feel like adding complex and fun features with those operators overloads that will need type context then i will add logics for them.
 ops = {
     "add": "add", "sub": "sub", "mul": "mul", "div": "div", "mod": "mod",
     "eq": "eq", "ne": "ne", "gt": "gt", "ge": "ge", "lt": "lt", "le": "le",
     "band": "band", "bor": "bor", "bxor": "bxor", "shl": "shl", "shr": "shr",
     "land": "land", "lor": "lor"
+}
+
+op_symbols = {
+    "add": "+", "sub": "-", "mul": "*", "div": "/", "mod": "%",
+    "eq": "==", "ne": "!=", "gt": ">", "ge": ">=", "lt": "<", "le": "<=",
+    "band": "&", "bor": "|", "bxor": "^", "shl": "<<", "shr": ">>",
+    "land": "and", "lor": "or"
 }
 
 print("#include \"pythonic/pythonicDispatchForwardDecls.hpp\"")
@@ -42,6 +50,9 @@ print("// generated stubs live in pythonic::dispatch")
 
 def is_numeric(t):
     return t in ["int", "float", "double", "long", "long_long", "long_double", "uint", "ulong", "ulong_long", "bool"]
+
+def is_integral(t):
+    return t in ["int", "long", "long_long", "uint", "ulong", "ulong_long", "bool"]
 
 def get_common_type(t1, t2):
     # Treat bool as integer (0/1) for promotion purposes
@@ -64,6 +75,48 @@ def get_common_type(t1, t2):
     if t1 == "uint" or t2 == "uint": return "unsigned int"
 
     return "long long" # Default promotion
+
+def get_common_integral(t1, t2):
+    # Treat bool as int
+    if t1 == 'bool': t1 = 'int'
+    if t2 == 'bool': t2 = 'int'
+    if t1 == t2:
+        return cpp_types[t1]
+    
+    if t1 == "ulong_long" and t2 == "ulong_long": return "unsigned long long"
+    if t1 == "ulong" and t2 == "ulong": return "unsigned long"
+    if t1 == "uint" and t2 == "uint": return "unsigned int"
+
+    if t1 == "long_long" or t2 == "long_long": return "long long"
+    if t1 == "ulong_long" or t2 == "ulong_long": return "long long"
+    if t1 == "long" or t2 == "long": return "long"
+    if t1 == "ulong" or t2 == "ulong": return "long"
+    if t1 == "int" or t2 == "int": return "int"
+    if t1 == "uint" or t2 == "uint": return "int"
+    return "long long" # Default
+
+def get_common_integral_bitwise(t1, t2):
+    # Treat bool as int
+    if t1 == 'bool': t1 = 'int'
+    if t2 == 'bool': t2 = 'int'
+
+    unsigned_types = ['uint', 'ulong', 'ulong_long']
+    signed_types   = ['int', 'long', 'long_long']
+
+    # If either operand is unsigned → use widest unsigned type
+    if t1 in unsigned_types or t2 in unsigned_types:
+        if 'ulong_long' in (t1, t2): return 'unsigned long long'
+        if 'ulong'      in (t1, t2): return 'unsigned long'
+        if 'uint'       in (t1, t2): return 'unsigned int'
+
+    # Both operands signed → use widest signed type
+    if 'long_long' in (t1, t2): return 'long long'
+    if 'long'      in (t1, t2): return 'long'
+    if 'int'       in (t1, t2): return 'int'
+
+    # fallback
+    return 'long long'
+
 
 # Rank map for promotion min_rank calculation
 rank_map = {
@@ -197,7 +250,7 @@ for opname in ops.values():
                             print("    }")
                             print(f"    return var(false);")
                     else:
-                        print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {opname}: 'dict' and 'dict'\");")
+                        print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: 'dict' and 'dict'\");")
                 elif left == "ordereddict" and right == "ordereddict":
                     print(f"    const auto &dict1 = a.var_get<{qualified['ordereddict']}>();")
                     print(f"    const auto &dict2 = b.var_get<{qualified['ordereddict']}>();")
@@ -231,7 +284,211 @@ for opname in ops.values():
                     elif opname == "le":
                         print(f"    return var(la <= lb);")
                 else:
-                    print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {opname}: '{left}' and '{right}'\");")
+                    print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: '{left}' and '{right}'\");")
+                print("}")
+                continue
+
+            elif opname in ("band", "bor", "bxor"):
+                if is_integral(left) and is_integral(right):
+                    ctype = get_common_integral_bitwise(left, right)
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
+                    if opname == "band":
+                        print(f"    return var(la & lb);")
+                    elif opname == "bor":
+                        print(f"    return var(la | lb);")
+                    elif opname == "bxor":
+                        print(f"    return var(la ^ lb);")
+                elif left == right:
+                    if left == "set":
+                        print(f"    const auto &lhs = a.var_get<{qualified['set']}>();")
+                        print(f"    const auto &rhs = b.var_get<{qualified['set']}>();")
+                        if opname == "band":
+                            print(f"    {qualified['set']} result;")
+                            print("    for (const auto &item : lhs) {")
+                            print("        if (rhs.find(item) != rhs.end()) {")
+                            print("            result.insert(item);")
+                            print("        }")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                        elif opname == "bor":
+                            print(f"    {qualified['set']} result = lhs;")
+                            print("    result.insert(rhs.begin(), rhs.end());")
+                            print("    return var(std::move(result));")
+                        elif opname == "bxor":
+                            print(f"    {qualified['set']} result;")
+                            print("    for (const auto &item : lhs) {")
+                            print("        if (rhs.find(item) == rhs.end()) {")
+                            print("            result.insert(item);")
+                            print("        }")
+                            print("    }")
+                            print("    for (const auto &item : rhs) {")
+                            print("        if (lhs.find(item) == lhs.end()) {")
+                            print("            result.insert(item);")
+                            print("        }")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                    elif left == "orderedset":
+                        print(f"    const auto &lhs = a.var_get<{qualified['orderedset']}>();")
+                        print(f"    const auto &rhs = b.var_get<{qualified['orderedset']}>();")
+                        if opname == "band":
+                            print(f"    {qualified['orderedset']} result;")
+                            print("    auto it_lhs = lhs.begin();")
+                            print("    auto it_rhs = rhs.begin();")
+                            print("    while (it_lhs != lhs.end() && it_rhs != rhs.end()) {")
+                            print("        if (*it_lhs < *it_rhs) {")
+                            print("            ++it_lhs;")
+                            print("        } else if (*it_rhs < *it_lhs) {")
+                            print("            ++it_rhs;")
+                            print("        } else {")
+                            print("            result.insert(*it_lhs);")
+                            print("            ++it_lhs;")
+                            print("            ++it_rhs;")
+                            print("        }")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                        elif opname == "bor":
+                            print(f"    {qualified['orderedset']} result;")
+                            print("    auto it_lhs = lhs.begin();")
+                            print("    auto it_rhs = rhs.begin();")
+                            print("    while (it_lhs != lhs.end() && it_rhs != rhs.end()) {")
+                            print("        if (*it_lhs < *it_rhs) {")
+                            print("            result.insert(*it_lhs);")
+                            print("            ++it_lhs;")
+                            print("        } else if (*it_rhs < *it_lhs) {")
+                            print("            result.insert(*it_rhs);")
+                            print("            ++it_rhs;")
+                            print("        } else {")
+                            print("            result.insert(*it_lhs);")
+                            print("            ++it_lhs;")
+                            print("            ++it_rhs;")
+                            print("        }")
+                            print("    }")
+                            print("    while (it_lhs != lhs.end()) {")
+                            print("        result.insert(*it_lhs);")
+                            print("        ++it_lhs;")
+                            print("    }")
+                            print("    while (it_rhs != rhs.end()) {")
+                            print("        result.insert(*it_rhs);")
+                            print("        ++it_rhs;")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                        elif opname == "bxor":
+                            print(f"    {qualified['orderedset']} result;")
+                            print("    auto it_lhs = lhs.begin();")
+                            print("    auto it_rhs = rhs.begin();")
+                            print("    while (it_lhs != lhs.end() && it_rhs != rhs.end()) {")
+                            print("        if (*it_lhs < *it_rhs) {")
+                            print("            result.insert(*it_lhs);")
+                            print("            ++it_lhs;")
+                            print("        } else if (*it_rhs < *it_lhs) {")
+                            print("            result.insert(*it_rhs);")
+                            print("            ++it_rhs;")
+                            print("        } else {")
+                            print("            ++it_lhs;")
+                            print("            ++it_rhs;")
+                            print("        }")
+                            print("    }")
+                            print("    while (it_lhs != lhs.end()) {")
+                            print("        result.insert(*it_lhs);")
+                            print("        ++it_lhs;")
+                            print("    }")
+                            print("    while (it_rhs != rhs.end()) {")
+                            print("        result.insert(*it_rhs);")
+                            print("        ++it_rhs;")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                    elif left == "list":
+                        print(f"    const auto &lhs = a.var_get<{qualified['list']}>();")
+                        print(f"    const auto &rhs = b.var_get<{qualified['list']}>();")
+                        if opname == "band":
+                            print(f"    {qualified['list']} result;")
+                            print(f"    {qualified['set']} rhs_set(rhs.begin(), rhs.end());")
+                            print("    for (const auto &item : lhs) {")
+                            print("        if (rhs_set.find(item) != rhs_set.end()) {")
+                            print("            result.push_back(item);")
+                            print("        }")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                        elif opname == "bor":
+                            print(f"    {qualified['list']} result;")
+                            print("    result.reserve(lhs.size() + rhs.size());")
+                            print("    result.insert(result.end(), lhs.begin(), lhs.end());")
+                            print("    result.insert(result.end(), rhs.begin(), rhs.end());")
+                            print("    return var(std::move(result));")
+                        elif opname == "bxor":
+                            print(f"    {qualified['list']} result;")
+                            print(f"    {qualified['set']} lhs_set(lhs.begin(), lhs.end());")
+                            print(f"    {qualified['set']} rhs_set(rhs.begin(), rhs.end());")
+                            print("    for (const auto &item : lhs) {")
+                            print("        if (rhs_set.find(item) == rhs_set.end()) {")
+                            print("            result.push_back(item);")
+                            print("        }")
+                            print("    }")
+                            print("    for (const auto &item : rhs) {")
+                            print("        if (lhs_set.find(item) == lhs_set.end()) {")
+                            print("            result.push_back(item);")
+                            print("        }")
+                            print("    }")
+                            print("    return var(std::move(result));")
+                    elif left == "dict":
+                        if opname in ("band", "bor"):
+                            print(f"    const auto &lhs = a.var_get<{qualified['dict']}>();")
+                            print(f"    const auto &rhs = b.var_get<{qualified['dict']}>();")
+                            if opname == "band":
+                                print(f"    {qualified['dict']} result;")
+                                print("    for (const auto &[key, val] : lhs) {")
+                                print("        if (rhs.find(key) != rhs.end()) {")
+                                print("            result[key] = val;")
+                                print("        }")
+                                print("    }")
+                                print("    return var(std::move(result));")
+                            elif opname == "bor":
+                                print(f"    {qualified['dict']} result = lhs;")
+                                print("    for (const auto &[key, val] : rhs) {")
+                                print("        result[key] = val;")
+                                print("    }")
+                                print("    return var(std::move(result));")
+                        else:
+                            print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: '{left}' and '{right}'\");")
+                    elif left == "ordereddict":
+                        if opname in ("band", "bor"):
+                            print(f"    const auto &lhs = a.var_get<{qualified['ordereddict']}>();")
+                            print(f"    const auto &rhs = b.var_get<{qualified['ordereddict']}>();")
+                            if opname == "band":
+                                print(f"    {qualified['ordereddict']} result;")
+                                print("    for (const auto &[key, val] : lhs) {")
+                                print("        if (rhs.find(key) != rhs.end()) {")
+                                print("            result[key] = val;")
+                                print("        }")
+                                print("    }")
+                                print("    return var(std::move(result));")
+                            elif opname == "bor":
+                                print(f"    {qualified['ordereddict']} result = lhs;")
+                                print("    for (const auto &[key, val] : rhs) {")
+                                print("        result[key] = val;")
+                                print("    }")
+                                print("    return var(std::move(result));")
+                        else:
+                            print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: '{left}' and '{right}'\");")
+                    else:
+                        print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: '{left}' and '{right}'\");")
+                else:
+                    print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: '{left}' and '{right}'\");")
+                print("}")
+                continue
+
+            elif opname in ("shl", "shr"):
+                if is_integral(left) and is_integral(right):
+                    ctype = get_common_integral_bitwise(left, right)
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
+                    if opname == "shl":
+                        print(f"    return var(la << lb);")
+                    elif opname == "shr":
+                        print(f"    return var(la >> lb);")
+                else:
+                    print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {op_symbols[opname]}: '{left}' and '{right}'\");")
                 print("}")
                 continue
 
@@ -286,7 +543,7 @@ for opname in ops.values():
                     right_rank = rank_map.get(right, '0')
                     print(f"        int min_rank = std::max({left_rank}, {right_rank});")
                     print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
-                    print(f"    }}")
+                    print("    }")
                 else:
                     print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for +: '{left}' and '{right}'\");")
             
@@ -318,7 +575,7 @@ for opname in ops.values():
                     right_rank = rank_map.get(right, '0')
                     print(f"        int min_rank = std::max({left_rank}, {right_rank});")
                     print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);")
-                    print(f"    }}")
+                    print("    }")
                 elif left == "set" and right == "set":
                     print(f"    const auto& as = a.var_get<{qualified['set']}>();")
                     print(f"    const auto& bs = b.var_get<{qualified['set']}>();")
@@ -435,7 +692,7 @@ for opname in ops.values():
                     right_rank = rank_map.get(right, '0')
                     print(f"        int min_rank = std::max({left_rank}, {right_rank});")
                     print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
-                    print(f"    }}")
+                    print("    }")
                 else:
                      print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for *: '{left}' and '{right}'\");")
 
@@ -465,7 +722,7 @@ for opname in ops.values():
                     right_rank = rank_map.get(right, '0')
                     print(f"        int min_rank = std::max({left_rank}, {right_rank});")
                     print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
-                    print(f"    }}")
+                    print("    }")
                 else:
                     print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for /: '{left}' and '{right}'\");")
 
@@ -501,7 +758,7 @@ for opname in ops.values():
                         right_rank = rank_map.get(right, '0')
                         print(f"        int min_rank = std::max({left_rank}, {right_rank});")
                         print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
-                        print(f"    }}")
+                        print("    }")
                     # If either operand is floating, perform floating modulo (fmod)
                     elif left in float_types or right in float_types:
                         # choose compute type based on presence of long_double/double/float
@@ -535,7 +792,7 @@ for opname in ops.values():
                         right_rank = rank_map.get(right, '0')
                         print(f"        int min_rank = std::max({left_rank}, {right_rank});")
                         print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
-                        print(f"    }}")
+                        print("    }")
                     else:
                         print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for %: '{left}' and '{right}'\");")
                 else:
