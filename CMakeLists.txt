@@ -35,6 +35,17 @@ target_include_directories(pythonic PUBLIC
 	$<INSTALL_INTERFACE:include>
 )
 
+# Precompiled headers to speed up compilation
+target_precompile_headers(pythonic PRIVATE
+    <algorithm>
+    <stdexcept>
+    <pythonic/pythonicDispatchForwardDecls.hpp>
+    <pythonic/pythonicError.hpp>
+    <pythonic/pythonicOverflow.hpp>
+    <pythonic/pythonicPromotion.hpp>
+    <pythonic/pythonicVars.hpp>
+)
+
 # Add Graphviz compile definition if found
 if(PYTHONIC_GRAPHVIZ_FOUND)
     target_compile_definitions(pythonic PUBLIC GRAPHVIZ_AVAILABLE)
