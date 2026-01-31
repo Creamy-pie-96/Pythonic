@@ -24,7 +24,8 @@ namespace pythonic
         {
             Throw = 0,   // Throw on overflow (default)
             Promote = 1, // Auto-promote to larger type
-            Wrap = 2     // Allow wrapping (C++ default behavior)
+            Wrap = 2,     // Allow wrapping (C++ default behavior)
+            None_of_them = 3 // This is  the default in the dispatch for ops directly called by operator overload.
         };
 
         // Concept for arithmetic types

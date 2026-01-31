@@ -25,6 +25,7 @@
 
 #include "pythonicError.hpp"
 #include "pythonicOverflow.hpp"
+#include "pythonicDispatch.hpp"
 
 namespace pythonic
 {
@@ -2224,52 +2225,8 @@ namespace pythonic
 
             // Arithmetic operators
             // OPTIMIZED: Uses TypeTag for fast same-type dispatch, falls back to type promotion
-            var operator+(const var &other) const
-            {
-                // Fast-path: same type
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        [[likely]] return var(pythonic::overflow::add_throw(var_get<int>(), other.var_get<int>()));
-                    case TypeTag::DOUBLE:
-                        [[likely]] return var(pythonic::overflow::add_throw(var_get<double>(), other.var_get<double>()));
-                    case TypeTag::LONG_LONG:
-                        return var(pythonic::overflow::add_throw(var_get<long long>(), other.var_get<long long>()));
-                    case TypeTag::STRING:
-                        [[likely]] return var(var_get<std::string>() + other.var_get<std::string>());
-                    case TypeTag::FLOAT:
-                        return var(pythonic::overflow::add_throw(var_get<float>(), other.var_get<float>()));
-                    case TypeTag::LONG:
-                        return var(pythonic::overflow::add_throw(var_get<long>(), other.var_get<long>()));
-                    case TypeTag::UINT:
-                        return var(pythonic::overflow::add_throw(var_get<unsigned int>(), other.var_get<unsigned int>()));
-                    case TypeTag::ULONG:
-                        return var(pythonic::overflow::add_throw(var_get<unsigned long>(), other.var_get<unsigned long>()));
-                    case TypeTag::ULONG_LONG:
-                        return var(pythonic::overflow::add_throw(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
-                    case TypeTag::LONG_DOUBLE:
-                        return var(pythonic::overflow::add_throw(var_get<long double>(), other.var_get<long double>()));
-                    case TypeTag::LIST:
-                    {
-                        const auto &a = var_get<List>();
-                        const auto &b = other.var_get<List>();
-                        List result;
-                        result.reserve(a.size() + b.size());
-                        result.insert(result.end(), a.begin(), a.end());
-                        result.insert(result.end(), b.begin(), b.end());
-                        return var(std::move(result));
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed types - use type promotion (handles numeric + numeric, string + anything, etc.)
-                if ((is_string() || isNumeric()) && (other.is_string() || other.isNumeric()))
-                    return addPromoted(other);
-                throw pythonic::PythonicTypeError("operator+ not supported for these types. Cannot perform '" + type() + " + " + other.type() + "'.");
-            }
+            // Arithmetic operators
+            var operator+(const var &other) const;
 
             // Unary plus: returns a copy (Python semantics)
             var operator+() const
@@ -2310,391 +2267,11 @@ namespace pythonic
                     throw pythonic::PythonicTypeError("bad operand type for unary -: '" + type() + "'");
                 }
             }
-            var operator-(const var &other) const
-            {
-                // Fast-path: same type
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        [[likely]] return var(pythonic::overflow::sub_throw(var_get<int>(), other.var_get<int>()));
-                    case TypeTag::DOUBLE:
-                        [[likely]] return var(pythonic::overflow::sub_throw(var_get<double>(), other.var_get<double>()));
-                    case TypeTag::LONG_LONG:
-                        return var(pythonic::overflow::sub_throw(var_get<long long>(), other.var_get<long long>()));
-                    case TypeTag::FLOAT:
-                        return var(pythonic::overflow::sub_throw(var_get<float>(), other.var_get<float>()));
-                    case TypeTag::LONG:
-                        return var(pythonic::overflow::sub_throw(var_get<long>(), other.var_get<long>()));
-                    case TypeTag::UINT:
-                        return var(pythonic::overflow::sub_throw(var_get<unsigned int>(), other.var_get<unsigned int>()));
-                    case TypeTag::ULONG:
-                        return var(pythonic::overflow::sub_throw(var_get<unsigned long>(), other.var_get<unsigned long>()));
-                    case TypeTag::ULONG_LONG:
-                        return var(pythonic::overflow::sub_throw(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
-                    case TypeTag::LONG_DOUBLE:
-                        return var(pythonic::overflow::sub_throw(var_get<long double>(), other.var_get<long double>()));
-                    case TypeTag::SET:
-                    {
-                        const auto &a = var_get<Set>();
-                        const auto &b = other.var_get<Set>();
-                        Set result;
-                        for (const auto &item : a)
-                        {
-                            if (b.find(item) == b.end())
-                            {
-                                result.insert(item);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDSET:
-                    {
-                        // Both are ordered sets, use merge-like difference
-                        const auto &a = var_get<OrderedSet>();
-                        const auto &b = other.var_get<OrderedSet>();
-                        OrderedSet result;
-                        auto it_a = a.begin();
-                        auto it_b = b.begin();
-                        while (it_a != a.end() && it_b != b.end())
-                        {
-                            if (*it_a < *it_b)
-                            {
-                                result.insert(*it_a);
-                                ++it_a;
-                            }
-                            else if (*it_b < *it_a)
-                            {
-                                ++it_b;
-                            }
-                            else
-                            {
-                                // Equal, skip
-                                ++it_a;
-                                ++it_b;
-                            }
-                        }
-                        // Insert remaining elements from a
-                        while (it_a != a.end())
-                        {
-                            result.insert(*it_a);
-                            ++it_a;
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::ORDEREDDICT:
-                    {
-                        // Both are ordered dicts, remove keys in b from a, preserve order
-                        const auto &a = var_get<OrderedDict>();
-                        const auto &b = other.var_get<OrderedDict>();
-                        OrderedDict result;
-                        for (const auto &kv : a)
-                        {
-                            if (b.find(kv.first) == b.end())
-                            {
-                                result.insert(kv);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::LIST:
-                    {
-                        const auto &a = var_get<List>();
-                        const auto &b = other.var_get<List>();
-                        List result;
-                        Set b_set(b.begin(), b.end());
-                        for (const auto &item : a)
-                        {
-                            if (b_set.find(item) == b_set.end())
-                            {
-                                result.push_back(item);
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    case TypeTag::DICT:
-                    {
-                        const auto &a = var_get<Dict>();
-                        const auto &b = other.var_get<Dict>();
-                        Dict result;
-                        for (const auto &[key, val] : a)
-                        {
-                            if (b.find(key) == b.end())
-                            {
-                                result[key] = val;
-                            }
-                        }
-                        return var(std::move(result));
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed numeric types - use proper type promotion
-                if (isNumeric() && other.isNumeric())
-                {
-                    return subPromoted(other);
-                }
-                throw pythonic::PythonicTypeError("operator- requires arithmetic types or containers. Cannot perform '" + type() + " - " + other.type() + "'.");
-            }
+            var operator-(const var &other) const;
 
-            var operator*(const var &other) const
-            {
-                // Fast-path: same type
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        [[likely]] return var(pythonic::overflow::mul_throw(var_get<int>(), other.var_get<int>()));
-                    case TypeTag::DOUBLE:
-                        [[likely]] return var(pythonic::overflow::mul_throw(var_get<double>(), other.var_get<double>()));
-                    case TypeTag::LONG_LONG:
-                        return var(pythonic::overflow::mul_throw(var_get<long long>(), other.var_get<long long>()));
-                    case TypeTag::FLOAT:
-                        return var(pythonic::overflow::mul_throw(var_get<float>(), other.var_get<float>()));
-                    case TypeTag::LONG:
-                        return var(pythonic::overflow::mul_throw(var_get<long>(), other.var_get<long>()));
-                    case TypeTag::UINT:
-                        return var(pythonic::overflow::mul_throw(var_get<unsigned int>(), other.var_get<unsigned int>()));
-                    case TypeTag::ULONG:
-                        return var(pythonic::overflow::mul_throw(var_get<unsigned long>(), other.var_get<unsigned long>()));
-                    case TypeTag::ULONG_LONG:
-                        return var(pythonic::overflow::mul_throw(var_get<unsigned long long>(), other.var_get<unsigned long long>()));
-                    case TypeTag::LONG_DOUBLE:
-                        return var(pythonic::overflow::mul_throw(var_get<long double>(), other.var_get<long double>()));
-                    default:
-                        break;
-                    }
-                }
-                // Mixed numeric types - use proper type promotion
-                if (isNumeric() && other.isNumeric())
-                {
-                    return mulPromoted(other);
-                }
-                // String * int = repetition
-                if (tag_ == TypeTag::STRING && other.isIntegral())
-                {
-                    const auto &s = var_get<std::string>();
-                    long long n = other.toLongLong();
-                    if (n <= 0)
-                        return var(std::string(""));
-                    std::string result;
-                    result.reserve(s.size() * n);
-                    for (long long i = 0; i < n; ++i)
-                        result += s;
-                    return var(std::move(result));
-                }
-                // int * String = repetition (commutative)
-                if (isIntegral() && other.tag_ == TypeTag::STRING)
-                {
-                    const auto &s = other.var_get<std::string>();
-                    long long n = toLongLong();
-                    if (n <= 0)
-                        return var(std::string(""));
-                    std::string result;
-                    result.reserve(s.size() * n);
-                    for (long long i = 0; i < n; ++i)
-                        result += s;
-                    return var(std::move(result));
-                }
-                // List * int = repetition
-                if (tag_ == TypeTag::LIST && other.isIntegral())
-                {
-                    const auto &lst = var_get<List>();
-                    long long n = other.toLongLong();
-                    if (n <= 0)
-                        return var(List{});
-                    List result;
-                    result.reserve(lst.size() * n);
-                    for (long long i = 0; i < n; ++i)
-                    {
-                        result.insert(result.end(), lst.begin(), lst.end());
-                    }
-                    return var(std::move(result));
-                }
-                throw pythonic::PythonicTypeError("operator* not supported for these types. Cannot perform '" + type() + " * " + other.type() + "'.");
-            }
-
-            var operator/(const var &other) const
-            {
-                // Fast-path: same type
-                // Note: Python semantics - / always returns float, even for int/int
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        [[likely]]
-                        {
-                            int a = var_get<int>();
-                            int b = other.var_get<int>();
-                            if (b == 0)
-                                throw pythonic::PythonicZeroDivisionError::division();
-                            // Check for INT_MIN / -1 overflow
-                            if (a == std::numeric_limits<int>::min() && b == -1)
-                                throw pythonic::PythonicOverflowError("integer division overflow");
-                            // Python: int / int -> float (always)
-                            return var(static_cast<double>(a) / static_cast<double>(b));
-                        }
-                    case TypeTag::DOUBLE:
-                        [[likely]]
-                        {
-                            double b = other.var_get<double>();
-                            if (b == 0.0)
-                                throw pythonic::PythonicZeroDivisionError::division();
-                            double result = var_get<double>() / b;
-                            if (std::isinf(result))
-                                throw pythonic::PythonicOverflowError("floating point division overflow");
-                            return var(result);
-                        }
-                    case TypeTag::LONG_LONG:
-                    {
-                        long long a = var_get<long long>();
-                        long long b = other.var_get<long long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        // Check for LLONG_MIN / -1 overflow
-                        if (a == std::numeric_limits<long long>::min() && b == -1LL)
-                            throw pythonic::PythonicOverflowError("integer division overflow");
-                        // Python: int / int -> float (always)
-                        return var(static_cast<double>(a) / static_cast<double>(b));
-                    }
-                    case TypeTag::FLOAT:
-                    {
-                        float b = other.var_get<float>();
-                        if (b == 0.0f)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        float result = var_get<float>() / b;
-                        if (std::isinf(result))
-                            throw pythonic::PythonicOverflowError("floating point division overflow");
-                        return var(result);
-                    }
-                    case TypeTag::LONG:
-                    {
-                        long a = var_get<long>();
-                        long b = other.var_get<long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        // Check for LONG_MIN / -1 overflow
-                        if (a == std::numeric_limits<long>::min() && b == -1L)
-                            throw pythonic::PythonicOverflowError("integer division overflow");
-                        // Python: int / int -> float (always)
-                        return var(static_cast<double>(a) / static_cast<double>(b));
-                    }
-                    case TypeTag::UINT:
-                    {
-                        unsigned int b = other.var_get<unsigned int>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        // Python: int / int -> float (always)
-                        return var(static_cast<double>(var_get<unsigned int>()) / static_cast<double>(b));
-                    }
-                    case TypeTag::ULONG:
-                    {
-                        unsigned long b = other.var_get<unsigned long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        // Python: int / int -> float (always)
-                        return var(static_cast<double>(var_get<unsigned long>()) / static_cast<double>(b));
-                    }
-                    case TypeTag::ULONG_LONG:
-                    {
-                        unsigned long long b = other.var_get<unsigned long long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        // Python: int / int -> float (always)
-                        return var(static_cast<double>(var_get<unsigned long long>()) / static_cast<double>(b));
-                    }
-                    case TypeTag::LONG_DOUBLE:
-                    {
-                        long double b = other.var_get<long double>();
-                        if (b == 0.0L)
-                            throw pythonic::PythonicZeroDivisionError::division();
-                        long double result = var_get<long double>() / b;
-                        if (std::isinf(result))
-                            throw pythonic::PythonicOverflowError("floating point division overflow");
-                        return var(result);
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed numeric types - use proper type promotion
-                if (isNumeric() && other.isNumeric())
-                {
-                    return divPromoted(other);
-                }
-                throw pythonic::PythonicTypeError("operator/ not supported for these types. Cannot perform '" + type() + " / " + other.type() + "'.");
-            }
-
-            var operator%(const var &other) const
-            {
-                // Fast-path: same integer type
-                if (tag_ == other.tag_)
-                {
-                    switch (tag_)
-                    {
-                    case TypeTag::INT:
-                        [[likely]]
-                        {
-                            int b = other.var_get<int>();
-                            if (b == 0)
-                                throw pythonic::PythonicZeroDivisionError::modulo();
-                            return var(pythonic::overflow::mod_throw(var_get<int>(), b));
-                        }
-                    case TypeTag::LONG_LONG:
-                    {
-                        long long b = other.var_get<long long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod_throw(var_get<long long>(), b));
-                    }
-                    case TypeTag::LONG:
-                    {
-                        long b = other.var_get<long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod_throw(var_get<long>(), b));
-                    }
-                    case TypeTag::UINT:
-                    {
-                        unsigned int b = other.var_get<unsigned int>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod_throw(var_get<unsigned int>(), b));
-                    }
-                    case TypeTag::ULONG:
-                    {
-                        unsigned long b = other.var_get<unsigned long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod_throw(var_get<unsigned long>(), b));
-                    }
-                    case TypeTag::ULONG_LONG:
-                    {
-                        unsigned long long b = other.var_get<unsigned long long>();
-                        if (b == 0)
-                            throw pythonic::PythonicZeroDivisionError::modulo();
-                        return var(pythonic::overflow::mod_throw(var_get<unsigned long long>(), b));
-                    }
-                    default:
-                        break;
-                    }
-                }
-                // Mixed integer types - use proper type promotion
-                if (isIntegral() && other.isIntegral())
-                {
-                    return modPromoted(other);
-                }
-                // Mixed with floating point
-                if (isNumeric() && other.isNumeric())
-                {
-                    return modPromoted(other);
-                }
-                throw pythonic::PythonicTypeError("operator% not supported for these types. Cannot perform '" + type() + " % " + other.type() + "'.");
-            }
+            var operator*(const var &other) const;
+            var operator/(const var &other) const;
+            var operator%(const var &other) const;
 
             // ============ In-Place Arithmetic Operators ============
             // These modify the value in-place for better performance
@@ -7474,6 +7051,44 @@ namespace pythonic
 
     } // namespace vars
 } // namespace pythonic
+#include "pythonicDispatch.hpp"
+
+namespace pythonic {
+namespace vars {
+
+inline var var::operator+(const var &other) const
+{
+    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Add>(tag_, other.tag_);
+    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+}
+
+inline var var::operator-(const var &other) const
+{
+    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Sub>(tag_, other.tag_);
+    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+}
+
+inline var var::operator*(const var &other) const
+{
+    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Mul>(tag_, other.tag_);
+    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+}
+
+inline var var::operator/(const var &other) const
+{
+    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Div>(tag_, other.tag_);
+    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+}
+
+inline var var::operator%(const var &other) const
+{
+    auto func = pythonic::dispatch::get_op_func<pythonic::dispatch::Mod>(tag_, other.tag_);
+    return func(*this, other, pythonic::overflow::Overflow::Throw, false);
+}
+
+} // namespace vars
+} // namespace pythonic
+
 // std::hash specialization for var - enables use in std::unordered_set and std::unordered_map
 namespace std
 {
