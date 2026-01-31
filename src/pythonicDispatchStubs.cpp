@@ -13823,7 +13823,10 @@ var eq__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'ulong_long'");
 }
 var eq__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'list'");
+    const auto &lst1 = a.var_get<pythonic::vars::List>();
+    const auto &lst2 = b.var_get<pythonic::vars::List>();
+    if (lst1.size() != lst2.size()) return var(false);
+    return var(std::equal(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var eq__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'list' and 'set'");
@@ -13880,7 +13883,13 @@ var eq__set__list(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'list'");
 }
 var eq__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'set'");
+    const auto &set1 = a.var_get<pythonic::vars::Set>();
+    const auto &set2 = b.var_get<pythonic::vars::Set>();
+    if (set1.size() != set2.size()) return var(false);
+    for (const auto &elem : set1) {
+        if (set2.find(elem) == set2.end()) return var(false);
+    }
+    return var(true);
 }
 var eq__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'set' and 'dict'");
@@ -13937,7 +13946,15 @@ var eq__dict__set(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'set'");
 }
 var eq__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'dict'");
+    const auto &dict1 = a.var_get<pythonic::vars::Dict>();
+    const auto &dict2 = b.var_get<pythonic::vars::Dict>();
+    if (dict1.size() != dict2.size()) return var(false);
+    for (const auto &kv : dict1) {
+        const auto &key = kv.first; const auto &val = kv.second;
+        auto it = dict2.find(key);
+        if (it == dict2.end() || !static_cast<bool>(val == it->second)) return var(false);
+    }
+    return var(true);
 }
 var eq__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'dict' and 'orderedset'");
@@ -13994,7 +14011,9 @@ var eq__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'dict'");
 }
 var eq__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'orderedset'");
+    const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &set2 = b.var_get<pythonic::vars::OrderedSet>();
+    return var(std::equal(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var eq__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'orderedset' and 'ordereddict'");
@@ -14051,7 +14070,9 @@ var eq__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'orderedset'");
 }
 var eq__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'ordereddict'");
+    const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &dict2 = b.var_get<pythonic::vars::OrderedDict>();
+    return var(std::equal(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var eq__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for eq: 'ordereddict' and 'graph'");
@@ -14997,7 +15018,10 @@ var ne__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'ulong_long'");
 }
 var ne__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'list'");
+    const auto &lst1 = a.var_get<pythonic::vars::List>();
+    const auto &lst2 = b.var_get<pythonic::vars::List>();
+    if (lst1.size() != lst2.size()) return var(true);
+    return var(!std::equal(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var ne__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'list' and 'set'");
@@ -15054,7 +15078,13 @@ var ne__set__list(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'list'");
 }
 var ne__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'set'");
+    const auto &set1 = a.var_get<pythonic::vars::Set>();
+    const auto &set2 = b.var_get<pythonic::vars::Set>();
+    if (set1.size() != set2.size()) return var(true);
+    for (const auto &elem : set1) {
+        if (set2.find(elem) == set2.end()) return var(true);
+    }
+    return var(false);
 }
 var ne__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'set' and 'dict'");
@@ -15111,7 +15141,15 @@ var ne__dict__set(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'set'");
 }
 var ne__dict__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'dict'");
+    const auto &dict1 = a.var_get<pythonic::vars::Dict>();
+    const auto &dict2 = b.var_get<pythonic::vars::Dict>();
+    if (dict1.size() != dict2.size()) return var(true);
+    for (const auto &kv : dict1) {
+        const auto &key = kv.first; const auto &val = kv.second;
+        auto it = dict2.find(key);
+        if (it == dict2.end() || static_cast<bool>(val != it->second)) return var(true);
+    }
+    return var(false);
 }
 var ne__dict__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'dict' and 'orderedset'");
@@ -15168,7 +15206,9 @@ var ne__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'dict'");
 }
 var ne__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'orderedset'");
+    const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &set2 = b.var_get<pythonic::vars::OrderedSet>();
+    return var(!std::equal(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var ne__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'orderedset' and 'ordereddict'");
@@ -15225,7 +15265,9 @@ var ne__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'orderedset'");
 }
 var ne__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'ordereddict'");
+    const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &dict2 = b.var_get<pythonic::vars::OrderedDict>();
+    return var(!std::equal(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var ne__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ne: 'ordereddict' and 'graph'");
@@ -16171,7 +16213,9 @@ var gt__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'ulong_long'");
 }
 var gt__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'list'");
+    const auto &lst1 = a.var_get<pythonic::vars::List>();
+    const auto &lst2 = b.var_get<pythonic::vars::List>();
+    return var(std::lexicographical_compare(lst2.begin(), lst2.end(), lst1.begin(), lst1.end()));
 }
 var gt__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'list' and 'set'");
@@ -16228,7 +16272,13 @@ var gt__set__list(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'list'");
 }
 var gt__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'set'");
+    const auto &set1 = a.var_get<pythonic::vars::Set>();
+    const auto &set2 = b.var_get<pythonic::vars::Set>();
+    if (set2.size() >= set1.size()) return var(false);
+    for (const auto &elem : set2) {
+        if (set1.find(elem) == set1.end()) return var(false);
+    }
+    return var(true);
 }
 var gt__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'set' and 'dict'");
@@ -16342,7 +16392,9 @@ var gt__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'dict'");
 }
 var gt__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'orderedset'");
+    const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &set2 = b.var_get<pythonic::vars::OrderedSet>();
+    return var(std::lexicographical_compare(set2.begin(), set2.end(), set1.begin(), set1.end()));
 }
 var gt__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'orderedset' and 'ordereddict'");
@@ -16399,7 +16451,9 @@ var gt__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'orderedset'");
 }
 var gt__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'ordereddict'");
+    const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &dict2 = b.var_get<pythonic::vars::OrderedDict>();
+    return var(std::lexicographical_compare(dict2.begin(), dict2.end(), dict1.begin(), dict1.end()));
 }
 var gt__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for gt: 'ordereddict' and 'graph'");
@@ -17345,7 +17399,9 @@ var ge__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'ulong_long'");
 }
 var ge__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'list'");
+    const auto &lst1 = a.var_get<pythonic::vars::List>();
+    const auto &lst2 = b.var_get<pythonic::vars::List>();
+    return var(!std::lexicographical_compare(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var ge__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'list' and 'set'");
@@ -17402,7 +17458,12 @@ var ge__set__list(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'list'");
 }
 var ge__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'set'");
+    const auto &set1 = a.var_get<pythonic::vars::Set>();
+    const auto &set2 = b.var_get<pythonic::vars::Set>();
+    for (const auto &elem : set2) {
+        if (set1.find(elem) == set1.end()) return var(false);
+    }
+    return var(true);
 }
 var ge__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'set' and 'dict'");
@@ -17516,7 +17577,9 @@ var ge__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'dict'");
 }
 var ge__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'orderedset'");
+    const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &set2 = b.var_get<pythonic::vars::OrderedSet>();
+    return var(!std::lexicographical_compare(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var ge__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'orderedset' and 'ordereddict'");
@@ -17573,7 +17636,9 @@ var ge__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'orderedset'");
 }
 var ge__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'ordereddict'");
+    const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &dict2 = b.var_get<pythonic::vars::OrderedDict>();
+    return var(!std::lexicographical_compare(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var ge__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ge: 'ordereddict' and 'graph'");
@@ -18519,7 +18584,9 @@ var lt__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'ulong_long'");
 }
 var lt__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'list'");
+    const auto &lst1 = a.var_get<pythonic::vars::List>();
+    const auto &lst2 = b.var_get<pythonic::vars::List>();
+    return var(std::lexicographical_compare(lst1.begin(), lst1.end(), lst2.begin(), lst2.end()));
 }
 var lt__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'list' and 'set'");
@@ -18576,7 +18643,13 @@ var lt__set__list(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'list'");
 }
 var lt__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'set'");
+    const auto &set1 = a.var_get<pythonic::vars::Set>();
+    const auto &set2 = b.var_get<pythonic::vars::Set>();
+    if (set1.size() >= set2.size()) return var(false);
+    for (const auto &elem : set1) {
+        if (set2.find(elem) == set2.end()) return var(false);
+    }
+    return var(true);
 }
 var lt__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'set' and 'dict'");
@@ -18690,7 +18763,9 @@ var lt__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'dict'");
 }
 var lt__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'orderedset'");
+    const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &set2 = b.var_get<pythonic::vars::OrderedSet>();
+    return var(std::lexicographical_compare(set1.begin(), set1.end(), set2.begin(), set2.end()));
 }
 var lt__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'orderedset' and 'ordereddict'");
@@ -18747,7 +18822,9 @@ var lt__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'orderedset'");
 }
 var lt__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'ordereddict'");
+    const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &dict2 = b.var_get<pythonic::vars::OrderedDict>();
+    return var(std::lexicographical_compare(dict1.begin(), dict1.end(), dict2.begin(), dict2.end()));
 }
 var lt__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for lt: 'ordereddict' and 'graph'");
@@ -19693,7 +19770,9 @@ var le__list__ulong_long(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'ulong_long'");
 }
 var le__list__list(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'list'");
+    const auto &lst1 = a.var_get<pythonic::vars::List>();
+    const auto &lst2 = b.var_get<pythonic::vars::List>();
+    return var(!std::lexicographical_compare(lst2.begin(), lst2.end(), lst1.begin(), lst1.end()));
 }
 var le__list__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'list' and 'set'");
@@ -19750,7 +19829,12 @@ var le__set__list(const var& a, const var& b, pythonic::overflow::Overflow polic
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'list'");
 }
 var le__set__set(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'set'");
+    const auto &set1 = a.var_get<pythonic::vars::Set>();
+    const auto &set2 = b.var_get<pythonic::vars::Set>();
+    for (const auto &elem : set1) {
+        if (set2.find(elem) == set2.end()) return var(false);
+    }
+    return var(true);
 }
 var le__set__dict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'set' and 'dict'");
@@ -19864,7 +19948,9 @@ var le__orderedset__dict(const var& a, const var& b, pythonic::overflow::Overflo
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'dict'");
 }
 var le__orderedset__orderedset(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'orderedset'");
+    const auto &set1 = a.var_get<pythonic::vars::OrderedSet>();
+    const auto &set2 = b.var_get<pythonic::vars::OrderedSet>();
+    return var(!std::lexicographical_compare(set2.begin(), set2.end(), set1.begin(), set1.end()));
 }
 var le__orderedset__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'orderedset' and 'ordereddict'");
@@ -19921,7 +20007,9 @@ var le__ordereddict__orderedset(const var& a, const var& b, pythonic::overflow::
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'orderedset'");
 }
 var le__ordereddict__ordereddict(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'ordereddict'");
+    const auto &dict1 = a.var_get<pythonic::vars::OrderedDict>();
+    const auto &dict2 = b.var_get<pythonic::vars::OrderedDict>();
+    return var(!std::lexicographical_compare(dict2.begin(), dict2.end(), dict1.begin(), dict1.end()));
 }
 var le__ordereddict__graph(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for le: 'ordereddict' and 'graph'");
