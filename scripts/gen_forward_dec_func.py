@@ -28,15 +28,16 @@ ops = {
 }
 
 print("#pragma once\n")
-print("#include \"pythonicVars.hpp\"\n")
-print("namespace pythonic {")
-print("namespace dispatch {")
-
+print("#include <cstdint>\n")
+print("#include \"pythonicOverflow.hpp\"\n")
+print("// Minimal forward-declarations to avoid heavy includes\n")
+print("namespace pythonic {\n  namespace vars {\n    enum class TypeTag : uint8_t;\n    class var;\n  }\n}\n")
+print("namespace pythonic {\nnamespace dispatch {\nusing pythonic::vars::var;\n")
 for opname in ops.values():
     print(f"\n// Forward declarations for all (TypeTag, TypeTag) combinations for {opname}")
     for left in type_tags:
         for right in type_tags:
-            print(f"var {opname}_{left}_{right}(const var&, const var&);")
+            print(f"var {opname}__{left}__{right}(const var&, const var&, pythonic::overflow::Overflow policy = pythonic::overflow::Overflow::None_of_them, bool smallest_fit = false);")
 
 print("\n} // namespace dispatch")
 print("} // namespace pythonic")

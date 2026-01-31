@@ -25,23 +25,23 @@ if(PYTHONIC_ENABLE_GRAPHVIZ)
     endif()
 endif()
 
-# Create a header-only interface library
-add_library(pythonic INTERFACE)
+# Create a library
+add_library(pythonic src/pythonicDispatchStubs.cpp)
 
 # Set the include directory for the library
 # Use generator expressions for build/install interface
-target_include_directories(pythonic INTERFACE
+target_include_directories(pythonic PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
 
 # Add Graphviz compile definition if found
 if(PYTHONIC_GRAPHVIZ_FOUND)
-    target_compile_definitions(pythonic INTERFACE GRAPHVIZ_AVAILABLE)
+    target_compile_definitions(pythonic PUBLIC GRAPHVIZ_AVAILABLE)
 endif()
 
 # Require C++20 for interface users
-target_compile_features(pythonic INTERFACE cxx_std_20)
+target_compile_features(pythonic PUBLIC cxx_std_20)
 
 # Optionally, add installation rules for sharing your library
 install(TARGETS pythonic EXPORT pythonic-targets)
@@ -78,8 +78,11 @@ install(FILES
 )
 
 # Example: Add a test executable (if you have test.cpp in test/)
-# add_executable(test_runner test/test.cpp)
-# target_link_libraries(test_runner PRIVATE pythonic)
+add_executable(test_math test/test_math.cpp)
+target_link_libraries(test_math PRIVATE pythonic)
+
+add_executable(test_overflow_ops test/test_overflow_ops.cpp)
+target_link_libraries(test_overflow_ops PRIVATE pythonic)
 
 # ============================================================================
 # Optional: Interactive Graph Viewer
