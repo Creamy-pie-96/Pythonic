@@ -100,26 +100,43 @@ namespace pythonic
         // force_signed: if true, always use signed path (e.g., for subtraction where result could be negative)
         inline var fit_integer_result(long double result, Type type, int min_rank = 0, bool force_signed = false)
         {
-            // If caller indicated floating inputs, fall back to floating fit
+            // Implement three distinct search strategies depending on `type`:
+            // - Has_float: only search floating containers (float,double,long double)
+            // - Both_unsigned: search unsigned integer containers (uint, ulong, ull), then fall back to floating
+            // - Others: search signed integer containers (int, long, long long), then fall back to floating
+
             if (type == Has_float)
             {
+                // Do not consider integer containers when inputs included a float.
+                int float_min_rank = std::max(min_rank, RANK_FLOAT);
+                return fit_floating_result(result, float_min_rank);
+            }
+
+            // BOTH_UNSIGNED: only consider unsigned integer containers (if non-negative and integer), otherwise floating
+            if (type == Both_unsigned)
+            {
+                if (result >= 0 && result == std::floor(result))
+                {
+                    return fit_unsigned_result(result, min_rank);
+                }
+                // Non-integer or negative result: fall back to floating
                 return fit_floating_result(result, min_rank);
             }
 
-            // If force_signed or result is negative, use signed containers
+            // OTHERS: prefer signed integer containers; if non-integer or doesn't fit, fall to floating
             if (force_signed || result < 0)
             {
                 return fit_signed_result(result, min_rank);
             }
 
-            // Only if BOTH inputs were unsigned and result is non-negative, use unsigned containers
-            if (type == Both_unsigned && result >= 0)
+            // Otherwise try signed integer first (non-negative integer)
+            if (result == std::floor(result))
             {
-                return fit_unsigned_result(result, min_rank);
+                return fit_signed_result(result, min_rank);
             }
 
-            // Default: if ANY input is signed, use signed containers
-            return fit_signed_result(result, min_rank);
+            // Non-integer: fall back to floating
+            return fit_floating_result(result, min_rank);
         }
 
         // Find smallest floating container that fits
@@ -132,13 +149,13 @@ namespace pythonic
                 throw PythonicOverflowError("Result exceeds long double range (promote policy)");
             }
 
-            // Check float (rank=7), only if min_rank allows it
-            if (min_rank <= RANK_FLOAT && result >= -std::numeric_limits<float>::max() && result <= std::numeric_limits<float>::max() && !std::isinf(static_cast<float>(result)))
+            // Check float (rank=7), only if min_rank allows it and round trip check for precision check
+            if (min_rank <= RANK_FLOAT && result >= -std::numeric_limits<float>::max() && result <= std::numeric_limits<float>::max() && !std::isinf(static_cast<float>(result)) && static_cast<long double>(static_cast<float>(result)) == result )
             {
                 return var(static_cast<float>(result));
             }
-            // Check double (rank=8), only if min_rank allows it
-            if (min_rank <= RANK_DOUBLE && result >= -std::numeric_limits<double>::max() && result <= std::numeric_limits<double>::max() && !std::isinf(static_cast<double>(result)))
+            // Check double (rank=8), only if min_rank allows it and round trip check for precision check
+            if (min_rank <= RANK_DOUBLE && result >= -std::numeric_limits<double>::max() && result <= std::numeric_limits<double>::max() && !std::isinf(static_cast<double>(result)) && static_cast<long double>(static_cast<double>(result)) == result)
             {
                 return var(static_cast<double>(result));
             }
@@ -155,11 +172,14 @@ namespace pythonic
         inline var smart_promote(long double result, Type type,
                                  bool smallest_fit = true, int min_rank = 0, bool force_signed = false)
         {
-            int effective_min_rank = smallest_fit ? 0 : min_rank;
+            int effective_min_rank = smallest_fit ? 1 : min_rank; //never promote anything to bool
 
             if (type == Has_float)
             {
-                return fit_floating_result(result, effective_min_rank);
+                // Ensure when inputs include a float we do not return anything
+                // smaller than `float`.
+                int needed_min_rank = std::max(effective_min_rank, RANK_FLOAT);
+                return fit_floating_result(result, needed_min_rank);
             }
             else if (type == Both_unsigned)
             {

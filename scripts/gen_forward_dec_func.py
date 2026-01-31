@@ -37,7 +37,7 @@ for opname in ops.values():
     print(f"\n// Forward declarations for all (TypeTag, TypeTag) combinations for {opname}")
     for left in type_tags:
         for right in type_tags:
-            print(f"var {opname}__{left}__{right}(const var&, const var&, pythonic::overflow::Overflow policy = pythonic::overflow::Overflow::None_of_them, bool smallest_fit = false);")
-
+            print(f"var {opname}__{left}__{right}(const var&, const var&, pythonic::overflow::Overflow policy = pythonic::overflow::Overflow::Throw, bool smallest_fit = false);")
+            # if ever want the var's operator overloads to behave like cpp instead of pythonic change this line from :pythonic::overflow::Overflow policy = pythonic::overflow::Overflow::Throw to : pythonic::overflow::Overflow policy = pythonic::overflow::Overflow::None_of_them, bool smallest_fit = false
 print("\n} // namespace dispatch")
 print("} // namespace pythonic")

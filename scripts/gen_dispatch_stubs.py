@@ -32,7 +32,10 @@ ops = {
 print("#include \"pythonic/pythonicDispatchForwardDecls.hpp\"")
 print("#include \"pythonic/pythonicVars.hpp\"")
 print("#include \"pythonic/pythonicError.hpp\"")
+print("#include \"pythonic/pythonicOverflow.hpp\"")
+print("#include \"pythonic/pythonicPromotion.hpp\"")
 print("#include <stdexcept>\n")
+print("#include <algorithm>\n")
 print("namespace pythonic {")
 print("namespace dispatch {")
 print("// generated stubs live in pythonic::dispatch")
@@ -49,11 +52,19 @@ def get_common_type(t1, t2):
     if t1 == "long_long" or t2 == "long_long": return "long long"
     if t1 == "ulong_long" or t2 == "ulong_long": return "unsigned long long"
     if t1 == "long" or t2 == "long": return "long"
-    if t1 == "ulong" or t2 == "ulong": return "ulong"
+    if t1 == "ulong" or t2 == "ulong": return "unsigned long"
     if t1 == "int" or t2 == "int": return "int"
-    if t1 == "uint" or t2 == "uint": return "uint"
+    if t1 == "uint" or t2 == "uint": return "unsigned int"
 
     return "long long" # Default promotion
+
+# Rank map for promotion min_rank calculation
+rank_map = {
+    'int':'pythonic::promotion::RANK_INT', 'uint':'pythonic::promotion::RANK_UINT',
+    'long':'pythonic::promotion::RANK_LONG', 'ulong':'pythonic::promotion::RANK_ULONG',
+    'long_long':'pythonic::promotion::RANK_LONG_LONG', 'ulong_long':'pythonic::promotion::RANK_ULONG_LONG',
+    'float':'pythonic::promotion::RANK_FLOAT', 'double':'pythonic::promotion::RANK_DOUBLE', 'long_double':'pythonic::promotion::RANK_LONG_DOUBLE'
+}
 
 for opname in ops.values():
     print(f"\n// Stub definitions for {opname}")
@@ -63,6 +74,44 @@ for opname in ops.values():
             print(f"var {opname}__{left}__{right}(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {{")
             
             # Implementation Logic
+            # Simple comparison operators: direct cast to common type for numeric and string
+            if opname in ("eq", "ne", "gt", "ge", "lt", "le"):
+                # string compare
+                if left == "string" and right == "string":
+                    if opname == "eq":
+                        print(f"    return var(a.var_get<std::string>() == b.var_get<std::string>());")
+                    elif opname == "ne":
+                        print(f"    return var(a.var_get<std::string>() != b.var_get<std::string>());")
+                    elif opname == "gt":
+                        print(f"    return var(a.var_get<std::string>() > b.var_get<std::string>());")
+                    elif opname == "ge":
+                        print(f"    return var(a.var_get<std::string>() >= b.var_get<std::string>());")
+                    elif opname == "lt":
+                        print(f"    return var(a.var_get<std::string>() < b.var_get<std::string>());")
+                    elif opname == "le":
+                        print(f"    return var(a.var_get<std::string>() <= b.var_get<std::string>());")
+                # numeric compare
+                elif is_numeric(left) and is_numeric(right):
+                    ctype = get_common_type(left, right)
+                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
+                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    if opname == "eq":
+                        print(f"    return var(la == lb);")
+                    elif opname == "ne":
+                        print(f"    return var(la != lb);")
+                    elif opname == "gt":
+                        print(f"    return var(la > lb);")
+                    elif opname == "ge":
+                        print(f"    return var(la >= lb);")
+                    elif opname == "lt":
+                        print(f"    return var(la < lb);")
+                    elif opname == "le":
+                        print(f"    return var(la <= lb);")
+                else:
+                    print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for {opname}: '{left}' and '{right}'\");")
+                print("}")
+                continue
+
             if opname == "add":
                 if left == "string" and right == "string":
                     print(f"    return var(a.var_get<std::string>() + b.var_get<std::string>());")
@@ -75,14 +124,74 @@ for opname in ops.values():
                     print("    return var(std::move(res));")
                 elif is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
-                    print(f"    return var(({ctype})a.var_get<{cpp_types[left]}>() + ({ctype})b.var_get<{cpp_types[right]}>());")
+                    # Numeric: handle by policy
+                    print(f"    // Numeric add with policy-aware handling")
+                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
+                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
+                    print(f"        return var(la + lb);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
+                    print(f"        auto res = pythonic::overflow::add_throw(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Wrap) {{")
+                    print(f"        auto res = pythonic::overflow::add_wrap(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else {{")
+                    print(f"        // Promote: compute in long double then smart-promote")
+                    print(f"        long double result = static_cast<long double>(la) + static_cast<long double>(lb);")
+                    # determine type enum
+                    is_float = left in ["float", "double", "long_double"] or right in ["float", "double", "long_double"]
+                    both_unsigned = left in ["uint","ulong","ulong_long"] and right in ["uint","ulong","ulong_long"]
+                    if is_float:
+                        print(f"        auto ptype = pythonic::promotion::Has_float;")
+                    elif both_unsigned:
+                        print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
+                    else:
+                        print(f"        auto ptype = pythonic::promotion::Others;")
+                    # min_rank as max of input ranks
+                    rank_map = {
+                        'int':'pythonic::promotion::RANK_INT', 'uint':'pythonic::promotion::RANK_UINT',
+                        'long':'pythonic::promotion::RANK_LONG', 'ulong':'pythonic::promotion::RANK_ULONG',
+                        'long_long':'pythonic::promotion::RANK_LONG_LONG', 'ulong_long':'pythonic::promotion::RANK_ULONG_LONG',
+                        'float':'pythonic::promotion::RANK_FLOAT', 'double':'pythonic::promotion::RANK_DOUBLE', 'long_double':'pythonic::promotion::RANK_LONG_DOUBLE'
+                    }
+                    left_rank = rank_map.get(left, '0')
+                    right_rank = rank_map.get(right, '0')
+                    print(f"        int min_rank = std::max({left_rank}, {right_rank});")
+                    print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
+                    print(f"    }}")
                 else:
                     print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for +: '{left}' and '{right}'\");")
             
             elif opname == "sub":
                 if is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
-                    print(f"    return var(({ctype})a.var_get<{cpp_types[left]}>() - ({ctype})b.var_get<{cpp_types[right]}>());")
+                    print(f"    // Numeric sub with policy-aware handling")
+                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
+                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
+                    print(f"        return var(la - lb);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
+                    print(f"        auto res = pythonic::overflow::sub_throw(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Wrap) {{")
+                    print(f"        auto res = pythonic::overflow::sub_wrap(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else {{")
+                    print(f"        long double result = static_cast<long double>(la) - static_cast<long double>(lb);")
+                    is_float = left in ["float", "double", "long_double"] or right in ["float", "double", "long_double"]
+                    both_unsigned = left in ["uint","ulong","ulong_long"] and right in ["uint","ulong","ulong_long"]
+                    if is_float:
+                        print(f"        auto ptype = pythonic::promotion::Has_float;")
+                    elif both_unsigned:
+                        print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
+                    else:
+                        print(f"        auto ptype = pythonic::promotion::Others;")
+                    left_rank = rank_map.get(left, '0')
+                    right_rank = rank_map.get(right, '0')
+                    print(f"        int min_rank = std::max({left_rank}, {right_rank});")
+                    print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, true);")
+                    print(f"    }}")
                 elif left == "set" and right == "set":
                     print(f"    const auto& as = a.var_get<{qualified['set']}>();")
                     print(f"    const auto& bs = b.var_get<{qualified['set']}>();")
@@ -174,27 +283,127 @@ for opname in ops.values():
                      print("    return var(std::move(res));")
                 elif is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
-                    print(f"    return var(({ctype})a.var_get<{cpp_types[left]}>() * ({ctype})b.var_get<{cpp_types[right]}>());")
+                    print(f"    // Numeric mul with policy-aware handling")
+                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
+                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
+                    print(f"        return var(la * lb);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
+                    print(f"        auto res = pythonic::overflow::mul_throw(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Wrap) {{")
+                    print(f"        auto res = pythonic::overflow::mul_wrap(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else {{")
+                    print(f"        long double result = static_cast<long double>(la) * static_cast<long double>(lb);")
+                    is_float = left in ["float", "double", "long_double"] or right in ["float", "double", "long_double"]
+                    both_unsigned = left in ["uint","ulong","ulong_long"] and right in ["uint","ulong","ulong_long"]
+                    if is_float:
+                        print(f"        auto ptype = pythonic::promotion::Has_float;")
+                    elif both_unsigned:
+                        print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
+                    else:
+                        print(f"        auto ptype = pythonic::promotion::Others;")
+                    left_rank = rank_map.get(left, '0')
+                    right_rank = rank_map.get(right, '0')
+                    print(f"        int min_rank = std::max({left_rank}, {right_rank});")
+                    print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
+                    print(f"    }}")
                 else:
                      print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for *: '{left}' and '{right}'\");")
 
             elif opname == "div":
-                 if is_numeric(left) and is_numeric(right):
-                    print(f"    double val_b = (double)b.var_get<{cpp_types[right]}>();")
-                    print(f"    if (val_b == 0.0) throw pythonic::PythonicZeroDivisionError(\"float division by zero\");")
-                    print(f"    return var((double)a.var_get<{cpp_types[left]}>() / val_b);")
-                 else:
+                if is_numeric(left) and is_numeric(right):
+                    ctype = get_common_type(left, right)
+                    print(f"    // Numeric div with policy-aware handling")
+                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
+                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+
+                    print(f"    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError(\"float division by zero\");")
+                    print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
+                    print(f"        return var(la / lb);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
+                    print(f"        auto res = pythonic::overflow::div_throw(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else if (policy == pythonic::overflow::Overflow::Wrap) {{")
+                    print(f"        auto res = pythonic::overflow::div_wrap(la, lb);")
+                    print(f"        return var(res);")
+                    print(f"    }} else {{")
+                    print(f"        long double result = static_cast<long double>(la) / static_cast<long double>(lb);")
+                    is_float = left in ["float", "double", "long_double"] or right in ["float", "double", "long_double"]
+                    both_unsigned = left in ["uint","ulong","ulong_long"] and right in ["uint","ulong","ulong_long"]
+                    
+                    print(f"        auto ptype = pythonic::promotion::Has_float;")
+                    left_rank = rank_map.get(left, '0')
+                    right_rank = rank_map.get(right, '0')
+                    print(f"        int min_rank = std::max({left_rank}, {right_rank});")
+                    print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
+                    print(f"    }}")
+                else:
                     print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for /: '{left}' and '{right}'\");")
-            
+
             elif opname == "mod":
-                 if is_numeric(left) and is_numeric(right):
-                    if left in ["int", "long", "long_long"] and right in ["int", "long", "long_long"]:
-                         print(f"    auto val_b = b.var_get<{cpp_types[right]}>();")
-                         print(f"    if (val_b == 0) throw pythonic::PythonicZeroDivisionError(\"integer division or modulo by zero\");")
-                         print(f"    return var(a.var_get<{cpp_types[left]}>() % val_b);")
+                if is_numeric(left) and is_numeric(right):
+                    # If both are integer-like, use integral modulo helpers
+                    int_types = ["int", "long", "long_long", "uint", "ulong", "ulong_long"]
+                    float_types = ["float", "double", "long_double"]
+                    if left in int_types and right in int_types:
+                        ctype = get_common_type(left, right)
+                        print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
+                        print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                        print(f"    if (lb == 0) throw pythonic::PythonicZeroDivisionError(\"integer division or modulo by zero\");")
+                        print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
+                        print(f"        return var(la % lb);")
+                        print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
+                        print(f"        auto res = pythonic::overflow::mod_throw(la, lb);")
+                        print(f"        return var(res);")
+                        print(f"    }} else if (policy == pythonic::overflow::Overflow::Wrap) {{")
+                        print(f"        auto res = pythonic::overflow::mod_wrap(la, lb);")
+                        print(f"        return var(res);")
+                        print(f"    }} else {{")
+                        print(f"        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));")
+                        is_float = left in float_types or right in float_types
+                        both_unsigned = left in ["uint","ulong","ulong_long"] and right in ["uint","ulong","ulong_long"]
+                        if is_float:
+                            print(f"        auto ptype = pythonic::promotion::Has_float;")
+                        elif both_unsigned:
+                            print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
+                        else:
+                            print(f"        auto ptype = pythonic::promotion::Others;")
+                        left_rank = rank_map.get(left, '0')
+                        right_rank = rank_map.get(right, '0')
+                        print(f"        int min_rank = std::max({left_rank}, {right_rank});")
+                        print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
+                        print(f"    }}")
+                    # If either operand is floating, perform floating modulo (fmod)
+                    elif left in float_types or right in float_types:
+                        # choose compute type based on presence of long_double/double/float
+                        compute = None
+                        if left == 'long_double' or right == 'long_double':
+                            compute = 'long double'
+                        elif left == 'double' or right == 'double':
+                            compute = 'double'
+                        else:
+                            compute = 'float'
+                        print(f"    {compute} la = static_cast<{compute}>(a.var_get<{cpp_types[left]}>());")
+                        print(f"    {compute} lb = static_cast<{compute}>(b.var_get<{cpp_types[right]}>());")
+                        print(f"    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError(\"float division by zero\");")
+                        print(f"    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {{")
+                        print(f"        {compute} res = std::fmod(la, lb);")
+                        print(f"        return var(res);")
+                        print(f"    }} else {{")
+                        print(f"        long double result = std::fmod(static_cast<long double>(la), static_cast<long double>(lb));")
+                        is_float = True
+                        both_unsigned = False
+                        print(f"        auto ptype = pythonic::promotion::Has_float;")
+                        left_rank = rank_map.get(left, '0')
+                        right_rank = rank_map.get(right, '0')
+                        print(f"        int min_rank = std::max({left_rank}, {right_rank});")
+                        print(f"        return pythonic::promotion::smart_promote(result, ptype, smallest_fit, min_rank, false);")
+                        print(f"    }}")
                     else:
-                         print(f"    throw pythonic::PythonicTypeError(\"TypeError: modulo not supported for float types here yet\");")
-                 else:
+                        print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for %: '{left}' and '{right}'\");")
+                else:
                     print(f"    throw pythonic::PythonicTypeError(\"TypeError: unsupported operand type(s) for %: '{left}' and '{right}'\");")
 
             else:
