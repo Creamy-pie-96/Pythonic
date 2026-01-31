@@ -16,7 +16,7 @@ namespace pythonic
         {
             Has_float,
             Both_unsigned,
-            Others
+            Signed
         };
         // Type rank constants
         constexpr int RANK_BOOL = 0;
@@ -187,7 +187,7 @@ namespace pythonic
             }
             else // Others
             {
-                return fit_integer_result(result, Others, effective_min_rank, force_signed);
+                return fit_integer_result(result, Signed, effective_min_rank, force_signed);
             }
         }
 

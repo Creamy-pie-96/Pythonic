@@ -41,9 +41,16 @@ print("namespace dispatch {")
 print("// generated stubs live in pythonic::dispatch")
 
 def is_numeric(t):
-    return t in ["int", "float", "double", "long", "long_long", "long_double", "uint", "ulong", "ulong_long"]
+    return t in ["int", "float", "double", "long", "long_long", "long_double", "uint", "ulong", "ulong_long", "bool"]
 
 def get_common_type(t1, t2):
+    # Treat bool as integer (0/1) for promotion purposes
+    if t1 == 'bool' and t2 == 'bool':
+        return 'int'
+    if t1 == 'bool':
+        return get_common_type('int', t2)
+    if t2 == 'bool':
+        return get_common_type(t1, 'int')
     if t1 == t2:
         return cpp_types[t1]
     if t1 == "long_double" or t2 == "long_double": return "long double"
@@ -63,8 +70,17 @@ rank_map = {
     'int':'pythonic::promotion::RANK_INT', 'uint':'pythonic::promotion::RANK_UINT',
     'long':'pythonic::promotion::RANK_LONG', 'ulong':'pythonic::promotion::RANK_ULONG',
     'long_long':'pythonic::promotion::RANK_LONG_LONG', 'ulong_long':'pythonic::promotion::RANK_ULONG_LONG',
-    'float':'pythonic::promotion::RANK_FLOAT', 'double':'pythonic::promotion::RANK_DOUBLE', 'long_double':'pythonic::promotion::RANK_LONG_DOUBLE'
+    'float':'pythonic::promotion::RANK_FLOAT', 'double':'pythonic::promotion::RANK_DOUBLE', 'long_double':'pythonic::promotion::RANK_LONG_DOUBLE',
+    'bool':'pythonic::promotion::RANK_INT'
 }
+
+# Helper to emit cast/load lines for generated stubs. When a source type is `bool`
+# generate a `var_get<bool>()` load so the bool becomes 0/1 when cast to integral types.
+def print_cast(operand, varname, t, ctype):
+    if t == 'bool':
+        print(f"    {ctype} {varname} = static_cast<{ctype}>({operand}.var_get<bool>());")
+    else:
+        print(f"    {ctype} {varname} = static_cast<{ctype}>({operand}.var_get<{cpp_types[t]}>());")
 
 for opname in ops.values():
     print(f"\n// Stub definitions for {opname}")
@@ -93,8 +109,8 @@ for opname in ops.values():
                 # numeric compare
                 elif is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
-                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
-                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
                     if opname == "eq":
                         print(f"    return var(la == lb);")
                     elif opname == "ne":
@@ -115,6 +131,10 @@ for opname in ops.values():
             if opname == "add":
                 if left == "string" and right == "string":
                     print(f"    return var(a.var_get<std::string>() + b.var_get<std::string>());")
+                elif left == "string" and right == "bool":
+                    print(f"    return var(a.var_get<std::string>() + (b.var_get<bool>() ? std::string(\"true\") : std::string(\"false\")));")
+                elif left == "bool" and right == "string":
+                    print(f"    return var((a.var_get<bool>() ? std::string(\"true\") : std::string(\"false\")) + b.var_get<std::string>());")
                 elif left == "list" and right == "list":
                     print(f"    const auto& al = a.var_get<{qualified['list']}>();")
                     print(f"    const auto& bl = b.var_get<{qualified['list']}>();")
@@ -126,8 +146,8 @@ for opname in ops.values():
                     ctype = get_common_type(left, right)
                     # Numeric: handle by policy
                     print(f"    // Numeric add with policy-aware handling")
-                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
-                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
                     print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
                     print(f"        return var(la + lb);")
                     print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
@@ -147,7 +167,7 @@ for opname in ops.values():
                     elif both_unsigned:
                         print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
                     else:
-                        print(f"        auto ptype = pythonic::promotion::Others;")
+                        print(f"        auto ptype = pythonic::promotion::Signed;")
                     # min_rank as max of input ranks
                     rank_map = {
                         'int':'pythonic::promotion::RANK_INT', 'uint':'pythonic::promotion::RANK_UINT',
@@ -167,8 +187,8 @@ for opname in ops.values():
                 if is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
                     print(f"    // Numeric sub with policy-aware handling")
-                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
-                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
                     print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
                     print(f"        return var(la - lb);")
                     print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
@@ -186,7 +206,7 @@ for opname in ops.values():
                     elif both_unsigned:
                         print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
                     else:
-                        print(f"        auto ptype = pythonic::promotion::Others;")
+                        print(f"        auto ptype = pythonic::promotion::Signed;")
                     left_rank = rank_map.get(left, '0')
                     right_rank = rank_map.get(right, '0')
                     print(f"        int min_rank = std::max({left_rank}, {right_rank});")
@@ -284,8 +304,8 @@ for opname in ops.values():
                 elif is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
                     print(f"    // Numeric mul with policy-aware handling")
-                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
-                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
                     print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
                     print(f"        return var(la * lb);")
                     print(f"    }} else if (policy == pythonic::overflow::Overflow::Throw) {{")
@@ -303,7 +323,7 @@ for opname in ops.values():
                     elif both_unsigned:
                         print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
                     else:
-                        print(f"        auto ptype = pythonic::promotion::Others;")
+                        print(f"        auto ptype = pythonic::promotion::Signed;")
                     left_rank = rank_map.get(left, '0')
                     right_rank = rank_map.get(right, '0')
                     print(f"        int min_rank = std::max({left_rank}, {right_rank});")
@@ -316,8 +336,8 @@ for opname in ops.values():
                 if is_numeric(left) and is_numeric(right):
                     ctype = get_common_type(left, right)
                     print(f"    // Numeric div with policy-aware handling")
-                    print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
-                    print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                    print_cast('a', 'la', left, ctype)
+                    print_cast('b', 'lb', right, ctype)
 
                     print(f"    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError(\"float division by zero\");")
                     print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
@@ -345,12 +365,12 @@ for opname in ops.values():
             elif opname == "mod":
                 if is_numeric(left) and is_numeric(right):
                     # If both are integer-like, use integral modulo helpers
-                    int_types = ["int", "long", "long_long", "uint", "ulong", "ulong_long"]
+                    int_types = ["int", "long", "long_long", "uint", "ulong", "ulong_long", "bool"]
                     float_types = ["float", "double", "long_double"]
                     if left in int_types and right in int_types:
                         ctype = get_common_type(left, right)
-                        print(f"    {ctype} la = static_cast<{ctype}>(a.var_get<{cpp_types[left]}>());")
-                        print(f"    {ctype} lb = static_cast<{ctype}>(b.var_get<{cpp_types[right]}>());")
+                        print_cast('a', 'la', left, ctype)
+                        print_cast('b', 'lb', right, ctype)
                         print(f"    if (lb == 0) throw pythonic::PythonicZeroDivisionError(\"integer division or modulo by zero\");")
                         print(f"    if (policy == pythonic::overflow::Overflow::None_of_them) {{")
                         print(f"        return var(la % lb);")
@@ -369,7 +389,7 @@ for opname in ops.values():
                         elif both_unsigned:
                             print(f"        auto ptype = pythonic::promotion::Both_unsigned;")
                         else:
-                            print(f"        auto ptype = pythonic::promotion::Others;")
+                            print(f"        auto ptype = pythonic::promotion::Signed;")
                         left_rank = rank_map.get(left, '0')
                         right_rank = rank_map.get(right, '0')
                         print(f"        int min_rank = std::max({left_rank}, {right_rank});")
@@ -385,8 +405,16 @@ for opname in ops.values():
                             compute = 'double'
                         else:
                             compute = 'float'
-                        print(f"    {compute} la = static_cast<{compute}>(a.var_get<{cpp_types[left]}>());")
-                        print(f"    {compute} lb = static_cast<{compute}>(b.var_get<{cpp_types[right]}>());")
+                        # Use print_cast here too; it will call var_get<bool>() correctly if needed.
+                        # For float compute types we still want to cast from the original stored type.
+                        if left == 'bool':
+                            print(f"    {compute} la = static_cast<{compute}>(a.var_get<bool>());")
+                        else:
+                            print(f"    {compute} la = static_cast<{compute}>({{}}.var_get<{cpp_types[left]}>());".format('a'))
+                        if right == 'bool':
+                            print(f"    {compute} lb = static_cast<{compute}>(b.var_get<bool>());")
+                        else:
+                            print(f"    {compute} lb = static_cast<{compute}>({{}}.var_get<{cpp_types[right]}>());".format('b'))
                         print(f"    if (static_cast<long double>(lb) == 0.0L) throw pythonic::PythonicZeroDivisionError(\"float division by zero\");")
                         print(f"    if (policy == pythonic::overflow::Overflow::None_of_them || policy == pythonic::overflow::Overflow::Throw || policy == pythonic::overflow::Overflow::Wrap) {{")
                         print(f"        {compute} res = std::fmod(la, lb);")
