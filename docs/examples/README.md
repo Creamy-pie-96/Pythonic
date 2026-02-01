@@ -70,6 +70,142 @@ convert --version   # Should show ImageMagick version
 ffmpeg -version     # Should show FFmpeg version
 ```
 
+### Optional: Audio Playback for Videos
+
+To enable synchronized audio playback with videos, you need SDL2 or PortAudio:
+
+#### Linux (Debian/Ubuntu):
+
+```bash
+# SDL2 (recommended)
+sudo apt-get install libsdl2-dev
+
+# Or PortAudio
+sudo apt-get install portaudio19-dev libportaudio2
+```
+
+#### Linux (Fedora):
+
+```bash
+# SDL2 (recommended)
+sudo dnf install SDL2-devel
+
+# Or PortAudio
+sudo dnf install portaudio-devel
+```
+
+#### Linux (Arch):
+
+```bash
+# SDL2 (recommended)
+sudo pacman -S sdl2
+
+# Or PortAudio
+sudo pacman -S portaudio
+```
+
+#### macOS (Homebrew):
+
+```bash
+# SDL2 (recommended)
+brew install sdl2
+
+# Or PortAudio
+brew install portaudio
+```
+
+#### Windows (vcpkg):
+
+```bash
+# SDL2 (recommended)
+vcpkg install sdl2:x64-windows
+
+# Or PortAudio
+vcpkg install portaudio:x64-windows
+```
+
+#### Building with Audio Support:
+
+```bash
+# With SDL2
+cmake -B build -DPYTHONIC_ENABLE_SDL2_AUDIO=ON
+cmake --build build
+
+# Or with PortAudio
+cmake -B build -DPYTHONIC_ENABLE_PORTAUDIO=ON
+cmake --build build
+```
+
+#### Audio Usage:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace Pythonic;
+
+// Play video with audio (Audio::on enables synchronized audio)
+print("video.mp4", Type::video, Render::BW, Audio::on);
+
+// Play video with audio in true color
+print("video.mp4", Type::video, Render::colored, Audio::on);
+
+// Default: video without audio
+print("video.mp4", Type::video);  // Audio::off is default
+```
+
+> **Note:** If audio libraries are not available, `Audio::on` will automatically fall back to silent video playback.
+
+### Optional: GPU-Accelerated Video Rendering
+
+For smoother colored video playback (especially for high-resolution videos), you can enable OpenCL GPU acceleration:
+
+#### Linux (Debian/Ubuntu):
+
+```bash
+sudo apt-get install ocl-icd-opencl-dev opencl-clhpp-headers
+```
+
+#### Linux (Fedora):
+
+```bash
+sudo dnf install ocl-icd-devel opencl-headers
+```
+
+#### Linux (Arch):
+
+```bash
+sudo pacman -S ocl-icd opencl-headers
+```
+
+#### macOS:
+
+OpenCL is included with macOS by default - no additional installation needed.
+
+#### Windows (vcpkg):
+
+```bash
+vcpkg install opencl:x64-windows
+```
+
+#### Building with GPU Support:
+
+```bash
+# Enable OpenCL when configuring
+cmake -B build -DPYTHONIC_ENABLE_OPENCL=ON
+cmake --build build
+
+# Or combine with other options
+cmake -B build -DPYTHONIC_ENABLE_SDL2_AUDIO=ON -DPYTHONIC_ENABLE_OPENCL=ON
+cmake --build build
+```
+
+#### How It Works:
+
+- When OpenCL is enabled and a GPU is detected, colored video rendering uses GPU acceleration
+- The GPU processes frame data in parallel, reducing flickering and improving frame rates
+- If no GPU is available, it automatically falls back to optimized CPU rendering
+
+> **Note:** OpenCL support is completely optional. Video playback works without it, just with potentially more flickering on high-resolution colored videos.
+
 ---
 
 ## Step 1: Clone the Pythonic Library
@@ -301,6 +437,18 @@ find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libswscale libavutil)
 
+# Optional: SDL2 for audio playback
+pkg_check_modules(SDL2 QUIET sdl2)
+if(SDL2_FOUND)
+    message(STATUS "SDL2 found - audio playback enabled")
+endif()
+
+# Optional: OpenCL for GPU-accelerated video rendering
+find_package(OpenCL QUIET)
+if(OpenCL_FOUND)
+    message(STATUS "OpenCL found - GPU acceleration enabled")
+endif()
+
 # Add your executable (replace main.cpp with your source files)
 add_executable(myapp main.cpp)
 
@@ -309,6 +457,20 @@ target_link_libraries(myapp PRIVATE pythonic::pythonic ImageMagick::Magick++ ${F
 
 # Add FFmpeg include directories
 target_include_directories(myapp PRIVATE ${FFMPEG_INCLUDE_DIRS})
+
+# Link optional SDL2 for audio
+if(SDL2_FOUND)
+    target_compile_definitions(myapp PRIVATE PYTHONIC_ENABLE_SDL2_AUDIO)
+    target_include_directories(myapp PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(myapp PRIVATE ${SDL2_LIBRARIES})
+endif()
+
+# Link optional OpenCL for GPU acceleration
+if(OpenCL_FOUND)
+    target_compile_definitions(myapp PRIVATE PYTHONIC_ENABLE_OPENCL)
+    target_include_directories(myapp PRIVATE ${OpenCL_INCLUDE_DIRS})
+    target_link_libraries(myapp PRIVATE ${OpenCL_LIBRARIES})
+endif()
 
 # If you built and installed Pythonic with the Graph Viewer enabled,
 # link the viewer target to enable `var::show()` in your app:
@@ -495,6 +657,13 @@ project(MyApp)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find optional dependencies
+find_package(PkgConfig QUIET)
+if(PKG_CONFIG_FOUND)
+    pkg_check_modules(SDL2 QUIET sdl2)
+endif()
+find_package(OpenCL QUIET)
+
 add_executable(myapp main.cpp)
 
 # Point directly to the Pythonic include directory
@@ -502,6 +671,22 @@ target_include_directories(myapp PRIVATE
     ${CMAKE_SOURCE_DIR}/../Pythonic/include
 )
 target_compile_features(myapp PRIVATE cxx_std_20)
+
+# Optional: SDL2 for audio playback
+if(SDL2_FOUND)
+    target_compile_definitions(myapp PRIVATE PYTHONIC_ENABLE_SDL2_AUDIO)
+    target_include_directories(myapp PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(myapp PRIVATE ${SDL2_LIBRARIES})
+    message(STATUS "SDL2 audio enabled")
+endif()
+
+# Optional: OpenCL for GPU acceleration
+if(OpenCL_FOUND)
+    target_compile_definitions(myapp PRIVATE PYTHONIC_ENABLE_OPENCL)
+    target_include_directories(myapp PRIVATE ${OpenCL_INCLUDE_DIRS})
+    target_link_libraries(myapp PRIVATE ${OpenCL_LIBRARIES})
+    message(STATUS "OpenCL GPU acceleration enabled")
+endif()
 ```
 
 Then build without CMAKE_PREFIX_PATH:

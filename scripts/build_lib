@@ -6,6 +6,20 @@ ROOT_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/.." && pwd)"
 BUILD_DIR="$ROOT_DIR/build"
 INSTALL_DIR="$ROOT_DIR/install"
 
+# Optional: Enable SDL2 audio if installed (for video playback with sound)
+ENABLE_SDL2_AUDIO=OFF
+if pkg-config --exists sdl2 2>/dev/null; then
+  ENABLE_SDL2_AUDIO=ON
+  echo "Found SDL2 - enabling audio support"
+fi
+
+# Optional: Enable OpenCL if installed (for GPU-accelerated video rendering)
+ENABLE_OPENCL=OFF
+if pkg-config --exists OpenCL 2>/dev/null || [ -f /usr/include/CL/opencl.hpp ] || [ -f /usr/include/CL/cl.hpp ]; then
+  ENABLE_OPENCL=ON
+  echo "Found OpenCL - enabling GPU acceleration"
+fi
+
 # Safety check before rm -rf
 if [[ -z "$BUILD_DIR" || "$BUILD_DIR" == "/" ]]; then
   echo "Refusing to delete unsafe BUILD_DIR: '$BUILD_DIR'"
@@ -18,7 +32,9 @@ cd "$BUILD_DIR"
 
 cmake "$ROOT_DIR" \
   -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
-  -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
+  -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON \
+  -DPYTHONIC_ENABLE_SDL2_AUDIO=$ENABLE_SDL2_AUDIO \
+  -DPYTHONIC_ENABLE_OPENCL=$ENABLE_OPENCL
 
 cmake --build . -j$(nproc)
 cmake --install .
@@ -26,3 +42,13 @@ cmake --install .
 echo
 echo "✔ Clean build + install complete"
 echo "  Install prefix: $INSTALL_DIR"
+if [[ "$ENABLE_SDL2_AUDIO" == "ON" ]]; then
+  echo "  SDL2 audio: enabled"
+else
+  echo "  SDL2 audio: disabled (install libsdl2-dev to enable)"
+fi
+if [[ "$ENABLE_OPENCL" == "ON" ]]; then
+  echo "  OpenCL GPU: enabled"
+else
+  echo "  OpenCL GPU: disabled (install ocl-icd-opencl-dev to enable)"
+fi

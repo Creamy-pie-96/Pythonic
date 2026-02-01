@@ -34,6 +34,22 @@ find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libswscale libavutil)
 
+# ============================================================================
+# Optional: SDL2 for audio playback in videos
+# ============================================================================
+pkg_check_modules(SDL2 QUIET sdl2)
+if(SDL2_FOUND)
+    message(STATUS "SDL2 found - audio playback enabled")
+endif()
+
+# ============================================================================
+# Optional: OpenCL for GPU-accelerated video rendering
+# ============================================================================
+find_package(OpenCL QUIET)
+if(OpenCL_FOUND)
+    message(STATUS "OpenCL found - GPU acceleration enabled")
+endif()
+
 # Add your executable
 # --> Replace 'demoapp' with your project executable name
 # --> Add all your .cpp files here if you have multiple
@@ -49,6 +65,20 @@ target_link_libraries(demoapp PRIVATE pythonic::pythonic ImageMagick::Magick++ $
 
 # Add FFmpeg include directories
 target_include_directories(demoapp PRIVATE ${FFMPEG_INCLUDE_DIRS})
+
+# Link optional SDL2 for audio playback
+if(SDL2_FOUND)
+    target_compile_definitions(demoapp PRIVATE PYTHONIC_ENABLE_SDL2_AUDIO)
+    target_include_directories(demoapp PRIVATE ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(demoapp PRIVATE ${SDL2_LIBRARIES})
+endif()
+
+# Link optional OpenCL for GPU-accelerated video rendering
+if(OpenCL_FOUND)
+    target_compile_definitions(demoapp PRIVATE PYTHONIC_ENABLE_OPENCL)
+    target_include_directories(demoapp PRIVATE ${OpenCL_INCLUDE_DIRS})
+    target_link_libraries(demoapp PRIVATE ${OpenCL_LIBRARIES})
+endif()
 
 # If you installed Pythonic with the optional Graph Viewer enabled
 # (build/install Pythonic with `-DPYTHONIC_ENABLE_GRAPH_VIEWER=ON`),

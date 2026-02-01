@@ -10,6 +10,7 @@ Welcome! Pythonic is a modern C++20 library that brings the expressive power and
 - Python-style slicing, comprehensions, and string methods
 - Easy-to-use data structures (list, dict, set, etc.)
 - Graph algorithms and **interactive graph visualization** with ImGui
+- **Terminal media rendering** (images and videos in braille or true color)
 - Math utilities and more
 - A familiar, readable syntax—no weird hacks, just clean C++
 
@@ -70,6 +71,131 @@ g.add_edge(0, 1);
 g.add_edge(1, 2);
 g.show();  // Opens interactive viewer!
 ```
+
+## Optional: Media Rendering Dependencies
+
+For terminal media rendering (images and videos), you need:
+
+- **ImageMagick** - For image format conversion
+- **FFmpeg** - For video decoding
+
+### Ubuntu/Debian:
+
+```bash
+sudo apt-get install imagemagick ffmpeg
+```
+
+### macOS:
+
+```bash
+brew install imagemagick ffmpeg
+```
+
+### Usage:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace Pythonic;
+
+// Print image in braille (black & white)
+print("photo.png", Type::image);
+
+// Print image in true color
+print("photo.png", Type::image, Render::colored);
+
+// Play video in true color
+print("video.mp4", Type::video, Render::colored);
+```
+
+## Optional: Audio Playback for Videos
+
+To play videos with synchronized audio, you need SDL2 or PortAudio:
+
+### Ubuntu/Debian:
+
+```bash
+# SDL2 (recommended)
+sudo apt-get install libsdl2-dev
+
+# Or PortAudio
+sudo apt-get install portaudio19-dev libportaudio2
+```
+
+### macOS:
+
+```bash
+# SDL2 (recommended)
+brew install sdl2
+
+# Or PortAudio
+brew install portaudio
+```
+
+### Windows (vcpkg):
+
+```bash
+# SDL2 (recommended)
+vcpkg install sdl2:x64-windows
+
+# Or PortAudio
+vcpkg install portaudio:x64-windows
+```
+
+Then build with audio support:
+
+```bash
+# With SDL2
+cmake -B build -DPYTHONIC_ENABLE_SDL2_AUDIO=ON
+cmake --build build
+
+# Or with PortAudio
+cmake -B build -DPYTHONIC_ENABLE_PORTAUDIO=ON
+cmake --build build
+```
+
+Use in code:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace Pythonic;
+
+// Play video with audio
+print("video.mp4", Type::video, Render::BW, Audio::on);
+
+// Play video with audio in true color
+print("video.mp4", Type::video, Render::colored, Audio::on);
+```
+
+> **Note:** If audio libraries are not available, `Audio::on` will automatically fall back to silent video playback.
+
+## Optional: GPU-Accelerated Video Rendering
+
+For smoother colored video playback, you can enable OpenCL GPU acceleration:
+
+### Ubuntu/Debian:
+
+```bash
+sudo apt-get install ocl-icd-opencl-dev opencl-clhpp-headers
+```
+
+### macOS:
+
+OpenCL is included with macOS - no additional installation needed.
+
+### Windows (vcpkg):
+
+```bash
+vcpkg install opencl:x64-windows
+```
+
+Then build with OpenCL support:
+
+```bash
+cmake -B build -DPYTHONIC_ENABLE_OPENCL=ON
+cmake --build build
+```
+
+> **Note:** OpenCL support is optional. If not available, video rendering will use CPU with optimized buffering.
 
 ## Disclaimer:
 

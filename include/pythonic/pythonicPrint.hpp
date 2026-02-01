@@ -10,14 +10,16 @@ namespace pythonic
     {
 
         using namespace pythonic::vars;
+        using pythonic::draw::Audio;  // Import Audio enum from draw namespace
+        using pythonic::draw::Render; // Import Render enum from draw namespace
 
         /**
          * @brief Media type hints for the print function
          *
          * Usage:
-         *   print("file.png", Type::image);     // Force treat as image
-         *   print("file.mp4", Type::video);     // Force treat as video
-         *   print("info.mp4", Type::video_info); // Show video info only
+         *   print("file.png", Type::image);       // Force treat as image
+         *   print("file.mp4", Type::video);       // Force treat as video
+         *   print("info.mp4", Type::video_info);  // Show video info only
          *   print("file.png", Type::auto_detect); // Auto-detect from extension
          */
         enum class Type
@@ -218,28 +220,49 @@ namespace pythonic
         }
 
         /**
-         * @brief Print with explicit media type hint
+         * @brief Print with explicit media type hint, render mode, and audio option
          *
          * Usage:
-         *   print("file.png", Type::image);      // Force treat as image
-         *   print("file.mp4", Type::video);      // Play video
-         *   print("file.mp4", Type::video_info); // Show video metadata only
-         *   print("hello", Type::text);          // Force plain text output
+         *   print("file.png", Type::image);                              // BW braille image
+         *   print("file.png", Type::image, Render::colored);             // True color image
+         *   print("file.mp4", Type::video);                              // BW braille video
+         *   print("file.mp4", Type::video, Render::colored);             // True color video
+         *   print("file.mp4", Type::video, Render::BW, Audio::on);       // Video with audio (BW)
+         *   print("file.mp4", Type::video, Render::colored, Audio::on);  // Video with audio (colored)
+         *   print("file.mp4", Type::video_info);                         // Show video metadata only
+         *   print("hello", Type::text);                                  // Force plain text output
          *
          * @param filepath Path or text to print
          * @param type Media type hint (auto_detect, image, video, video_info, text)
+         * @param render Render mode (Render::BW for braille, Render::colored for true color)
+         * @param audio Audio mode (Audio::off default, Audio::on for audio playback)
          * @param max_width Terminal width for media rendering
-         * @param threshold Brightness threshold for braille conversion
+         * @param threshold Brightness threshold for braille conversion (BW mode only, 0-255)
          */
-        inline void print(const std::string &filepath, Type type, int max_width = 80, int threshold = 128)
+        inline void print(const std::string &filepath, Type type = Type::auto_detect,
+                          Render render = Render::BW, Audio audio = Audio::off,
+                          int max_width = 80, int threshold = 128)
         {
             switch (type)
             {
             case Type::image:
-                pythonic::draw::print_image(filepath, max_width, threshold);
+                if (render == Render::colored)
+                    pythonic::draw::print_image_colored(filepath, max_width);
+                else
+                    pythonic::draw::print_image(filepath, max_width, threshold);
                 break;
             case Type::video:
-                pythonic::draw::play_video(filepath, max_width, threshold);
+                if (audio == Audio::on)
+                {
+                    pythonic::draw::play_video_audio(filepath, max_width, render);
+                }
+                else
+                {
+                    if (render == Render::colored)
+                        pythonic::draw::play_video_colored(filepath, max_width);
+                    else
+                        pythonic::draw::play_video(filepath, max_width, threshold);
+                }
                 break;
             case Type::video_info:
                 pythonic::draw::print_video_info(filepath);
@@ -250,9 +273,23 @@ namespace pythonic
             case Type::auto_detect:
             default:
                 if (pythonic::draw::is_video_file(filepath))
-                    pythonic::draw::play_video(filepath, max_width, threshold);
+                {
+                    if (audio == Audio::on)
+                    {
+                        pythonic::draw::play_video_audio(filepath, max_width, render);
+                    }
+                    else if (render == Render::colored)
+                        pythonic::draw::play_video_colored(filepath, max_width);
+                    else
+                        pythonic::draw::play_video(filepath, max_width, threshold);
+                }
                 else if (pythonic::draw::is_image_file(filepath))
-                    pythonic::draw::print_image(filepath, max_width, threshold);
+                {
+                    if (render == Render::colored)
+                        pythonic::draw::print_image_colored(filepath, max_width);
+                    else
+                        pythonic::draw::print_image(filepath, max_width, threshold);
+                }
                 else
                     std::cout << filepath << std::endl;
                 break;
@@ -260,20 +297,11 @@ namespace pythonic
         }
 
         // Overload for const char*
-        inline void print(const char *filepath, Type type, int max_width = 80, int threshold = 128)
+        inline void print(const char *filepath, Type type = Type::auto_detect,
+                          Render render = Render::BW, Audio audio = Audio::off,
+                          int max_width = 80, int threshold = 128)
         {
-            print(std::string(filepath), type, max_width, threshold);
-        }
-
-        /**
-         * @brief Specialized print for media files - detects by extension
-         *
-         * If the string looks like an image or video file path, renders/plays it.
-         * Otherwise, prints as normal text.
-         */
-        inline void print(const char *filepath)
-        {
-            print(std::string(filepath), Type::auto_detect);
+            print(std::string(filepath), type, render, audio, max_width, threshold);
         }
 
         /**

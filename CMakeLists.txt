@@ -25,6 +25,89 @@ if(PYTHONIC_ENABLE_GRAPHVIZ)
     endif()
 endif()
 
+# ============================================================================
+# Optional: SDL2 Audio for video playback with sound
+# ============================================================================
+option(PYTHONIC_ENABLE_SDL2_AUDIO "Enable SDL2 audio for video playback with sound" OFF)
+
+if(PYTHONIC_ENABLE_SDL2_AUDIO)
+    find_package(SDL2 QUIET)
+    if(SDL2_FOUND)
+        message(STATUS "Found SDL2: ${SDL2_LIBRARIES}")
+        message(STATUS "  Audio playback enabled for video files")
+        set(PYTHONIC_SDL2_FOUND TRUE)
+    else()
+        message(STATUS "SDL2 not found - trying pkg-config")
+        find_package(PkgConfig QUIET)
+        if(PKG_CONFIG_FOUND)
+            pkg_check_modules(SDL2 QUIET sdl2)
+            if(SDL2_FOUND)
+                message(STATUS "Found SDL2 via pkg-config")
+                set(PYTHONIC_SDL2_FOUND TRUE)
+            endif()
+        endif()
+        if(NOT PYTHONIC_SDL2_FOUND)
+            message(WARNING "SDL2 not found. Audio playback disabled.")
+            message(STATUS "  Install SDL2: sudo apt install libsdl2-dev (Ubuntu)")
+            message(STATUS "  Or: brew install sdl2 (macOS)")
+            set(PYTHONIC_ENABLE_SDL2_AUDIO OFF)
+        endif()
+    endif()
+endif()
+
+# ============================================================================
+# Optional: PortAudio for video playback with sound (alternative to SDL2)
+# ============================================================================
+option(PYTHONIC_ENABLE_PORTAUDIO "Enable PortAudio for video playback with sound" OFF)
+
+if(PYTHONIC_ENABLE_PORTAUDIO AND NOT PYTHONIC_ENABLE_SDL2_AUDIO)
+    find_package(PkgConfig QUIET)
+    if(PKG_CONFIG_FOUND)
+        pkg_check_modules(PORTAUDIO QUIET portaudio-2.0)
+    endif()
+    
+    if(NOT PORTAUDIO_FOUND)
+        find_library(PORTAUDIO_LIBRARIES portaudio)
+        find_path(PORTAUDIO_INCLUDE_DIRS portaudio.h)
+        if(PORTAUDIO_LIBRARIES AND PORTAUDIO_INCLUDE_DIRS)
+            set(PORTAUDIO_FOUND TRUE)
+        endif()
+    endif()
+    
+    if(PORTAUDIO_FOUND)
+        message(STATUS "Found PortAudio: ${PORTAUDIO_LIBRARIES}")
+        message(STATUS "  Audio playback enabled for video files")
+        set(PYTHONIC_PORTAUDIO_FOUND TRUE)
+    else()
+        message(WARNING "PortAudio not found. Audio playback disabled.")
+        message(STATUS "  Install PortAudio: sudo apt install libportaudio2 portaudio19-dev (Ubuntu)")
+        message(STATUS "  Or: brew install portaudio (macOS)")
+        set(PYTHONIC_ENABLE_PORTAUDIO OFF)
+    endif()
+elseif(PYTHONIC_ENABLE_PORTAUDIO AND PYTHONIC_ENABLE_SDL2_AUDIO)
+    message(STATUS "Both SDL2 and PortAudio enabled - using SDL2 (preferred)")
+    set(PYTHONIC_ENABLE_PORTAUDIO OFF)
+endif()
+
+# ============================================================================
+# Optional: OpenCL for GPU-accelerated video rendering
+# ============================================================================
+option(PYTHONIC_ENABLE_OPENCL "Enable OpenCL for GPU-accelerated video rendering" OFF)
+
+if(PYTHONIC_ENABLE_OPENCL)
+    find_package(OpenCL QUIET)
+    if(OpenCL_FOUND)
+        message(STATUS "Found OpenCL: ${OpenCL_LIBRARIES}")
+        message(STATUS "  GPU-accelerated rendering enabled")
+        set(PYTHONIC_OPENCL_FOUND TRUE)
+    else()
+        message(WARNING "OpenCL not found. GPU acceleration disabled.")
+        message(STATUS "  Install OpenCL: sudo apt install ocl-icd-opencl-dev (Ubuntu)")
+        message(STATUS "  Or: brew install opencl-headers (macOS)")
+        set(PYTHONIC_ENABLE_OPENCL OFF)
+    endif()
+endif()
+
 # Create a library
 add_library(pythonic src/pythonicDispatchStubs.cpp)
 
@@ -34,6 +117,24 @@ target_include_directories(pythonic PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
+
+# Link audio libraries if enabled
+if(PYTHONIC_SDL2_FOUND)
+    target_compile_definitions(pythonic PUBLIC PYTHONIC_ENABLE_SDL2_AUDIO)
+    target_include_directories(pythonic PUBLIC ${SDL2_INCLUDE_DIRS})
+    target_link_libraries(pythonic PUBLIC ${SDL2_LIBRARIES})
+elseif(PYTHONIC_PORTAUDIO_FOUND)
+    target_compile_definitions(pythonic PUBLIC PYTHONIC_ENABLE_PORTAUDIO)
+    target_include_directories(pythonic PUBLIC ${PORTAUDIO_INCLUDE_DIRS})
+    target_link_libraries(pythonic PUBLIC ${PORTAUDIO_LIBRARIES})
+endif()
+
+# Link OpenCL if enabled
+if(PYTHONIC_OPENCL_FOUND)
+    target_compile_definitions(pythonic PUBLIC PYTHONIC_ENABLE_OPENCL)
+    target_include_directories(pythonic PUBLIC ${OpenCL_INCLUDE_DIRS})
+    target_link_libraries(pythonic PUBLIC ${OpenCL_LIBRARIES})
+endif()
 
 # Precompiled headers to speed up compilation
 target_precompile_headers(pythonic PRIVATE
