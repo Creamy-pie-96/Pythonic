@@ -1,3 +1,4 @@
+#pragma once
 // Generated declarations for OpTable specializations
 template<> const std::array<std::array<BinaryOpFunc, TypeTagCount>, TypeTagCount> OpTable<Add>::table;
 template<> const std::array<std::array<BinaryOpFunc, TypeTagCount>, TypeTagCount> OpTable<Sub>::table;

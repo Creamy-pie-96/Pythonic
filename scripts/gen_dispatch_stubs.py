@@ -48,6 +48,7 @@ op_struct_map = {
 }
 
 if len(sys.argv) > 1 and sys.argv[1] == 'declarations':
+    print("#pragma once")
     print("// Generated declarations for OpTable specializations")
     for opname, opstruct_name in op_struct_map.items():
         print(f"template<> const std::array<std::array<BinaryOpFunc, TypeTagCount>, TypeTagCount> OpTable<{opstruct_name}>::table;")

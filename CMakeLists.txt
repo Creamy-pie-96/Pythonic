@@ -144,6 +144,18 @@ if(PYTHONIC_ENABLE_GRAPH_VIEWER)
     target_compile_features(pythonic_graph_viewer PUBLIC cxx_std_20)
     target_compile_definitions(pythonic_graph_viewer PUBLIC PYTHONIC_ENABLE_GRAPH_VIEWER)
     
+    # Precompiled headers to speed up compilation
+    target_precompile_headers(pythonic_graph_viewer PRIVATE
+        <algorithm>
+        <stdexcept>
+        <pythonic/pythonicDispatchForwardDecls.hpp>
+        <pythonic/pythonicError.hpp>
+        <pythonic/pythonicOverflow.hpp>
+        <pythonic/pythonicPromotion.hpp>
+        <pythonic/pythonicVars.hpp>
+        <pythonic/graph_viewer.hpp>
+    )
+    
     # Use PRIVATE for external paths to avoid installation path issues
     target_include_directories(pythonic_graph_viewer
         PUBLIC
