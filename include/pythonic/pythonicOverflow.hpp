@@ -22,10 +22,10 @@ namespace pythonic
 
         enum class Overflow : uint8_t
         {
-            Throw = 0,   // Throw on overflow (default)
-            Promote = 1, // Auto-promote to larger type
-            Wrap = 2,     // Allow wrapping (C++ default behavior)
-            None_of_them = 3 // This is  the default in the dispatch for ops directly called by operator overload.
+            Throw = 0,       // Throw on overflow (default)
+            Promote = 1,     // Auto-promote to larger type
+            Wrap = 2,        // Allow wrapping (C++ default behavior)
+            None_of_them = 3 // raw c++ op
         };
 
         // Concept for arithmetic types

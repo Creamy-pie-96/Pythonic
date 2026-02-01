@@ -14,10 +14,10 @@ Many arithmetic and aggregation functions accept an optional `policy` parameter 
 
 | Policy                   | Enum Value | Description                                                                     |
 | ------------------------ | ---------- | ------------------------------------------------------------------------------- |
-| `Overflow::Throw`        | 0          | **Default for functions.** Throw an exception on overflow (safe, Python-like).  |
+| `Overflow::Throw`        | 0          | **Default for functions and operators.** Throw an exception on overflow (safe, Python-like).  |
 | `Overflow::Promote`      | 1          | Promote to a larger type on overflow (never throws, but may use bigger type).   |
 | `Overflow::Wrap`         | 2          | Wrap around on overflow (C++-like, may lose data, never throws).                |
-| `Overflow::None_of_them` | 3          | **Default for operators.** Raw C++ arithmetic (no checks, maximum performance). |
+| `Overflow::None_of_them` | 3          | Raw C++ arithmetic (no checks, maximum performance). |
 
 **Policy Selection Guide:**
 

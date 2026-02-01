@@ -328,7 +328,7 @@ print(sum(list(1,2,3)));            // 6
 - All arithmetic and bitwise operators are overloaded for `var` and work with numeric types and containers where appropriate.
 - Compound assignment operators (`+=`, `-=`, etc.) are supported.
 - Use `abs`, `min`, `max`, `sum` for numeric helpers.
-- **Operator overloads use `Overflow::None_of_them`** by default for maximum performance (raw C++ arithmetic).
+- **Operator overloads use `Overflow::Throw`** by default for safety.
 - **Math functions use `Overflow::Throw`** by default for safety.
 - Use `get<T>()` to get a reference to the stored value (for modification).
 - Use `toInt()`, `toDouble()`, etc. for type conversion (returns a copy).
