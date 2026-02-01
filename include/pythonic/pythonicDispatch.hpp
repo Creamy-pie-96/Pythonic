@@ -97,6 +97,9 @@ namespace pythonic
         {
         };
 
+        // Explicit specialization declarations
+        #include "pythonicDispatchDeclarations.hpp"
+
         // Helper to get function
         template <typename Op>
         inline BinaryOpFunc get_op_func(pythonic::vars::TypeTag left, pythonic::vars::TypeTag right)

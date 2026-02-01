@@ -1,5 +1,6 @@
 # gen_dispatch_stubs.py
 import os
+import sys
 
 type_tags = [
     "none", "int", "float", "string", "bool", "double", "long", "long_long", "long_double",
@@ -36,6 +37,21 @@ op_symbols = {
     "band": "&", "bor": "|", "bxor": "^", "shl": "<<", "shr": ">>",
     "land": "and", "lor": "or"
 }
+
+# OpTable map to Struct names
+op_struct_map = {
+    "add": "Add", "sub": "Sub", "mul": "Mul", "div": "Div", "mod": "Mod",
+    "eq": "Eq", "ne": "Ne", "gt": "Gt", "ge": "Ge", "lt": "Lt", "le": "Le",
+    "band": "BitAnd", "bor": "BitOr", "bxor": "BitXor",
+    "shl": "ShiftLeft", "shr": "ShiftRight",
+    "land": "LogicalAnd", "lor": "LogicalOr"
+}
+
+if len(sys.argv) > 1 and sys.argv[1] == 'declarations':
+    print("// Generated declarations for OpTable specializations")
+    for opname, opstruct_name in op_struct_map.items():
+        print(f"template<> const std::array<std::array<BinaryOpFunc, TypeTagCount>, TypeTagCount> OpTable<{opstruct_name}>::table;")
+    sys.exit(0)
 
 print("#include \"pythonic/pythonicDispatchForwardDecls.hpp\"")
 print("#include \"pythonic/pythonicVars.hpp\"")
@@ -810,16 +826,8 @@ for opname in ops.values():
             
             print("}")
 
-# OpTable map to Struct names
-op_struct_map = {
-    "add": "Add", "sub": "Sub", "mul": "Mul", "div": "Div", "mod": "Mod",
-    "eq": "Eq", "ne": "Ne", "gt": "Gt", "ge": "Ge", "lt": "Lt", "le": "Le",
-    "band": "BitAnd", "bor": "BitOr", "bxor": "BitXor",
-    "shl": "ShiftLeft", "shr": "ShiftRight",
-    "land": "LogicalAnd", "lor": "LogicalOr"
-}
-
 # Generate OpTable initializations
+
 for opname, opstruct_name in op_struct_map.items():
     actual_op_func = ops[opname] # e.g. "add"
     print(f"\n// OpTable initialization for {opstruct_name}")
