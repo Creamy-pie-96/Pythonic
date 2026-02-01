@@ -121,6 +121,7 @@ namespace pythonic
         // ============================================================================
         // Overflow Detection Helpers
         // Check if an operation would overflow without performing it
+        // NOTE: Template functions are separated by compiler to avoid MSVC parsing issues
         // ============================================================================
 
 #ifdef _MSC_VER
