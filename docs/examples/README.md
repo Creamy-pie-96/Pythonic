@@ -296,11 +296,19 @@ find_package(OpenGL REQUIRED)
 # Find the Pythonic library
 find_package(pythonic REQUIRED)
 
+# Find ImageMagick and FFmpeg for media rendering support (images and videos)
+find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libswscale libavutil)
+
 # Add your executable (replace main.cpp with your source files)
 add_executable(myapp main.cpp)
 
-# Link the Pythonic library
-target_link_libraries(myapp PRIVATE pythonic::pythonic)
+# Link the Pythonic library and media dependencies
+target_link_libraries(myapp PRIVATE pythonic::pythonic ImageMagick::Magick++ ${FFMPEG_LIBRARIES})
+
+# Add FFmpeg include directories
+target_include_directories(myapp PRIVATE ${FFMPEG_INCLUDE_DIRS})
 
 # If you built and installed Pythonic with the Graph Viewer enabled,
 # link the viewer target to enable `var::show()` in your app:

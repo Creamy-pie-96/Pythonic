@@ -25,7 +25,14 @@ find_package(pythonic REQUIRED)
 # The viewer also depends on GLFW at link/config time; projects that
 # link `pythonic::pythonic_graph_viewer` may want to ensure GLFW is
 # available. Find it here to provide clearer error messages early.
-find_package(GLFW REQUIRED)
+find_package(glfw3 REQUIRED)
+
+# Find ImageMagick for image rendering support
+find_package(ImageMagick COMPONENTS Magick++ REQUIRED)
+
+# Find FFmpeg for video rendering support
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(FFMPEG REQUIRED libavcodec libavformat libswscale libavutil)
 
 # Add your executable
 # --> Replace 'demoapp' with your project executable name
@@ -38,7 +45,10 @@ add_executable(demoapp demo.cpp)
 
 # Link libraries to your target
 # --> Add other libraries here if your project depends on them
-target_link_libraries(demoapp PRIVATE pythonic::pythonic)
+target_link_libraries(demoapp PRIVATE pythonic::pythonic ImageMagick::Magick++ ${FFMPEG_LIBRARIES})
+
+# Add FFmpeg include directories
+target_include_directories(demoapp PRIVATE ${FFMPEG_INCLUDE_DIRS})
 
 # If you installed Pythonic with the optional Graph Viewer enabled
 # (build/install Pythonic with `-DPYTHONIC_ENABLE_GRAPH_VIEWER=ON`),
