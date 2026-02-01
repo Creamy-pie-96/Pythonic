@@ -5,8 +5,7 @@
 #include <array>
 #include <functional>
 
-
-// Forward declaration of TypeTag and var to avoid circular dependency    
+// Forward declaration of TypeTag and var to avoid circular dependency
 namespace pythonic
 {
     namespace vars
@@ -97,8 +96,8 @@ namespace pythonic
         {
         };
 
-        // Explicit specialization declarations
-        #include "pythonicDispatchDeclarations.hpp"
+// Explicit specialization declarations
+#include "pythonicDispatchDeclarations.hpp"
 
         // Helper to get function
         template <typename Op>

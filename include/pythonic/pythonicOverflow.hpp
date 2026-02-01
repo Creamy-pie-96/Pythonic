@@ -172,8 +172,19 @@ namespace pythonic
         template <Integral T>
         T add_throw(T a, T b)
         {
+#ifdef _MSC_VER
+            T res = a + b;
+            bool overflow;
+            if constexpr (std::is_signed_v<T>) {
+                overflow = ((a > 0 && b > 0 && res < 0) || (a < 0 && b < 0 && res > 0));
+            } else {
+                overflow = res < a;
+            }
+            if (overflow)
+#else
             T res;
             if (__builtin_add_overflow(a, b, &res))
+#endif
             {
                 throw PythonicOverflowError("integer addition overflow");
             }
@@ -194,8 +205,19 @@ namespace pythonic
         template <Integral T>
         T sub_throw(T a, T b)
         {
+#ifdef _MSC_VER
+            T res = a - b;
+            bool overflow;
+            if constexpr (std::is_signed_v<T>) {
+                overflow = ((a > 0 && b < 0 && res < 0) || (a < 0 && b > 0 && res > 0));
+            } else {
+                overflow = res > a;
+            }
+            if (overflow)
+#else
             T res;
             if (__builtin_sub_overflow(a, b, &res))
+#endif
             {
                 throw PythonicOverflowError("integer subtraction overflow");
             }
@@ -216,8 +238,20 @@ namespace pythonic
         template <Integral T>
         T mul_throw(T a, T b)
         {
+#ifdef _MSC_VER
+            T res = a * b;
+            bool overflow;
+            if constexpr (std::is_signed_v<T>) {
+                bool same_sign = (a >= 0) == (b >= 0);
+                overflow = (same_sign && res < 0) || (!same_sign && res > 0);
+            } else {
+                overflow = (a != 0 && b > std::numeric_limits<T>::max() / a);
+            }
+            if (overflow)
+#else
             T res;
             if (__builtin_mul_overflow(a, b, &res))
+#endif
             {
                 throw PythonicOverflowError("integer multiplication overflow");
             }
