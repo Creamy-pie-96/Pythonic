@@ -1426,13 +1426,15 @@ namespace pythonic
                             // Retrieve original edge IDs from the snapshot index under lock
                             size_t orig_u = (size_t)-1;
                             size_t orig_v = (size_t)-1;
-                            
+
                             {
                                 std::lock_guard<std::mutex> lock(snapshot_mutex_);
                                 // This ensures we remove the ACTUAL existing edge, not the potentially-swapped UI values
-                                if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
-                                    const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
-                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
+                                if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size())
+                                {
+                                    const auto &es = back_snapshot_.edges[last_selected_edge_idx_];
+                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size())
+                                    {
                                         orig_u = back_snapshot_.nodes[es.from].node_id;
                                         orig_v = back_snapshot_.nodes[es.to].node_id;
                                     }
@@ -1447,7 +1449,7 @@ namespace pythonic
                                     // Remove original edge(s) completely to avoid duplicates/residue
                                     graph_var_.remove_edge(orig_u, orig_v, true);
                                     graph_var_.remove_edge(orig_v, orig_u, true);
-                                    
+
                                     if (directed)
                                         graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, w1, std::numeric_limits<double>::quiet_NaN(), true);
                                     else
@@ -1467,12 +1469,14 @@ namespace pythonic
                             // Use original IDs for removal to ensure it works even if UI was flipped
                             size_t orig_u = (size_t)-1;
                             size_t orig_v = (size_t)-1;
-                            
+
                             {
                                 std::lock_guard<std::mutex> lock(snapshot_mutex_);
-                                if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
-                                    const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
-                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
+                                if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size())
+                                {
+                                    const auto &es = back_snapshot_.edges[last_selected_edge_idx_];
+                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size())
+                                    {
                                         orig_u = back_snapshot_.nodes[es.from].node_id;
                                         orig_v = back_snapshot_.nodes[es.to].node_id;
                                     }
@@ -2158,8 +2162,10 @@ namespace pythonic
                                     {
                                         size_t node_id = static_cast<size_t>(path_var[i].toInt());
                                         // Map node_id to snapshot index
-                                        for (size_t idx = 0; idx < back_snapshot_.nodes.size(); ++idx) {
-                                            if (back_snapshot_.nodes[idx].node_id == node_id) {
+                                        for (size_t idx = 0; idx < back_snapshot_.nodes.size(); ++idx)
+                                        {
+                                            if (back_snapshot_.nodes[idx].node_id == node_id)
+                                            {
                                                 sp_path_indices_.push_back(idx);
                                                 break;
                                             }
@@ -2282,9 +2288,14 @@ namespace pythonic
                 running_ = true;
 
                 // RAII guard to ensure physics thread stops even on exception
-                struct PhysicsGuard {
-                    GraphViewer::Impl* impl;
-                    ~PhysicsGuard() { impl->stop_physics(); impl->running_ = false; }
+                struct PhysicsGuard
+                {
+                    GraphViewer::Impl *impl;
+                    ~PhysicsGuard()
+                    {
+                        impl->stop_physics();
+                        impl->running_ = false;
+                    }
                 } guard{this};
 
                 while (!glfwWindowShouldClose(window_) && !close_requested_)

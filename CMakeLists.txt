@@ -89,11 +89,11 @@ install(FILES
 )
 
 # Build demo executable from docs/examples/demo.cpp
-if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs/examples/demo.cpp")
-    add_executable(demo docs/examples/demo.cpp)
-    target_link_libraries(demo PRIVATE pythonic)
-    message(STATUS "Demo executable configured: run with './demo' after building")
-endif()
+# if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/docs/examples/demo.cpp")
+#     add_executable(demo docs/examples/demo.cpp)
+#     target_link_libraries(demo PRIVATE pythonic)
+#     message(STATUS "Demo executable configured: run with './demo' after building")
+# endif()
 
 # ============================================================================
 # Optional: Interactive Graph Viewer

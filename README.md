@@ -31,6 +31,7 @@ Welcome! Pythonic is a modern C++20 library that brings the expressive power and
 The library includes an **optional** interactive graph visualization feature. To enable it, you need to install the following dependencies:
 
 ### Ubuntu/Debian:
+
 ```bash
 sudo apt-get update
 sudo apt-get install libglfw3-dev libgl1-mesa-dev
@@ -38,24 +39,28 @@ git clone https://github.com/ocornut/imgui.git external/imgui
 ```
 
 ### macOS:
+
 ```bash
 brew install glfw
 git clone https://github.com/ocornut/imgui.git external/imgui
 ```
 
 ### Windows (vcpkg):
+
 ```bash
 vcpkg install glfw3:x64-windows
 git clone https://github.com/ocornut/imgui.git external/imgui
 ```
 
 Then build with:
+
 ```bash
 cmake -B build -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON
 cmake --build build
 ```
 
 Use in code:
+
 ```cpp
 #include <pythonic/pythonic.hpp>
 using namespace pythonic::vars;
@@ -71,7 +76,6 @@ g.show();  // Opens interactive viewer!
 We’re looking for users to test the library and provide feedback!
 Please open Issues or Discussions with any bug reports, questions, or feature ideas.
 **Note:** Direct code contributions are not accepted at this time.
-
 
 ## Acknowledgments
 
