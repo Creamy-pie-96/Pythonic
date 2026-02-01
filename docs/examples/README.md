@@ -1,4 +1,5 @@
 [⬅ Back to main readme file](../../README.md)
+
 # Pythonic C++ Library - Quick Start Guide
 
 This guide shows you how to use the Pythonic C++ library in your own projects.
@@ -23,6 +24,51 @@ Before you begin, make sure you have:
 - **C++20 compiler** (GCC 10+, Clang 10+, MSVC 2019+)
 - **CMake 3.10 or later**
 - **Git**
+
+### Optional Dependencies (for media features)
+
+To use terminal image/video rendering with `print()`, install:
+
+- **ImageMagick** - For image format conversion (PNG, JPG, etc.)
+- **FFmpeg** - For video decoding and playback
+
+#### Linux (Debian/Ubuntu):
+
+```bash
+sudo apt update && sudo apt install -y imagemagick ffmpeg
+```
+
+#### Linux (Fedora):
+
+```bash
+sudo dnf install imagemagick ffmpeg
+```
+
+#### Linux (Arch):
+
+```bash
+sudo pacman -S imagemagick ffmpeg
+```
+
+#### macOS (Homebrew):
+
+```bash
+brew install imagemagick ffmpeg
+```
+
+#### Windows:
+
+Download and install:
+
+- [ImageMagick](https://imagemagick.org/script/download.php) - Add to PATH during installation
+- [FFmpeg](https://ffmpeg.org/download.html) - Add to PATH manually or use `choco install ffmpeg`
+
+#### Verify Installation:
+
+```bash
+convert --version   # Should show ImageMagick version
+ffmpeg -version     # Should show FFmpeg version
+```
 
 ---
 

@@ -107,6 +107,7 @@ namespace pythonic
         {
             size_t from = 0;
             size_t to = 0;
+            size_t prev_from = 0;  ///< Previous source to prevent bouncing back in undirected edges
             float progress = 0.0f; ///< 0.0 = at source, 1.0 = at dest
             float strength = 1.0f;
             int wave = 0; ///< Wave number (outgoing=0, incoming=1, etc.)
@@ -286,6 +287,19 @@ namespace pythonic
          * Opens in View mode only since graph cannot be modified.
          */
         void show_graph(const pythonic::vars::var &g, bool blocking = true);
+
+        /**
+         * @brief Run interactive test mode for graph operations
+         *
+         * This runs a command-line interface to test graph operations:
+         * - "print" or "p" - print current graph state
+         * - "add_node" or "an" - add a node
+         * - "add_edge u v [w1] [w2] [directed]" or "ae u v ..." - add edge
+         * - "remove_edge u v" or "re u v" - remove edge
+         * - "remove_node n" or "rn n" - remove node
+         * - "quit" or "q" - exit test mode
+         */
+        void run_test_mode(pythonic::vars::var &g);
 
     } // namespace viewer
 

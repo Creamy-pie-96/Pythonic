@@ -9,6 +9,7 @@
 
 #include "pythonic/graph_viewer.hpp"
 #include "pythonic/pythonicVars.hpp"
+#include "pythonic/pythonicPrint.hpp"
 
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -133,7 +134,7 @@ namespace pythonic
             bool shortest_path_mode_ = false;     // If true, next two node clicks compute shortest path
             int sp_first_ = -1;                   // snapshot index of first endpoint
             int sp_second_ = -1;                  // snapshot index of second endpoint
-            std::vector<size_t> sp_path_indices_; // node indices (snapshot indices) along the path
+            std::vector<size_t> sp_path_indices_; // node IDs along the shortest path
 
             // Sidebar state
             bool sidebar_open_ = false;
@@ -248,6 +249,7 @@ namespace pythonic
                 if (has_layers && n > 0)
                 {
                     // Layered layout (left-to-right like main.cpp)
+                    // IMPORTANT: Must add nodes in order 0, 1, 2, ... so that snapshot_index == node_id
                     size_t max_layer = *std::max_element(layers.begin(), layers.end());
                     std::vector<std::vector<size_t>> layer_nodes(max_layer + 1);
 
@@ -261,6 +263,8 @@ namespace pythonic
                     float spacing_y = 80.0f;
                     float center_y = config_.window_height / 2.0f;
 
+                    // Pre-compute positions for all nodes
+                    std::vector<float> node_x(n), node_y(n);
                     for (size_t layer = 0; layer <= max_layer; ++layer)
                     {
                         size_t count = layer_nodes[layer].size();
@@ -270,26 +274,32 @@ namespace pythonic
                         for (size_t i = 0; i < count; ++i)
                         {
                             size_t node_id = layer_nodes[layer][i];
-
-                            NodeState ns;
-                            ns.node_id = node_id;
-                            ns.x = ns.pinned_x = start_x + layer * spacing_x;
-                            ns.y = ns.pinned_y = start_y + i * spacing_y;
-
-                            try
-                            {
-                                auto &data = graph_var_.get_node_data(node_id);
-                                ns.label = std::to_string(node_id);
-                                ns.metadata_str = data.str();
-                            }
-                            catch (...)
-                            {
-                                ns.label = std::to_string(node_id);
-                                ns.metadata_str = "";
-                            }
-
-                            back_snapshot_.nodes.push_back(ns);
+                            node_x[node_id] = start_x + layer * spacing_x;
+                            node_y[node_id] = start_y + i * spacing_y;
                         }
+                    }
+
+                    // Add nodes in order 0, 1, 2, ... n-1
+                    for (size_t node_id = 0; node_id < n; ++node_id)
+                    {
+                        NodeState ns;
+                        ns.node_id = node_id;
+                        ns.x = ns.pinned_x = node_x[node_id];
+                        ns.y = ns.pinned_y = node_y[node_id];
+
+                        try
+                        {
+                            auto &data = graph_var_.get_node_data(node_id);
+                            ns.label = std::to_string(node_id);
+                            ns.metadata_str = data.str();
+                        }
+                        catch (...)
+                        {
+                            ns.label = std::to_string(node_id);
+                            ns.metadata_str = "";
+                        }
+
+                        back_snapshot_.nodes.push_back(ns);
                     }
                 }
                 else
@@ -630,6 +640,7 @@ namespace pythonic
                 auto &nodes = back_snapshot_.nodes;
                 auto &edges = back_snapshot_.edges;
                 size_t n = nodes.size();
+                size_t m = edges.size();
 
                 if (n == 0)
                     return;
@@ -660,6 +671,65 @@ namespace pythonic
                         nodes[i].fy += fy;
                         nodes[j].fx -= fx;
                         nodes[j].fy -= fy;
+                    }
+                }
+
+                // Edge-to-edge repulsion using edge midpoints
+                // This prevents linear graphs from collapsing into a straight line
+                if (m >= 2)
+                {
+                    // Compute edge midpoints
+                    std::vector<std::pair<float, float>> midpoints(m);
+                    for (size_t i = 0; i < m; ++i)
+                    {
+                        const auto &e = edges[i];
+                        if (e.from < n && e.to < n)
+                        {
+                            midpoints[i] = {
+                                (nodes[e.from].x + nodes[e.to].x) * 0.5f,
+                                (nodes[e.from].y + nodes[e.to].y) * 0.5f};
+                        }
+                    }
+
+                    // Apply repulsion between edge midpoints
+                    float edge_repulsion = config_.repulsion * 0.3f; // Weaker than node repulsion
+                    for (size_t i = 0; i < m; ++i)
+                    {
+                        for (size_t j = i + 1; j < m; ++j)
+                        {
+                            // Skip edges that share a node (they're already connected)
+                            const auto &e1 = edges[i];
+                            const auto &e2 = edges[j];
+                            if (e1.from == e2.from || e1.from == e2.to ||
+                                e1.to == e2.from || e1.to == e2.to)
+                                continue;
+
+                            float dx = midpoints[i].first - midpoints[j].first;
+                            float dy = midpoints[i].second - midpoints[j].second;
+                            float dist = std::sqrt(dx * dx + dy * dy);
+                            if (dist < 1.0f)
+                                dist = 1.0f;
+
+                            float force = edge_repulsion / (dist * dist);
+                            float fx = force * dx / dist;
+                            float fy = force * dy / dist;
+
+                            // Distribute force to the nodes of each edge
+                            if (e1.from < n && e1.to < n)
+                            {
+                                nodes[e1.from].fx += fx * 0.5f;
+                                nodes[e1.from].fy += fy * 0.5f;
+                                nodes[e1.to].fx += fx * 0.5f;
+                                nodes[e1.to].fy += fy * 0.5f;
+                            }
+                            if (e2.from < n && e2.to < n)
+                            {
+                                nodes[e2.from].fx -= fx * 0.5f;
+                                nodes[e2.from].fy -= fy * 0.5f;
+                                nodes[e2.to].fx -= fx * 0.5f;
+                                nodes[e2.to].fy -= fy * 0.5f;
+                            }
+                        }
                     }
                 }
 
@@ -748,7 +818,7 @@ namespace pythonic
                 auto &edges = back_snapshot_.edges;
 
                 std::vector<Signal> next_signals;
-                std::vector<std::pair<size_t, int>> arrivals; // (node_id, wave)
+                std::vector<std::tuple<size_t, size_t, int>> arrivals; // (arrived_at, came_from, wave)
 
                 // Limit total signals to prevent infinite propagation in cycles
                 const size_t MAX_SIGNALS = edges.size() * 3; // At most 3x edge count
@@ -783,14 +853,15 @@ namespace pythonic
                             // Only propagate if wave count is reasonable and we haven't hit signal limit
                             if (sig.wave < 20 && next_signals.size() < MAX_SIGNALS)
                             {
-                                arrivals.push_back({sig.to, sig.wave});
+                                // Track: arrived at sig.to, came from sig.from
+                                arrivals.push_back({sig.to, sig.from, sig.wave});
                             }
                         }
                     }
                 }
 
                 // Propagate from arrived signals (but respect limits)
-                for (const auto &[node_id, wave] : arrivals)
+                for (const auto &[node_id, came_from, wave] : arrivals)
                 {
                     if (next_signals.size() >= MAX_SIGNALS)
                         break; // Stop propagating if we hit limit
@@ -814,13 +885,13 @@ namespace pythonic
                         }
                         else
                         {
-                            // Undirected: propagate both ways
-                            if (edge.from == node_id)
+                            // Undirected: propagate to neighbors, but NOT back to where signal came from
+                            if (edge.from == node_id && edge.to != came_from)
                             {
                                 should_propagate = true;
                                 next_node = edge.to;
                             }
-                            else if (edge.to == node_id)
+                            else if (edge.to == node_id && edge.from != came_from)
                             {
                                 should_propagate = true;
                                 next_node = edge.from;
@@ -832,6 +903,7 @@ namespace pythonic
                             Signal new_sig;
                             new_sig.from = node_id;
                             new_sig.to = next_node;
+                            new_sig.prev_from = came_from;
                             new_sig.progress = 0.0f;
                             new_sig.strength = 0.8f; // Decay strength
                             new_sig.wave = wave + 1;
@@ -867,6 +939,7 @@ namespace pythonic
                             Signal sig;
                             sig.from = edge.from;
                             sig.to = edge.to;
+                            sig.prev_from = edge.from; // Initialize to prevent backtracking
                             sig.progress = 0.0f;
                             sig.strength = 1.0f;
                             sig.wave = 0;
@@ -881,6 +954,7 @@ namespace pythonic
                             Signal sig;
                             sig.from = edge.from;
                             sig.to = edge.to;
+                            sig.prev_from = edge.from; // Initialize to prevent backtracking
                             sig.progress = 0.0f;
                             sig.strength = 1.0f;
                             sig.wave = 0;
@@ -892,6 +966,7 @@ namespace pythonic
                             Signal sig;
                             sig.from = edge.to;
                             sig.to = edge.from;
+                            sig.prev_from = edge.to; // Initialize to prevent backtracking
                             sig.progress = 0.0f;
                             sig.strength = 1.0f;
                             sig.wave = 0;
@@ -960,9 +1035,9 @@ namespace pythonic
                     {
                         col = IM_COL32(80, 220, 120, 255); // selected edge (green)
                     }
-                    else if (edge.is_hovered || n1.is_hovered || n2.is_hovered)
+                    else if (edge.is_hovered)
                     {
-                        col = IM_COL32(200, 100, 255, 255); // Purple
+                        col = IM_COL32(200, 100, 255, 255); // Purple - only when hovering the edge itself
                     }
                     else
                     {
@@ -975,18 +1050,34 @@ namespace pythonic
                     bool is_sp_edge = false;
                     if (!sp_path_indices_.empty())
                     {
+                        // sp_path_indices_ contains node IDs in path order
+                        // edge.from and edge.to are also node IDs
                         for (size_t i = 0; i + 1 < sp_path_indices_.size(); ++i)
                         {
-                            if ((size_t)edge.from == sp_path_indices_[i] && (size_t)edge.to == sp_path_indices_[i + 1])
+                            size_t path_u = sp_path_indices_[i];
+                            size_t path_v = sp_path_indices_[i + 1];
+
+                            // Check if this edge connects path_u and path_v in either direction
+                            // For directed edges: must match direction of the edge
+                            // For undirected edges: can match either direction
+                            if (edge.directed)
                             {
-                                is_sp_edge = true;
-                                break;
+                                // Directed edge: check if edge goes from path_u to path_v
+                                if ((size_t)edge.from == path_u && (size_t)edge.to == path_v)
+                                {
+                                    is_sp_edge = true;
+                                    break;
+                                }
                             }
-                            // also handle undirected appearance
-                            if (!edge.directed && (size_t)edge.from == sp_path_indices_[i + 1] && (size_t)edge.to == sp_path_indices_[i])
+                            else
                             {
-                                is_sp_edge = true;
-                                break;
+                                // Undirected edge: check both directions
+                                if (((size_t)edge.from == path_u && (size_t)edge.to == path_v) ||
+                                    ((size_t)edge.from == path_v && (size_t)edge.to == path_u))
+                                {
+                                    is_sp_edge = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -1098,9 +1189,9 @@ namespace pythonic
                     bool is_sp_node = false;
                     if (!sp_path_indices_.empty())
                     {
-                        for (size_t idx : sp_path_indices_)
+                        for (size_t path_node_id : sp_path_indices_)
                         {
-                            if (idx == node_idx)
+                            if (path_node_id == node.node_id)
                             {
                                 is_sp_node = true;
                                 break;
@@ -1384,17 +1475,9 @@ namespace pythonic
                                         }
                                     }
                                 }
-                                // store underlying node ids for later operations
-                                if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size())
-                                {
-                                    selected_edge_node_from_id_ = back_snapshot_.nodes[es.from].node_id;
-                                    selected_edge_node_to_id_ = back_snapshot_.nodes[es.to].node_id;
-                                }
-                                else
-                                {
-                                    selected_edge_node_from_id_ = (size_t)-1;
-                                    selected_edge_node_to_id_ = (size_t)-1;
-                                }
+                                // es.from and es.to ARE node_ids
+                                selected_edge_node_from_id_ = es.from;
+                                selected_edge_node_to_id_ = es.to;
                             }
                         }
 
@@ -1407,13 +1490,14 @@ namespace pythonic
                         double w2 = selected_edge_w2_ui_;
 
                         // Allow flipping endpoints so user can choose which is 'from' and which is 'to'
-                        // Allow flipping endpoints so user can choose which is 'from' and which is 'to'
                         ImGui::SameLine();
                         if (ImGui::SmallButton("Swap Direction (Flip)"))
                         {
                             std::swap(selected_edge_node_from_id_, selected_edge_node_to_id_);
                             std::swap(w1, w2);
-                            // Update directed flag remains; flipping endpoints changes semantics appropriately on apply
+                            // Also update UI state so changes persist across frames
+                            selected_edge_w1_ui_ = w1;
+                            selected_edge_w2_ui_ = w2;
                         }
 
                         ImGui::Checkbox("Directed", &directed);
@@ -1423,41 +1507,55 @@ namespace pythonic
 
                         if (ImGui::Button("Apply Edge Changes"))
                         {
-                            // Retrieve original edge IDs from the snapshot index under lock
+                            // Get original edge info from the snapshot BEFORE any modifications
                             size_t orig_u = (size_t)-1;
                             size_t orig_v = (size_t)-1;
+                            bool orig_directed = true;
 
                             {
                                 std::lock_guard<std::mutex> lock(snapshot_mutex_);
-                                // This ensures we remove the ACTUAL existing edge, not the potentially-swapped UI values
                                 if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size())
                                 {
                                     const auto &es = back_snapshot_.edges[last_selected_edge_idx_];
-                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size())
-                                    {
-                                        orig_u = back_snapshot_.nodes[es.from].node_id;
-                                        orig_v = back_snapshot_.nodes[es.to].node_id;
-                                    }
+                                    orig_directed = es.directed;
+                                    // es.from and es.to ARE node_ids
+                                    orig_u = es.from;
+                                    orig_v = es.to;
                                 }
                             }
 
-                            if (selected_edge_node_from_id_ != (size_t)-1 && selected_edge_node_to_id_ != (size_t)-1 &&
-                                orig_u != (size_t)-1 && orig_v != (size_t)-1)
+                            if (orig_u != (size_t)-1 && orig_v != (size_t)-1)
                             {
+                                // Print debug info
+                                std::cout << "[Edge Edit] Original: " << orig_u << " -> " << orig_v
+                                          << " (directed=" << orig_directed << ")" << std::endl;
+                                std::cout << "[Edge Edit] New: " << selected_edge_node_from_id_ << " -> " << selected_edge_node_to_id_
+                                          << " (directed=" << directed << ", w1=" << w1 << ", w2=" << w2 << ")" << std::endl;
+
                                 try
                                 {
-                                    // Remove original edge(s) completely to avoid duplicates/residue
-                                    graph_var_.remove_edge(orig_u, orig_v, true);
-                                    graph_var_.remove_edge(orig_v, orig_u, true);
+                                    // Step 1: Remove the original edge
+                                    // For undirected edges, remove_edge with remove_reverse=true handles both directions
+                                    bool removed = graph_var_.remove_edge(orig_u, orig_v, true);
+                                    std::cout << "[Edge Edit] Removed edge " << orig_u << "->" << orig_v << ": " << removed << std::endl;
 
+                                    // Step 2: Add the new edge with updated properties
                                     if (directed)
-                                        graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, w1, std::numeric_limits<double>::quiet_NaN(), true);
+                                    {
+                                        graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, true, w1);
+                                        std::cout << "[Edge Edit] Added directed edge " << selected_edge_node_from_id_ << "->" << selected_edge_node_to_id_ << std::endl;
+                                    }
                                     else
-                                        graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, w1, w2, false);
+                                    {
+                                        graph_var_.add_edge(selected_edge_node_from_id_, selected_edge_node_to_id_, false, w1, w2);
+                                        std::cout << "[Edge Edit] Added undirected edge " << selected_edge_node_from_id_ << "<->" << selected_edge_node_to_id_ << std::endl;
+                                    }
                                 }
-                                catch (...)
+                                catch (const std::exception &e)
                                 {
+                                    std::cerr << "[Edge Edit] Error: " << e.what() << std::endl;
                                 }
+
                                 // Refresh snapshots from graph
                                 sync_from_graph();
                                 clear_all_selections();
@@ -1466,32 +1564,35 @@ namespace pythonic
                         ImGui::SameLine();
                         if (ImGui::Button("Remove Edge"))
                         {
-                            // Use original IDs for removal to ensure it works even if UI was flipped
                             size_t orig_u = (size_t)-1;
                             size_t orig_v = (size_t)-1;
+                            bool orig_directed = true;
 
                             {
                                 std::lock_guard<std::mutex> lock(snapshot_mutex_);
                                 if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size())
                                 {
                                     const auto &es = back_snapshot_.edges[last_selected_edge_idx_];
-                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size())
-                                    {
-                                        orig_u = back_snapshot_.nodes[es.from].node_id;
-                                        orig_v = back_snapshot_.nodes[es.to].node_id;
-                                    }
+                                    orig_directed = es.directed;
+                                    // es.from and es.to ARE node_ids
+                                    orig_u = es.from;
+                                    orig_v = es.to;
                                 }
                             }
 
                             if (orig_u != (size_t)-1 && orig_v != (size_t)-1)
                             {
+                                std::cout << "[Edge Remove] Removing: " << orig_u << " -> " << orig_v
+                                          << " (directed=" << orig_directed << ")" << std::endl;
                                 try
                                 {
-                                    graph_var_.remove_edge(orig_u, orig_v, true);
-                                    graph_var_.remove_edge(orig_v, orig_u, true);
+                                    // remove_edge with remove_reverse=true handles undirected edges correctly
+                                    bool removed = graph_var_.remove_edge(orig_u, orig_v, true);
+                                    std::cout << "[Edge Remove] Result: " << removed << std::endl;
                                 }
-                                catch (...)
+                                catch (const std::exception &e)
                                 {
+                                    std::cerr << "[Edge Remove] Error: " << e.what() << std::endl;
                                 }
                                 sync_from_graph();
                                 clear_all_selections();
@@ -1642,16 +1743,16 @@ namespace pythonic
                     from_id = back_snapshot_.nodes[from_idx].node_id;
                     to_id = back_snapshot_.nodes[to_idx].node_id;
 
-                    // Check for duplicate edges
+                    // Check for duplicate edges (e.from/e.to are node_ids)
                     for (const auto &e : back_snapshot_.edges)
                     {
-                        if (e.from == from_idx && e.to == to_idx)
+                        if (e.from == from_id && e.to == to_id)
                         {
                             // Edge already exists
                             return;
                         }
                         // For undirected edges, also check reverse
-                        if (!e.directed && e.from == to_idx && e.to == from_idx)
+                        if (!e.directed && e.from == to_id && e.to == from_id)
                         {
                             return;
                         }
@@ -1664,11 +1765,11 @@ namespace pythonic
                 double w1 = 1.0;
                 double w2 = std::numeric_limits<double>::quiet_NaN();
                 bool directional = true;
-                graph_var_.add_edge(from_id, to_id, w1, w2, directional);
+                graph_var_.add_edge(from_id, to_id, directional, w1, w2);
 
                 EdgeState es;
-                es.from = from_idx; // Store index for snapshot rendering
-                es.to = to_idx;
+                es.from = from_id; // Store node_id (which == snapshot index)
+                es.to = to_id;
                 es.weight = w1;
                 es.directed = directional;
 
@@ -2158,26 +2259,25 @@ namespace pythonic
                                     // res is a var dict {"path": [...], "distance": d}
                                     sp_path_indices_.clear();
                                     auto path_var = res["path"];
+
+                                    // Debug: print path
+                                    std::cout << "Shortest path from " << src_id << " to " << dst_id << ": ";
                                     for (size_t i = 0; i < path_var.len(); ++i)
                                     {
                                         size_t node_id = static_cast<size_t>(path_var[i].toInt());
-                                        // Map node_id to snapshot index
-                                        for (size_t idx = 0; idx < back_snapshot_.nodes.size(); ++idx)
-                                        {
-                                            if (back_snapshot_.nodes[idx].node_id == node_id)
-                                            {
-                                                sp_path_indices_.push_back(idx);
-                                                break;
-                                            }
-                                        }
+                                        std::cout << node_id << " ";
+                                        // Store node_id directly (node_id == snapshot_index in this codebase)
+                                        sp_path_indices_.push_back(node_id);
                                     }
+                                    std::cout << "(distance: " << res["distance"].toDouble() << ")" << std::endl;
+
                                     // give activation to nodes in path for glow
-                                    for (size_t idx : sp_path_indices_)
+                                    for (size_t node_id : sp_path_indices_)
                                     {
-                                        if (idx < back_snapshot_.nodes.size())
-                                            back_snapshot_.nodes[idx].activation = 1.0f;
-                                        if (idx < front_snapshot_.nodes.size())
-                                            front_snapshot_.nodes[idx].activation = 1.0f;
+                                        if (node_id < back_snapshot_.nodes.size())
+                                            back_snapshot_.nodes[node_id].activation = 1.0f;
+                                        if (node_id < front_snapshot_.nodes.size())
+                                            front_snapshot_.nodes[node_id].activation = 1.0f;
                                     }
                                 }
                                 catch (...)
@@ -2238,8 +2338,9 @@ namespace pythonic
                                 if ((size_t)sedge < back_snapshot_.edges.size())
                                 {
                                     auto es = back_snapshot_.edges[sedge];
-                                    from_idx = back_snapshot_.nodes[es.from].node_id;
-                                    to_idx = back_snapshot_.nodes[es.to].node_id;
+                                    // es.from and es.to ARE node_ids
+                                    from_idx = es.from;
+                                    to_idx = es.to;
                                     was_directed = es.directed;
                                 }
                                 else
@@ -2403,6 +2504,183 @@ namespace pythonic
             GraphViewer viewer(copy);
             viewer.set_mode(ViewerMode::VIEW); // Force view mode
             viewer.run(blocking);
+        }
+
+        // ============================================================================
+        // TEST MODE - Interactive command-line testing
+        // ============================================================================
+
+        void run_test_mode(pythonic::vars::var &g)
+        {
+            /*  command help
+                Commands:
+                print (p)              - Print current graph
+                add_node (an)          - Add a node
+                add_edge (ae) u v [d] [w1] [w2] - Add edge (d=1 for directed)
+                remove_edge (re) u v   - Remove edge
+                remove_node (rn) n     - Remove node
+                show                   - Open graph viewer
+                quit (q)               - Exit test mode
+            */
+            std::cout << "\n=== GRAPH VIEWER TEST MODE ===" << std::endl;
+            std::cout << "Commands:" << std::endl;
+            std::cout << "  print (p)              - Print current graph (tree view)" << std::endl;
+            std::cout << "  draw (d)               - Draw graph (2D visualization)" << std::endl;
+            std::cout << "  add_node (an)          - Add a node" << std::endl;
+            std::cout << "  add_edge (ae) u v [d] [w1] [w2] - Add edge (d=1 for directed)" << std::endl;
+            std::cout << "  remove_edge (re) u v   - Remove edge" << std::endl;
+            std::cout << "  remove_node (rn) n     - Remove node" << std::endl;
+            std::cout << "  show                   - Open graph viewer" << std::endl;
+            std::cout << "  quit (q)               - Exit test mode" << std::endl;
+            std::cout << "==============================\n"
+                      << std::endl;
+
+            // Print initial state
+            std::cout << "Initial graph state:" << std::endl;
+            pythonic::print::pprint(g);
+            std::cout << std::endl;
+
+            std::string line;
+            while (true)
+            {
+                std::cout << "test> ";
+                if (!std::getline(std::cin, line))
+                    break;
+
+                // Trim whitespace
+                size_t start = line.find_first_not_of(" \t");
+                if (start == std::string::npos)
+                    continue;
+                size_t end = line.find_last_not_of(" \t");
+                line = line.substr(start, end - start + 1);
+
+                if (line.empty())
+                    continue;
+
+                // Parse command
+                std::istringstream iss(line);
+                std::string cmd;
+                iss >> cmd;
+
+                if (cmd == "quit" || cmd == "q")
+                {
+                    std::cout << "Exiting test mode." << std::endl;
+                    break;
+                }
+                else if (cmd == "print" || cmd == "p")
+                {
+                    std::cout << "\nCurrent graph state:" << std::endl;
+                    pythonic::print::pprint(g);
+                    std::cout << "Node count: " << g.node_count() << std::endl;
+                    std::cout << "Edge count: " << g.edge_count() << std::endl;
+                    std::cout << std::endl;
+                }
+                else if (cmd == "art" || cmd == "a" || cmd == "draw" || cmd == "d")
+                {
+                    std::cout << "\nGraph visualization:" << std::endl;
+                    std::cout << g.draw(true) << std::endl;
+                }
+                else if (cmd == "add_node" || cmd == "an")
+                {
+                    size_t id = g.add_node();
+                    std::cout << "Added node " << id << std::endl;
+                    pythonic::print::pprint(g);
+                }
+                else if (cmd == "add_edge" || cmd == "ae")
+                {
+                    size_t u, v;
+                    int directed_int = 0;
+                    double w1 = 1.0, w2 = 1.0;
+
+                    if (!(iss >> u >> v))
+                    {
+                        std::cout << "Usage: add_edge u v [directed] [w1] [w2]" << std::endl;
+                        continue;
+                    }
+
+                    // Optional parameters: directed first, then weights
+                    iss >> directed_int;
+                    iss >> w1;
+                    iss >> w2;
+                    bool directed = (directed_int != 0);
+
+                    std::cout << "Adding edge: " << u << " -> " << v
+                              << " (directed=" << directed << ", w1=" << w1 << ", w2=" << w2 << ")" << std::endl;
+                    try
+                    {
+                        g.add_edge(u, v, directed, w1, w2);
+                        std::cout << "Edge added successfully." << std::endl;
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cout << "Error: " << e.what() << std::endl;
+                    }
+                    pythonic::print::pprint(g);
+                }
+                else if (cmd == "remove_edge" || cmd == "re")
+                {
+                    size_t u, v;
+                    if (!(iss >> u >> v))
+                    {
+                        std::cout << "Usage: remove_edge u v" << std::endl;
+                        continue;
+                    }
+
+                    std::cout << "Before removal:" << std::endl;
+                    pythonic::print::pprint(g);
+
+                    std::cout << "Removing edge: " << u << " -> " << v << std::endl;
+                    try
+                    {
+                        bool result = g.remove_edge(u, v, true);
+                        std::cout << "Remove result: " << result << std::endl;
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cout << "Error: " << e.what() << std::endl;
+                    }
+
+                    std::cout << "After removal:" << std::endl;
+                    pythonic::print::pprint(g);
+                }
+                else if (cmd == "remove_node" || cmd == "rn")
+                {
+                    size_t n;
+                    if (!(iss >> n))
+                    {
+                        std::cout << "Usage: remove_node n" << std::endl;
+                        continue;
+                    }
+
+                    std::cout << "Removing node: " << n << std::endl;
+                    try
+                    {
+                        g.remove_node(n);
+                        std::cout << "Node removed successfully." << std::endl;
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cout << "Error: " << e.what() << std::endl;
+                    }
+                    pythonic::print::pprint(g);
+                }
+                else if (cmd == "show")
+                {
+                    std::cout << "Opening graph viewer..." << std::endl;
+                    std::cout << "Graph state BEFORE viewer:" << std::endl;
+                    pythonic::print::pprint(g);
+
+                    show_graph(g, true);
+
+                    std::cout << "Graph state AFTER viewer closed:" << std::endl;
+                    pythonic::print::pprint(g);
+                }
+                else
+                {
+                    std::cout << "Unknown command: " << cmd << std::endl;
+                    std::cout << "Type 'quit' or 'q' to exit." << std::endl;
+                }
+            }
         }
 
     } // namespace viewer

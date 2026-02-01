@@ -32,7 +32,7 @@ This page documents all user-facing graph APIs for `var` when holding a graph, i
 | `size_t add_node()`                                                                    | Add empty node, return id               | `g.add_node()`                  |
 | `size_t add_node(const var &data)`                                                     | Add node with data, return id           | `g.add_node("foo")`             |
 | `void remove_node(size_t node)`                                                        | Remove node by id                       | `g.remove_node(0)`              |
-| `void add_edge(size_t u, size_t v, double w1=0.0, double w2=NaN, bool directed=false)` | Add edge (optionally weighted/directed) | `g.add_edge(0, 1, 2.5)`         |
+| `void add_edge(size_t u, size_t v, bool directed=false, double w1=0.0, double w2=NaN)` | Add edge (optionally directed/weighted) | `g.add_edge(0, 1, true)`        |
 | `bool remove_edge(size_t from, size_t to, bool remove_reverse=true)`                   | Remove edge (optionally reverse)        | `g.remove_edge(0, 1)`           |
 | `void set_edge_weight(size_t from, size_t to, double weight)`                          | Set edge weight                         | `g.set_edge_weight(0, 1, 3.14)` |
 | `void set_node_data(size_t node, const var &data)`                                     | Set node data                           | `g.set_node_data(0, "foo")`     |
@@ -142,10 +142,10 @@ for_each(row, fw) print(row);
 
 ```cpp
 var dag = graph(4);
-dag.add_edge(0, 1, 1.0, 0.0, true);
-dag.add_edge(0, 2, 1.0, 0.0, true);
-dag.add_edge(1, 3, 1.0, 0.0, true);
-dag.add_edge(2, 3, 1.0, 0.0, true);
+dag.add_edge(0, 1, true, 1.0);  // directed edge
+dag.add_edge(0, 2, true, 1.0);  // directed edge
+dag.add_edge(1, 3, true, 1.0);  // directed edge
+dag.add_edge(2, 3, true, 1.0);  // directed edge
 print(dag.topological_sort());
 
 var network = graph(6);
@@ -202,6 +202,7 @@ custom.reserve_edges_by_counts(counts);
 - `show(layout)` — If `layout` is true (default), the viewer will automatically arrange the graph layout. If false, the current node positions are preserved.
 
 ## Example for you:
+
 ```cpp
 // Test file for all graph_helpers.md documentation examples
 #include <pythonic/pythonic.hpp>
@@ -309,6 +310,7 @@ int main()
     return 0;
 }
 ```
+
 ## Next check
 
 - [Math](../Math/math.md)

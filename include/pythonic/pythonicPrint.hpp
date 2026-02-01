@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include "pythonicVars.hpp"
+#include "pythonicDraw.hpp"
 
 namespace pythonic
 {
@@ -9,6 +10,24 @@ namespace pythonic
     {
 
         using namespace pythonic::vars;
+
+        /**
+         * @brief Media type hints for the print function
+         *
+         * Usage:
+         *   print("file.png", Type::image);     // Force treat as image
+         *   print("file.mp4", Type::video);     // Force treat as video
+         *   print("info.mp4", Type::video_info); // Show video info only
+         *   print("file.png", Type::auto_detect); // Auto-detect from extension
+         */
+        enum class Type
+        {
+            auto_detect, // Detect from file extension (default)
+            image,       // Force treat as image
+            video,       // Force treat as video (play it)
+            video_info,  // Show video metadata only (no playback)
+            text         // Force treat as plain text
+        };
 
         // Forward declaration for recursive pretty printing
         inline std::string format_value(const var &v, size_t indent = 0, size_t indent_step = 2, bool top_level = true);
@@ -177,9 +196,92 @@ namespace pythonic
         }
 
         // pprint - force pretty print with configurable indent
+        // For graphs, this shows the 2D visualization via pretty_str()
         inline void pprint(const var &v, size_t indent_step = 2)
         {
             std::cout << v.pretty_str(0, indent_step) << std::endl;
+        }
+
+        /**
+         * @brief Print an image file to the terminal using braille characters
+         *
+         * Supports PNG, JPG, BMP, PPM, PGM, and other common image formats.
+         * Requires ImageMagick for non-PPM/PGM formats.
+         *
+         * @param filepath Path to the image file
+         * @param max_width Maximum width in terminal characters (default: 80)
+         * @param threshold Brightness threshold for binary conversion (default: 128)
+         */
+        inline void print_image(const std::string &filepath, int max_width = 80, int threshold = 128)
+        {
+            pythonic::draw::print_image(filepath, max_width, threshold);
+        }
+
+        /**
+         * @brief Print with explicit media type hint
+         *
+         * Usage:
+         *   print("file.png", Type::image);      // Force treat as image
+         *   print("file.mp4", Type::video);      // Play video
+         *   print("file.mp4", Type::video_info); // Show video metadata only
+         *   print("hello", Type::text);          // Force plain text output
+         *
+         * @param filepath Path or text to print
+         * @param type Media type hint (auto_detect, image, video, video_info, text)
+         * @param max_width Terminal width for media rendering
+         * @param threshold Brightness threshold for braille conversion
+         */
+        inline void print(const std::string &filepath, Type type, int max_width = 80, int threshold = 128)
+        {
+            switch (type)
+            {
+            case Type::image:
+                pythonic::draw::print_image(filepath, max_width, threshold);
+                break;
+            case Type::video:
+                pythonic::draw::play_video(filepath, max_width, threshold);
+                break;
+            case Type::video_info:
+                pythonic::draw::print_video_info(filepath);
+                break;
+            case Type::text:
+                std::cout << filepath << std::endl;
+                break;
+            case Type::auto_detect:
+            default:
+                if (pythonic::draw::is_video_file(filepath))
+                    pythonic::draw::play_video(filepath, max_width, threshold);
+                else if (pythonic::draw::is_image_file(filepath))
+                    pythonic::draw::print_image(filepath, max_width, threshold);
+                else
+                    std::cout << filepath << std::endl;
+                break;
+            }
+        }
+
+        // Overload for const char*
+        inline void print(const char *filepath, Type type, int max_width = 80, int threshold = 128)
+        {
+            print(std::string(filepath), type, max_width, threshold);
+        }
+
+        /**
+         * @brief Specialized print for media files - detects by extension
+         *
+         * If the string looks like an image or video file path, renders/plays it.
+         * Otherwise, prints as normal text.
+         */
+        inline void print(const char *filepath)
+        {
+            print(std::string(filepath), Type::auto_detect);
+        }
+
+        /**
+         * @brief Specialized print for media files (std::string overload)
+         */
+        inline void print(const std::string &filepath)
+        {
+            print(filepath, Type::auto_detect);
         }
 
     } // namespace print

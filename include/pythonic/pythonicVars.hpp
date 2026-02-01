@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include <queue>
 #include <unordered_set>
 #include <initializer_list>
 #include <stdexcept>
@@ -26,6 +27,7 @@
 #include "pythonicError.hpp"
 #include "pythonicOverflow.hpp"
 #include "pythonicDispatch.hpp"
+#include "pythonicDraw.hpp"
 
 namespace pythonic
 {
@@ -2060,6 +2062,7 @@ namespace pythonic
 
             // Private helper for graph string - defined after VarGraphWrapper
             std::string graph_str_impl() const;
+            std::string graph_pretty_str_impl() const;
 
             // Pretty string with indentation (for pprint)
 
@@ -2196,7 +2199,7 @@ namespace pythonic
                 }
                 case TypeTag::GRAPH:
                 {
-                    return graph_str_impl(); // Graphs don't have nested pretty printing . Maybe this comment is old and Now we have pretty print for graph or atleast print for graph
+                    return graph_pretty_str_impl(); // Use pretty_str for graphs
                 }
                 default:
                     return "[unknown]";
@@ -4856,6 +4859,13 @@ namespace pythonic
             size_t out_degree(size_t node) const;
             size_t in_degree(size_t node) const;
 
+            /**
+             * @brief Generate a 2D visual representation of the graph
+             * @param show_weights If true, display edge weights in the output
+             * @return String containing the graph visualization
+             */
+            std::string draw(bool show_weights = false) const;
+
             // ===== Node Manipulation =====
             size_t add_node();
             size_t add_node(const var &data);
@@ -4863,7 +4873,7 @@ namespace pythonic
             var neighbors(size_t node) const;
 
             // ===== Graph Modification =====
-            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directed = false);
+            void add_edge(size_t u, size_t v, bool directed = false, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN());
             bool remove_edge(size_t from, size_t to, bool remove_reverse = true);
             void set_edge_weight(size_t from, size_t to, double weight);
 
@@ -5042,9 +5052,9 @@ namespace pythonic
             }
 
             // ===== Graph Modification =====
-            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directed = false)
+            void add_edge(size_t u, size_t v, bool directed = false, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN())
             {
-                impl.add_edge(u, v, w1, w2, directed);
+                impl.add_edge(u, v, directed, w1, w2);
             }
 
             bool remove_edge(size_t from, size_t to, bool remove_reverse = true)
@@ -5295,6 +5305,82 @@ namespace pythonic
 
                 return out.str();
             }
+
+            /**
+             * @brief Generate a 2D visual representation of the graph using braille graphics
+             *
+             * Uses the graph's DOT representation, renders it via Graphviz,
+             * and displays the result using braille Unicode characters for
+             * high-resolution terminal output.
+             *
+             * Falls back to a simple text representation if Graphviz is not available.
+             */
+            std::string draw_str(bool show_weights = true) const
+            {
+                size_t n = impl.node_count();
+                if (n == 0)
+                    return "Empty graph\n";
+
+                // Build header with graph info
+                std::ostringstream result;
+                result << "Graph: nodes=" << n
+                       << ", edges=" << impl.edge_count()
+                       << ", connected=" << (impl.is_connected() ? "yes" : "no")
+                       << ", cycle=" << (impl.has_cycle() ? "yes" : "no")
+                       << "\n\n";
+
+                // Try to render via Graphviz + braille
+                std::string dot_content = impl.dot_str(show_weights);
+                std::string braille_output = pythonic::draw::render_dot(dot_content, 80, 100);
+
+                if (!braille_output.empty() && braille_output.find("Error:") == std::string::npos)
+                {
+                    result << braille_output;
+                }
+                else
+                {
+                    // Fallback: simple text representation
+                    result << "Note: Install Graphviz and ImageMagick for visual rendering\n\n";
+                    result << dot_content;
+                }
+
+                // Add edge list with weights
+                if (show_weights)
+                {
+                    result << "\nEdges:\n";
+                    std::set<std::pair<size_t, size_t>> shown;
+
+                    for (size_t u = 0; u < n; ++u)
+                    {
+                        for (size_t v : impl.neighbors(u))
+                        {
+                            if (shown.count({u, v}) || shown.count({v, u}))
+                                continue;
+
+                            bool has_uv = impl.has_edge(u, v);
+                            bool has_vu = impl.has_edge(v, u);
+                            bool directed = !(has_uv && has_vu);
+
+                            auto w = impl.get_edge_weight(u, v);
+                            result << "  " << u;
+                            if (directed)
+                                result << " → " << v;
+                            else
+                                result << " ─ " << v;
+
+                            if (w.has_value() && w.value() != 0.0)
+                                result << " (w=" << w.value() << ")";
+
+                            result << "\n";
+                            shown.insert({u, v});
+                            if (!directed)
+                                shown.insert({v, u});
+                        }
+                    }
+                }
+
+                return result.str();
+            }
         };
 
         // ============ var Graph Method Definitions ============
@@ -5323,7 +5409,12 @@ namespace pythonic
         // Helper implementations for str() and operator bool()
         inline std::string var::graph_str_impl() const
         {
-            return graph_ref().pretty_str();
+            return graph_ref().pretty_str(); // Tree-style for str()
+        }
+
+        inline std::string var::graph_pretty_str_impl() const
+        {
+            return graph_ref().draw_str(); // 2D visualization for pretty_str() / pprint()
         }
 
         inline bool var::graph_bool_impl() const
@@ -5340,6 +5431,13 @@ namespace pythonic
         inline std::optional<double> var::get_edge_weight(size_t from, size_t to) const { return graph_ref().get_edge_weight(from, to); }
         inline size_t var::out_degree(size_t node) const { return graph_ref().out_degree(node); }
         inline size_t var::in_degree(size_t node) const { return graph_ref().in_degree(node); }
+
+        /**
+         * @brief Generate a 2D ASCII art representation of the graph
+         * @param show_weights If true, display edge weights in the output
+         * @return String containing ASCII art graph visualization
+         */
+        inline std::string var::draw(bool show_weights) const { return graph_ref().draw_str(show_weights); }
 
         // ===== Node Manipulation =====
         inline size_t var::add_node() { return graph_ref().add_node(); }
@@ -5358,9 +5456,9 @@ namespace pythonic
         }
 
         // ===== Graph Modification =====
-        inline void var::add_edge(size_t u, size_t v, double w1, double w2, bool directed)
+        inline void var::add_edge(size_t u, size_t v, bool directed, double w1, double w2)
         {
-            graph_ref().add_edge(u, v, w1, w2, directed);
+            graph_ref().add_edge(u, v, directed, w1, w2);
         }
 
         inline bool var::remove_edge(size_t from, size_t to, bool remove_reverse)

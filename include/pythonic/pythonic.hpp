@@ -8,7 +8,8 @@
 #include "pythonicMath.hpp"
 #include "pythonicError.hpp"
 #include "pythonicFastPath.hpp"
-#include "graph_viewer.hpp"  // Always include - has internal #ifdef guards
+#include "pythonicDraw.hpp"
+#include "graph_viewer.hpp" // Always include - has internal #ifdef guards
 
 namespace Pythonic
 {
@@ -23,10 +24,10 @@ namespace Pythonic
     using namespace pythonic::overflow;
     using namespace pythonic::error;
     using namespace pythonic::views;
-    using namespace pythonic::viewer;  // Graph viewer (enabled via PYTHONIC_ENABLE_GRAPH_VIEWER)
+    using namespace pythonic::draw;
+    using namespace pythonic::viewer; // Graph viewer (enabled via PYTHONIC_ENABLE_GRAPH_VIEWER)
 
 }
 
 // Shortcut alias for even faster usage
 namespace py = Pythonic;
-

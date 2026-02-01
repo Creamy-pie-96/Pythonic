@@ -444,11 +444,11 @@ namespace pythonic
              *
              * @param u Source node index.
              * @param v Destination node index.
+             * @param directional If true, only adds u->v edge. If false, adds both directions.
              * @param w1 Weight for u->v edge (default: 0.0).
              * @param w2 Weight for v->u edge in undirected graphs. If NaN (default), uses w1.
-             * @param directional If true, only adds u->v edge. If false, adds both directions.
              */
-            void add_edge(size_t u, size_t v, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN(), bool directional = false)
+            void add_edge(size_t u, size_t v, bool directional = false, double w1 = 0.0, double w2 = std::numeric_limits<double>::quiet_NaN())
             {
                 Edge e_uv(v, w1, directional);
                 edges[u].push_back(e_uv);
@@ -458,6 +458,12 @@ namespace pythonic
                     double reverse_weight = std::isnan(w2) ? w1 : w2;
                     Edge e_vu(u, reverse_weight, directional);
                     edges[v].push_back(e_vu);
+                    if (reverse_weight != 0.0)
+                    {
+                        non_zero_edge++;
+                        if (reverse_weight < 0)
+                            negative_edges++;
+                    }
                 }
                 DAG = directional;
 
@@ -467,17 +473,6 @@ namespace pythonic
                     non_zero_edge++;
                     if (w1 < 0)
                         negative_edges++;
-                }
-
-                if (!directional)
-                {
-                    double reverse_weight = std::isnan(w2) ? w1 : w2;
-                    if (reverse_weight != 0.0)
-                    {
-                        non_zero_edge++;
-                        if (reverse_weight < 0)
-                            negative_edges++;
-                    }
                 }
 
                 // Update boolean flags
@@ -613,6 +608,100 @@ namespace pythonic
                     std::cerr << "Warning: Graphviz 'dot' command failed with code " << rc << "\n";
                 }
 #endif
+            }
+
+            /**
+             * @brief Generate DOT format representation of the graph as a string.
+             *
+             * This is the string version of to_dot() - returns DOT content instead
+             * of writing to a file.
+             *
+             * @param show_weights If true, include edge weights in labels.
+             * @return DOT format string representation of the graph.
+             */
+            std::string dot_str(bool show_weights = true) const
+            {
+                std::ostringstream out;
+
+                // Determine whether we need a directed graph header
+                bool has_directed = false;
+                bool has_undirected = false;
+                for (const auto &vec : edges)
+                {
+                    for (const auto &e : vec)
+                    {
+                        if (e.directed)
+                            has_directed = true;
+                        else
+                            has_undirected = true;
+                    }
+                }
+
+                if (has_directed)
+                    out << "digraph G {\n";
+                else
+                    out << "graph G {\n";
+                out << "  node [shape=circle];\n";
+
+                // Write nodes
+                for (size_t u = 0; u < nodes; ++u)
+                {
+                    out << "  " << u;
+                    auto it = meta_data.find(u);
+                    if (it != meta_data.end())
+                    {
+                        std::ostringstream label;
+                        label << it->second.get();
+                        out << " [label=\"" << label.str() << "\"]";
+                    }
+                    out << ";\n";
+                }
+
+                // Write edges
+                for (size_t u = 0; u < nodes; ++u)
+                {
+                    for (const auto &e : edges[u])
+                    {
+                        if (has_directed)
+                        {
+                            if (!e.directed)
+                            {
+                                if (u > e.id)
+                                    continue;
+                                out << "  " << u << " -> " << e.id << " [";
+                                out << "dir=none";
+                                if (show_weights)
+                                {
+                                    out << ",label=\"" << e.weight << "\"";
+                                }
+                                out << "]";
+                            }
+                            else
+                            {
+                                out << "  " << u << " -> " << e.id;
+                                if (show_weights)
+                                {
+                                    out << " [label=\"" << e.weight << "\"]";
+                                }
+                            }
+                            out << ";\n";
+                        }
+                        else
+                        {
+                            if (u > e.id)
+                                continue;
+                            out << "  " << u << " -- " << e.id;
+                            if (show_weights)
+                            {
+                                out << " [label=\"" << e.weight << "\"]";
+                            }
+                            out << ";\n";
+                        }
+                    }
+                }
+
+                out << "}\n";
+                return out.str();
             }
 
             /**
@@ -1440,7 +1529,7 @@ namespace pythonic
                 int directed;
                 while (in >> from >> to >> weight >> directed)
                 {
-                    g.add_edge(from, to, weight, weight, directed == 1);
+                    g.add_edge(from, to, directed == 1, weight, weight);
                 }
 
                 return g;

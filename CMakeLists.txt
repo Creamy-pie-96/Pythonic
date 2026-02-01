@@ -186,6 +186,12 @@ if(PYTHONIC_ENABLE_GRAPH_VIEWER)
         add_executable(graph_viewer_example examples/graph_viewer_example.cpp)
         target_link_libraries(graph_viewer_example PRIVATE pythonic_graph_viewer)
     endif()
+    
+    # CLI Test Executable  
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/test_graph_viewer_cli.cpp")
+        add_executable(test_graph_cli test/test_graph_viewer_cli.cpp)
+        target_link_libraries(test_graph_cli PRIVATE pythonic_graph_viewer)
+    endif()
 else()
     message(STATUS "Graph viewer disabled (enable with -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON)")
 endif()
