@@ -123,10 +123,10 @@ namespace pythonic
         // Check if an operation would overflow without performing it
         // ============================================================================
 
+#ifdef _MSC_VER
         template <Integral T>
         constexpr bool would_add_overflow(T a, T b) noexcept
         {
-#ifdef _MSC_VER
             T res = a + b;
             if constexpr (std::is_signed_v<T>)
             {
@@ -136,16 +136,20 @@ namespace pythonic
             {
                 return res < a;
             }
+        }
 #else
+        template <Integral T>
+        constexpr bool would_add_overflow(T a, T b) noexcept
+        {
             T res;
             return __builtin_add_overflow(a, b, &res);
-#endif
         }
+#endif
 
+#ifdef _MSC_VER
         template <Integral T>
         constexpr bool would_sub_overflow(T a, T b) noexcept
         {
-#ifdef _MSC_VER
             T res = a - b;
             if constexpr (std::is_signed_v<T>)
             {
@@ -155,16 +159,20 @@ namespace pythonic
             {
                 return res > a;
             }
+        }
 #else
+        template <Integral T>
+        constexpr bool would_sub_overflow(T a, T b) noexcept
+        {
             T res;
             return __builtin_sub_overflow(a, b, &res);
-#endif
         }
+#endif
 
+#ifdef _MSC_VER
         template <Integral T>
         constexpr bool would_mul_overflow(T a, T b) noexcept
         {
-#ifdef _MSC_VER
             T res = a * b;
             if constexpr (std::is_signed_v<T>)
             {
@@ -175,11 +183,15 @@ namespace pythonic
             {
                 return (a != 0 && b > std::numeric_limits<T>::max() / a);
             }
+        }
 #else
+        template <Integral T>
+        constexpr bool would_mul_overflow(T a, T b) noexcept
+        {
             T res;
             return __builtin_mul_overflow(a, b, &res);
-#endif
         }
+#endif
 
         // Floating point doesn't have traditional overflow, but we can check for infinity
         template <FloatingPoint T>
@@ -206,10 +218,10 @@ namespace pythonic
         // Return type is always T
         // ============================================================================
 
+#ifdef _MSC_VER
         template <Integral T>
         T add_throw(T a, T b)
         {
-#ifdef _MSC_VER
             T res = a + b;
             bool overflow;
             if constexpr (std::is_signed_v<T>)
@@ -221,15 +233,23 @@ namespace pythonic
                 overflow = res < a;
             }
             if (overflow)
-#else
-            T res;
-            if (__builtin_add_overflow(a, b, &res))
-#endif
             {
                 throw PythonicOverflowError("integer addition overflow");
             }
             return res;
         }
+#else
+        template <Integral T>
+        T add_throw(T a, T b)
+        {
+            T res;
+            if (__builtin_add_overflow(a, b, &res))
+            {
+                throw PythonicOverflowError("integer addition overflow");
+            }
+            return res;
+        }
+#endif
 
         template <FloatingPoint T>
         T add_throw(T a, T b)
@@ -242,10 +262,10 @@ namespace pythonic
             return res;
         }
 
+#ifdef _MSC_VER
         template <Integral T>
         T sub_throw(T a, T b)
         {
-#ifdef _MSC_VER
             T res = a - b;
             bool overflow;
             if constexpr (std::is_signed_v<T>)
@@ -257,15 +277,23 @@ namespace pythonic
                 overflow = res > a;
             }
             if (overflow)
-#else
-            T res;
-            if (__builtin_sub_overflow(a, b, &res))
-#endif
             {
                 throw PythonicOverflowError("integer subtraction overflow");
             }
             return res;
         }
+#else
+        template <Integral T>
+        T sub_throw(T a, T b)
+        {
+            T res;
+            if (__builtin_sub_overflow(a, b, &res))
+            {
+                throw PythonicOverflowError("integer subtraction overflow");
+            }
+            return res;
+        }
+#endif
 
         template <FloatingPoint T>
         T sub_throw(T a, T b)
@@ -278,10 +306,10 @@ namespace pythonic
             return res;
         }
 
+#ifdef _MSC_VER
         template <Integral T>
         T mul_throw(T a, T b)
         {
-#ifdef _MSC_VER
             T res = a * b;
             bool overflow;
             if constexpr (std::is_signed_v<T>)
@@ -294,15 +322,23 @@ namespace pythonic
                 overflow = (a != 0 && b > std::numeric_limits<T>::max() / a);
             }
             if (overflow)
-#else
-            T res;
-            if (__builtin_mul_overflow(a, b, &res))
-#endif
             {
                 throw PythonicOverflowError("integer multiplication overflow");
             }
             return res;
         }
+#else
+        template <Integral T>
+        T mul_throw(T a, T b)
+        {
+            T res;
+            if (__builtin_mul_overflow(a, b, &res))
+            {
+                throw PythonicOverflowError("integer multiplication overflow");
+            }
+            return res;
+        }
+#endif
 
         template <FloatingPoint T>
         T mul_throw(T a, T b)
