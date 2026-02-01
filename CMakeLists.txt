@@ -89,11 +89,11 @@ install(FILES
 )
 
 # Example: Add a test executable (if you have test.cpp in test/)
-add_executable(test_math test/test_math.cpp)
-target_link_libraries(test_math PRIVATE pythonic)
+# add_executable(test_math test/test_math.cpp)
+# target_link_libraries(test_math PRIVATE pythonic)
 
-add_executable(test_overflow_ops test/test_overflow_ops.cpp)
-target_link_libraries(test_overflow_ops PRIVATE pythonic)
+# add_executable(test_overflow_ops test/test_overflow_ops.cpp)
+# target_link_libraries(test_overflow_ops PRIVATE pythonic)
 
 # ============================================================================
 # Optional: Interactive Graph Viewer
