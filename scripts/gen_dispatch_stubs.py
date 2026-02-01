@@ -289,7 +289,14 @@ for opname in ops.values():
                 continue
 
             elif opname in ("band", "bor", "bxor"):
-                if is_integral(left) and is_integral(right):
+                if left == 'bool' and right == 'bool':
+                    if opname == "band":
+                        print(f"    return var(a.var_get<bool>() & b.var_get<bool>());")
+                    elif opname == "bor":
+                        print(f"    return var(a.var_get<bool>() | b.var_get<bool>());")
+                    elif opname == "bxor":
+                        print(f"    return var(a.var_get<bool>() ^ b.var_get<bool>());")
+                elif is_integral(left) and is_integral(right):
                     ctype = get_common_integral_bitwise(left, right)
                     print_cast('a', 'la', left, ctype)
                     print_cast('b', 'lb', right, ctype)
