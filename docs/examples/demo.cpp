@@ -2,10 +2,10 @@
  * Comprehensive Demo of Pythonic C++ Library
  * This file demonstrates all major features of the library
  *
- * Compile with: g++ -std=c++17 comprehensive_demo.cpp -o demo
+ * Compile with: g++ -std=c++20 demo.cpp -I../../include -o demo
  */
 
-#include "../include/pythonic/pythonic.hpp"
+#include <pythonic/pythonic.hpp>
 
 using namespace pythonic::vars;
 using namespace pythonic::print;

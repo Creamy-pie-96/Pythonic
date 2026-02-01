@@ -1423,17 +1423,19 @@ namespace pythonic
 
                         if (ImGui::Button("Apply Edge Changes"))
                         {
-                            // perform graph ops outside the snapshot lock
+                            // Retrieve original edge IDs from the snapshot index under lock
                             size_t orig_u = (size_t)-1;
                             size_t orig_v = (size_t)-1;
                             
-                            // Retrieve original edge IDs from the snapshot index
-                            // This ensures we remove the ACTUAL existing edge, not the potentially-swapped UI values
-                            if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
-                                const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
-                                if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
-                                    orig_u = back_snapshot_.nodes[es.from].node_id;
-                                    orig_v = back_snapshot_.nodes[es.to].node_id;
+                            {
+                                std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                                // This ensures we remove the ACTUAL existing edge, not the potentially-swapped UI values
+                                if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
+                                    const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
+                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
+                                        orig_u = back_snapshot_.nodes[es.from].node_id;
+                                        orig_v = back_snapshot_.nodes[es.to].node_id;
+                                    }
                                 }
                             }
 
@@ -1462,15 +1464,18 @@ namespace pythonic
                         ImGui::SameLine();
                         if (ImGui::Button("Remove Edge"))
                         {
-                             // Use original IDs for removal to ensure it works even if UI was flipped
+                            // Use original IDs for removal to ensure it works even if UI was flipped
                             size_t orig_u = (size_t)-1;
                             size_t orig_v = (size_t)-1;
                             
-                            if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
-                                const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
-                                if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
-                                    orig_u = back_snapshot_.nodes[es.from].node_id;
-                                    orig_v = back_snapshot_.nodes[es.to].node_id;
+                            {
+                                std::lock_guard<std::mutex> lock(snapshot_mutex_);
+                                if (last_selected_edge_idx_ >= 0 && last_selected_edge_idx_ < back_snapshot_.edges.size()) {
+                                    const auto& es = back_snapshot_.edges[last_selected_edge_idx_];
+                                    if (es.from < back_snapshot_.nodes.size() && es.to < back_snapshot_.nodes.size()) {
+                                        orig_u = back_snapshot_.nodes[es.from].node_id;
+                                        orig_v = back_snapshot_.nodes[es.to].node_id;
+                                    }
                                 }
                             }
 
@@ -2151,9 +2156,14 @@ namespace pythonic
                                     auto path_var = res["path"];
                                     for (size_t i = 0; i < path_var.len(); ++i)
                                     {
-                                        size_t nid = static_cast<size_t>(path_var[i].toInt());
-                                        // nid corresponds to snapshot index ordering
-                                        sp_path_indices_.push_back(nid);
+                                        size_t node_id = static_cast<size_t>(path_var[i].toInt());
+                                        // Map node_id to snapshot index
+                                        for (size_t idx = 0; idx < back_snapshot_.nodes.size(); ++idx) {
+                                            if (back_snapshot_.nodes[idx].node_id == node_id) {
+                                                sp_path_indices_.push_back(idx);
+                                                break;
+                                            }
+                                        }
                                     }
                                     // give activation to nodes in path for glow
                                     for (size_t idx : sp_path_indices_)
@@ -2201,9 +2211,8 @@ namespace pythonic
                     }
                 }
 
-                // Delete key
-                if (glfwGetKey(window_, GLFW_KEY_DELETE) == GLFW_PRESS ||
-                    glfwGetKey(window_, GLFW_KEY_BACKSPACE) == GLFW_PRESS)
+                // Delete key (use ImGui to handle key repeat properly)
+                if (ImGui::IsKeyPressed(ImGuiKey_Delete) || ImGui::IsKeyPressed(ImGuiKey_Backspace))
                 {
                     if (mode_ == ViewerMode::EDIT)
                     {
@@ -2272,6 +2281,12 @@ namespace pythonic
                 start_physics();
                 running_ = true;
 
+                // RAII guard to ensure physics thread stops even on exception
+                struct PhysicsGuard {
+                    GraphViewer::Impl* impl;
+                    ~PhysicsGuard() { impl->stop_physics(); impl->running_ = false; }
+                } guard{this};
+
                 while (!glfwWindowShouldClose(window_) && !close_requested_)
                 {
                     glfwPollEvents();
@@ -2299,9 +2314,6 @@ namespace pythonic
                     if (!blocking)
                         break;
                 }
-
-                stop_physics();
-                running_ = false;
             }
         };
 
