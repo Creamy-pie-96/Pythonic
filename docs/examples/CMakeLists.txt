@@ -16,7 +16,11 @@ if(POLICY CMP0072)
 endif()
 set(OpenGL_GL_PREFERENCE GLVND)
 
+
 find_package(OpenGL REQUIRED)
+
+# Add SDL2 before pythonic to ensure SDL2::SDL2 target is available if needed
+find_package(SDL2 REQUIRED)
 
 # Find the Pythonic library (header-only)
 # FAILS if not installed
