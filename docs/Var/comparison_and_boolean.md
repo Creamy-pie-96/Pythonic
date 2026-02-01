@@ -10,6 +10,87 @@ This page documents all comparison and boolean operations for `var`, using a cle
 
 ## Comparison Operators
 
+Comparison operators use the same **dispatch table system** as arithmetic operators for O(1) type-based dispatch.
+
+### Supported Type Combinations
+
+| Comparison | Numeric × Numeric | String × String | List × List     | Set × Set  | Dict × Dict | OrderedSet × OrderedSet | OrderedDict × OrderedDict |
+| ---------- | ----------------- | --------------- | --------------- | ---------- | ----------- | ----------------------- | ------------------------- |
+| `==`, `!=` |                   |                 |                 |            |             |                         |                           |
+| `<`, `<=`  |                   |                 | (lexicographic) | (subset)   | —           | (lexicographic)         | (lexicographic)           |
+| `>`, `>=`  |                   |                 | (lexicographic) | (superset) | —           | (lexicographic)         | (lexicographic)           |
+
+### Container Comparison Semantics
+
+#### List Comparison (Lexicographic)
+
+```cpp
+var l1 = list(1, 2, 3);
+var l2 = list(1, 2, 4);
+var l3 = list(1, 2, 3);
+
+print(l1 == l3);    // true  - same elements in same order
+print(l1 != l2);    // true  - different elements
+print(l1 < l2);     // true  - [1,2,3] < [1,2,4] lexicographically
+print(l1 <= l3);    // true  - equal means <=
+print(l2 > l1);     // true  - [1,2,4] > [1,2,3]
+print(l1 >= l3);    // true  - equal means >=
+```
+
+#### Set Comparison (Subset/Superset)
+
+```cpp
+var s1 = set(1, 2);
+var s2 = set(1, 2, 3);
+var s3 = set(1, 2);
+
+print(s1 == s3);    // true  - same elements (order doesn't matter)
+print(s1 != s2);    // true  - different elements
+print(s1 < s2);     // true  - s1 is proper subset of s2
+print(s1 <= s2);    // true  - s1 is subset of s2
+print(s2 > s1);     // true  - s2 is proper superset of s1
+print(s2 >= s1);    // true  - s2 is superset of s1
+print(s1 <= s3);    // true  - equal sets are subsets of each other
+```
+
+#### Dict Comparison (Key-Value Equality)
+
+```cpp
+var d1 = dict({{"x", 1}, {"y", 2}});
+var d2 = dict({{"y", 2}, {"x", 1}});  // Same keys/values, different order
+var d3 = dict({{"x", 1}});
+
+print(d1 == d2);    // true  - same key-value pairs (order doesn't matter for dict)
+print(d1 != d3);    // true  - different keys/values
+// Note: <, <=, >, >= are NOT supported for dict - will throw PythonicTypeError
+```
+
+#### OrderedSet Comparison (Lexicographic)
+
+```cpp
+var os1 = orderedset(1, 2, 3);
+var os2 = orderedset(1, 2, 4);
+var os3 = orderedset(1, 2, 3);
+
+print(os1 == os3);  // true  - same elements in same order
+print(os1 < os2);   // true  - lexicographic comparison
+print(os2 > os1);   // true
+```
+
+#### OrderedDict Comparison (Lexicographic on pairs)
+
+```cpp
+var od1 = ordereddict({{1, "a"}, {2, "b"}});
+var od2 = ordereddict({{1, "a"}, {2, "b"}});
+var od3 = ordereddict({{2, "b"}, {1, "a"}});  // Different order!
+
+print(od1 == od2);  // true  - same pairs in same order
+print(od1 == od3);  // false - order matters for ordereddict
+print(od1 < od3);   // Lexicographic comparison on pairs
+```
+
+### Operator Reference
+
 | Operator                | Description                                    | Example                     |
 | ----------------------- | ---------------------------------------------- | --------------------------- |
 | `operator==`            | Pythonic equality (returns `var` bool)         | `a == b`                    |

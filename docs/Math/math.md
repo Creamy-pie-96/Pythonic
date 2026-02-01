@@ -12,18 +12,33 @@ This page documents all user-facing math functions in Pythonic, using a clear ta
 
 Many arithmetic and aggregation functions accept an optional `policy` parameter of type `Overflow`, which controls how overflows are handled:
 
-| Policy              | Description                                                                   |
-| ------------------- | ----------------------------------------------------------------------------- |
-| `Overflow::Throw`   | **Default.** Throw an exception on overflow (safe, Python-like).              |
-| `Overflow::Promote` | Promote to a larger type on overflow (never throws, but may use bigger type). |
-| `Overflow::Wrap`    | Wrap around on overflow (C++-like, may lose data, never throws).              |
+| Policy                   | Enum Value | Description                                                                     |
+| ------------------------ | ---------- | ------------------------------------------------------------------------------- |
+| `Overflow::Throw`        | 0          | **Default for functions.** Throw an exception on overflow (safe, Python-like).  |
+| `Overflow::Promote`      | 1          | Promote to a larger type on overflow (never throws, but may use bigger type).   |
+| `Overflow::Wrap`         | 2          | Wrap around on overflow (C++-like, may lose data, never throws).                |
+| `Overflow::None_of_them` | 3          | **Default for operators.** Raw C++ arithmetic (no checks, maximum performance). |
+
+**Policy Selection Guide:**
+
+| Use Case                            | Recommended Policy       |
+| ----------------------------------- | ------------------------ |
+| Production code (safety first)      | `Overflow::Throw`        |
+| Scientific computing (large values) | `Overflow::Promote`      |
+| Performance-critical inner loops    | `Overflow::None_of_them` |
+| Embedded/systems programming        | `Overflow::Wrap`         |
 
 **Usage Example:**
 
 ```cpp
-add(1, 2); // Uses Overflow::Throw by default
-add(1, 2, Overflow::Promote); // Promotes type on overflow
-add(1, 2, Overflow::Wrap); // Wraps on overflow
+add(1, 2);                        // Uses Overflow::Throw by default
+add(1, 2, Overflow::Promote);     // Promotes type on overflow
+add(1, 2, Overflow::Wrap);        // Wraps on overflow
+add(1, 2, Overflow::None_of_them);// Raw C++ arithmetic (fastest)
+
+// Operator overloads use None_of_them by default for performance
+var a = 1000000, b = 1000000;
+var c = a * b;  // Uses Overflow::None_of_them (raw C++ multiplication)
 ```
 
 ---
@@ -32,22 +47,46 @@ add(1, 2, Overflow::Wrap); // Wraps on overflow
 
 When using `Overflow::Promote`, types are promoted in the following order:
 
-| Rank | Type               |
-| ---- | ------------------ |
-| 0    | bool               |
-| 1    | unsigned int       |
-| 2    | int                |
-| 3    | unsigned long      |
-| 4    | long               |
-| 5    | unsigned long long |
-| 6    | long long          |
-| 7    | float              |
-| 8    | double             |
-| 9    | long double        |
+| Rank | Type               | Description                       |
+| ---- | ------------------ | --------------------------------- |
+| 0    | bool               | Boolean (never promoted TO)       |
+| 1    | unsigned int       | Smallest unsigned integer         |
+| 2    | int                | Smallest signed integer           |
+| 3    | unsigned long      | Medium unsigned integer           |
+| 4    | long               | Medium signed integer             |
+| 5    | unsigned long long | Largest unsigned integer          |
+| 6    | long long          | Largest signed integer            |
+| 7    | float              | Single-precision floating-point   |
+| 8    | double             | Double-precision floating-point   |
+| 9    | long double        | Extended-precision floating-point |
 
-- Unsigned types are preferred if both inputs are unsigned and result is non-negative.
-- Signed types are used if any input is signed or result is negative.
-- For floating-point or division, promotion starts at float.
+### Promotion Strategy
+
+The promotion system uses different strategies based on input types:
+
+| Input Types         | Promotion Strategy                                                 |
+| ------------------- | ------------------------------------------------------------------ |
+| Both unsigned       | Try unsigned containers (uint → ulong → ulong_long), then floating |
+| At least one signed | Try signed containers (int → long → long_long), then floating      |
+| Any floating-point  | Use floating containers only (float → double → long double)        |
+
+### Smart Fit Behavior
+
+The `smart_promote()` function finds the **smallest** container that can hold the result:
+
+```cpp
+// Both unsigned → result fits in smallest unsigned type
+var a = 100u, b = 200u;
+var result = add(a, b, Overflow::Promote);  // Returns unsigned int (300)
+
+// Large result → promoted to larger type
+var big = std::numeric_limits<int>::max();
+var result = add(big, 1, Overflow::Promote);  // Returns long long
+
+// Division always uses floating-point for precision
+var x = 5, y = 2;
+var result = div(x, y, Overflow::Promote);  // Returns float (2.5)
+```
 
 ---
 
@@ -215,11 +254,11 @@ int main()
 
     var a = 10, b = 3, c = std::numeric_limits<int>::max();
     print(add(a, b));           // 13
-    try 
+    try
     {
         print(add(a, c)); // overflow
-    } 
-    catch (const pythonic::error::PythonicOverflowError& e) 
+    }
+    catch (const pythonic::error::PythonicOverflowError& e)
     {
         print("Overflow error: ", e.what());
     }

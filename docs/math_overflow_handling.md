@@ -6,9 +6,35 @@ The math operations in `pythonicMath.hpp` (e.g., `add`, `sub`, `mul`, `div`, `mo
 
 ## Overflow Policy: `pythonic::overflow::Overflow`
 
-- **Throw**: Throws a `PythonicOverflowError` on overflow.
-- **Promote**: Automatically promotes the result to a larger type if overflow occurs.
-- **Wrap**: Allows wrapping (C++ default behavior), so overflowed values wrap around.
+| Policy         | Enum Value | Description                                                                   |
+| -------------- | ---------- | ----------------------------------------------------------------------------- |
+| `Throw`        | 0          | Throws a `PythonicOverflowError` on overflow. **Default for math functions.** |
+| `Promote`      | 1          | Automatically promotes the result to a larger type if overflow occurs.        |
+| `Wrap`         | 2          | Allows wrapping (C++ default behavior), so overflowed values wrap around.     |
+| `None_of_them` | 3          | Raw C++ arithmetic with no checks. **Default for operator overloads.**        |
+
+### Policy Selection Guide
+
+| Use Case                            | Recommended Policy |
+| ----------------------------------- | ------------------ |
+| Production code (safety first)      | `Throw`            |
+| Scientific computing (large values) | `Promote`          |
+| Performance-critical inner loops    | `None_of_them`     |
+| Embedded/systems programming        | `Wrap`             |
+
+### Default Behavior
+
+- **Math functions** (`add()`, `sub()`, `mul()`, etc.) default to `Overflow::Throw` for safety.
+- **Operator overloads** (`+`, `-`, `*`, etc.) use `Overflow::None_of_them` for maximum performance.
+
+```cpp
+// Math functions: safe by default (Throw)
+add(INT_MAX, 1);     // Throws PythonicOverflowError
+
+// Operators: fast by default (None_of_them)
+var a = INT_MAX;
+var b = a + 1;       // Raw C++ arithmetic (wraps silently)
+```
 
 ## Function Signature Example
 
@@ -48,6 +74,27 @@ var add_int_long(const var& a, const var& b, pythonic::overflow::Overflow policy
 - If result overflows `int` and `Overflow::Promote` is set, promotes to `long`, then `long_long`, etc.
 - If `Overflow::Throw` is set, throws on overflow.
 - If `Overflow::Wrap` is set, wraps around.
+- If `Overflow::None_of_them` is set, uses raw C++ arithmetic (fastest, but may overflow silently).
+
+## None_of_them Policy Details
+
+The `None_of_them` policy (value `3`) performs raw C++ arithmetic without any overflow detection:
+
+- **No bounds checking** - operates directly on underlying values
+- **Maximum performance** - no additional computation overhead
+- **Undefined behavior possible** - signed integer overflow is UB in C++
+- **Best for**: Performance-critical code where you've pre-validated ranges
+
+```cpp
+// When you know overflow won't happen:
+for (int i = 0; i < 1000000; ++i) {
+    total = add(total, small_value, Overflow::None_of_them);  // Fastest
+}
+
+// Operator overloads use None_of_them internally:
+var a = 10, b = 20;
+var c = a + b;  // Uses None_of_them for speed
+```
 
 ## Centralized Control
 

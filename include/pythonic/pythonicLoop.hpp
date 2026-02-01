@@ -16,9 +16,12 @@ namespace pythonic
 {
     // ============================================================================
     // TODOs for future improvements:
-    // - enumerate and for_enumerate macro are not safe for dynamic containers (pythonic::vars::var/list). Consider a class-based or type-trait-based solution for future.
+    // - [DONE] enumerate and for_enumerate macro are not safe for dynamic containers (pythonic::vars::var/list).
+    //   Solution: Mutation detection added to var's iterator. Class-based each_indexed() and indexed() added.
     // - reverse_view and reversed are not supported for pythonic::vars::var/list. Consider adding bidirectional iterator support or a custom reverse adaptor for dynamic containers.
-    // - Refactor all loop macros (for_each, for_index, for_enumerate, etc.) to class-based or constexpr function-based implementations for better type safety and IDE support.
+    // - [DONE] Refactor all loop macros (for_each, for_index, for_enumerate, etc.) to class-based or constexpr function-based implementations for better type safety and IDE support.
+    //   Solution: Added each(), each_indexed(), indexed(), times(), until(), while_each() as type-safe alternatives.
+    //   Macros kept for backward compatibility but marked DEPRECATED.
     // ============================================================================
 
     // ============================================================================
@@ -677,19 +680,309 @@ namespace pythonic
             return enumerate_wrapper_const<vars::var>(v, start);
         }
 
-// ============ Macros for Python-like syntax ============
+        // ============================================================================
+        // Class-based Loop Helpers (safer alternatives to macros)
+        // ============================================================================
+        // These provide type-safe, template-based loop utilities that integrate
+        // with mutation detection and are safer than macro-based solutions.
+        // ============================================================================
+
+        // ============ indexed_iterator - yields (index, value) pairs ============
+        // Similar to enumerate but as a reusable template class
+        // Usage: for (auto [i, val] : indexed(container)) { ... }
+
+        template <typename Container>
+        class indexed_wrapper
+        {
+        private:
+            Container &container_;
+
+        public:
+            explicit indexed_wrapper(Container &container) : container_(container) {}
+
+            class iterator
+            {
+            private:
+                using ContainerIter = decltype(std::declval<Container>().begin());
+                ContainerIter it_;
+                size_t index_;
+
+            public:
+                using difference_type = std::ptrdiff_t;
+                using value_type = std::pair<size_t, decltype(*std::declval<ContainerIter>())>;
+                using pointer = void;
+                using reference = value_type;
+                using iterator_category = std::input_iterator_tag;
+
+                iterator() : index_(0) {}
+                iterator(ContainerIter it, size_t index) : it_(it), index_(index) {}
+
+                auto operator*()
+                {
+                    return std::make_pair(index_, *it_);
+                }
+
+                iterator &operator++()
+                {
+                    ++it_;
+                    ++index_;
+                    return *this;
+                }
+
+                iterator operator++(int)
+                {
+                    iterator tmp = *this;
+                    ++(*this);
+                    return tmp;
+                }
+
+                bool operator!=(const iterator &other) const { return it_ != other.it_; }
+                bool operator==(const iterator &other) const { return it_ == other.it_; }
+            };
+
+            iterator begin() { return iterator(container_.begin(), 0); }
+            iterator end() { return iterator(container_.end(), 0); }
+        };
+
+        // Factory function for indexed wrapper
+        template <typename Container>
+        indexed_wrapper<Container> indexed(Container &container)
+        {
+            return indexed_wrapper<Container>(container);
+        }
+
+        // Const version
+        template <typename Container>
+        class indexed_wrapper_const
+        {
+        private:
+            const Container &container_;
+
+        public:
+            explicit indexed_wrapper_const(const Container &container) : container_(container) {}
+
+            class iterator
+            {
+            private:
+                using ContainerIter = decltype(std::declval<const Container>().begin());
+                ContainerIter it_;
+                size_t index_;
+
+            public:
+                using difference_type = std::ptrdiff_t;
+                using value_type = std::pair<size_t, decltype(*std::declval<ContainerIter>())>;
+                using pointer = void;
+                using reference = value_type;
+                using iterator_category = std::input_iterator_tag;
+
+                iterator() : index_(0) {}
+                iterator(ContainerIter it, size_t index) : it_(it), index_(index) {}
+
+                auto operator*() const
+                {
+                    return std::make_pair(index_, *it_);
+                }
+
+                iterator &operator++()
+                {
+                    ++it_;
+                    ++index_;
+                    return *this;
+                }
+
+                iterator operator++(int)
+                {
+                    iterator tmp = *this;
+                    ++(*this);
+                    return tmp;
+                }
+
+                bool operator!=(const iterator &other) const { return it_ != other.it_; }
+                bool operator==(const iterator &other) const { return it_ == other.it_; }
+            };
+
+            iterator begin() const { return iterator(container_.begin(), 0); }
+            iterator end() const { return iterator(container_.end(), 0); }
+        };
+
+        template <typename Container>
+        indexed_wrapper_const<Container> indexed(const Container &container)
+        {
+            return indexed_wrapper_const<Container>(container);
+        }
+
+        // ============ each() - callable-based iteration ============
+        // Safer alternative to for_each macro
+        // Usage: each(container, [](auto& x) { process(x); });
+        //        each(container, [](auto& x) { return false; }); // early exit
+
+        template <typename Container, typename Func>
+            requires traits::Iterable<Container>
+        void each(Container &container, Func &&func)
+        {
+            for (auto &&item : container)
+            {
+                if constexpr (std::is_void_v<decltype(func(item))>)
+                {
+                    func(item);
+                }
+                else
+                {
+                    // Return false from func to break early
+                    if (!func(item))
+                        return;
+                }
+            }
+        }
+
+        template <typename Container, typename Func>
+            requires traits::Iterable<Container>
+        void each(const Container &container, Func &&func)
+        {
+            for (const auto &item : container)
+            {
+                if constexpr (std::is_void_v<decltype(func(item))>)
+                {
+                    func(item);
+                }
+                else
+                {
+                    if (!func(item))
+                        return;
+                }
+            }
+        }
+
+        // ============ each_indexed() - callable-based iteration with index ============
+        // Safer alternative to for_enumerate macro
+        // Usage: each_indexed(container, [](size_t i, auto& x) { ... });
+
+        template <typename Container, typename Func>
+            requires traits::Iterable<Container>
+        void each_indexed(Container &container, Func &&func)
+        {
+            size_t idx = 0;
+            for (auto &&item : container)
+            {
+                if constexpr (std::is_void_v<decltype(func(idx, item))>)
+                {
+                    func(idx, item);
+                }
+                else
+                {
+                    if (!func(idx, item))
+                        return;
+                }
+                ++idx;
+            }
+        }
+
+        template <typename Container, typename Func>
+            requires traits::Iterable<Container>
+        void each_indexed(const Container &container, Func &&func)
+        {
+            size_t idx = 0;
+            for (const auto &item : container)
+            {
+                if constexpr (std::is_void_v<decltype(func(idx, item))>)
+                {
+                    func(idx, item);
+                }
+                else
+                {
+                    if (!func(idx, item))
+                        return;
+                }
+                ++idx;
+            }
+        }
+
+        // ============ times() - repeat N times ============
+        // Usage: times(10, [](size_t i) { ... });
+        //        times(10, []() { ... });
+
+        template <typename Func>
+        void times(size_t n, Func &&func)
+        {
+            for (size_t i = 0; i < n; ++i)
+            {
+                if constexpr (std::is_invocable_v<Func, size_t>)
+                {
+                    if constexpr (std::is_void_v<decltype(func(i))>)
+                    {
+                        func(i);
+                    }
+                    else
+                    {
+                        if (!func(i))
+                            return;
+                    }
+                }
+                else
+                {
+                    if constexpr (std::is_void_v<decltype(func())>)
+                    {
+                        func();
+                    }
+                    else
+                    {
+                        if (!func())
+                            return;
+                    }
+                }
+            }
+        }
+
+        // ============ until() - iterate until predicate is true ============
+        // Usage: until(container, [](auto& x) { return x == target; });
+
+        template <typename Container, typename Pred>
+            requires traits::Iterable<Container> && traits::Predicate<Pred, typename std::iterator_traits<decltype(std::begin(std::declval<Container &>()))>::reference>
+        bool until(Container &container, Pred &&pred)
+        {
+            for (auto &&item : container)
+            {
+                if (pred(item))
+                    return true;
+            }
+            return false;
+        }
+
+        // ============ while_each() - iterate while predicate is true ============
+        // Usage: while_each(container, [](auto& x) { return x < 5; });
+
+        template <typename Container, typename Pred>
+            requires traits::Iterable<Container> && traits::Predicate<Pred, typename std::iterator_traits<decltype(std::begin(std::declval<Container &>()))>::reference>
+        void while_each(Container &container, Pred &&pred)
+        {
+            for (auto &&item : container)
+            {
+                if (!pred(item))
+                    return;
+            }
+        }
+
+// ============ Macros for Python-like syntax (DEPRECATED - use class-based helpers) ============
+// These macros are kept for backward compatibility but are not type-safe.
+// Prefer using: each(), each_indexed(), indexed(), enumerate(), range()
 
 // for_each(item, container) - cleaner syntax for range-based for
 // Usage: for_each(x, my_list) { ... }
+// PREFER: each(my_list, [](auto& x) { ... });
+//         OR: for (auto x : my_list) { ... }
 #define for_each(var, container) for (auto var : container)
 
 // for_index(i, container) - loop with index
 // Usage: for_index(i, my_list) { ... }
+// PREFER: each_indexed(my_list, [](size_t i, auto& x) { ... });
+//         OR: for (auto [i, x] : indexed(my_list)) { ... }
 #define for_index(idx, container) \
     for (size_t idx = 0; idx < (container).len(); ++idx)
 
 // for_enumerate(idx, val, container) - enumerate style
 // Usage: for_enumerate(i, x, my_list) { ... }
+// PREFER: for (auto [i, x] : enumerate(my_list)) { ... }
+//         OR: each_indexed(my_list, [](size_t i, auto& x) { ... });
 #define for_enumerate(idx, val, container) \
     for (auto [idx, val] : pythonic::loop::enumerate(container))
 
@@ -697,6 +990,8 @@ namespace pythonic
 // Usage: for_range(i, 10) { ... }
 //        for_range(i, 1, 10) { ... }
 //        for_range(i, 1, 10, 2) { ... }
+// PREFER: for (auto i : range(10)) { ... }
+//         OR: times(10, [](size_t i) { ... });
 #define for_range(var, ...) for (auto var : pythonic::loop::range(__VA_ARGS__))
 
 // while_true - infinite loop (like Python's while True)

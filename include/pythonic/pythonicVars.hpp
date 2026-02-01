@@ -155,9 +155,14 @@ namespace pythonic
         // And as they are heap-allocated memory and heap-allocation is performence costly, need to optimize or minimize frequent allocation and deallocation
 
         // ============================================================================
-        // TODO: Dict/Set: Detect mutation during iteration and throw, like Python (avoid iterator invalidation crashes)
-        // TODO: Enforce deep const-correctness (const var should not allow mutation of underlying data)
-        // TODO: Refactor operator+/-/* etc. to use a dispatch table (function pointer matrix) for efficiency and extensibility
+        // DONE: Dict/Set: Detect mutation during iteration and throw, like Python (avoid iterator invalidation crashes)
+        //       - Added version_ counter to var class
+        //       - Safe iterators check version on each access
+        //       - Mutation methods increment version_
+        // DONE: Enforce deep const-correctness (const var should not allow mutation of underlying data)
+        //       - var_get<T>() returns T& for non-const var, const T& for const var
+        //       - Mutation methods are non-const only
+        // DONE: Refactor operator+/-/* etc. to use a dispatch table (function pointer matrix) for efficiency and extensibility
         // ============================================================================
 
         union VarData
@@ -213,10 +218,18 @@ namespace pythonic
         class var
         {
         private:
-            VarData data_; // Union-based storage (replaces std::variant)
-            TypeTag tag_;  // Type discriminator
+            VarData data_;                 // Union-based storage (replaces std::variant)
+            TypeTag tag_;                  // Type discriminator
+            mutable uint32_t version_ = 0; // Version counter for mutation detection during iteration
+                                           // mutable because we need to increment it even for const iterators
+                                           // (creating an iterator from const var needs to read version)
+
+            // Increment version counter - called by all mutation methods
+            void increment_version() noexcept { ++version_; }
 
         public:
+            // Get current version (for iterator creation)
+            uint32_t get_version() const noexcept { return version_; }
             // ============ Container Methods (Pythonic/C++ idioms) ============
 
             // front() - return first element (list, ordered_set, ordered_dict, string)
@@ -350,21 +363,27 @@ namespace pythonic
                 {
                 case TypeTag::LIST:
                     var_get<List>().clear();
+                    increment_version();
                     break;
                 case TypeTag::SET:
                     var_get<Set>().clear();
+                    increment_version();
                     break;
                 case TypeTag::DICT:
                     var_get<Dict>().clear();
+                    increment_version();
                     break;
                 case TypeTag::ORDEREDSET:
                     var_get<OrderedSet>().clear();
+                    increment_version();
                     break;
                 case TypeTag::ORDEREDDICT:
                     var_get<OrderedDict>().clear();
+                    increment_version();
                     break;
                 case TypeTag::STRING:
                     var_get<std::string>().clear();
+                    increment_version();
                     break;
                 default:
                     throw pythonic::PythonicAttributeError("clear() not supported for this type");
@@ -383,6 +402,7 @@ namespace pythonic
                         throw pythonic::PythonicIndexError("pop from empty list");
                     var v = lst.back();
                     lst.pop_back();
+                    increment_version();
                     return v;
                 }
                 case TypeTag::ORDEREDSET:
@@ -394,6 +414,7 @@ namespace pythonic
                     --it;
                     var v = *it;
                     os.erase(it);
+                    increment_version();
                     return v;
                 }
                 case TypeTag::ORDEREDDICT:
@@ -405,6 +426,7 @@ namespace pythonic
                     --it;
                     var v = var(it->first);
                     od.erase(it);
+                    increment_version();
                     return v;
                 }
                 default:
@@ -3338,6 +3360,7 @@ namespace pythonic
                 if (tag_ == TypeTag::LIST)
                 {
                     var_get<List>().push_back(v);
+                    increment_version();
                 }
                 else
                 {
@@ -3352,6 +3375,7 @@ namespace pythonic
                 if (tag_ == TypeTag::LIST)
                 {
                     var_get<List>().emplace_back(std::forward<T>(v));
+                    increment_version();
                 }
                 else
                 {
@@ -3366,10 +3390,12 @@ namespace pythonic
                 if (tag_ == TypeTag::SET)
                 {
                     var_get<Set>().insert(v);
+                    increment_version();
                 }
                 else if (tag_ == TypeTag::ORDEREDSET)
                 {
                     var_get<OrderedSet>().insert(v);
+                    increment_version();
                 }
                 else
                 {
@@ -3384,10 +3410,12 @@ namespace pythonic
                 if (tag_ == TypeTag::SET)
                 {
                     var_get<Set>().emplace(std::forward<T>(v));
+                    increment_version();
                 }
                 else if (tag_ == TypeTag::ORDEREDSET)
                 {
                     var_get<OrderedSet>().emplace(std::forward<T>(v));
+                    increment_version();
                 }
                 else
                 {
@@ -3410,6 +3438,7 @@ namespace pythonic
                 {
                     const auto &other_lst = other.var_get<List>();
                     lst.insert(lst.end(), other_lst.begin(), other_lst.end());
+                    increment_version();
                     break;
                 }
                 case TypeTag::SET:
@@ -3419,6 +3448,7 @@ namespace pythonic
                     {
                         lst.push_back(item);
                     }
+                    increment_version();
                     break;
                 }
                 case TypeTag::STRING:
@@ -3428,6 +3458,7 @@ namespace pythonic
                     {
                         lst.push_back(var(std::string(1, c)));
                     }
+                    increment_version();
                     break;
                 }
                 default:
@@ -3450,6 +3481,7 @@ namespace pythonic
                 {
                     const auto &other_set = other.var_get<Set>();
                     st.insert(other_set.begin(), other_set.end());
+                    increment_version();
                     break;
                 }
                 case TypeTag::LIST:
@@ -3459,6 +3491,7 @@ namespace pythonic
                     {
                         st.insert(item);
                     }
+                    increment_version();
                     break;
                 }
                 default:
@@ -3524,12 +3557,14 @@ namespace pythonic
                 {
                     auto &s = var_get<Set>();
                     s.erase(v);
+                    increment_version();
                     break;
                 }
                 case TypeTag::ORDEREDSET:
                 {
                     auto &s = var_get<OrderedSet>();
                     s.erase(v);
+                    increment_version();
                     break;
                 }
                 case TypeTag::LIST:
@@ -3541,6 +3576,7 @@ namespace pythonic
                     if (it != lst.end())
                     {
                         lst.erase(it);
+                        increment_version();
                     }
                     break;
                 }
@@ -3552,7 +3588,8 @@ namespace pythonic
             // ============ Iterator Support ============
 
             // Generic iterator wrapper that works with different container types
-            // TODO: currently uses std:variant. I need to make it use type tag based as it will be much faster and memory efficient. but i have to be careful about memory leaks or pointer misuse. Same goes for const_iterator
+            // Now with version tracking for mutation detection during iteration
+            // When container is mutated, version_ is incremented, and iterator throws RuntimeError
             class iterator
             {
             public:
@@ -3580,18 +3617,30 @@ namespace pythonic
                     ORDEREDSET,
                     ORDEREDDICT
                 } type;
+                const var *container_ = nullptr; // Pointer to container for version check
+                uint32_t version_ = 0;           // Version at time of iterator creation
+
+                // Check if container was modified since iterator creation
+                void check_version() const
+                {
+                    if (container_ && container_->get_version() != version_)
+                    {
+                        throw pythonic::PythonicRuntimeError("container changed size during iteration");
+                    }
+                }
 
             public:
                 iterator() : type(IterType::LIST) {}
-                iterator(List::iterator i) : it(i), type(IterType::LIST) {}
-                iterator(Set::iterator i) : it(i), type(IterType::SET) {}
-                iterator(Dict::iterator i) : it(i), type(IterType::DICT) {}
-                iterator(std::string::iterator i) : it(i), type(IterType::STRING) {}
-                iterator(OrderedSet::iterator i) : it(i), type(IterType::ORDEREDSET) {}
-                iterator(OrderedDict::iterator i) : it(i), type(IterType::ORDEREDDICT) {}
+                iterator(List::iterator i, const var *c = nullptr) : it(i), type(IterType::LIST), container_(c), version_(c ? c->get_version() : 0) {}
+                iterator(Set::iterator i, const var *c = nullptr) : it(i), type(IterType::SET), container_(c), version_(c ? c->get_version() : 0) {}
+                iterator(Dict::iterator i, const var *c = nullptr) : it(i), type(IterType::DICT), container_(c), version_(c ? c->get_version() : 0) {}
+                iterator(std::string::iterator i, const var *c = nullptr) : it(i), type(IterType::STRING), container_(c), version_(c ? c->get_version() : 0) {}
+                iterator(OrderedSet::iterator i, const var *c = nullptr) : it(i), type(IterType::ORDEREDSET), container_(c), version_(c ? c->get_version() : 0) {}
+                iterator(OrderedDict::iterator i, const var *c = nullptr) : it(i), type(IterType::ORDEREDDICT), container_(c), version_(c ? c->get_version() : 0) {}
 
                 var operator*() const
                 {
+                    check_version();
                     switch (type)
                     {
                     case IterType::LIST:
@@ -3618,6 +3667,7 @@ namespace pythonic
 
                 iterator &operator++()
                 {
+                    check_version();
                     switch (type)
                     {
                     case IterType::LIST:
@@ -3701,18 +3751,30 @@ namespace pythonic
                     ORDEREDSET,
                     ORDEREDDICT
                 } type;
+                const var *container_ = nullptr; // Pointer to container for version check
+                uint32_t version_ = 0;           // Version at time of iterator creation
+
+                // Check if container was modified since iterator creation
+                void check_version() const
+                {
+                    if (container_ && container_->get_version() != version_)
+                    {
+                        throw pythonic::PythonicRuntimeError("container changed size during iteration");
+                    }
+                }
 
             public:
                 const_iterator() : type(IterType::LIST) {}
-                const_iterator(List::const_iterator i) : it(i), type(IterType::LIST) {}
-                const_iterator(Set::const_iterator i) : it(i), type(IterType::SET) {}
-                const_iterator(Dict::const_iterator i) : it(i), type(IterType::DICT) {}
-                const_iterator(std::string::const_iterator i) : it(i), type(IterType::STRING) {}
-                const_iterator(OrderedSet::const_iterator i) : it(i), type(IterType::ORDEREDSET) {}
-                const_iterator(OrderedDict::const_iterator i) : it(i), type(IterType::ORDEREDDICT) {}
+                const_iterator(List::const_iterator i, const var *c = nullptr) : it(i), type(IterType::LIST), container_(c), version_(c ? c->get_version() : 0) {}
+                const_iterator(Set::const_iterator i, const var *c = nullptr) : it(i), type(IterType::SET), container_(c), version_(c ? c->get_version() : 0) {}
+                const_iterator(Dict::const_iterator i, const var *c = nullptr) : it(i), type(IterType::DICT), container_(c), version_(c ? c->get_version() : 0) {}
+                const_iterator(std::string::const_iterator i, const var *c = nullptr) : it(i), type(IterType::STRING), container_(c), version_(c ? c->get_version() : 0) {}
+                const_iterator(OrderedSet::const_iterator i, const var *c = nullptr) : it(i), type(IterType::ORDEREDSET), container_(c), version_(c ? c->get_version() : 0) {}
+                const_iterator(OrderedDict::const_iterator i, const var *c = nullptr) : it(i), type(IterType::ORDEREDDICT), container_(c), version_(c ? c->get_version() : 0) {}
 
                 var operator*() const
                 {
+                    check_version();
                     switch (type)
                     {
                     case IterType::LIST:
@@ -3739,6 +3801,7 @@ namespace pythonic
 
                 const_iterator &operator++()
                 {
+                    check_version();
                     switch (type)
                     {
                     case IterType::LIST:
@@ -3796,22 +3859,23 @@ namespace pythonic
             };
 
             // begin/end for range-based for loops
+            // Pass 'this' to iterators for mutation detection
             iterator begin()
             {
                 switch (tag_)
                 {
                 case TypeTag::LIST:
-                    return iterator(var_get<List>().begin());
+                    return iterator(var_get<List>().begin(), this);
                 case TypeTag::SET:
-                    return iterator(var_get<Set>().begin());
+                    return iterator(var_get<Set>().begin(), this);
                 case TypeTag::DICT:
-                    return iterator(var_get<Dict>().begin());
+                    return iterator(var_get<Dict>().begin(), this);
                 case TypeTag::STRING:
-                    return iterator(var_get<std::string>().begin());
+                    return iterator(var_get<std::string>().begin(), this);
                 case TypeTag::ORDEREDSET:
-                    return iterator(var_get<OrderedSet>().begin());
+                    return iterator(var_get<OrderedSet>().begin(), this);
                 case TypeTag::ORDEREDDICT:
-                    return iterator(var_get<OrderedDict>().begin());
+                    return iterator(var_get<OrderedDict>().begin(), this);
                 default:
                     throw pythonic::PythonicIterationError("type is not iterable");
                 }
@@ -3822,17 +3886,17 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::LIST:
-                    return iterator(var_get<List>().end());
+                    return iterator(var_get<List>().end(), this);
                 case TypeTag::SET:
-                    return iterator(var_get<Set>().end());
+                    return iterator(var_get<Set>().end(), this);
                 case TypeTag::DICT:
-                    return iterator(var_get<Dict>().end());
+                    return iterator(var_get<Dict>().end(), this);
                 case TypeTag::STRING:
-                    return iterator(var_get<std::string>().end());
+                    return iterator(var_get<std::string>().end(), this);
                 case TypeTag::ORDEREDSET:
-                    return iterator(var_get<OrderedSet>().end());
+                    return iterator(var_get<OrderedSet>().end(), this);
                 case TypeTag::ORDEREDDICT:
-                    return iterator(var_get<OrderedDict>().end());
+                    return iterator(var_get<OrderedDict>().end(), this);
                 default:
                     throw pythonic::PythonicIterationError("type is not iterable");
                 }
@@ -3843,17 +3907,17 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::LIST:
-                    return const_iterator(var_get<List>().begin());
+                    return const_iterator(var_get<List>().begin(), this);
                 case TypeTag::SET:
-                    return const_iterator(var_get<Set>().begin());
+                    return const_iterator(var_get<Set>().begin(), this);
                 case TypeTag::DICT:
-                    return const_iterator(var_get<Dict>().begin());
+                    return const_iterator(var_get<Dict>().begin(), this);
                 case TypeTag::STRING:
-                    return const_iterator(var_get<std::string>().begin());
+                    return const_iterator(var_get<std::string>().begin(), this);
                 case TypeTag::ORDEREDSET:
-                    return const_iterator(var_get<OrderedSet>().begin());
+                    return const_iterator(var_get<OrderedSet>().begin(), this);
                 case TypeTag::ORDEREDDICT:
-                    return const_iterator(var_get<OrderedDict>().begin());
+                    return const_iterator(var_get<OrderedDict>().begin(), this);
                 default:
                     throw pythonic::PythonicIterationError("type is not iterable");
                 }
@@ -3864,17 +3928,17 @@ namespace pythonic
                 switch (tag_)
                 {
                 case TypeTag::LIST:
-                    return const_iterator(var_get<List>().end());
+                    return const_iterator(var_get<List>().end(), this);
                 case TypeTag::SET:
-                    return const_iterator(var_get<Set>().end());
+                    return const_iterator(var_get<Set>().end(), this);
                 case TypeTag::DICT:
-                    return const_iterator(var_get<Dict>().end());
+                    return const_iterator(var_get<Dict>().end(), this);
                 case TypeTag::STRING:
-                    return const_iterator(var_get<std::string>().end());
+                    return const_iterator(var_get<std::string>().end(), this);
                 case TypeTag::ORDEREDSET:
-                    return const_iterator(var_get<OrderedSet>().end());
+                    return const_iterator(var_get<OrderedSet>().end(), this);
                 case TypeTag::ORDEREDDICT:
-                    return const_iterator(var_get<OrderedDict>().end());
+                    return const_iterator(var_get<OrderedDict>().end(), this);
                 default:
                     throw pythonic::PythonicIterationError("type is not iterable");
                 }
