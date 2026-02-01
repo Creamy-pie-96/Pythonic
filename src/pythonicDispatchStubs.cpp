@@ -20315,7 +20315,7 @@ var band__bool__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'string'");
 }
 var band__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    return var(a.var_get<bool>() & b.var_get<bool>());
+    return var(static_cast<bool>(a.var_get<bool>() & b.var_get<bool>()));
 }
 var band__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for &: 'bool' and 'double'");
@@ -21434,7 +21434,7 @@ var bor__bool__string(const var& a, const var& b, pythonic::overflow::Overflow p
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'string'");
 }
 var bor__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    return var(a.var_get<bool>() | b.var_get<bool>());
+    return var(static_cast<bool>(a.var_get<bool>() | b.var_get<bool>()));
 }
 var bor__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for |: 'bool' and 'double'");
@@ -22552,7 +22552,7 @@ var bxor__bool__string(const var& a, const var& b, pythonic::overflow::Overflow 
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'string'");
 }
 var bxor__bool__bool(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
-    return var(a.var_get<bool>() ^ b.var_get<bool>());
+    return var(static_cast<bool>(a.var_get<bool>() ^ b.var_get<bool>()));
 }
 var bxor__bool__double(const var& a, const var& b, pythonic::overflow::Overflow policy, bool smallest_fit) {
     throw pythonic::PythonicTypeError("TypeError: unsupported operand type(s) for ^: 'bool' and 'double'");

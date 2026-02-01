@@ -291,11 +291,11 @@ for opname in ops.values():
             elif opname in ("band", "bor", "bxor"):
                 if left == 'bool' and right == 'bool':
                     if opname == "band":
-                        print(f"    return var(a.var_get<bool>() & b.var_get<bool>());")
+                        print(f"    return var(static_cast<bool>(a.var_get<bool>() & b.var_get<bool>()));")
                     elif opname == "bor":
-                        print(f"    return var(a.var_get<bool>() | b.var_get<bool>());")
+                        print(f"    return var(static_cast<bool>(a.var_get<bool>() | b.var_get<bool>()));")
                     elif opname == "bxor":
-                        print(f"    return var(a.var_get<bool>() ^ b.var_get<bool>());")
+                        print(f"    return var(static_cast<bool>(a.var_get<bool>() ^ b.var_get<bool>()));")
                 elif is_integral(left) and is_integral(right):
                     ctype = get_common_integral_bitwise(left, right)
                     print_cast('a', 'la', left, ctype)
