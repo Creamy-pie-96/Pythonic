@@ -126,22 +126,50 @@ namespace pythonic
         template <Integral T>
         constexpr bool would_add_overflow(T a, T b) noexcept
         {
+        #ifdef _MSC_VER
+            T res = a + b;
+            if constexpr (std::is_signed_v<T>) {
+                return ((a > 0 && b > 0 && res < 0) || (a < 0 && b < 0 && res > 0));
+            } else {
+                return res < a;
+            }
+        #else
             T res;
             return __builtin_add_overflow(a, b, &res);
+        #endif
         }
 
         template <Integral T>
         constexpr bool would_sub_overflow(T a, T b) noexcept
         {
+        #ifdef _MSC_VER
+            T res = a - b;
+            if constexpr (std::is_signed_v<T>) {
+                return ((a > 0 && b < 0 && res < 0) || (a < 0 && b > 0 && res > 0));
+            } else {
+                return res > a;
+            }
+        #else
             T res;
             return __builtin_sub_overflow(a, b, &res);
+        #endif
         }
 
         template <Integral T>
         constexpr bool would_mul_overflow(T a, T b) noexcept
         {
+        #ifdef _MSC_VER
+            T res = a * b;
+            if constexpr (std::is_signed_v<T>) {
+                bool same_sign = (a >= 0) == (b >= 0);
+                return (same_sign && res < 0) || (!same_sign && res > 0);
+            } else {
+                return (a != 0 && b > std::numeric_limits<T>::max() / a);
+            }
+        #else
             T res;
             return __builtin_mul_overflow(a, b, &res);
+        #endif
         }
 
         // Floating point doesn't have traditional overflow, but we can check for infinity
@@ -175,9 +203,12 @@ namespace pythonic
 #ifdef _MSC_VER
             T res = a + b;
             bool overflow;
-            if constexpr (std::is_signed_v<T>) {
+            if constexpr (std::is_signed_v<T>)
+            {
                 overflow = ((a > 0 && b > 0 && res < 0) || (a < 0 && b < 0 && res > 0));
-            } else {
+            }
+            else
+            {
                 overflow = res < a;
             }
             if (overflow)
@@ -208,9 +239,12 @@ namespace pythonic
 #ifdef _MSC_VER
             T res = a - b;
             bool overflow;
-            if constexpr (std::is_signed_v<T>) {
+            if constexpr (std::is_signed_v<T>)
+            {
                 overflow = ((a > 0 && b < 0 && res < 0) || (a < 0 && b > 0 && res > 0));
-            } else {
+            }
+            else
+            {
                 overflow = res > a;
             }
             if (overflow)
@@ -241,10 +275,13 @@ namespace pythonic
 #ifdef _MSC_VER
             T res = a * b;
             bool overflow;
-            if constexpr (std::is_signed_v<T>) {
+            if constexpr (std::is_signed_v<T>)
+            {
                 bool same_sign = (a >= 0) == (b >= 0);
                 overflow = (same_sign && res < 0) || (!same_sign && res > 0);
-            } else {
+            }
+            else
+            {
                 overflow = (a != 0 && b > std::numeric_limits<T>::max() / a);
             }
             if (overflow)
