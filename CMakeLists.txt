@@ -131,12 +131,19 @@ endif()
 # Create a library
 add_library(pythonic src/pythonicDispatchStubs.cpp)
 
+# Find and require threading support (needed for std::thread in video export)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # Set the include directory for the library
 # Use generator expressions for build/install interface
 target_include_directories(pythonic PUBLIC
 	$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 	$<INSTALL_INTERFACE:include>
 )
+
+# Link threading library
+target_link_libraries(pythonic PUBLIC Threads::Threads)
 
 # Link audio libraries if enabled
 if(PYTHONIC_SDL2_FOUND)

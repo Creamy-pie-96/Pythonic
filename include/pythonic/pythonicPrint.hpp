@@ -7,6 +7,7 @@
 #include "pythonicDraw.hpp"
 #include "pythonicMedia.hpp"
 #include "pythonicExport.hpp"
+#include "pythonicAccel.hpp"
 
 namespace pythonic
 {
@@ -29,17 +30,29 @@ namespace pythonic
             std::chrono::steady_clock::time_point _start_time;
             int _bar_width;
             std::string _stage;
+            bool _indeterminate; // For stages where total is unknown
 
         public:
-            ExportProgress(size_t total_frames, int bar_width = 40)
+            ExportProgress(size_t total_frames = 0, int bar_width = 40)
                 : _total_frames(total_frames), _current_frame(0),
-                  _bar_width(bar_width), _stage("Initializing...")
+                  _bar_width(bar_width), _stage("Initializing..."), _indeterminate(total_frames == 0)
             {
                 _start_time = std::chrono::steady_clock::now();
             }
 
-            void set_stage(const std::string &stage) { _stage = stage; }
-            void set_total(size_t total) { _total_frames = total; }
+            void set_stage(const std::string &stage)
+            {
+                _stage = stage;
+                render();
+            }
+
+            void set_total(size_t total)
+            {
+                _total_frames = total;
+                _indeterminate = (total == 0);
+            }
+
+            void set_indeterminate(bool value) { _indeterminate = value; }
 
             void update(size_t frame)
             {
@@ -57,8 +70,15 @@ namespace pythonic
             {
                 _current_frame = _total_frames;
                 _stage = "Complete!";
+                _indeterminate = false;
                 render();
                 std::cout << std::endl;
+            }
+
+            void reset()
+            {
+                _current_frame = 0;
+                _start_time = std::chrono::steady_clock::now();
             }
 
         private:
@@ -78,28 +98,19 @@ namespace pythonic
                 return oss.str();
             }
 
+            // Animation characters for indeterminate progress (UTF-8 strings)
+            const char *spinner_char() const
+            {
+                static const char *spinners[] = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
+                auto now = std::chrono::steady_clock::now();
+                auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - _start_time).count();
+                return spinners[(ms / 100) % 10];
+            }
+
             void render()
             {
                 auto now = std::chrono::steady_clock::now();
                 double elapsed = std::chrono::duration<double>(now - _start_time).count();
-
-                // Calculate progress
-                double progress = (_total_frames > 0) ? static_cast<double>(_current_frame) / _total_frames : 0.0;
-                int percent = static_cast<int>(progress * 100);
-
-                // Estimate time remaining
-                double eta = 0.0;
-                if (_current_frame > 0 && progress < 1.0)
-                {
-                    double time_per_frame = elapsed / _current_frame;
-                    size_t remaining_frames = _total_frames - _current_frame;
-                    eta = time_per_frame * remaining_frames;
-                }
-
-                // Build progress bar using Unicode block characters
-                // ▓ (U+2593) for filled, ░ (U+2591) for empty
-                int filled = static_cast<int>(progress * _bar_width);
-                int empty = _bar_width - filled;
 
                 std::ostringstream bar;
                 bar << "\033[2K\r"; // Clear line and return to start
@@ -107,27 +118,73 @@ namespace pythonic
                 // Stage name
                 bar << "\033[36m" << _stage << "\033[0m ";
 
-                // Progress bar
-                bar << "\033[90m[\033[0m";
-                bar << "\033[92m"; // Green for filled
-                for (int i = 0; i < filled; i++)
-                    bar << "▓";
-                bar << "\033[90m"; // Gray for empty
-                for (int i = 0; i < empty; i++)
-                    bar << "░";
-                bar << "\033[90m]\033[0m ";
-
-                // Percentage
-                bar << "\033[93m" << std::setw(3) << percent << "%\033[0m ";
-
-                // Frame counter
-                bar << "\033[90m(" << _current_frame << "/" << _total_frames << ")\033[0m ";
-
-                // Time info
-                bar << "\033[35m" << format_time(elapsed) << "\033[0m";
-                if (eta > 0 && progress < 1.0)
+                if (_indeterminate)
                 {
-                    bar << " \033[90m| ETA:\033[0m \033[33m" << format_time(eta) << "\033[0m";
+                    // Indeterminate progress bar (animated)
+                    static const char *spinners[] = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
+                    auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - _start_time).count();
+                    int idx = (ms / 100) % 10;
+
+                    bar << "\033[93m" << spinners[idx] << "\033[0m ";
+
+                    // Animated bar
+                    int offset = (ms / 150) % _bar_width;
+                    bar << "\033[90m[\033[0m";
+                    for (int i = 0; i < _bar_width; i++)
+                    {
+                        int dist = std::abs(i - offset);
+                        if (dist < 3)
+                            bar << "\033[92m▓\033[0m";
+                        else if (dist < 5)
+                            bar << "\033[32m▒\033[0m";
+                        else
+                            bar << "\033[90m░\033[0m";
+                    }
+                    bar << "\033[90m]\033[0m ";
+
+                    // Time elapsed only (no ETA for indeterminate)
+                    bar << "\033[35m" << format_time(elapsed) << "\033[0m";
+                }
+                else
+                {
+                    // Determinate progress bar
+                    double progress = (_total_frames > 0) ? static_cast<double>(_current_frame) / _total_frames : 0.0;
+                    int percent = static_cast<int>(progress * 100);
+
+                    // Estimate time remaining
+                    double eta = 0.0;
+                    if (_current_frame > 0 && progress < 1.0)
+                    {
+                        double time_per_frame = elapsed / _current_frame;
+                        size_t remaining_frames = _total_frames - _current_frame;
+                        eta = time_per_frame * remaining_frames;
+                    }
+
+                    // Build progress bar
+                    int filled = static_cast<int>(progress * _bar_width);
+                    int empty = _bar_width - filled;
+
+                    bar << "\033[90m[\033[0m";
+                    bar << "\033[92m"; // Green for filled
+                    for (int i = 0; i < filled; i++)
+                        bar << "▓";
+                    bar << "\033[90m"; // Gray for empty
+                    for (int i = 0; i < empty; i++)
+                        bar << "░";
+                    bar << "\033[90m]\033[0m ";
+
+                    // Percentage
+                    bar << "\033[93m" << std::setw(3) << percent << "%\033[0m ";
+
+                    // Frame counter
+                    bar << "\033[90m(" << _current_frame << "/" << _total_frames << ")\033[0m ";
+
+                    // Time info
+                    bar << "\033[35m" << format_time(elapsed) << "\033[0m";
+                    if (eta > 0 && progress < 1.0)
+                    {
+                        bar << " \033[90m| ETA:\033[0m \033[33m" << format_time(eta) << "\033[0m";
+                    }
                 }
 
                 std::cout << bar.str() << std::flush;
@@ -139,7 +196,11 @@ namespace pythonic
          */
         inline size_t count_frames(const std::string &dir, const std::string &pattern = "frame_")
         {
+#ifdef _WIN32
+            std::string cmd = "dir /b \"" + dir + "\" 2>nul | findstr /c:\"" + pattern + "\" | find /c /v \"\"";
+#else
             std::string cmd = "ls -1 \"" + dir + "\" 2>/dev/null | grep \"" + pattern + "\" | wc -l";
+#endif
             FILE *pipe = popen(cmd.c_str(), "r");
             if (!pipe)
                 return 0;
@@ -158,6 +219,131 @@ namespace pythonic
             {
                 return 0;
             }
+        }
+
+        /**
+         * @brief Get video duration in seconds using ffprobe
+         */
+        inline double get_video_duration(const std::string &filepath)
+        {
+            std::string cmd = "ffprobe -v quiet -show_entries format=duration "
+                              "-of csv=p=0 \"" +
+                              filepath + "\" 2>/dev/null";
+
+            FILE *pipe = popen(cmd.c_str(), "r");
+            if (!pipe)
+                return 0;
+
+            char buffer[64];
+            std::string result;
+            if (fgets(buffer, sizeof(buffer), pipe))
+                result = buffer;
+            pclose(pipe);
+
+            try
+            {
+                return std::stod(result);
+            }
+            catch (...)
+            {
+                return 0;
+            }
+        }
+
+        /**
+         * @brief Estimate total frames based on duration and fps
+         */
+        inline size_t estimate_frame_count(const std::string &filepath, double fps)
+        {
+            double duration = get_video_duration(filepath);
+            if (duration <= 0 || fps <= 0)
+                return 0;
+            return static_cast<size_t>(duration * fps);
+        }
+
+        /**
+         * @brief Extract frames with progress callback using FFmpeg's progress output
+         * @param input_path Source video path
+         * @param output_dir Output directory for frames
+         * @param fps Target FPS
+         * @param progress Progress callback - receives (current_time, total_duration)
+         * @return true on success
+         */
+        inline bool extract_frames_with_progress(
+            const std::string &input_path,
+            const std::string &output_dir,
+            int fps,
+            std::function<void(double, double)> progress_callback)
+        {
+            // Get video duration first
+            double duration = get_video_duration(input_path);
+            std::string fps_str = std::to_string(fps);
+
+            // Create progress pipe file
+            std::string progress_file = output_dir + "/ffmpeg_progress.txt";
+
+            // Build FFmpeg command with progress output
+#ifdef _WIN32
+            std::string cmd = "ffmpeg -y -progress \"" + progress_file + "\" -i \"" + input_path +
+                              "\" -vf \"fps=" + fps_str + "\" \"" + output_dir + "/frame_%05d.png\" >nul 2>&1";
+#else
+            std::string cmd = "ffmpeg -y -progress \"" + progress_file + "\" -i \"" + input_path +
+                              "\" -vf \"fps=" + fps_str + "\" \"" + output_dir + "/frame_%05d.png\" >/dev/null 2>&1 &";
+#endif
+
+            // Start FFmpeg in background
+            int result = std::system(cmd.c_str());
+
+#ifndef _WIN32
+            // On Unix, wait for FFmpeg to start
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+            // Monitor progress file
+            while (true)
+            {
+                std::ifstream pf(progress_file);
+                if (pf.good())
+                {
+                    std::string line;
+                    double current_time = 0;
+                    bool ended = false;
+
+                    while (std::getline(pf, line))
+                    {
+                        if (line.find("out_time_ms=") == 0)
+                        {
+                            try
+                            {
+                                long long ms = std::stoll(line.substr(12));
+                                current_time = ms / 1000000.0;
+                            }
+                            catch (...)
+                            {
+                            }
+                        }
+                        else if (line.find("progress=end") != std::string::npos)
+                        {
+                            ended = true;
+                        }
+                    }
+                    pf.close();
+
+                    if (progress_callback && duration > 0)
+                    {
+                        progress_callback(current_time, duration);
+                    }
+
+                    if (ended)
+                        break;
+                }
+
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+
+            // Cleanup progress file
+            std::remove(progress_file.c_str());
+#endif
+            return true;
         }
 
         using namespace pythonic::vars;
@@ -686,6 +872,7 @@ namespace pythonic
          *   export_media("input.png", "output", Type::image, Format::image);             // output.png (ASCII as image)
          *   export_media("input.mp4", "output", Type::video, Format::video);             // output.mp4 (ASCII video)
          *   export_media("input.png", "output", Type::image, Format::pythonic);          // output.pi
+         *   export_media("input.mp4", "output", Type::video, Format::video, Mode::bw_dot, 80, 128, Audio::off, 0, {}, false); // CPU only
          *
          * @param input_path Path to source media file
          * @param output_name Output filename (extension will be ignored/replaced)
@@ -697,6 +884,7 @@ namespace pythonic
          * @param audio Audio mode for video export (Audio::on to include audio track)
          * @param fps Frame rate for video export (0 = use original video fps, default)
          * @param config Export configuration for customizing rendering (dot_size, density, colors)
+         * @param use_gpu Use GPU/hardware acceleration if available (default true). When false, uses CPU only.
          * @return true on success, false on failure
          */
         inline bool export_media(const std::string &input_path, const std::string &output_name,
@@ -706,7 +894,8 @@ namespace pythonic
                                  int max_width = 80, int threshold = 128,
                                  Audio audio = Audio::off,
                                  int fps = 0,
-                                 const ex::ExportConfig &config = ex::ExportConfig())
+                                 const ex::ExportConfig &config = ex::ExportConfig(),
+                                 bool use_gpu = true)
         {
             // Truncate any extension from output_name
             std::string basename = truncate_extension(output_name);
@@ -921,18 +1110,57 @@ namespace pythonic
                     // Create temp directory for frames
                     std::string temp_dir = "/tmp/pythonic_video_export_" +
                                            std::to_string(std::hash<std::string>{}(input_path));
+#ifdef _WIN32
+                    std::string mkdir_cmd = "mkdir \"" + temp_dir + "\" 2>nul";
+#else
                     std::string mkdir_cmd = "mkdir -p \"" + temp_dir + "\"";
+#endif
                     std::system(mkdir_cmd.c_str());
 
-                    // Initialize progress bar (estimate frames from duration)
-                    ExportProgress progress(100, 50); // Will update after extraction
-                    progress.set_stage("Extracting frames");
+                    // Get estimated frame count for preprocessing progress
+                    double video_duration = get_video_duration(actual_path);
+                    size_t estimated_frames = static_cast<size_t>(video_duration * actual_fps);
+
+                    // Initialize progress bar with preprocessing stage
+                    ExportProgress progress(0, 50); // Indeterminate initially
+                    progress.set_indeterminate(true);
+                    progress.set_stage("Preprocessing");
                     progress.update(0);
 
                     // Extract frames from video at the target fps
+                    // We need to do this synchronously but show that something is happening
                     std::string extract_cmd = "ffmpeg -y -i \"" + actual_path + "\" -vf \"fps=" + fps_str + "\" \"" +
                                               temp_dir + "/frame_%05d.png\" 2>/dev/null";
+
+                    // Start extraction - this will block but progress bar shows activity
+                    std::thread update_thread([&progress, &temp_dir, estimated_frames]()
+                                              {
+                        // Periodically check extracted frame count and update progress
+                        while (true)
+                        {
+                            size_t current = count_frames(temp_dir, "frame_");
+                            if (current > 0)
+                            {
+                                progress.set_indeterminate(false);
+                                progress.set_total(estimated_frames > 0 ? estimated_frames : current * 2);
+                                progress.update(current);
+                            }
+                            std::this_thread::sleep_for(std::chrono::milliseconds(250));
+                            
+                            // Check if extraction might be done
+                            if (estimated_frames > 0 && current >= estimated_frames * 0.95)
+                                break;
+                            if (current > 1000 && count_frames(temp_dir, "frame_") == current)
+                            {
+                                // Frame count not changing, might be done
+                                std::this_thread::sleep_for(std::chrono::milliseconds(500));
+                                if (count_frames(temp_dir, "frame_") == current)
+                                    break;
+                            }
+                        } });
+
                     int result = std::system(extract_cmd.c_str());
+                    update_thread.join();
 
                     if (is_temp_video)
                         std::remove(actual_path.c_str());
@@ -940,7 +1168,11 @@ namespace pythonic
                     if (result != 0)
                     {
                         std::cout << "\n\033[31mError: Failed to extract frames from video\033[0m\n";
+#ifdef _WIN32
+                        std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
+#else
                         std::string rm_cmd = "rm -rf \"" + temp_dir + "\"";
+#endif
                         std::system(rm_cmd.c_str());
                         return false;
                     }
@@ -950,47 +1182,149 @@ namespace pythonic
                     if (total_frames == 0)
                     {
                         std::cout << "\n\033[31mError: No frames extracted from video\033[0m\n";
+#ifdef _WIN32
+                        std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
+#else
                         std::string rm_cmd = "rm -rf \"" + temp_dir + "\"";
+#endif
                         std::system(rm_cmd.c_str());
                         return false;
                     }
 
                     // Update progress bar with actual frame count
+                    progress.reset(); // Reset timer for ASCII rendering phase
+                    progress.set_indeterminate(false);
                     progress.set_total(total_frames);
                     progress.set_stage("Rendering ASCII art");
                     progress.update(0);
 
-                    // Process each frame - render ASCII art to proper image
-                    size_t frame_num = 1;
-                    while (frame_num <= total_frames)
+                    // Determine number of worker threads
+                    // Leave 2 threads free for other system tasks
+                    int num_threads = std::thread::hardware_concurrency();
+                    if (num_threads == 0)
+                        num_threads = 4; // Fallback
+                    else if (num_threads > 2)
+                        num_threads -= 2; // Leave 2 threads free
+                    if (num_threads > 10)
+                        num_threads = 10; // Cap at 10 threads max
+
+                    // For smaller videos, fewer threads make sense
+                    if (total_frames < 100)
+                        num_threads = std::min(num_threads, 4);
+                    if (total_frames < 50)
+                        num_threads = std::min(num_threads, 2);
+
+                    // Atomic counter for progress tracking
+                    std::atomic<size_t> frames_completed{0};
+                    std::atomic<bool> processing_done{false};
+
+                    // Progress update thread
+                    std::thread progress_thread([&progress, &frames_completed, &processing_done, total_frames]()
+                                                {
+                        while (!processing_done.load())
+                        {
+                            size_t completed = frames_completed.load();
+                            progress.update(completed);
+                            if (completed >= total_frames) break;
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        } });
+
+                    // Worker function to process a range of frames
+                    auto process_frames = [&](size_t start, size_t end)
                     {
-                        char frame_name[128];
-                        snprintf(frame_name, sizeof(frame_name), "%s/frame_%05zu.png", temp_dir.c_str(), frame_num);
+                        for (size_t frame_num = start; frame_num <= end && frame_num <= total_frames; frame_num++)
+                        {
+                            char frame_name[128];
+                            snprintf(frame_name, sizeof(frame_name), "%s/frame_%05zu.png", temp_dir.c_str(), frame_num);
 
-                        std::ifstream test(frame_name);
-                        if (!test.good())
-                            break;
-                        test.close();
+                            std::ifstream test(frame_name);
+                            if (!test.good())
+                                continue;
+                            test.close();
 
-                        // Render frame to ASCII art
-                        std::string rendered = render_image_to_string(frame_name, mode, max_width, threshold);
+                            // Render frame to ASCII art
+                            std::string rendered = render_image_to_string(frame_name, mode, max_width, threshold);
 
-                        // Render ASCII art to proper image using new export module
-                        char img_name[128];
-                        snprintf(img_name, sizeof(img_name), "%s/ascii_%05zu.png", temp_dir.c_str(), frame_num);
-                        pythonic::ex::export_art_to_png(rendered, img_name, config);
+                            // Render ASCII art to proper image using new export module
+                            char img_name[128];
+                            snprintf(img_name, sizeof(img_name), "%s/ascii_%05zu.png", temp_dir.c_str(), frame_num);
+                            pythonic::ex::export_art_to_png(rendered, img_name, config);
 
-                        // Update progress
-                        progress.update(frame_num);
+                            frames_completed++;
+                        }
+                    };
 
-                        frame_num++;
-                        if (frame_num > 100000)
-                            break; // Safety limit
+                    // Distribute frames across threads
+                    std::vector<std::thread> workers;
+                    size_t frames_per_thread = (total_frames + num_threads - 1) / num_threads;
+
+                    for (int t = 0; t < num_threads; t++)
+                    {
+                        size_t start = t * frames_per_thread + 1;
+                        size_t end = std::min(start + frames_per_thread - 1, total_frames);
+                        if (start <= total_frames)
+                        {
+                            workers.emplace_back(process_frames, start, end);
+                        }
                     }
 
-                    // Update progress for encoding stage
-                    progress.set_stage("Encoding video");
+                    // Wait for all workers to complete
+                    for (auto &worker : workers)
+                    {
+                        worker.join();
+                    }
+
+                    processing_done.store(true);
+                    progress_thread.join();
+
+                    // Final progress update
                     progress.update(total_frames);
+
+                    // Update progress for encoding stage
+                    progress.set_indeterminate(true);
+                    progress.set_stage("Encoding video");
+                    progress.update(0);
+
+                    // Detect available hardware encoders (only if use_gpu is true)
+                    std::string encoder = "libx264"; // CPU default
+                    if (use_gpu)
+                    {
+                        auto hw_encoders = pythonic::accel::detect_hw_encoders();
+                        encoder = hw_encoders.best_h264_encoder();
+                    }
+
+                    // Log encoder being used
+                    if (encoder != "libx264")
+                    {
+                        std::cout << "\n\033[90mUsing hardware encoder: " << encoder << "\033[0m\n";
+                    }
+                    else if (!use_gpu)
+                    {
+                        std::cout << "\n\033[90mUsing CPU encoder (GPU disabled)\033[0m\n";
+                    }
+
+                    // Build encoder-specific options
+                    std::string encoder_opts;
+                    if (encoder == "h264_nvenc")
+                    {
+                        encoder_opts = "-c:v h264_nvenc -preset fast -rc vbr -cq 23";
+                    }
+                    else if (encoder == "h264_qsv")
+                    {
+                        encoder_opts = "-c:v h264_qsv -preset faster -global_quality 23";
+                    }
+                    else if (encoder == "h264_vaapi")
+                    {
+                        encoder_opts = "-vaapi_device /dev/dri/renderD128 -c:v h264_vaapi -qp 23";
+                    }
+                    else if (encoder == "h264_videotoolbox")
+                    {
+                        encoder_opts = "-c:v h264_videotoolbox -q:v 65";
+                    }
+                    else
+                    {
+                        encoder_opts = "-c:v libx264 -preset faster -crf 23";
+                    }
 
                     // Combine ASCII frames into video
                     if (audio == Audio::on)
@@ -1002,34 +1336,34 @@ namespace pythonic
 
                         if (audio_result == 0)
                         {
-                            // Create video with audio
+                            // Create video with audio using detected encoder
                             std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" "
                                                                                                               "-i \"" +
-                                                    audio_path + "\" -c:v libx264 -c:a aac -pix_fmt yuv420p "
-                                                                 "-shortest \"" +
+                                                    audio_path + "\" " + encoder_opts + " -c:a aac -pix_fmt yuv420p "
+                                                                                        "-shortest \"" +
                                                     output_path + "\" 2>/dev/null";
                             result = std::system(video_cmd.c_str());
                         }
                         else
                         {
                             // No audio in source or extraction failed, create video without audio
-                            std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" "
-                                                                                                              "-c:v libx264 -pix_fmt yuv420p \"" +
-                                                    output_path + "\" 2>/dev/null";
+                            std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" " + encoder_opts + " -pix_fmt yuv420p \"" + output_path + "\" 2>/dev/null";
                             result = std::system(video_cmd.c_str());
                         }
                     }
                     else
                     {
-                        // Create video without audio
-                        std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" "
-                                                                                                          "-c:v libx264 -pix_fmt yuv420p \"" +
-                                                output_path + "\" 2>/dev/null";
+                        // Create video without audio using detected encoder
+                        std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" " + encoder_opts + " -pix_fmt yuv420p \"" + output_path + "\" 2>/dev/null";
                         result = std::system(video_cmd.c_str());
                     }
 
                     // Cleanup
+#ifdef _WIN32
+                    std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
+#else
                     std::string rm_cmd = "rm -rf \"" + temp_dir + "\"";
+#endif
                     std::system(rm_cmd.c_str());
 
                     // Finish progress
@@ -1084,6 +1418,7 @@ namespace pythonic
          * @param max_width Width for ASCII rendering
          * @param threshold Brightness threshold for BW modes
          * @param audio Audio mode for video export
+         * @param use_gpu Use GPU/hardware acceleration if available (default true)
          * @return true on success
          */
         inline bool export_media(const std::string &input_path, const std::string &output_name,
@@ -1092,7 +1427,8 @@ namespace pythonic
                                  Format format = Format::image,
                                  Mode mode = Mode::bw_dot,
                                  int max_width = 80, int threshold = 128,
-                                 Audio audio = Audio::off)
+                                 Audio audio = Audio::off,
+                                 bool use_gpu = true)
         {
             // Truncate any extension from output_name
             std::string basename = truncate_extension(output_name);
@@ -1156,7 +1492,7 @@ namespace pythonic
             }
 
             // For other formats, delegate to the main function
-            return export_media(input_path, output_name, type, format, mode, max_width, threshold, audio);
+            return export_media(input_path, output_name, type, format, mode, max_width, threshold, audio, 0, {}, use_gpu);
         }
 
     } // namespace print

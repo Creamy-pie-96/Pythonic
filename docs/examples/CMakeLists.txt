@@ -5,6 +5,10 @@ project(UsingPythonic)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Find threading support (required for std::thread in video export)
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+
 # The graph viewer target that can be exported by the installed
 # package requires OpenGL to be found by CMake before importing
 # the `pythonic` config. Ensure OpenGL is available for downstream
@@ -73,7 +77,7 @@ add_executable(demoapp demo.cpp)
 
 # Link libraries to your target
 # --> Add other libraries here if your project depends on them
-target_link_libraries(demoapp PRIVATE pythonic::pythonic ImageMagick::Magick++ ${FFMPEG_LIBRARIES})
+target_link_libraries(demoapp PRIVATE pythonic::pythonic ImageMagick::Magick++ ${FFMPEG_LIBRARIES} Threads::Threads)
 
 # Add FFmpeg include directories
 target_include_directories(demoapp PRIVATE ${FFMPEG_INCLUDE_DIRS})

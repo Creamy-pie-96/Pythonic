@@ -373,7 +373,8 @@ bool export_media(
     int threshold = 128,
     Audio audio = Audio::off,
     int fps = 0,
-    const ExportConfig& config = ExportConfig()  // Customize rendering style
+    const ExportConfig& config = ExportConfig(),  // Customize rendering style
+    bool use_gpu = true                           // Use GPU/hardware acceleration
 );
 ```
 
@@ -391,6 +392,7 @@ bool export_media(
 | `audio`       | `Audio`        | `Audio::off`        | Whether to include audio in video exports                          |
 | `fps`         | `int`          | `0`                 | Frame rate for video export (0 = original fps)                     |
 | `config`      | `ExportConfig` | `ExportConfig()`    | Rendering customization (dot_size, density, colors)                |
+| `use_gpu`     | `bool`         | `true`              | Use GPU/hardware acceleration for encoding (see below)             |
 
 ### Format Enum
 
@@ -573,11 +575,17 @@ int main() {
 
 ### How Video Export Works
 
-1. **Frame extraction**: FFmpeg extracts frames from the source video
-2. **ASCII rendering**: Each frame is rendered to ASCII/Braille art using the specified mode
+1. **Preprocessing**: FFmpeg extracts frames from the source video (progress shown with animated bar)
+2. **ASCII rendering**: Each frame is rendered to ASCII/Braille art using **multithreaded processing**
 3. **Image rendering**: The ASCII art is rendered to actual pixels (proper Braille dot rendering)
-4. **Video encoding**: All frames are combined back into an MP4 video
+4. **Video encoding**: All frames are combined back into an MP4 video using hardware or CPU encoder
 5. **Audio muxing** (optional): Audio track is extracted and muxed with the video
+
+**Multithreading:**
+
+- Frame rendering automatically uses multiple CPU threads (up to 16)
+- Thread count is based on `std::thread::hardware_concurrency()`
+- Progress bar shows real-time completion percentage
 
 ### Output Quality
 
@@ -597,6 +605,46 @@ sudo apt install ffmpeg
 
 # macOS
 brew install ffmpeg
+```
+
+### GPU Acceleration
+
+Video export automatically uses hardware acceleration when available. The `use_gpu` parameter controls this behavior:
+
+| `use_gpu`        | Behavior                                                         |
+| ---------------- | ---------------------------------------------------------------- |
+| `true` (default) | Automatically detect and use the best available hardware encoder |
+| `false`          | Force CPU-only encoding with `libx264`                           |
+
+**Supported Hardware Encoders:**
+
+| GPU Vendor | Encoder             | Platform                 |
+| ---------- | ------------------- | ------------------------ |
+| NVIDIA     | `h264_nvenc`        | Linux, Windows           |
+| AMD/Intel  | `h264_vaapi`        | Linux                    |
+| Intel      | `h264_qsv`          | Linux, Windows           |
+| Apple      | `h264_videotoolbox` | macOS                    |
+| CPU        | `libx264`           | All platforms (fallback) |
+
+**How it works:**
+
+1. On startup, the system detects available GPUs (NVIDIA, AMD, Intel, Apple)
+2. FFmpeg is probed to find which hardware encoders are available
+3. The best encoder is automatically selected based on your hardware
+4. If no hardware encoder is available, falls back to CPU encoding
+
+**Performance:**
+
+- Hardware encoding is typically **5-20x faster** than CPU encoding
+- CPU encoding uses **multithreading** (auto-detects cores, up to 16 threads)
+- Progress is shown during both preprocessing (frame extraction) and rendering
+
+**Forcing CPU encoding:**
+
+```cpp
+// Force CPU encoding (useful for compatibility or debugging)
+export_media("video.mp4", "output", Type::video, Format::video,
+             Mode::colored, 80, 128, Audio::on, 0, {}, false);
 ```
 
 Image export requires **ImageMagick** for PNG conversion:

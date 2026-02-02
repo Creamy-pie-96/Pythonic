@@ -65,10 +65,26 @@
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
+// Prevent Windows min/max macros from interfering with std::min/std::max
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+// Prevent Windows RGB macro from interfering with our RGB struct
+#ifdef RGB
+#undef RGB
+#endif
 #include <windows.h>
+// Undefine RGB again in case windows.h re-defined it
+#ifdef RGB
+#undef RGB
+#endif
 #include <io.h>
 #include <conio.h>
 #define write _write
+// Define STDOUT_FILENO for Windows
+#ifndef STDOUT_FILENO
+#define STDOUT_FILENO 1
+#endif
 #else
 #include <unistd.h>
 #include <termios.h>

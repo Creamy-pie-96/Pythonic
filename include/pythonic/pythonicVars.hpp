@@ -1,5 +1,12 @@
 #pragma once
 
+// Prevent Windows min/max macros from interfering with std::min/std::max/std::numeric_limits
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#endif
+
 #include <string>
 #include <variant>
 #include <iostream>
