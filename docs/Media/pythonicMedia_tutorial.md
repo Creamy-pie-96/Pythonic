@@ -22,10 +22,10 @@
 
 Pythonic uses two proprietary file extensions:
 
-| Extension | Purpose | Magic Bytes |
-|-----------|---------|-------------|
-| `.pi` | Pythonic Image | `PYTHIMG\x01` |
-| `.pv` | Pythonic Video | `PYTHVID\x01` |
+| Extension | Purpose        | Magic Bytes   |
+| --------- | -------------- | ------------- |
+| `.pi`     | Pythonic Image | `PYTHIMG\x01` |
+| `.pv`     | Pythonic Video | `PYTHVID\x01` |
 
 **File structure:**
 
@@ -67,7 +67,7 @@ Offset:  0    8   10      26  30 34       42       50      64
          ┌────┬───┬───────┬───┬──┬────────┬────────┬───────┐
          │MAGIC│V│E│EXT    │SALT│C│ORIG_SZ │COMP_SZ │RSVD   │
          └────┴───┴───────┴───┴──┴────────┴────────┴───────┘
-         
+
 V = Version (1 byte)
 E = Extension length (1 byte)
 C = Compression type (1 byte)
@@ -118,10 +118,10 @@ void xor_transform(std::vector<uint8_t> &data, uint32_t salt)
     for (size_t i = 0; i < data.size(); ++i) {
         // Key index rotates and shifts
         size_t key_idx = (i + (i / 32)) % 32;
-        
+
         // XOR with key byte
         data[i] ^= file_key[key_idx];
-        
+
         // Bit rotation for additional scrambling
         data[i] = ((data[i] << 3) | (data[i] >> 5));
     }
@@ -165,7 +165,7 @@ inline std::vector<uint8_t> rle_compress(const std::vector<uint8_t> &data)
     size_t i = 0;
     while (i < data.size()) {
         uint8_t current = data[i];
-        
+
         // Count consecutive identical bytes
         size_t run_length = 1;
         while (i + run_length < data.size() &&
@@ -197,13 +197,13 @@ inline std::vector<uint8_t> rle_compress(const std::vector<uint8_t> &data)
 ```
 For runs of 3+ identical bytes:
   [0xFF] [count] [value]
-  
+
   count = 1-255 for that many bytes
   count = 0 means 256 bytes
 
 For other bytes:
   [byte] (literal)
-  
+
 Special case: if byte is 0xFF:
   [0xFF] [0x01] [0xFF] (encode as run of 1)
 ```
@@ -236,7 +236,7 @@ inline std::vector<uint8_t> rle_decompress(const std::vector<uint8_t> &data)
             // RLE sequence
             uint8_t count_byte = data[i++];
             uint8_t value = data[i++];
-            
+
             size_t count = (count_byte == 0) ? 256 : count_byte;
             for (size_t j = 0; j < count; ++j) {
                 decompressed.push_back(value);
@@ -255,47 +255,47 @@ inline std::vector<uint8_t> rle_decompress(const std::vector<uint8_t> &data)
 ## 5. Converting Files
 
 ```cpp
-std::string convert(const std::string &input_path, 
+std::string convert(const std::string &input_path,
                     Type type = Type::auto_detect)
 {
     // Step 1: Detect file type
     std::string ext = get_extension(input_path);
-    bool is_image = (type == Type::image) || 
+    bool is_image = (type == Type::image) ||
                     (type == Type::auto_detect && is_image_extension(ext));
-    
+
     // Step 2: Read original file
     std::vector<uint8_t> data = read_file(input_path);
-    
+
     // Step 3: Prepare header
     PythonicMediaHeader header;
     if (is_image)
         header.set_magic_image();
     else
         header.set_magic_video();
-    
+
     header.set_extension(ext);
     header.original_size = data.size();
-    
+
     // Generate random salt
     std::random_device rd;
     header.salt = rd();
-    
+
     // Step 4: Compress (optional, controlled by flag)
     std::vector<uint8_t> processed = rle_compress(data);
     header.compression = static_cast<uint8_t>(Compression::rle);
     header.compressed_size = processed.size();
-    
+
     // Step 5: Encrypt
     xor_transform(processed, header.salt);
-    
+
     // Step 6: Write output file
-    std::string output_path = remove_extension(input_path) + 
+    std::string output_path = remove_extension(input_path) +
                               (is_image ? ".pi" : ".pv");
-    
+
     std::ofstream out(output_path, std::ios::binary);
     out.write(reinterpret_cast<char*>(&header), sizeof(header));
     out.write(reinterpret_cast<char*>(processed.data()), processed.size());
-    
+
     return output_path;
 }
 ```
@@ -329,33 +329,33 @@ std::string revert(const std::string &input_path)
     std::ifstream in(input_path, std::ios::binary);
     PythonicMediaHeader header;
     in.read(reinterpret_cast<char*>(&header), sizeof(header));
-    
+
     // Step 2: Validate header
     if (!header.is_valid()) {
         throw std::runtime_error("Invalid Pythonic file format");
     }
-    
+
     // Step 3: Read encrypted data
-    std::vector<uint8_t> data(header.compressed_size > 0 ? 
-                              header.compressed_size : 
+    std::vector<uint8_t> data(header.compressed_size > 0 ?
+                              header.compressed_size :
                               header.original_size);
     in.read(reinterpret_cast<char*>(data.data()), data.size());
-    
+
     // Step 4: Decrypt (same function, XOR is symmetric)
     xor_untransform(data, header.salt);
-    
+
     // Step 5: Decompress if needed
     if (header.compression == static_cast<uint8_t>(Compression::rle)) {
         data = rle_decompress(data, header.original_size);
     }
-    
+
     // Step 6: Write restored file
     std::string base = remove_extension(input_path);
     std::string output_path = base + "_restored." + header.get_extension();
-    
+
     std::ofstream out(output_path, std::ios::binary);
     out.write(reinterpret_cast<char*>(data.data()), data.size());
-    
+
     return output_path;
 }
 ```
@@ -371,13 +371,13 @@ The media module integrates seamlessly with pythonicDraw:
 void print_image(const std::string &path, ...)
 {
     std::string actual_path = path;
-    
+
     // Check if this is a Pythonic format
     if (pythonic::media::is_pythonic_image(path)) {
         // Extract to temp file, get actual image path
         actual_path = pythonic::media::extract_to_temp(path);
     }
-    
+
     // Now render using normal image loading
     // (FFmpeg/ImageMagick can read the temp file)
     ...
@@ -393,13 +393,13 @@ using namespace Pythonic;
 int main() {
     // Convert image to Pythonic format
     pythonic::media::convert("photo.jpg");  // Creates photo.pi
-    
+
     // Display it directly (auto-detects .pi format)
     print("photo.pi");  // Works seamlessly!
-    
+
     // Or explicitly
     print("photo.pi", Type::image, Mode::colored);
-    
+
     return 0;
 }
 ```
@@ -410,12 +410,12 @@ int main() {
 
 For typical terminal graphics (lots of empty space):
 
-| Content Type | Original | Compressed | Ratio |
-|--------------|----------|------------|-------|
-| Empty canvas | 10KB | 0.5KB | 5% |
-| Simple drawing | 10KB | 2KB | 20% |
-| Complex image | 100KB | 90KB | 90% |
-| Video frame | 50KB | 45KB | 90% |
+| Content Type   | Original | Compressed | Ratio |
+| -------------- | -------- | ---------- | ----- |
+| Empty canvas   | 10KB     | 0.5KB      | 5%    |
+| Simple drawing | 10KB     | 2KB        | 20%   |
+| Complex image  | 100KB    | 90KB       | 90%   |
+| Video frame    | 50KB     | 45KB       | 90%   |
 
 RLE works best when there are many repeated bytes!
 
@@ -426,11 +426,13 @@ RLE works best when there are many repeated bytes!
 **This is NOT cryptographic encryption!**
 
 The XOR obfuscation is designed to:
+
 - ✅ Prevent casual viewing of media files
 - ✅ Make files unreadable by standard tools
 - ✅ Provide unique output for each conversion (salt)
 
 It is NOT designed to:
+
 - ❌ Protect against determined attackers
 - ❌ Provide secure encryption
 - ❌ Meet compliance requirements
@@ -444,4 +446,3 @@ For actual security, use proper encryption libraries.
 - [pythonicDraw Tutorial](../LiveDraw/pythonicDraw_tutorial.md) - Learn how to render media
 - [LiveDraw Tutorial](../LiveDraw/livedraw.md) - Create drawings that can be saved to .pi
 - [Print Documentation](../Print/print.md) - Display media files
-

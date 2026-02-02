@@ -14,16 +14,17 @@ using namespace pythonic::plot;
 
 int main() {
     Figure fig(80, 24);  // 80 chars wide, 24 chars tall
-    
+
     // Plot a sine wave
     fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
-    
+
     std::cout << fig.render();
     return 0;
 }
 ```
 
 Compile:
+
 ```bash
 g++ -std=c++20 -Iinclude -o plot my_plot.cpp
 ./plot
@@ -43,10 +44,10 @@ private:
     size_t _char_height;   // Terminal height in characters
     size_t _pixel_width;   // char_width × 2 (Braille has 2 dots wide)
     size_t _pixel_height;  // char_height × 4 (Braille has 4 dots tall)
-    
+
     std::vector<std::vector<RGBA>> _pixels;  // High-res pixel buffer
     std::vector<PlotData> _plots;             // All plotted data
-    
+
     Range _x_range;   // X axis min/max
     Range _y_range;   // Y axis min/max
 ```
@@ -64,6 +65,7 @@ That's 15,360 "pixels" to work with!
 ```
 
 **Visual:**
+
 ```
 One Braille character cell:
 ┌───┐
@@ -91,7 +93,7 @@ struct Range
         min = std::min(min, value);
         max = std::max(max, value);
     }
-    
+
     static Range nice(double data_min, double data_max)
     {
         // Creates "nice" rounded axis limits
@@ -157,11 +159,11 @@ Figure &plot(std::function<double(double)> func,
     PlotData data;
     data.color = color.empty() ? next_color() : colors::from_name(color);
     data.label = label;
-    
+
     // Sample the function at many points
     int num_samples = static_cast<int>(_plot_width * 2);  // 2 samples per pixel
     double step = (x_max - x_min) / num_samples;
-    
+
     for (double x = x_min; x <= x_max; x += step) {
         double y = func(x);
         if (std::isfinite(y)) {
@@ -169,7 +171,7 @@ Figure &plot(std::function<double(double)> func,
             data.y_data.push_back(y);
         }
     }
-    
+
     _plots.push_back(data);
     return *this;
 }
@@ -196,7 +198,7 @@ namespace colors
     inline RGBA red(255, 0, 0);
     inline RGBA cyan(0, 255, 255);
     // ... more colors ...
-    
+
     inline const std::vector<RGBA> &palette()
     {
         static std::vector<RGBA> p = {
@@ -253,7 +255,7 @@ namespace font
 {'5', {0b111, 0b100, 0b111, 0b001, 0b111}}
 
 0b111 → ███
-0b100 → █  
+0b100 → █
 0b111 → ███
 0b001 →   █
 0b111 → ███
@@ -267,14 +269,14 @@ namespace font
 void draw_text(const std::string &text, int x, int y, const RGBA &color)
 {
     const auto &font_map = font::get_font();
-    
+
     for (char c : text) {
         auto it = font_map.find(c);
         if (it == font_map.end()) {
             x += 4;  // Skip unknown characters
             continue;
         }
-        
+
         const auto &glyph = it->second;
         for (int row = 0; row < 5; ++row) {
             for (int col = 0; col < 3; ++col) {
@@ -297,22 +299,22 @@ std::string render()
 {
     // 1. Clear pixel buffer
     clear_pixels();
-    
+
     // 2. Auto-scale if needed
     if (_auto_scale) update_ranges();
-    
+
     // 3. Draw background elements
     if (_show_grid) draw_grid();
     draw_axes();
-    
+
     // 4. Draw all plot data
     for (const auto &plot : _plots) {
         draw_plot_data(plot);
     }
-    
+
     // 5. Draw labels and annotations
     draw_labels_to_pixels();
-    
+
     // 6. Convert to output
     return render_header() + render_braille();
 }
@@ -326,13 +328,13 @@ std::string render()
 std::string render_braille()
 {
     std::ostringstream out;
-    
+
     // Braille dot positions in each 2×4 cell:
     // [0] [3]    bits 0, 3
     // [1] [4]    bits 1, 4
     // [2] [5]    bits 2, 5
     // [6] [7]    bits 6, 7
-    
+
     static const int dot_map[4][2] = {
         {0, 3}, {1, 4}, {2, 5}, {6, 7}
     };
@@ -341,28 +343,28 @@ std::string render_braille()
         for (int cx = 0; cx < _char_width; ++cx) {
             uint8_t pattern = 0;
             RGBA dominant_color;
-            
+
             // Check each of the 8 pixels in this cell
             for (int row = 0; row < 4; ++row) {
                 for (int col = 0; col < 2; ++col) {
                     int px = cx * 2 + col;
                     int py = cy * 4 + row;
                     RGBA pixel = _pixels[py][px];
-                    
+
                     if (pixel.a > 0) {
                         pattern |= (1 << dot_map[row][col]);
                         dominant_color = pixel;  // Remember color
                     }
                 }
             }
-            
+
             // Output ANSI color + Braille character
             out << ansi::fg_color(dominant_color.r, dominant_color.g, dominant_color.b);
             out << braille_to_utf8(pattern);  // Unicode 0x2800 + pattern
         }
         out << ansi::RESET << '\n';
     }
-    
+
     return out.str();
 }
 ```
@@ -374,7 +376,7 @@ Pixels:     Pattern bits:    Unicode:
 ██          0b00000001 |     0x2800 + 0x49 = 0x2849
   ██        0b00001000 |
 ██          0b01000000       = ⡉
-  
+
 Result: ⡉ (Braille pattern: dots 1, 4, 7)
 ```
 
@@ -390,7 +392,7 @@ void draw_plot_data(const PlotData &data)
         int y0 = data_to_pixel_y(data.y_data[i - 1]);
         int x1 = data_to_pixel_x(data.x_data[i]);
         int y1 = data_to_pixel_y(data.y_data[i]);
-        
+
         // Draw line segment with anti-aliasing
         draw_line_aa(x0, y0, x1, y1, data.color);
     }
@@ -407,20 +409,20 @@ using namespace pythonic::plot;
 
 int main() {
     Figure fig(80, 24);
-    
+
     fig.title("Trigonometric Functions");
     fig.xlim(-PI, PI);
     fig.ylim(-1.5, 1.5);
-    
+
     // Plot multiple functions
     fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
     fig.plot([](double x) { return cos(x); }, -PI, PI, "yellow", "cos(x)");
     fig.plot([](double x) { return sin(2*x)/2; }, -PI, PI, "magenta", "sin(2x)/2");
-    
+
     // Add text annotations
     fig.print("Maximum", PI/2, 1.0, "green");
     fig.print("Zero", 0, 0, "white");
-    
+
     std::cout << fig.render();
     return 0;
 }
@@ -432,13 +434,13 @@ int main() {
       Trigonometric Functions
       ▄ sin(x)  ▄ cos(x)  ▄ sin(2x)/2
                     Y
-   1.5┤        ⢀⣀⡀        
-   1.0┤Maximum⡴⠁  ⠈⠢⣀    
-      │     ⡔⠁      ⠈⠢⡀  
+   1.5┤        ⢀⣀⡀
+   1.0┤Maximum⡴⠁  ⠈⠢⣀
+      │     ⡔⠁      ⠈⠢⡀
    0.0├Zero─╋───────────────X
       │   ⡰⠁          ⠈⠢⡀
   -1.0┤ ⡠⠃              ⠈⠢
-  -1.5┤⠐⠁                  
+  -1.5┤⠐⠁
       └──────────────────────
      -3.14              3.14
 ```
@@ -449,31 +451,31 @@ int main() {
 
 ### Figure Configuration
 
-| Method | Description |
-|--------|-------------|
+| Method           | Description      |
+| ---------------- | ---------------- |
 | `xlim(min, max)` | Set X axis range |
 | `ylim(min, max)` | Set Y axis range |
-| `title(str)` | Set plot title |
-| `xlabel(str)` | Set X axis label |
-| `ylabel(str)` | Set Y axis label |
-| `legend(bool)` | Show/hide legend |
-| `grid(bool)` | Show/hide grid |
+| `title(str)`     | Set plot title   |
+| `xlabel(str)`    | Set X axis label |
+| `ylabel(str)`    | Set Y axis label |
+| `legend(bool)`   | Show/hide legend |
+| `grid(bool)`     | Show/hide grid   |
 
 ### Plotting
 
-| Method | Description |
-|--------|-------------|
-| `plot(func, x_min, x_max, color, label)` | Plot a function |
-| `scatter(x_vec, y_vec, color, label)` | Scatter plot |
-| `print(text, x, y, color)` | Add text annotation |
+| Method                                   | Description         |
+| ---------------------------------------- | ------------------- |
+| `plot(func, x_min, x_max, color, label)` | Plot a function     |
+| `scatter(x_vec, y_vec, color, label)`    | Scatter plot        |
+| `print(text, x, y, color)`               | Add text annotation |
 
 ### Rendering
 
-| Method | Description |
-|--------|-------------|
+| Method     | Description            |
+| ---------- | ---------------------- |
 | `render()` | Generate output string |
-| `show()` | Print to stdout |
-| `clear()` | Clear all plots |
+| `show()`   | Print to stdout        |
+| `clear()`  | Clear all plots        |
 
 ---
 
@@ -498,10 +500,10 @@ Figure fig(40, 20);  // Width:Height ≈ 2:1 accounts for Braille aspect
 for (double t = 0; t < 10; t += 0.1) {
     fig.clear();
     fig.plot([t](double x) { return sin(x + t); }, -PI, PI);
-    
+
     std::cout << "\033[H";  // Cursor home
     std::cout << fig.render();
-    
+
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
 }
 ```
@@ -512,4 +514,3 @@ for (double t = 0; t < 10; t += 0.1) {
 
 - [pythonicDraw Tutorial](../LiveDraw/pythonicDraw_tutorial.md) - Understanding Braille graphics
 - [LiveDraw Tutorial](../LiveDraw/livedraw.md) - Interactive drawing
-

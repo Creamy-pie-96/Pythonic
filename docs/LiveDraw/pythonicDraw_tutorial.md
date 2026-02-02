@@ -30,11 +30,11 @@ Standard Braille (for reading):     Our use (for graphics):
 
 **Why Braille?**
 
-| Method | Resolution per character | Color |
-|--------|-------------------------|-------|
-| ASCII art (`#`, `.`) | 1×1 | No |
-| Half-block (`▀`) | 1×2 | Yes |
-| **Braille** (`⠿`) | **2×4** | Limited |
+| Method               | Resolution per character | Color   |
+| -------------------- | ------------------------ | ------- |
+| ASCII art (`#`, `.`) | 1×1                      | No      |
+| Half-block (`▀`)     | 1×2                      | Yes     |
+| **Braille** (`⠿`)    | **2×4**                  | Limited |
 
 Braille gives us **8× the resolution** of regular text!
 
@@ -69,9 +69,9 @@ Braille character: ⡇ (Unicode U+2847)
 Binary: 0100 0111 = 0x47
 
 Bit layout:
-  bit0=1  bit3=0   →  ●  
-  bit1=1  bit4=0   →  ●  
-  bit2=1  bit5=0   →  ●  
+  bit0=1  bit3=0   →  ●
+  bit1=1  bit4=0   →  ●
+  bit2=1  bit5=0   →  ●
   bit6=0  bit7=1   →     ●
 
 Displayed as: ⡇
@@ -108,7 +108,7 @@ private:
     size_t _char_height;   // Height in terminal characters
     size_t _pixel_width;   // char_width × 2 (2 dots wide per char)
     size_t _pixel_height;  // char_height × 4 (4 dots tall per char)
-    
+
     // One byte per character cell, bits = which dots are "on"
     std::vector<std::vector<uint8_t>> _canvas;
 ```
@@ -126,7 +126,7 @@ Pixels:   160 × 96 addressable points
 ```cpp
 void set_pixel(int x, int y, bool on = true)
 {
-    if (x < 0 || x >= (int)_pixel_width || 
+    if (x < 0 || x >= (int)_pixel_width ||
         y < 0 || y >= (int)_pixel_height)
         return;  // Bounds check
 
@@ -169,13 +169,13 @@ Step 4: Set bit
 For video, we process entire 2×4 blocks at once:
 
 ```cpp
-void set_block_gray(int char_x, int char_y, 
-                    const uint8_t gray[8], 
+void set_block_gray(int char_x, int char_y,
+                    const uint8_t gray[8],
                     uint8_t threshold)
 {
     // gray[0..7] = grayscale values for 8 pixels
     // Order: row0_col0, row0_col1, row1_col0, row1_col1, ...
-    
+
     uint8_t pattern = 0;
     pattern |= (gray[0] >= threshold) ? 0x01 : 0;  // row 0, col 0
     pattern |= (gray[1] >= threshold) ? 0x08 : 0;  // row 0, col 1
@@ -185,7 +185,7 @@ void set_block_gray(int char_x, int char_y,
     pattern |= (gray[5] >= threshold) ? 0x20 : 0;  // row 2, col 1
     pattern |= (gray[6] >= threshold) ? 0x40 : 0;  // row 3, col 0
     pattern |= (gray[7] >= threshold) ? 0x80 : 0;  // row 3, col 1
-    
+
     _canvas[char_y][char_x] = pattern;
 }
 ```
@@ -204,7 +204,7 @@ class ColorCanvas
 private:
     size_t _pixel_width;   // Same as char_width
     size_t _pixel_height;  // char_height × 2
-    
+
     std::vector<std::vector<RGB>> _pixels;  // Full RGB per pixel
 ```
 
@@ -225,25 +225,25 @@ One character = 2 vertical pixels
 std::string render() const
 {
     const char *UPPER_HALF = "\xe2\x96\x80";  // ▀ in UTF-8
-    
+
     for (size_t cy = 0; cy < _char_height; ++cy) {
         size_t py_top = cy * 2;
         size_t py_bot = py_top + 1;
-        
+
         for (size_t cx = 0; cx < _char_width; ++cx) {
             RGB top = _pixels[py_top][cx];
             RGB bot = _pixels[py_bot][cx];
-            
+
             // Set foreground color (top pixel)
             out += "\033[38;2;" + std::to_string(top.r) + ";"
                                 + std::to_string(top.g) + ";"
                                 + std::to_string(top.b) + "m";
-            
+
             // Set background color (bottom pixel)
             out += "\033[48;2;" + std::to_string(bot.r) + ";"
                                 + std::to_string(bot.g) + ";"
                                 + std::to_string(bot.b) + "m";
-            
+
             out += UPPER_HALF;
         }
         out += "\033[0m\n";  // Reset colors, newline
@@ -278,7 +278,7 @@ private:
 **Color averaging:**
 
 ```cpp
-void load_frame_rgb(const uint8_t *data, int width, int height, 
+void load_frame_rgb(const uint8_t *data, int width, int height,
                     uint8_t threshold = 128)
 {
     for (size_t cy = 0; cy < _char_height; ++cy) {
@@ -292,14 +292,14 @@ void load_frame_rgb(const uint8_t *data, int width, int height,
                 for (int col = 0; col < 2; ++col) {
                     // Get RGB from source image
                     uint8_t r = ..., g = ..., b = ...;
-                    
+
                     // Convert to grayscale for thresholding
                     uint8_t gray = (299*r + 587*g + 114*b) / 1000;
-                    
+
                     if (gray >= threshold) {
                         // Turn on this dot
                         pattern |= BRAILLE_DOTS[row][col];
-                        
+
                         // Accumulate color
                         r_sum += r;
                         g_sum += g;
@@ -308,9 +308,9 @@ void load_frame_rgb(const uint8_t *data, int width, int height,
                     }
                 }
             }
-            
+
             _patterns[cy][cx] = pattern;
-            
+
             // Average color of "on" pixels
             if (on_count > 0) {
                 _colors[cy][cx] = RGB(
@@ -343,7 +343,7 @@ namespace signal_handler
     inline void signal_handler_func(int signum)
     {
         restore_terminal();
-        
+
         // Re-raise signal for normal exit
         std::signal(signum, SIG_DFL);
         std::raise(signum);
@@ -363,6 +363,7 @@ namespace signal_handler
 **Why this matters:**
 
 Without cleanup:
+
 ```
 $ ./video_player
 ^C
@@ -371,6 +372,7 @@ $ ./video_player
 ```
 
 With cleanup:
+
 ```
 $ ./video_player
 ^C
@@ -389,29 +391,29 @@ class VideoPlayer
 private:
     FILE *_ffmpeg_pipe;     // Pipe from FFmpeg
     std::vector<uint8_t> _frame_buffer;
-    
+
     void open_video(const std::string &path, int width)
     {
         // FFmpeg command to decode video to raw RGB
         std::string cmd = "ffmpeg -i \"" + path + "\" "
                          "-f rawvideo -pix_fmt rgb24 "
-                         "-s " + std::to_string(width) + "x" + 
+                         "-s " + std::to_string(width) + "x" +
                                  std::to_string(height) + " "
                          "-r 30 "  // 30 fps
                          "-loglevel quiet "
                          "-";      // Output to stdout
-        
+
         _ffmpeg_pipe = popen(cmd.c_str(), "r");
     }
-    
+
     bool read_frame()
     {
         size_t frame_size = _width * _height * 3;  // RGB = 3 bytes/pixel
-        
+
         size_t bytes_read = fread(
             _frame_buffer.data(), 1, frame_size, _ffmpeg_pipe
         );
-        
+
         return bytes_read == frame_size;
     }
 ```
@@ -422,29 +424,29 @@ private:
 void play()
 {
     signal_handler::start_playback();
-    
+
     std::cout << ansi::HIDE_CURSOR;
     std::cout << ansi::CLEAR_SCREEN;
-    
+
     auto frame_time = std::chrono::microseconds(1000000 / 30);  // 30 fps
-    
+
     while (read_frame()) {
         auto start = std::chrono::steady_clock::now();
-        
+
         // Convert frame to Braille/ColorCanvas
         _canvas.load_frame_rgb(_frame_buffer.data(), _width, _height);
-        
+
         // Output to terminal
         std::cout << ansi::CURSOR_HOME;
         std::cout << _canvas.render();
-        
+
         // Wait for next frame
         auto elapsed = std::chrono::steady_clock::now() - start;
         if (elapsed < frame_time) {
             std::this_thread::sleep_for(frame_time - elapsed);
         }
     }
-    
+
     std::cout << ansi::SHOW_CURSOR;
     signal_handler::end_playback();
 }
@@ -465,7 +467,7 @@ private:
     cl::Context _context;
     cl::CommandQueue _queue;
     cl::Kernel _rgb_to_ansi_kernel;
-    
+
     static constexpr const char *KERNEL_SOURCE = R"(
         __kernel void rgb_to_ansi(
             __global const uchar* input,   // RGB pixels
@@ -475,11 +477,11 @@ private:
             int gid = get_global_id(0);
             int char_y = gid / width;
             int char_x = gid % width;
-            
+
             // Top and bottom pixel for half-block
             int top_idx = (char_y * 2 * width + char_x) * 3;
             int bot_idx = ((char_y * 2 + 1) * width + char_x) * 3;
-            
+
             // Output 6 bytes: top RGB + bottom RGB
             int out_idx = gid * 6;
             output[out_idx] = input[top_idx];      // Top R
@@ -495,12 +497,13 @@ private:
 **GPU vs CPU:**
 
 | Resolution | CPU Time | GPU Time | Speedup |
-|------------|----------|----------|---------|
-| 80×48 | 2ms | 0.5ms | 4× |
-| 160×96 | 8ms | 1ms | 8× |
-| 320×192 | 30ms | 3ms | 10× |
+| ---------- | -------- | -------- | ------- |
+| 80×48      | 2ms      | 0.5ms    | 4×      |
+| 160×96     | 8ms      | 1ms      | 8×      |
+| 320×192    | 30ms     | 3ms      | 10×     |
 
 Enable with:
+
 ```bash
 g++ -std=c++20 -DPYTHONIC_ENABLE_OPENCL ... -lOpenCL
 ```
@@ -517,17 +520,17 @@ using namespace pythonic::draw;
 
 int main() {
     BrailleCanvas canvas(40, 20);  // 80×80 pixel resolution
-    
+
     // Draw circle at center with radius 30
     int cx = 40, cy = 40, r = 30;
-    
+
     for (int angle = 0; angle < 360; ++angle) {
         double rad = angle * 3.14159 / 180.0;
         int x = cx + r * cos(rad);
         int y = cy + r * sin(rad);
         canvas.set_pixel(x, y);
     }
-    
+
     std::cout << canvas.render();
     return 0;
 }
@@ -560,4 +563,3 @@ int main() {
 - [LiveDraw Tutorial](livedraw.md) - Interactive drawing
 - [Plot Tutorial](../Plot/plot.md) - Data visualization
 - [Media Tutorial](../Media/media.md) - Image and video handling
-

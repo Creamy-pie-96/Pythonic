@@ -20,6 +20,7 @@ int main() {
 ```
 
 Compile and run:
+
 ```bash
 g++ -std=c++20 -Iinclude -o draw my_draw.cpp
 ./draw
@@ -29,24 +30,24 @@ g++ -std=c++20 -Iinclude -o draw my_draw.cpp
 
 ## 🎮 Keyboard Controls
 
-| Key | Action |
-|-----|--------|
-| `p` | **Pen tool** - Freehand drawing |
-| `l` | **Line tool** - Draw straight lines |
-| `c` | **Circle tool** - Draw circles |
-| `x` | **Rectangle tool** - Draw rectangles |
-| `f` | **Fill tool** - Flood fill an area |
-| `e` | **Eraser** - Erase to background |
-| `r` | Select **R**ed channel |
-| `g` | Select **G**reen channel |
-| `b` | Select **B**lue channel |
-| `a` | Select **A**lpha channel |
-| `0-9` | Set channel value (0-255) |
-| `+` / `-` | Increase/decrease brush size |
-| `u` | **Undo** last action |
-| `y` | **Redo** undone action |
-| `s` | **Save** to file |
-| `q` | **Quit** |
+| Key       | Action                               |
+| --------- | ------------------------------------ |
+| `p`       | **Pen tool** - Freehand drawing      |
+| `l`       | **Line tool** - Draw straight lines  |
+| `c`       | **Circle tool** - Draw circles       |
+| `x`       | **Rectangle tool** - Draw rectangles |
+| `f`       | **Fill tool** - Flood fill an area   |
+| `e`       | **Eraser** - Erase to background     |
+| `r`       | Select **R**ed channel               |
+| `g`       | Select **G**reen channel             |
+| `b`       | Select **B**lue channel              |
+| `a`       | Select **A**lpha channel             |
+| `0-9`     | Set channel value (0-255)            |
+| `+` / `-` | Increase/decrease brush size         |
+| `u`       | **Undo** last action                 |
+| `y`       | **Redo** undone action               |
+| `s`       | **Save** to file                     |
+| `q`       | **Quit**                             |
 
 ---
 
@@ -85,11 +86,13 @@ struct RGBA
 ```
 
 **What this does:**
+
 - Stores red, green, blue, and alpha (transparency) values
 - Default color is opaque white (255, 255, 255, 255)
 - The `blend_over()` method combines two colors using alpha compositing
 
 **Visual example of alpha blending:**
+
 ```
 Semi-transparent red (255, 0, 0, 128) over blue (0, 0, 255, 255)
 Result: Purple-ish color where both contribute
@@ -113,14 +116,14 @@ enum class Tool
 
 Each tool behaves differently when you click and drag:
 
-| Tool | Click | Drag | Release |
-|------|-------|------|---------|
-| Pen | Start drawing | Draw along path | Stop |
-| Line | Set start point | Preview line | Draw final line |
-| Circle | Set center | Preview radius | Draw final circle |
-| Rectangle | Set corner | Preview size | Draw final rectangle |
-| Fill | Fill area | (no effect) | (no effect) |
-| Eraser | Start erasing | Erase along path | Stop |
+| Tool      | Click           | Drag             | Release              |
+| --------- | --------------- | ---------------- | -------------------- |
+| Pen       | Start drawing   | Draw along path  | Stop                 |
+| Line      | Set start point | Preview line     | Draw final line      |
+| Circle    | Set center      | Preview radius   | Draw final circle    |
+| Rectangle | Set corner      | Preview size     | Draw final rectangle |
+| Fill      | Fill area       | (no effect)      | (no effect)          |
+| Eraser    | Start erasing   | Erase along path | Stop                 |
 
 ---
 
@@ -149,6 +152,7 @@ ESC [ < Cb ; Cx ; Cy m    (for release)
 ```
 
 Where:
+
 - `Cb` = button code (with modifier bits)
 - `Cx`, `Cy` = 1-based cell coordinates
 
@@ -164,14 +168,14 @@ private:
     size_t _char_height;   // Height in terminal characters
     size_t _pixel_width;   // Actual pixel width
     size_t _pixel_height;  // Actual pixel height
-    
+
     std::vector<std::vector<RGBA>> _pixels;  // The drawing buffer
-    
+
     Tool _current_tool;
     RGBA _foreground;      // Current drawing color
     RGBA _background;      // Background/eraser color
     uint8_t _brush_size;   // Brush radius
-    
+
     std::stack<CanvasState> _undo_stack;  // For undo
     std::stack<CanvasState> _redo_stack;  // For redo
 ```
@@ -209,13 +213,13 @@ void enable_raw_mode()
 
 **What each flag does:**
 
-| Flag | Effect when disabled |
-|------|---------------------|
+| Flag     | Effect when disabled                                   |
+| -------- | ------------------------------------------------------ |
 | `ICANON` | Don't wait for Enter - read each keystroke immediately |
-| `ECHO` | Don't echo typed characters |
-| `ISIG` | Don't generate signals on Ctrl+C/Z |
-| `IXON` | Don't interpret Ctrl+S/Q as flow control |
-| `ICRNL` | Don't convert carriage return to newline |
+| `ECHO`   | Don't echo typed characters                            |
+| `ISIG`   | Don't generate signals on Ctrl+C/Z                     |
+| `IXON`   | Don't interpret Ctrl+S/Q as flow control               |
+| `ICRNL`  | Don't convert carriage return to newline               |
 
 ---
 
@@ -258,9 +262,9 @@ void draw_line(int x0, int y0, int x1, int y1, const RGBA &color)
 
     while (true) {
         draw_brush(x0, y0, color);  // Draw at current point
-        
+
         if (x0 == x1 && y0 == y1) break;
-        
+
         int e2 = 2 * err;
         if (e2 > -dy) { err -= dy; x0 += sx; }
         if (e2 < dx)  { err += dx; y0 += sy; }
@@ -382,7 +386,7 @@ void save_state_for_undo()
 {
     _undo_stack.push(CanvasState(_pixels));
     _redo_stack = std::stack<CanvasState>();  // Clear redo
-    
+
     // Limit undo history
     while (_undo_stack.size() > MAX_UNDO) {
         // Remove oldest...
@@ -424,13 +428,14 @@ void save(const std::string &filename)
             rgb_data.push_back(pixel.b);
         }
     }
-    
+
     // Save using pythonicMedia's RLE compression
     pythonic::media::save_pi(filename, rgb_data, _pixel_width, _pixel_height);
 }
 ```
 
 The `.pi` format uses:
+
 - Run-Length Encoding (RLE) compression
 - XOR encryption for obfuscation
 - Header with original dimensions
@@ -459,6 +464,7 @@ canvas.run();
 ## 🔧 Terminal Compatibility
 
 Works on:
+
 - ✅ Linux terminals (gnome-terminal, konsole, xterm)
 - ✅ macOS Terminal, iTerm2
 - ✅ Windows Terminal
@@ -472,4 +478,3 @@ Works on:
 - [pythonicDraw.hpp Tutorial](pythonicDraw_tutorial.md) - Learn the underlying drawing primitives
 - [pythonicMedia.hpp Tutorial](../Media/pythonicMedia_tutorial.md) - Understand the file format
 - [Plot Tutorial](../Plot/plot.md) - Create data visualizations
-

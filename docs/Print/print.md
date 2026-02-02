@@ -486,12 +486,12 @@ std::cout << fig.render();
 
 ### Parameters
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `text` | `std::string` | The text to display |
-| `x` | `double` | X position in **data coordinates** |
-| `y` | `double` | Y position in **data coordinates** |
-| `color` | `std::string` or `RGBA` | Text color (e.g., `"cyan"`, `"red"`) |
+| Parameter | Type                    | Description                          |
+| --------- | ----------------------- | ------------------------------------ |
+| `text`    | `std::string`           | The text to display                  |
+| `x`       | `double`                | X position in **data coordinates**   |
+| `y`       | `double`                | Y position in **data coordinates**   |
+| `color`   | `std::string` or `RGBA` | Text color (e.g., `"cyan"`, `"red"`) |
 
 ### Pixel Font
 
@@ -499,7 +499,7 @@ Text is rendered using a compact 3×5 pixel Braille font:
 
 - **Numbers**: 0-9
 - **Letters**: A-Z, a-z
-- **Symbols**: . , : - + = ( ) * / _
+- **Symbols**: . , : - + = ( ) \* / \_
 
 ### Example: Annotated Graph
 
