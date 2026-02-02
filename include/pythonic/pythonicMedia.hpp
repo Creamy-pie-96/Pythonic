@@ -75,37 +75,190 @@ namespace pythonic
             0x13, 0x37, 0x42, 0x69, 0x88, 0x99, 0xAA, 0xBB,
             0xCC, 0xDD, 0xEE, 0xFF, 0x11, 0x22, 0x33, 0x44};
 
+        // ==================== RLE Compression ====================
+        // Run-Length Encoding for efficient storage of terminal graphics
+        // which often have many repeated values (especially 0x00 for empty space)
+
+        /**
+         * @brief Compress data using Run-Length Encoding (RLE)
+         *
+         * Format: For runs of 3 or more identical bytes:
+         *   - Escape byte (0xFF)
+         *   - Count byte (3-255, where 0 means 256)
+         *   - Value byte
+         * For other bytes:
+         *   - If byte is 0xFF, encode as 0xFF 0x01 0xFF (run of 1)
+         *   - Otherwise, emit the byte directly
+         *
+         * This format is optimized for terminal graphics where:
+         * - 0x00 (empty Braille cells) appear frequently
+         * - Most non-zero bytes appear individually
+         *
+         * @param data Input data to compress
+         * @return Compressed data
+         */
+        inline std::vector<uint8_t> rle_compress(const std::vector<uint8_t> &data)
+        {
+            if (data.empty())
+                return {};
+
+            std::vector<uint8_t> compressed;
+            compressed.reserve(data.size()); // Worst case is same size
+
+            constexpr uint8_t ESCAPE = 0xFF;
+
+            size_t i = 0;
+            while (i < data.size())
+            {
+                uint8_t current = data[i];
+
+                // Count consecutive identical bytes
+                size_t run_length = 1;
+                while (i + run_length < data.size() &&
+                       data[i + run_length] == current &&
+                       run_length < 256)
+                {
+                    ++run_length;
+                }
+
+                if (run_length >= 3 || current == ESCAPE)
+                {
+                    // Encode as RLE: ESCAPE, count, value
+                    // For runs >= 256, we emit multiple RLE sequences
+                    while (run_length > 0)
+                    {
+                        size_t this_run = std::min(run_length, size_t(256));
+                        compressed.push_back(ESCAPE);
+                        compressed.push_back(static_cast<uint8_t>(this_run == 256 ? 0 : this_run));
+                        compressed.push_back(current);
+                        run_length -= this_run;
+                        i += this_run;
+                    }
+                }
+                else
+                {
+                    // Emit bytes directly (1 or 2 bytes that aren't ESCAPE)
+                    for (size_t j = 0; j < run_length; ++j)
+                    {
+                        compressed.push_back(current);
+                    }
+                    i += run_length;
+                }
+            }
+
+            return compressed;
+        }
+
+        /**
+         * @brief Decompress RLE-encoded data
+         *
+         * @param data Compressed data
+         * @param expected_size Expected output size (for validation)
+         * @return Decompressed data
+         * @throws std::runtime_error if data is corrupted
+         */
+        inline std::vector<uint8_t> rle_decompress(const std::vector<uint8_t> &data, size_t expected_size = 0)
+        {
+            std::vector<uint8_t> decompressed;
+            if (expected_size > 0)
+                decompressed.reserve(expected_size);
+
+            constexpr uint8_t ESCAPE = 0xFF;
+
+            size_t i = 0;
+            while (i < data.size())
+            {
+                uint8_t byte = data[i++];
+
+                if (byte == ESCAPE)
+                {
+                    // RLE sequence
+                    if (i + 1 >= data.size())
+                    {
+                        throw std::runtime_error("RLE: Truncated escape sequence");
+                    }
+                    uint8_t count_byte = data[i++];
+                    uint8_t value = data[i++];
+
+                    size_t count = (count_byte == 0) ? 256 : count_byte;
+                    for (size_t j = 0; j < count; ++j)
+                    {
+                        decompressed.push_back(value);
+                    }
+                }
+                else
+                {
+                    // Literal byte
+                    decompressed.push_back(byte);
+                }
+            }
+
+            if (expected_size > 0 && decompressed.size() != expected_size)
+            {
+                throw std::runtime_error("RLE: Size mismatch after decompression");
+            }
+
+            return decompressed;
+        }
+
+        /**
+         * @brief Calculate compression ratio
+         * @param original_size Size before compression
+         * @param compressed_size Size after compression
+         * @return Compression ratio (e.g., 0.5 means compressed to 50% of original)
+         */
+        inline double compression_ratio(size_t original_size, size_t compressed_size)
+        {
+            if (original_size == 0)
+                return 1.0;
+            return static_cast<double>(compressed_size) / static_cast<double>(original_size);
+        }
+
         // ==================== File Header Structure ====================
 
         /**
-         * @brief Header structure for Pythonic media files
+         * @brief Compression flags for Pythonic media files
+         */
+        enum class Compression : uint8_t
+        {
+            none = 0, // No compression (version 1 compatible)
+            rle = 1   // Run-Length Encoding
+        };
+
+        /**
+         * @brief Header structure for Pythonic media files (v2)
          *
          * Layout (total 64 bytes):
          *   0-7:   Magic bytes (8 bytes)
-         *   8:     Format version (1 byte)
+         *   8:     Format version (1 byte) - v2 adds compression support
          *   9:     Original extension length (1 byte)
          *   10-25: Original extension, null-padded (16 bytes)
          *   26-29: Random salt for encryption (4 bytes)
-         *   30-33: Reserved (4 bytes)
+         *   30:    Compression type (1 byte) - 0=none, 1=RLE
+         *   31-33: Reserved (3 bytes)
          *   34-41: Original file size (8 bytes, little-endian)
-         *   42-63: Reserved for future use (22 bytes, zero-filled)
+         *   42-49: Compressed size (8 bytes, little-endian) - 0 if uncompressed
+         *   50-63: Reserved for future use (14 bytes, zero-filled)
          */
 #pragma pack(push, 1)
         struct PythonicMediaHeader
         {
-            uint8_t magic[8];       // 0-7   (8 bytes)
-            uint8_t version;        // 8     (1 byte)
-            uint8_t ext_length;     // 9     (1 byte)
-            char original_ext[16];  // 10-25 (16 bytes)
-            uint32_t salt;          // 26-29 (4 bytes)
-            uint32_t reserved1;     // 30-33 (4 bytes)
-            uint64_t original_size; // 34-41 (8 bytes)
-            uint8_t reserved[22];   // 42-63 (22 bytes)
+            uint8_t magic[8];          // 0-7   (8 bytes)
+            uint8_t version;           // 8     (1 byte)
+            uint8_t ext_length;        // 9     (1 byte)
+            char original_ext[16];     // 10-25 (16 bytes)
+            uint32_t salt;             // 26-29 (4 bytes)
+            uint8_t compression;       // 30    (1 byte) - Compression enum
+            uint8_t reserved_flags[3]; // 31-33 (3 bytes)
+            uint64_t original_size;    // 34-41 (8 bytes)
+            uint64_t compressed_size;  // 42-49 (8 bytes) - 0 if uncompressed
+            uint8_t reserved[14];      // 50-63 (14 bytes)
 
             PythonicMediaHeader()
             {
                 std::memset(this, 0, sizeof(*this));
                 version = FORMAT_VERSION;
+                compression = static_cast<uint8_t>(Compression::none);
             }
 
             void set_magic_image()
@@ -310,17 +463,20 @@ namespace pythonic
         // ==================== Conversion Functions ====================
 
         /**
-         * @brief Convert a media file to Pythonic format
+         * @brief Convert a media file to Pythonic format with optional RLE compression
          *
-         * Reads the source file, encrypts it, and writes to a .pi or .pv file.
+         * Reads the source file, optionally compresses it with RLE, encrypts it,
+         * and writes to a .pi or .pv file.
          *
          * @param filepath Path to the source media file
          * @param type Force type (auto_detect by default)
+         * @param compress Enable RLE compression (default: true)
          * @return Path to the created Pythonic file, or empty string on failure
          *
          * @throws std::runtime_error if file cannot be read or type cannot be determined
          */
-        inline std::string convert(const std::string &filepath, Type type = Type::auto_detect)
+        inline std::string convert(const std::string &filepath, Type type = Type::auto_detect,
+                                   bool compress = true)
         {
             // Read source file
             std::ifstream infile(filepath, std::ios::binary | std::ios::ate);
@@ -375,8 +531,34 @@ namespace pythonic
             header.original_size = static_cast<uint64_t>(file_size);
             header.salt = generate_salt();
 
+            // Apply RLE compression if enabled
+            std::vector<uint8_t> output_data;
+            if (compress)
+            {
+                output_data = rle_compress(data);
+                // Only use compression if it actually reduces size
+                if (output_data.size() < data.size())
+                {
+                    header.compression = static_cast<uint8_t>(Compression::rle);
+                    header.compressed_size = output_data.size();
+                }
+                else
+                {
+                    // Compression didn't help, use original data
+                    output_data = std::move(data);
+                    header.compression = static_cast<uint8_t>(Compression::none);
+                    header.compressed_size = 0;
+                }
+            }
+            else
+            {
+                output_data = std::move(data);
+                header.compression = static_cast<uint8_t>(Compression::none);
+                header.compressed_size = 0;
+            }
+
             // Encrypt data
-            xor_transform(data, header.salt);
+            xor_transform(output_data, header.salt);
 
             // Create output filename
             std::string output_path = get_basename(filepath) + (is_image ? ".pi" : ".pv");
@@ -391,8 +573,8 @@ namespace pythonic
             // Write header
             outfile.write(reinterpret_cast<const char *>(&header), sizeof(header));
 
-            // Write encrypted data
-            outfile.write(reinterpret_cast<const char *>(data.data()), data.size());
+            // Write encrypted (and possibly compressed) data
+            outfile.write(reinterpret_cast<const char *>(output_data.data()), output_data.size());
             outfile.close();
 
             return output_path;
@@ -401,7 +583,8 @@ namespace pythonic
         /**
          * @brief Revert a Pythonic format file back to original format
          *
-         * Reads the .pi or .pv file, decrypts it, and writes to the original format.
+         * Reads the .pi or .pv file, decrypts it, decompresses if needed,
+         * and writes to the original format.
          *
          * @param filepath Path to the Pythonic file (.pi or .pv)
          * @return Path to the restored file, or empty string on failure
@@ -440,9 +623,23 @@ namespace pythonic
 
             // Read encrypted data
             std::streamsize data_size = file_size - sizeof(PythonicMediaHeader);
-            if (data_size != static_cast<std::streamsize>(header.original_size))
+
+            // Validate data size based on compression
+            bool is_compressed = (header.compression == static_cast<uint8_t>(Compression::rle));
+            if (is_compressed)
             {
-                throw std::runtime_error("Data size mismatch in: " + filepath);
+                if (header.compressed_size > 0 &&
+                    data_size != static_cast<std::streamsize>(header.compressed_size))
+                {
+                    throw std::runtime_error("Compressed data size mismatch in: " + filepath);
+                }
+            }
+            else
+            {
+                if (data_size != static_cast<std::streamsize>(header.original_size))
+                {
+                    throw std::runtime_error("Data size mismatch in: " + filepath);
+                }
             }
 
             std::vector<uint8_t> data(data_size);
@@ -454,6 +651,12 @@ namespace pythonic
 
             // Decrypt data
             xor_untransform(data, header.salt);
+
+            // Decompress if needed
+            if (is_compressed)
+            {
+                data = rle_decompress(data, header.original_size);
+            }
 
             // Create output filename
             std::string original_ext = header.get_extension();
@@ -475,11 +678,12 @@ namespace pythonic
         /**
          * @brief Read a Pythonic format file into memory (for internal use)
          *
-         * Decrypts and returns the original data without writing to disk.
+         * Decrypts, decompresses if needed, and returns the original data
+         * without writing to disk.
          *
          * @param filepath Path to the Pythonic file (.pi or .pv)
          * @param[out] original_ext Returns the original file extension
-         * @return Decrypted file data
+         * @return Decrypted (and decompressed) file data
          *
          * @throws std::runtime_error if file is invalid
          */
@@ -519,6 +723,14 @@ namespace pythonic
             infile.close();
 
             xor_untransform(data, header.salt);
+
+            // Decompress if needed
+            bool is_compressed = (header.compression == static_cast<uint8_t>(Compression::rle));
+            if (is_compressed)
+            {
+                data = rle_decompress(data, header.original_size);
+            }
+
             original_ext = header.get_extension();
 
             return data;
@@ -556,7 +768,40 @@ namespace pythonic
         }
 
         /**
-         * @brief Get information about a Pythonic file
+         * @brief Get detailed information about a Pythonic file
+         *
+         * @param filepath Path to the Pythonic file
+         * @return Tuple of (is_image, original_extension, original_size, compressed_size, compression_type)
+         */
+        inline std::tuple<bool, std::string, uint64_t, uint64_t, Compression> get_info_detailed(const std::string &filepath)
+        {
+            std::ifstream infile(filepath, std::ios::binary);
+            if (!infile)
+            {
+                throw std::runtime_error("Cannot open file: " + filepath);
+            }
+
+            PythonicMediaHeader header;
+            if (!infile.read(reinterpret_cast<char *>(&header), sizeof(header)))
+            {
+                throw std::runtime_error("Cannot read header: " + filepath);
+            }
+
+            if (!header.is_valid())
+            {
+                throw std::runtime_error("Invalid format: " + filepath);
+            }
+
+            return {
+                header.is_image(),
+                header.get_extension(),
+                header.original_size,
+                header.compressed_size,
+                static_cast<Compression>(header.compression)};
+        }
+
+        /**
+         * @brief Get information about a Pythonic file (legacy API)
          *
          * @param filepath Path to the Pythonic file
          * @return Tuple of (is_image, original_extension, original_size)

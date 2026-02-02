@@ -9,6 +9,9 @@
 #include "pythonicError.hpp"
 #include "pythonicFastPath.hpp"
 #include "pythonicDraw.hpp"
+#include "pythonicMedia.hpp"
+#include "pythonicLiveDraw.hpp"
+#include "pythonicPlot.hpp"
 #include "graph_viewer.hpp" // Always include - has internal #ifdef guards
 
 namespace Pythonic
@@ -25,6 +28,8 @@ namespace Pythonic
     using namespace pythonic::error;
     using namespace pythonic::views;
     using namespace pythonic::draw;
+    using namespace pythonic::media;
+    using namespace pythonic::plot;
     using namespace pythonic::viewer; // Graph viewer (enabled via PYTHONIC_ENABLE_GRAPH_VIEWER)
 
 }

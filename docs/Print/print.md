@@ -462,6 +462,72 @@ int main() {
 
 ---
 
+## Print Text on Plots (`Figure::print`)
+
+The plotting library includes a `print()` method for adding text annotations directly onto graphs. This is different from the global `print()` function—it's a method on `Figure` objects.
+
+### Basic Usage
+
+```cpp
+#include "pythonic/pythonicPlot.hpp"
+using namespace pythonic::plot;
+
+Figure fig(80, 24);
+
+// Plot some data
+fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
+
+// Add text at data coordinates
+fig.print("Maximum", 1.57, 1.0, "yellow");  // Text at (π/2, 1)
+fig.print("Minimum", -1.57, -1.0, "red");   // Text at (-π/2, -1)
+
+std::cout << fig.render();
+```
+
+### Parameters
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `text` | `std::string` | The text to display |
+| `x` | `double` | X position in **data coordinates** |
+| `y` | `double` | Y position in **data coordinates** |
+| `color` | `std::string` or `RGBA` | Text color (e.g., `"cyan"`, `"red"`) |
+
+### Pixel Font
+
+Text is rendered using a compact 3×5 pixel Braille font:
+
+- **Numbers**: 0-9
+- **Letters**: A-Z, a-z
+- **Symbols**: . , : - + = ( ) * / _
+
+### Example: Annotated Graph
+
+```cpp
+Figure fig(80, 24);
+fig.title("Annotated Sine Wave");
+
+fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
+fig.print("Peak", PI/2, 1.0, "green");
+fig.print("Zero", 0, 0, "yellow");
+fig.print("Trough", -PI/2, -1.0, "red");
+
+std::cout << fig.render();
+```
+
+### Method Chaining
+
+```cpp
+fig.title("My Plot")
+   .plot([](double x) { return x*x; }, -3, 3, "cyan", "x²")
+   .print("Vertex", 0, 0, "yellow")
+   .print("Rising", 2, 4, "green");
+```
+
+See also: [Plot Documentation](../Plot/plot.md)
+
+---
+
 ## Performance Considerations
 
 While `print` and `pprint` are convenient for debugging and output, they may not be suitable for performance-sensitive logging. For large `var` objects or containers, consider serializing only the necessary parts to minimize overhead.
