@@ -66,6 +66,12 @@ namespace pythonic
                 render();
             }
 
+            // Force a render update (useful for indeterminate progress animation)
+            void tick()
+            {
+                render();
+            }
+
             void finish()
             {
                 _current_frame = _total_frames;
@@ -1128,15 +1134,17 @@ namespace pythonic
                     progress.update(0);
 
                     // Extract frames from video at the target fps
-                    // We need to do this synchronously but show that something is happening
                     std::string extract_cmd = "ffmpeg -y -i \"" + actual_path + "\" -vf \"fps=" + fps_str + "\" \"" +
                                               temp_dir + "/frame_%05d.png\" 2>/dev/null";
 
-                    // Start extraction - this will block but progress bar shows activity
-                    std::thread update_thread([&progress, &temp_dir, estimated_frames]()
+                    // Atomic flag to signal extraction done
+                    std::atomic<bool> extraction_done{false};
+
+                    // Start progress update thread - this monitors frame extraction
+                    std::thread update_thread([&progress, &temp_dir, estimated_frames, &extraction_done]()
                                               {
                         // Periodically check extracted frame count and update progress
-                        while (true)
+                        while (!extraction_done.load())
                         {
                             size_t current = count_frames(temp_dir, "frame_");
                             if (current > 0)
@@ -1145,21 +1153,19 @@ namespace pythonic
                                 progress.set_total(estimated_frames > 0 ? estimated_frames : current * 2);
                                 progress.update(current);
                             }
-                            std::this_thread::sleep_for(std::chrono::milliseconds(250));
-                            
-                            // Check if extraction might be done
-                            if (estimated_frames > 0 && current >= estimated_frames * 0.95)
-                                break;
-                            if (current > 1000 && count_frames(temp_dir, "frame_") == current)
+                            else
                             {
-                                // Frame count not changing, might be done
-                                std::this_thread::sleep_for(std::chrono::milliseconds(500));
-                                if (count_frames(temp_dir, "frame_") == current)
-                                    break;
+                                // Still extracting first frames, render the spinner
+                                progress.tick();
                             }
+                            std::this_thread::sleep_for(std::chrono::milliseconds(250));
                         } });
 
+                    // Run ffmpeg extraction (this blocks until done)
                     int result = std::system(extract_cmd.c_str());
+
+                    // Signal update thread to stop and wait for it
+                    extraction_done.store(true);
                     update_thread.join();
 
                     if (is_temp_video)
