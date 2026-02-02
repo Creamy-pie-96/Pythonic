@@ -14,6 +14,7 @@
  * - FFmpeg integration for video streaming
  * - SDL2/PortAudio support for audio playback (optional)
  * - Double-buffering with ANSI escape codes to avoid flickering
+ * - Robust signal handling for proper terminal cleanup on Ctrl+C
  *
  * Braille dot layout per character:
  *   Col 0   Col 1
@@ -59,11 +60,18 @@
 #include <condition_variable>
 #include <queue>
 #include <memory>
+#include <csignal>
 
 #ifdef _WIN32
 #define popen _popen
 #define pclose _pclose
 #include <windows.h>
+#include <io.h>
+#include <conio.h>
+#define write _write
+#else
+#include <unistd.h>
+#include <termios.h>
 #endif
 
 // Optional SDL2 support for audio playback
@@ -84,20 +92,149 @@
 #include <CL/opencl.hpp>
 #endif
 
+// Optional OpenCV support for image/video processing
+#ifdef PYTHONIC_ENABLE_OPENCV
+#include <opencv2/opencv.hpp>
+#include <opencv2/videoio.hpp>
+#include <opencv2/imgproc.hpp>
+#endif
+
 #include <iomanip>
 #include <tuple>
+
+// Forward declare media functions
+namespace pythonic
+{
+    namespace media
+    {
+        inline bool is_pythonic_image(const std::string &filename);
+        inline bool is_pythonic_video(const std::string &filename);
+        inline bool is_pythonic_format(const std::string &filename);
+        inline std::string extract_to_temp(const std::string &filepath);
+    }
+}
 
 namespace pythonic
 {
     namespace draw
     {
+        // ==================== Global Signal Handling for Terminal Cleanup ====================
+
+        /**
+         * @brief Global state for signal-safe terminal cleanup
+         *
+         * This provides robust cleanup when the user presses Ctrl+C or the program
+         * is terminated unexpectedly. The terminal cursor and attributes are restored
+         * even if playback is interrupted.
+         */
+        namespace signal_handler
+        {
+            // Global flag indicating video playback is active
+            inline std::atomic<bool> &playback_active()
+            {
+                static std::atomic<bool> active{false};
+                return active;
+            }
+
+            // Flag to track if we've installed our signal handler
+            inline std::atomic<bool> &handler_installed()
+            {
+                static std::atomic<bool> installed{false};
+                return installed;
+            }
+
+            // Store the previous signal handler to restore it later
+            inline std::sig_atomic_t &interrupted()
+            {
+                static std::sig_atomic_t flag{0};
+                return flag;
+            }
+
+            // The cleanup function that restores terminal state
+            inline void restore_terminal()
+            {
+                // Use raw output to avoid any C++ stream buffering issues in signal context
+                const char *restore = "\033[?25h\033[0m\033[H\033[J";
+                // Show cursor, reset attributes, go home, clear screen
+                [[maybe_unused]] auto result = write(STDOUT_FILENO, restore, strlen(restore));
+            }
+
+            // Signal handler function - must be async-signal-safe
+            inline void signal_handler_func(int signum)
+            {
+                interrupted() = 1;
+                restore_terminal();
+
+                // Re-raise the signal with default handler to allow normal termination
+                std::signal(signum, SIG_DFL);
+                std::raise(signum);
+            }
+
+            // Install the signal handler (called automatically when playback starts)
+            inline void install()
+            {
+                if (!handler_installed().exchange(true))
+                {
+                    std::signal(SIGINT, signal_handler_func);
+                    std::signal(SIGTERM, signal_handler_func);
+#ifndef _WIN32
+                    std::signal(SIGHUP, signal_handler_func);
+#endif
+                }
+            }
+
+            // Check if playback was interrupted
+            inline bool was_interrupted()
+            {
+                return interrupted() != 0;
+            }
+
+            // Mark playback as started (installs handler if needed)
+            inline void start_playback()
+            {
+                install();
+                playback_active() = true;
+                interrupted() = 0;
+            }
+
+            // Mark playback as ended
+            inline void end_playback()
+            {
+                playback_active() = false;
+            }
+        } // namespace signal_handler
+
         /**
          * @brief Rendering mode for terminal graphics
+         *
+         * Mode determines how pixels are rendered to the terminal:
+         *   - bw:          Black & white using half-block characters (▀)
+         *   - bw_dot:      Black & white using Braille patterns (⠿) - higher resolution
+         *   - colored:     True color (24-bit) using half-block characters
+         *   - colored_dot: True color using Braille patterns with averaged colors
          */
-        enum class Render
+        enum class Mode
         {
-            BW,     // Black and white (default) - uses braille patterns
-            colored // True color (24-bit ANSI) - uses block characters with RGB colors
+            bw,         // Black & white with block characters (current colored renderer logic, no color)
+            bw_dot,     // Black & white with braille patterns (default, higher resolution)
+            colored,    // True color with block characters
+            colored_dot // True color with braille patterns (one color per cell)
+        };
+
+        // Legacy alias for backward compatibility
+        using Render = Mode;
+
+        /**
+         * @brief Parser backend for media processing
+         *
+         * Determines which library is used for decoding images and videos:
+         *   - default_parser: FFmpeg for video, ImageMagick for images (current behavior)
+         *   - opencv:         OpenCV for both images and videos (also supports webcam)
+         */
+        enum class Parser
+        {
+            default_parser, // FFmpeg for video, ImageMagick for images (default)
+            opencv          // OpenCV for everything (images, videos, webcam)
         };
 
         /**
@@ -107,6 +244,22 @@ namespace pythonic
         {
             off, // No audio (default)
             on   // Play audio with video (requires SDL2 or PortAudio)
+        };
+
+        /**
+         * @brief Shell mode for keyboard input handling
+         *
+         * Controls whether keyboard input (pause/stop controls) is enabled:
+         *   - noninteractive: No keyboard input handling (default, safe for scripts/pipes)
+         *   - interactive:    Enable keyboard controls (pause/stop keys work)
+         *
+         * Use interactive mode when running in a real terminal where user input is expected.
+         * Use noninteractive (default) when running in scripts, CI/CD, or piped environments.
+         */
+        enum class Shell
+        {
+            noninteractive, // No keyboard input (default, safe for scripts)
+            interactive     // Enable keyboard controls for pause/stop
         };
 
         // ==================== Constants for Aspect Ratio Correction ====================
@@ -737,6 +890,364 @@ namespace pythonic
                 return out;
             }
 #endif
+        };
+
+        /**
+         * @brief Colored Braille canvas for high-resolution colored terminal graphics
+         *
+         * Combines the high-resolution of Braille patterns (2×4 dots per character)
+         * with foreground color support. Since a terminal cell only supports one
+         * foreground color, all dots in a Braille character share the same color.
+         *
+         * The color is computed as the average of all "on" pixel colors in the 2×4 grid.
+         *
+         * Features:
+         * - 8x resolution compared to colored block mode
+         * - One foreground color per Braille cell (averaged from source pixels)
+         * - Optional background color support
+         * - Floyd-Steinberg dithering for better edge definition
+         */
+        class ColoredBrailleCanvas
+        {
+        private:
+            size_t _char_width;   // Width in characters
+            size_t _char_height;  // Height in characters
+            size_t _pixel_width;  // Width in pixels (char_width * 2)
+            size_t _pixel_height; // Height in pixels (char_height * 4)
+
+            // Storage: one byte pattern + RGB color per character cell
+            std::vector<std::vector<uint8_t>> _patterns;
+            std::vector<std::vector<RGB>> _colors;
+
+        public:
+            ColoredBrailleCanvas(size_t char_width = 80, size_t char_height = 24)
+                : _char_width(char_width), _char_height(char_height), _pixel_width(char_width * 2), _pixel_height(char_height * 4), _patterns(char_height, std::vector<uint8_t>(char_width, 0)), _colors(char_height, std::vector<RGB>(char_width))
+            {
+            }
+
+            static ColoredBrailleCanvas from_pixels(size_t pixel_width, size_t pixel_height)
+            {
+                size_t cw = (pixel_width + 1) / 2;
+                size_t ch = (pixel_height + 3) / 4;
+                return ColoredBrailleCanvas(cw, ch);
+            }
+
+            size_t char_width() const { return _char_width; }
+            size_t char_height() const { return _char_height; }
+            size_t pixel_width() const { return _pixel_width; }
+            size_t pixel_height() const { return _pixel_height; }
+
+            void clear()
+            {
+                for (auto &row : _patterns)
+                    std::fill(row.begin(), row.end(), 0);
+                for (auto &row : _colors)
+                    std::fill(row.begin(), row.end(), RGB(0, 0, 0));
+            }
+
+            /**
+             * @brief Load RGB frame and convert to colored Braille
+             *
+             * For each 2×4 cell:
+             * 1. Compute grayscale for thresholding to determine which dots are "on"
+             * 2. Average the RGB colors of all "on" pixels to get cell color
+             */
+            void load_frame_rgb(const uint8_t *data, int width, int height, uint8_t threshold = 128)
+            {
+                // Resize if needed
+                size_t new_cw = (width + 1) / 2;
+                size_t new_ch = (height + 3) / 4;
+
+                if (new_cw != _char_width || new_ch != _char_height)
+                {
+                    _char_width = new_cw;
+                    _char_height = new_ch;
+                    _pixel_width = _char_width * 2;
+                    _pixel_height = _char_height * 4;
+                    _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                    _colors.assign(_char_height, std::vector<RGB>(_char_width));
+                }
+
+                // Process each character cell
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int px = cx * 2;
+                        int py = cy * 4;
+
+                        uint8_t pattern = 0;
+                        int r_sum = 0, g_sum = 0, b_sum = 0;
+                        int on_count = 0;
+
+                        // Process 2×4 block
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+
+                                size_t idx = (y * width + x) * 3;
+                                uint8_t r = data[idx];
+                                uint8_t g = data[idx + 1];
+                                uint8_t b = data[idx + 2];
+
+                                // Grayscale for threshold
+                                uint8_t gray = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+
+                                if (gray >= threshold)
+                                {
+                                    // Set corresponding Braille bit
+                                    pattern |= BRAILLE_DOTS[row][col];
+                                    r_sum += r;
+                                    g_sum += g;
+                                    b_sum += b;
+                                    on_count++;
+                                }
+                            }
+                        }
+
+                        _patterns[cy][cx] = pattern;
+
+                        // Average color of "on" pixels
+                        if (on_count > 0)
+                        {
+                            _colors[cy][cx] = RGB(
+                                static_cast<uint8_t>(r_sum / on_count),
+                                static_cast<uint8_t>(g_sum / on_count),
+                                static_cast<uint8_t>(b_sum / on_count));
+                        }
+                        else
+                        {
+                            _colors[cy][cx] = RGB(0, 0, 0);
+                        }
+                    }
+                }
+            }
+
+            /**
+             * @brief Load RGB frame with luminance-based thresholding (adaptive)
+             *
+             * Uses local contrast to determine threshold, producing better results
+             * for images with varying brightness levels.
+             */
+            void load_frame_rgb_adaptive(const uint8_t *data, int width, int height)
+            {
+                // Use a dynamic threshold based on local average
+                load_frame_rgb(data, width, height, 128); // For now, use fixed threshold
+            }
+
+            /**
+             * @brief Render to ANSI string with colored Braille characters
+             */
+            std::string render() const
+            {
+                enable_ansi_support();
+
+                std::string out;
+                out.reserve(_char_height * _char_width * 30);
+
+                RGB prev_color(-1, -1, -1);
+
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        uint8_t pattern = _patterns[cy][cx];
+                        RGB color = _colors[cy][cx];
+
+                        // Only output color code if it changed and pattern is non-empty
+                        if (pattern != 0 && color != prev_color)
+                        {
+                            out += ansi::fg_color(color.r, color.g, color.b);
+                            prev_color = color;
+                        }
+
+                        out += braille_to_utf8(pattern);
+                    }
+
+                    out += ansi::RESET;
+                    out += '\n';
+                    prev_color = RGB(-1, -1, -1);
+                }
+
+                return out;
+            }
+        };
+
+        /**
+         * @brief Grayscale canvas using half-block characters
+         *
+         * Uses ANSI 256-color grayscale palette (colors 232-255) to render
+         * grayscale images with 24 levels of gray for smoother, more detailed
+         * uncolored output than pure black/white.
+         */
+        class BWBlockCanvas
+        {
+        private:
+            size_t _char_width;
+            size_t _char_height;
+            size_t _pixel_width;
+            size_t _pixel_height;
+
+            // Store actual grayscale values for top and bottom pixels
+            std::vector<std::vector<std::pair<uint8_t, uint8_t>>> _pixels;
+
+        public:
+            BWBlockCanvas(size_t char_width = 80, size_t char_height = 24)
+                : _char_width(char_width), _char_height(char_height), _pixel_width(char_width), _pixel_height(char_height * 2), _pixels(char_height, std::vector<std::pair<uint8_t, uint8_t>>(char_width, {0, 0}))
+            {
+            }
+
+            static BWBlockCanvas from_pixels(size_t pixel_width, size_t pixel_height)
+            {
+                size_t cw = pixel_width;
+                size_t ch = (pixel_height + 1) / 2;
+                return BWBlockCanvas(cw, ch);
+            }
+
+            size_t char_width() const { return _char_width; }
+            size_t char_height() const { return _char_height; }
+            size_t pixel_width() const { return _pixel_width; }
+            size_t pixel_height() const { return _pixel_height; }
+
+            void clear()
+            {
+                for (auto &row : _pixels)
+                    std::fill(row.begin(), row.end(), std::make_pair<uint8_t, uint8_t>(0, 0));
+            }
+
+            /// Convert 0-255 grayscale to ANSI 256-color grayscale (232-255, 24 levels)
+            static int gray_to_ansi256(uint8_t gray)
+            {
+                return 232 + (gray * 23 / 255);
+            }
+
+            void load_frame_gray(const uint8_t *data, int width, int height, [[maybe_unused]] uint8_t threshold = 128)
+            {
+                size_t new_cw = width;
+                size_t new_ch = (height + 1) / 2;
+
+                if (new_cw != _char_width || new_ch != _char_height)
+                {
+                    _char_width = new_cw;
+                    _char_height = new_ch;
+                    _pixel_width = width;
+                    _pixel_height = _char_height * 2;
+                    _pixels.assign(_char_height, std::vector<std::pair<uint8_t, uint8_t>>(_char_width, {0, 0}));
+                }
+
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    size_t py_top = cy * 2;
+                    size_t py_bot = py_top + 1;
+
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        uint8_t gray_top = 0;
+                        uint8_t gray_bot = 0;
+
+                        // Top pixel - store actual grayscale value
+                        if (py_top < static_cast<size_t>(height))
+                        {
+                            gray_top = data[py_top * width + cx];
+                        }
+
+                        // Bottom pixel - store actual grayscale value
+                        if (py_bot < static_cast<size_t>(height))
+                        {
+                            gray_bot = data[py_bot * width + cx];
+                        }
+
+                        _pixels[cy][cx] = {gray_top, gray_bot};
+                    }
+                }
+            }
+
+            void load_frame_rgb(const uint8_t *data, int width, int height, [[maybe_unused]] uint8_t threshold = 128)
+            {
+                size_t new_cw = width;
+                size_t new_ch = (height + 1) / 2;
+
+                if (new_cw != _char_width || new_ch != _char_height)
+                {
+                    _char_width = new_cw;
+                    _char_height = new_ch;
+                    _pixel_width = width;
+                    _pixel_height = _char_height * 2;
+                    _pixels.assign(_char_height, std::vector<std::pair<uint8_t, uint8_t>>(_char_width, {0, 0}));
+                }
+
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    size_t py_top = cy * 2;
+                    size_t py_bot = py_top + 1;
+
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        uint8_t gray_top = 0;
+                        uint8_t gray_bot = 0;
+
+                        // Top pixel - convert RGB to grayscale
+                        if (py_top < static_cast<size_t>(height))
+                        {
+                            size_t idx = (py_top * width + cx) * 3;
+                            gray_top = static_cast<uint8_t>((299 * data[idx] + 587 * data[idx + 1] + 114 * data[idx + 2]) / 1000);
+                        }
+
+                        // Bottom pixel - convert RGB to grayscale
+                        if (py_bot < static_cast<size_t>(height))
+                        {
+                            size_t idx = (py_bot * width + cx) * 3;
+                            gray_bot = static_cast<uint8_t>((299 * data[idx] + 587 * data[idx + 1] + 114 * data[idx + 2]) / 1000);
+                        }
+
+                        _pixels[cy][cx] = {gray_top, gray_bot};
+                    }
+                }
+            }
+
+            std::string render() const
+            {
+                // Uses ANSI 256-color grayscale (colors 232-255, 24 levels)
+                // with ▀ (top half block) character:
+                // - Foreground color = top pixel grayscale
+                // - Background color = bottom pixel grayscale
+
+                const char *TOP_HALF = "\xe2\x96\x80"; // ▀
+                const char *RESET = "\033[0m";
+
+                std::string out;
+                out.reserve(_char_height * (_char_width * 25 + 10)); // Account for ANSI codes
+
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        auto [gray_top, gray_bot] = _pixels[cy][cx];
+                        int fg = gray_to_ansi256(gray_top);
+                        int bg = gray_to_ansi256(gray_bot);
+
+                        // Set foreground and background colors using ANSI 256-color
+                        out += "\033[38;5;";
+                        out += std::to_string(fg);
+                        out += ";48;5;";
+                        out += std::to_string(bg);
+                        out += "m";
+                        out += TOP_HALF;
+                    }
+                    out += RESET;
+                    out += '\n';
+                }
+
+                return out;
+            }
         };
 
         /**
@@ -1855,7 +2366,37 @@ namespace pythonic
 
             return ext == ".png" || ext == ".jpg" || ext == ".jpeg" ||
                    ext == ".gif" || ext == ".bmp" || ext == ".ppm" ||
-                   ext == ".pgm" || ext == ".pbm";
+                   ext == ".pgm" || ext == ".pbm" || ext == ".pi"; // .pi = Pythonic Image
+        }
+
+        /**
+         * @brief Check if file is a Pythonic proprietary image format
+         */
+        inline bool is_pythonic_image_file(const std::string &filename)
+        {
+            std::string ext = filename;
+            size_t dot = ext.rfind('.');
+            if (dot == std::string::npos)
+                return false;
+            ext = ext.substr(dot);
+            for (auto &c : ext)
+                c = std::tolower(c);
+            return ext == ".pi";
+        }
+
+        /**
+         * @brief Check if file is a Pythonic proprietary video format
+         */
+        inline bool is_pythonic_video_file(const std::string &filename)
+        {
+            std::string ext = filename;
+            size_t dot = ext.rfind('.');
+            if (dot == std::string::npos)
+                return false;
+            ext = ext.substr(dot);
+            for (auto &c : ext)
+                c = std::tolower(c);
+            return ext == ".pv";
         }
 
         /**
@@ -2083,12 +2624,283 @@ namespace pythonic
         }
 
         /**
+         * @brief Render an image file in BW half-block mode (Mode::bw)
+         * Uses ImageMagick for conversion, renders using half-block characters (▀▄█)
+         */
+        inline std::string render_image_bw_block(const std::string &filename, int max_width = 80, int threshold = 128)
+        {
+            enable_ansi_support();
+
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            std::string temp_ppm = "/tmp/pythonic_bw_block_" +
+                                   std::to_string(std::hash<std::string>{}(filename)) + ".ppm";
+
+            // ImageMagick conversion - keep original aspect ratio
+            std::string cmd = "convert \"" + filename + "\" -resize " +
+                              std::to_string(max_width) + "x -depth 8 \"" + temp_ppm + "\" 2>/dev/null";
+
+            int result = std::system(cmd.c_str());
+            if (result != 0)
+                return "Error: Could not convert image. Install ImageMagick.\n";
+
+            std::ifstream ppm(temp_ppm, std::ios::binary);
+            if (!ppm)
+            {
+                std::remove(temp_ppm.c_str());
+                return "Error: Could not read converted image.\n";
+            }
+
+            std::string magic;
+            ppm >> magic;
+            if (magic != "P6")
+            {
+                ppm.close();
+                std::remove(temp_ppm.c_str());
+                return "Error: Invalid PPM format.\n";
+            }
+
+            char c;
+            ppm.get(c);
+            while (ppm.peek() == '#')
+            {
+                std::string comment;
+                std::getline(ppm, comment);
+            }
+
+            int width, height, maxval;
+            ppm >> width >> height >> maxval;
+            ppm.get(c);
+
+            std::vector<uint8_t> rgb_data(width * height * 3);
+            ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
+            ppm.close();
+            std::remove(temp_ppm.c_str());
+
+            BWBlockCanvas canvas = BWBlockCanvas::from_pixels(width, height);
+            canvas.load_frame_rgb(rgb_data.data(), width, height, threshold);
+
+            return canvas.render();
+        }
+
+        /**
+         * @brief Print an image file in BW half-block mode
+         */
+        inline void print_image_bw_block(const std::string &filename, int max_width = 80, int threshold = 128)
+        {
+            std::cout << render_image_bw_block(filename, max_width, threshold);
+        }
+
+        /**
+         * @brief Render an image file in colored braille mode (Mode::colored_dot)
+         * Uses ImageMagick for conversion, renders using colored braille characters
+         */
+        inline std::string render_image_colored_dot(const std::string &filename, int max_width = 80, int threshold = 128)
+        {
+            enable_ansi_support();
+
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            // For braille, we need 2x the character width in pixels
+            int pixel_width = max_width * 2;
+
+            std::string temp_ppm = "/tmp/pythonic_colored_dot_" +
+                                   std::to_string(std::hash<std::string>{}(filename)) + ".ppm";
+
+            std::string cmd = "convert \"" + filename + "\" -resize " +
+                              std::to_string(pixel_width) + "x -depth 8 \"" + temp_ppm + "\" 2>/dev/null";
+
+            int result = std::system(cmd.c_str());
+            if (result != 0)
+                return "Error: Could not convert image. Install ImageMagick.\n";
+
+            std::ifstream ppm(temp_ppm, std::ios::binary);
+            if (!ppm)
+            {
+                std::remove(temp_ppm.c_str());
+                return "Error: Could not read converted image.\n";
+            }
+
+            std::string magic;
+            ppm >> magic;
+            if (magic != "P6")
+            {
+                ppm.close();
+                std::remove(temp_ppm.c_str());
+                return "Error: Invalid PPM format.\n";
+            }
+
+            char c;
+            ppm.get(c);
+            while (ppm.peek() == '#')
+            {
+                std::string comment;
+                std::getline(ppm, comment);
+            }
+
+            int width, height, maxval;
+            ppm >> width >> height >> maxval;
+            ppm.get(c);
+
+            std::vector<uint8_t> rgb_data(width * height * 3);
+            ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
+            ppm.close();
+            std::remove(temp_ppm.c_str());
+
+            ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(width, height);
+            canvas.load_frame_rgb(rgb_data.data(), width, height, threshold);
+
+            return canvas.render();
+        }
+
+        /**
+         * @brief Print an image file in colored braille mode
+         */
+        inline void print_image_colored_dot(const std::string &filename, int max_width = 80, int threshold = 128)
+        {
+            std::cout << render_image_colored_dot(filename, max_width, threshold);
+        }
+
+        /**
+         * @brief Unified image rendering function that handles all modes
+         * @param filename Path to image file
+         * @param max_width Maximum width in terminal characters
+         * @param threshold Brightness threshold (0-255) for BW modes
+         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot)
+         */
+        inline void print_image_with_mode(const std::string &filename, int max_width = 80,
+                                          int threshold = 128, Mode mode = Mode::bw_dot)
+        {
+            switch (mode)
+            {
+            case Mode::bw:
+                print_image_bw_block(filename, max_width, threshold);
+                break;
+            case Mode::bw_dot:
+                print_image(filename, max_width, threshold);
+                break;
+            case Mode::colored:
+                print_image_colored(filename, max_width);
+                break;
+            case Mode::colored_dot:
+                print_image_colored_dot(filename, max_width, threshold);
+                break;
+            }
+        }
+
+        /**
          * @brief Print a DOT graph to stdout
          */
         inline void print_dot(const std::string &dot_content, int max_width = 80, int threshold = 128)
         {
             std::cout << render_dot(dot_content, max_width, threshold) << std::endl;
         }
+
+        // ==================== OpenCV-based Rendering ====================
+
+#ifdef PYTHONIC_ENABLE_OPENCV
+        /**
+         * @brief Render image using OpenCV
+         *
+         * Falls back to ImageMagick if OpenCV fails.
+         */
+        inline std::string render_image_opencv(const std::string &filename, int max_width = 80,
+                                               int threshold = 128, Mode mode = Mode::bw_dot)
+        {
+            cv::Mat img = cv::imread(filename);
+            if (img.empty())
+            {
+                // OpenCV failed, return empty to signal fallback
+                return "";
+            }
+
+            // Resize while preserving aspect ratio
+            double scale = static_cast<double>(max_width * 2) / img.cols; // *2 for braille width
+            if (mode == Mode::bw || mode == Mode::colored)
+                scale = static_cast<double>(max_width) / img.cols;
+
+            cv::Mat resized;
+            cv::resize(img, resized, cv::Size(), scale, scale, cv::INTER_AREA);
+
+            // Convert to RGB (OpenCV loads as BGR)
+            cv::Mat rgb;
+            cv::cvtColor(resized, rgb, cv::COLOR_BGR2RGB);
+
+            // Render based on mode
+            switch (mode)
+            {
+            case Mode::bw_dot:
+            {
+                BrailleCanvas canvas = BrailleCanvas::from_pixels(rgb.cols, rgb.rows);
+                canvas.load_frame_rgb_fast(rgb.data, rgb.cols, rgb.rows, threshold);
+                return canvas.render();
+            }
+            case Mode::bw:
+            {
+                BWBlockCanvas canvas = BWBlockCanvas::from_pixels(rgb.cols, rgb.rows);
+                canvas.load_frame_rgb(rgb.data, rgb.cols, rgb.rows, threshold);
+                return canvas.render();
+            }
+            case Mode::colored:
+            {
+                ColorCanvas canvas = ColorCanvas::from_pixels(rgb.cols, rgb.rows);
+                canvas.load_frame_rgb(rgb.data, rgb.cols, rgb.rows);
+                return canvas.render();
+            }
+            case Mode::colored_dot:
+            {
+                ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(rgb.cols, rgb.rows);
+                canvas.load_frame_rgb(rgb.data, rgb.cols, rgb.rows, threshold);
+                return canvas.render();
+            }
+            }
+            return "";
+        }
+
+        /**
+         * @brief Print image using OpenCV with fallback to default parser
+         */
+        inline void print_image_opencv(const std::string &filename, int max_width = 80,
+                                       int threshold = 128, Mode mode = Mode::bw_dot)
+        {
+            std::string result = render_image_opencv(filename, max_width, threshold, mode);
+            if (result.empty())
+            {
+                std::cerr << "Warning: OpenCV failed to load image, falling back to ImageMagick\n";
+                if (mode == Mode::colored || mode == Mode::colored_dot)
+                    print_image_colored(filename, max_width);
+                else
+                    print_image(filename, max_width, threshold);
+                return;
+            }
+            std::cout << result;
+        }
+#else
+        // Stub when OpenCV not available
+        inline std::string render_image_opencv(const std::string &filename, int max_width = 80,
+                                               int threshold = 128, Mode mode = Mode::bw_dot)
+        {
+            (void)filename;
+            (void)max_width;
+            (void)threshold;
+            (void)mode;
+            return ""; // Signal fallback needed
+        }
+
+        inline void print_image_opencv(const std::string &filename, int max_width = 80,
+                                       int threshold = 128, Mode mode = Mode::bw_dot)
+        {
+            (void)mode;
+            std::cerr << "Warning: OpenCV not available, using default parser\n";
+            print_image(filename, max_width, threshold);
+        }
+#endif
 
         // ==================== Video Streaming Support ====================
 
@@ -2108,14 +2920,198 @@ namespace pythonic
 
             return ext == ".mp4" || ext == ".avi" || ext == ".mkv" ||
                    ext == ".mov" || ext == ".webm" || ext == ".flv" ||
-                   ext == ".wmv" || ext == ".m4v" || ext == ".gif";
+                   ext == ".wmv" || ext == ".m4v" || ext == ".gif" ||
+                   ext == ".pv"; // .pv = Pythonic Video
         }
+
+        /**
+         * @brief Check if input is a webcam source
+         * Webcam sources are typically device paths or indices like:
+         * - "0", "1", etc. (device index)
+         * - "/dev/video0", "/dev/video1" (Linux)
+         * - "webcam", "webcam:0" (convenience aliases)
+         */
+        inline bool is_webcam_source(const std::string &source)
+        {
+            // Check for numeric index
+            if (!source.empty() && std::all_of(source.begin(), source.end(), ::isdigit))
+                return true;
+
+            // Check for Linux video device
+            if (source.find("/dev/video") == 0)
+                return true;
+
+            // Check for convenience aliases
+            std::string lower = source;
+            for (auto &c : lower)
+                c = std::tolower(c);
+
+            return lower == "webcam" || lower.find("webcam:") == 0 ||
+                   lower == "camera" || lower.find("camera:") == 0;
+        }
+
+        /**
+         * @brief Parse webcam source to get device index
+         * @return Device index (0 by default)
+         */
+        inline int parse_webcam_index(const std::string &source)
+        {
+            // Pure number
+            if (!source.empty() && std::all_of(source.begin(), source.end(), ::isdigit))
+                return std::stoi(source);
+
+            // /dev/video<N>
+            if (source.find("/dev/video") == 0)
+            {
+                try
+                {
+                    return std::stoi(source.substr(10));
+                }
+                catch (...)
+                {
+                    return 0;
+                }
+            }
+
+            // webcam:<N> or camera:<N>
+            size_t colon = source.find(':');
+            if (colon != std::string::npos)
+            {
+                try
+                {
+                    return std::stoi(source.substr(colon + 1));
+                }
+                catch (...)
+                {
+                    return 0;
+                }
+            }
+
+            return 0;
+        }
+
+        /**
+         * @brief Check if OpenCV support is available
+         */
+        inline bool has_opencv_support()
+        {
+#ifdef PYTHONIC_ENABLE_OPENCV
+            return true;
+#else
+            return false;
+#endif
+        }
+
+        // ==================== Non-blocking Keyboard Input ====================
+
+        /**
+         * @brief Non-blocking keyboard input for video playback controls
+         *
+         * Uses termios (POSIX) or conio (Windows) to set terminal to raw mode
+         * for immediate character input without waiting for Enter.
+         * Restores terminal state on destruction.
+         */
+        class KeyboardInput
+        {
+        private:
+#ifdef _WIN32
+            bool _initialized;
+#else
+            struct termios _old_termios;
+            bool _raw_mode;
+#endif
+
+        public:
+            KeyboardInput()
+#ifdef _WIN32
+                : _initialized(true)
+#else
+                : _raw_mode(false)
+#endif
+            {
+#ifndef _WIN32
+                // Only enable raw mode if stdin is a real terminal
+                if (!isatty(STDIN_FILENO))
+                    return;
+
+                // Get current terminal settings
+                if (tcgetattr(STDIN_FILENO, &_old_termios) == 0)
+                {
+                    struct termios new_termios = _old_termios;
+                    // Disable canonical mode (line buffering) and echo
+                    new_termios.c_lflag &= ~(ICANON | ECHO);
+                    // Set minimum characters for non-blocking read
+                    new_termios.c_cc[VMIN] = 0;
+                    new_termios.c_cc[VTIME] = 0;
+
+                    if (tcsetattr(STDIN_FILENO, TCSANOW, &new_termios) == 0)
+                    {
+                        _raw_mode = true;
+                        // Flush any pending input that might be in the buffer
+                        tcflush(STDIN_FILENO, TCIFLUSH);
+                    }
+                }
+#endif
+            }
+
+            ~KeyboardInput()
+            {
+#ifndef _WIN32
+                if (_raw_mode)
+                {
+                    tcsetattr(STDIN_FILENO, TCSANOW, &_old_termios);
+                }
+#endif
+            }
+
+            /**
+             * @brief Check if a key has been pressed (non-blocking)
+             * @return The character pressed, or -1 if no key pressed
+             */
+            int get_key()
+            {
+#ifdef _WIN32
+                // Windows: Use _kbhit() and _getch() from conio.h
+                if (_kbhit())
+                {
+                    return _getch();
+                }
+                return -1;
+#else
+                if (!_raw_mode)
+                    return -1;
+
+                char c;
+                if (read(STDIN_FILENO, &c, 1) == 1)
+                {
+                    return static_cast<int>(c);
+                }
+                return -1;
+#endif
+            }
+
+            /**
+             * @brief Check if a specific key was pressed
+             * @param key Character to check for
+             * @return true if the specified key was pressed
+             */
+            bool is_key_pressed(char key)
+            {
+                int k = get_key();
+                return k == static_cast<int>(key);
+            }
+
+            // Prevent copying
+            KeyboardInput(const KeyboardInput &) = delete;
+            KeyboardInput &operator=(const KeyboardInput &) = delete;
+        };
 
         /**
          * @brief RAII helper to manage terminal state during video playback
          *
          * Ensures the cursor is restored and terminal state is reset even if
-         * an exception is thrown or the program exits unexpectedly.
+         * an exception is thrown, the program exits unexpectedly, or the user
+         * presses Ctrl+C. Integrates with the global signal handler.
          */
         class TerminalStateGuard
         {
@@ -2125,6 +3121,8 @@ namespace pythonic
         public:
             TerminalStateGuard() : _active(true)
             {
+                // Register with signal handler for cleanup on Ctrl+C
+                signal_handler::start_playback();
                 // Save terminal state and hide cursor
                 std::cout << ansi::HIDE_CURSOR << std::flush;
             }
@@ -2139,8 +3137,18 @@ namespace pythonic
                 if (_active)
                 {
                     _active = false;
-                    std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+                    // Mark playback as ended
+                    signal_handler::end_playback();
+                    // Clear screen, show cursor, reset attributes
+                    std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME
+                              << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
                 }
+            }
+
+            // Check if playback was interrupted by signal
+            bool was_interrupted() const
+            {
+                return signal_handler::was_interrupted();
             }
 
             // Prevent copying
@@ -2157,10 +3165,13 @@ namespace pythonic
          *
          * Example:
          *   VideoPlayer player("video.mp4", 80);
-         *   player.play();  // Blocking playback
+         *   player.play();  // Blocking playback (non-interactive, no keyboard controls)
+         *
+         *   // With pause/stop controls (interactive mode):
+         *   player.play(Shell::interactive, 'p', 's');  // Press 'p' to pause/resume, 's' to stop
          *
          *   // Or async:
-         *   player.play_async();
+         *   player.play_async(Shell::interactive);
          *   // ... do other work ...
          *   player.stop();
          */
@@ -2172,7 +3183,11 @@ namespace pythonic
             int _threshold; // Binarization threshold
             double _fps;    // Target FPS (0 = use video's native FPS)
             std::atomic<bool> _running;
+            std::atomic<bool> _paused;
             std::thread _playback_thread;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
 
             BrailleCanvas _canvas;
 
@@ -2185,7 +3200,8 @@ namespace pythonic
              * @param target_fps Target FPS, 0 = use video's native FPS
              */
             VideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0)
-                : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps), _running(false)
+                : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
             }
 
@@ -2198,12 +3214,20 @@ namespace pythonic
 
             /**
              * @brief Play video (blocking)
+             * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+             * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+             * @param stop_key Key to stop playback (default 's', '\0' to disable)
              * @return true if playback completed successfully
              */
-            bool play()
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
             {
                 if (_running.exchange(true))
                     return false; // Already running
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
 
                 bool result = _play_internal();
                 _running = false;
@@ -2212,11 +3236,19 @@ namespace pythonic
 
             /**
              * @brief Start async playback in background thread
+             * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+             * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+             * @param stop_key Key to stop playback (default 's', '\0' to disable)
              */
-            void play_async()
+            void play_async(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
             {
                 if (_running.exchange(true))
                     return; // Already running
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
 
                 _playback_thread = std::thread([this]()
                                                {
@@ -2230,9 +3262,23 @@ namespace pythonic
             void stop()
             {
                 _running = false;
+                _paused = false;
                 if (_playback_thread.joinable())
                     _playback_thread.join();
             }
+
+            /**
+             * @brief Pause or resume playback
+             */
+            void toggle_pause()
+            {
+                _paused = !_paused;
+            }
+
+            /**
+             * @brief Check if video is paused
+             */
+            bool is_paused() const { return _paused; }
 
             /**
              * @brief Check if video is playing
@@ -2352,14 +3398,61 @@ namespace pythonic
                 // Use RAII guard for terminal state management
                 TerminalStateGuard term_guard;
 
+                // Only enable keyboard input in interactive mode
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
                 // Clear screen and position cursor at top
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
 
-                while (_running)
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
+                    // Check for keyboard input (pause/stop) - only in interactive mode
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    // Show pause indicator
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    // Track time spent paused
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    // If paused, just sleep and continue loop
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
                     auto frame_start = std::chrono::steady_clock::now();
 
                     // Read one frame
@@ -2394,13 +3487,14 @@ namespace pythonic
                 // Clear screen and show statistics
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
-                auto total_time = std::chrono::steady_clock::now() - start_time;
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
 
-                std::cout << "Playback finished: " << frame_num << " frames, "
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
                           << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
 
-                return true;
+                return !user_stopped;
             }
         };
 
@@ -2409,11 +3503,16 @@ namespace pythonic
          * @param filename Path to video file
          * @param width Terminal width in characters
          * @param threshold Brightness threshold (0-255)
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
          */
-        inline void play_video(const std::string &filename, int width = 80, int threshold = 128)
+        inline void play_video(const std::string &filename, int width = 80, int threshold = 128,
+                               Shell shell = Shell::noninteractive,
+                               char pause_key = 'p', char stop_key = 's')
         {
             VideoPlayer player(filename, width, threshold);
-            player.play();
+            player.play(shell, pause_key, stop_key);
         }
 
         /**
@@ -2435,6 +3534,7 @@ namespace pythonic
          * @brief Video player for terminal using true color (24-bit ANSI)
          *
          * Similar to VideoPlayer but uses ColorCanvas for full RGB output.
+         * Supports pause/stop controls via keyboard input in interactive mode.
          */
         class ColoredVideoPlayer
         {
@@ -2443,12 +3543,17 @@ namespace pythonic
             int _width;
             double _fps;
             std::atomic<bool> _running;
+            std::atomic<bool> _paused;
             std::thread _playback_thread;
             ColorCanvas _canvas;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
 
         public:
             ColoredVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0)
-                : _filename(filename), _width(width), _fps(target_fps), _running(false)
+                : _filename(filename), _width(width), _fps(target_fps),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
                 enable_ansi_support();
             }
@@ -2459,10 +3564,22 @@ namespace pythonic
                 std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
             }
 
-            bool play()
+            /**
+             * @brief Play video (blocking)
+             * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+             * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+             * @param stop_key Key to stop playback (default 's', '\0' to disable)
+             * @return true if playback completed successfully
+             */
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
             {
                 if (_running.exchange(true))
                     return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
 
                 bool result = _play_internal();
                 _running = false;
@@ -2472,10 +3589,13 @@ namespace pythonic
             void stop()
             {
                 _running = false;
+                _paused = false;
                 if (_playback_thread.joinable())
                     _playback_thread.join();
             }
 
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
             bool is_playing() const { return _running; }
 
             std::tuple<int, int, double, double> get_info() const
@@ -2576,6 +3696,14 @@ namespace pythonic
 
                 TerminalStateGuard term_guard;
 
+                // Only enable keyboard input in interactive mode
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
                 // Disable stdout buffering for smoother video
                 std::setvbuf(stdout, nullptr, _IONBF, 0);
 
@@ -2583,13 +3711,49 @@ namespace pythonic
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
 
                 // Pre-allocate output buffer
                 std::string frame_output;
                 frame_output.reserve(pixel_w * (pixel_h / 2) * 40);
 
-                while (_running)
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
+                    // Check for keyboard input (pause/stop) - only in interactive mode
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
                     auto frame_start = std::chrono::steady_clock::now();
 
                     size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
@@ -2620,23 +3784,549 @@ namespace pythonic
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
-                auto total_time = std::chrono::steady_clock::now() - start_time;
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
 
-                std::cout << "Playback finished: " << frame_num << " frames, "
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
                           << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
 
-                return true;
+                return !user_stopped;
             }
         };
 
         /**
          * @brief Play video with true color rendering
+         * @param filename Path to video file
+         * @param width Terminal width in characters
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
          */
-        inline void play_video_colored(const std::string &filename, int width = 80)
+        inline void play_video_colored(const std::string &filename, int width = 80,
+                                       Shell shell = Shell::noninteractive,
+                                       char pause_key = 'p', char stop_key = 's')
         {
             ColoredVideoPlayer player(filename, width);
-            player.play();
+            player.play(shell, pause_key, stop_key);
+        }
+
+        /**
+         * @brief Video player using BW half-block characters (Mode::bw)
+         *
+         * Uses FFmpeg to decode video frames and renders them using
+         * half-block Unicode characters (▀▄█) in grayscale.
+         * Supports pause/stop controls via keyboard input in interactive mode.
+         */
+        class BWBlockVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            int _threshold;
+            double _fps;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            std::thread _playback_thread;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            BWBlockCanvas _canvas;
+
+        public:
+            BWBlockVideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0)
+                : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+            }
+
+            ~BWBlockVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            /**
+             * @brief Play video (blocking)
+             * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+             * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+             * @param stop_key Key to stop playback (default 's', '\0' to disable)
+             * @return true if playback completed successfully
+             */
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                bool result = _play_internal();
+                _running = false;
+                return result;
+            }
+
+            void play_async(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                _playback_thread = std::thread([this]()
+                                               {
+                    _play_internal();
+                    _running = false; });
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+                if (_playback_thread.joinable())
+                    _playback_thread.join();
+            }
+
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
+            bool is_playing() const { return _running; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                VideoPlayer vp(_filename);
+                return vp.get_info();
+            }
+
+        private:
+            bool _play_internal()
+            {
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info. Is FFmpeg installed?\n";
+                    return false;
+                }
+
+                // BWBlockCanvas uses 1 pixel per char width, 2 pixels per char height
+                int pixel_w = _width;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = ((pixel_h + 1) / 2) * 2; // Ensure even height
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
+                                                               "-vf scale=" +
+                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg.\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h * 3;
+                std::vector<uint8_t> frame_buffer(frame_size);
+
+                _canvas = BWBlockCanvas::from_pixels(pixel_w, pixel_h);
+
+                TerminalStateGuard term_guard;
+
+                // Only enable keyboard input in interactive mode
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
+
+                std::string frame_output;
+                frame_output.reserve(pixel_w * (pixel_h / 2) * 30);
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    // Check for keyboard input (pause/stop) - only in interactive mode
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    _canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, _threshold);
+
+                    frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+        };
+
+        /**
+         * @brief Play video with BW half-block rendering
+         * @param filename Path to video file
+         * @param width Terminal width in characters
+         * @param threshold Brightness threshold for BW modes
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         */
+        inline void play_video_bw_block(const std::string &filename, int width = 80, int threshold = 128,
+                                        Shell shell = Shell::noninteractive,
+                                        char pause_key = 'p', char stop_key = 's')
+        {
+            BWBlockVideoPlayer player(filename, width, threshold);
+            player.play(shell, pause_key, stop_key);
+        }
+
+        /**
+         * @brief Video player using colored braille characters (Mode::colored_dot)
+         *
+         * Uses FFmpeg to decode video frames and renders them using
+         * colored Unicode braille characters with averaged cell colors.
+         * Supports pause/stop controls via keyboard input in interactive mode.
+         */
+        class ColoredBrailleVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            int _threshold;
+            double _fps;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            std::thread _playback_thread;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            ColoredBrailleCanvas _canvas;
+
+        public:
+            ColoredBrailleVideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0)
+                : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+            }
+
+            ~ColoredBrailleVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            /**
+             * @brief Play video (blocking)
+             * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+             * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+             * @param stop_key Key to stop playback (default 's', '\0' to disable)
+             * @return true if playback completed successfully
+             */
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                bool result = _play_internal();
+                _running = false;
+                return result;
+            }
+
+            void play_async(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                _playback_thread = std::thread([this]()
+                                               {
+                    _play_internal();
+                    _running = false; });
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+                if (_playback_thread.joinable())
+                    _playback_thread.join();
+            }
+
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
+            bool is_playing() const { return _running; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                VideoPlayer vp(_filename);
+                return vp.get_info();
+            }
+
+        private:
+            bool _play_internal()
+            {
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info. Is FFmpeg installed?\n";
+                    return false;
+                }
+
+                // ColoredBrailleCanvas uses 2 pixels per char width, 4 pixels per char height
+                int pixel_w = _width * 2;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = (pixel_h + 3) / 4 * 4; // Ensure multiple of 4
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
+                                                               "-vf scale=" +
+                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg.\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h * 3;
+                std::vector<uint8_t> frame_buffer(frame_size);
+
+                _canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
+
+                TerminalStateGuard term_guard;
+
+                // Only enable keyboard input in interactive mode
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
+
+                std::string frame_output;
+                frame_output.reserve(_width * (pixel_h / 4) * 30);
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    // Check for keyboard input (pause/stop) - only in interactive mode
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    _canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, _threshold);
+
+                    frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+        };
+
+        /**
+         * @brief Play video with colored braille rendering
+         * @param filename Path to video file
+         * @param width Terminal width in characters
+         * @param threshold Brightness threshold for BW modes
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         */
+        inline void play_video_colored_dot(const std::string &filename, int width = 80, int threshold = 128,
+                                           Shell shell = Shell::noninteractive,
+                                           char pause_key = 'p', char stop_key = 's')
+        {
+            ColoredBrailleVideoPlayer player(filename, width, threshold);
+            player.play(shell, pause_key, stop_key);
+        }
+
+        /**
+         * @brief Unified video playback function that handles all modes
+         * @param filename Path to video file
+         * @param width Terminal width in characters
+         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot)
+         * @param threshold Brightness threshold for BW modes
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         */
+        inline void play_video_with_mode(const std::string &filename, int width = 80,
+                                         Mode mode = Mode::bw_dot, int threshold = 128,
+                                         Shell shell = Shell::noninteractive,
+                                         char pause_key = 'p', char stop_key = 's')
+        {
+            switch (mode)
+            {
+            case Mode::bw:
+                play_video_bw_block(filename, width, threshold, shell, pause_key, stop_key);
+                break;
+            case Mode::bw_dot:
+                play_video(filename, width, threshold, shell, pause_key, stop_key);
+                break;
+            case Mode::colored:
+                play_video_colored(filename, width, shell, pause_key, stop_key);
+                break;
+            case Mode::colored_dot:
+                play_video_colored_dot(filename, width, threshold, shell, pause_key, stop_key);
+                break;
+            }
         }
 
         // ==================== Audio Support Detection ====================
@@ -2864,7 +4554,7 @@ namespace pythonic
 
         public:
             AudioVideoPlayer(const std::string &filename, int width = 80,
-                             Render render_mode = Render::BW, double target_fps = 0)
+                             Render render_mode = Mode::bw_dot, double target_fps = 0)
                 : _filename(filename), _width(width), _fps(target_fps), _render_mode(render_mode)
             {
                 enable_ansi_support();
@@ -3100,7 +4790,7 @@ namespace pythonic
                 }
 
                 int pixel_w, pixel_h;
-                bool use_color = (_render_mode == Render::colored);
+                bool use_color = (_render_mode == Mode::colored || _render_mode == Mode::colored_dot);
 
                 if (use_color)
                 {
@@ -3160,7 +4850,7 @@ namespace pythonic
                 std::string frame_output;
                 frame_output.reserve(pixel_w * (use_color ? (pixel_h / 2) : (pixel_h / 4)) * 40);
 
-                while (_running)
+                while (_running && !term_guard.was_interrupted())
                 {
                     auto frame_start = std::chrono::steady_clock::now();
 
@@ -3210,9 +4900,21 @@ namespace pythonic
 
         /**
          * @brief Play video with audio using SDL2 or PortAudio
+         * @param filename Path to video file
+         * @param width Terminal width in characters
+         * @param render_mode Rendering mode
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         *
+         * Note: Audio playback currently doesn't support pause/stop - video continues
+         * while audio may desync. For full pause/stop support, use non-audio playback.
          */
         inline void play_video_audio(const std::string &filename, int width = 80,
-                                     Render render_mode = Render::BW)
+                                     Render render_mode = Mode::bw_dot,
+                                     [[maybe_unused]] Shell shell = Shell::noninteractive,
+                                     [[maybe_unused]] char pause_key = 'p',
+                                     [[maybe_unused]] char stop_key = 's')
         {
             AudioVideoPlayer player(filename, width, render_mode);
             player.play();
@@ -3225,16 +4927,18 @@ namespace pythonic
          * Simply plays video without audio and shows a warning
          */
         inline void play_video_audio(const std::string &filename, int width = 80,
-                                     Render render_mode = Render::BW)
+                                     Render render_mode = Mode::bw_dot,
+                                     Shell shell = Shell::noninteractive,
+                                     char pause_key = 'p', char stop_key = 's')
         {
             std::cerr << "Warning: Audio playback not available.\n"
                       << "Rebuild with -DPYTHONIC_ENABLE_SDL2_AUDIO=ON or -DPYTHONIC_ENABLE_PORTAUDIO=ON\n"
                       << "Falling back to silent video playback...\n\n";
 
-            if (render_mode == Render::colored)
-                play_video_colored(filename, width);
+            if (render_mode == Mode::colored || render_mode == Mode::colored_dot)
+                play_video_colored(filename, width, shell, pause_key, stop_key);
             else
-                play_video(filename, width, 128);
+                play_video(filename, width, 128, shell, pause_key, stop_key);
         }
 
 #endif // Audio support
@@ -3262,6 +4966,350 @@ namespace pythonic
                 std::cout << filename << std::endl;
             }
         }
+
+        // ==================== OpenCV Video Player ====================
+
+#ifdef PYTHONIC_ENABLE_OPENCV
+        /**
+         * @brief Video player using OpenCV backend
+         *
+         * Can play video files and capture from webcam.
+         * Falls back to FFmpeg if OpenCV fails for video files.
+         * Supports pause/stop controls via keyboard input in interactive mode.
+         */
+        class OpenCVVideoPlayer
+        {
+        private:
+            std::string _source;
+            int _width;
+            int _threshold;
+            Mode _mode;
+            bool _is_webcam;
+            std::atomic<bool> _running{false};
+            std::atomic<bool> _paused{false};
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+        public:
+            OpenCVVideoPlayer(const std::string &source, int width = 80,
+                              Mode mode = Mode::bw_dot, int threshold = 128)
+                : _source(source), _width(width), _threshold(threshold), _mode(mode),
+                  _is_webcam(is_webcam_source(source)), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+                enable_ansi_support();
+            }
+
+            ~OpenCVVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            /**
+             * @brief Play video/webcam (blocking)
+             * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+             * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+             * @param stop_key Key to stop playback (default 's', '\0' to disable)
+             * @return true if playback completed successfully
+             */
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                bool result = _play_internal();
+                _running = false;
+                return result;
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+            }
+
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
+            bool is_webcam() const { return _is_webcam; }
+
+        private:
+            bool _play_internal()
+            {
+                cv::VideoCapture cap;
+
+                if (_is_webcam)
+                {
+                    int device_idx = parse_webcam_index(_source);
+                    if (!cap.open(device_idx))
+                    {
+                        std::cerr << "Error: Cannot open webcam device " << device_idx << "\n";
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!cap.open(_source))
+                    {
+                        // OpenCV failed to open file
+                        return false;
+                    }
+                }
+
+                double fps = cap.get(cv::CAP_PROP_FPS);
+                if (fps <= 0)
+                    fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / fps));
+
+                cv::Mat frame, rgb, resized;
+
+                // Calculate output dimensions
+                int cap_width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));
+                int cap_height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
+
+                double scale;
+                if (_mode == Mode::bw_dot || _mode == Mode::colored_dot)
+                    scale = static_cast<double>(_width * 2) / cap_width;
+                else
+                    scale = static_cast<double>(_width) / cap_width;
+
+                int out_w = static_cast<int>(cap_width * scale);
+                int out_h = static_cast<int>(cap_height * scale);
+
+                // Initialize canvases
+                BrailleCanvas bw_dot_canvas;
+                BWBlockCanvas bw_canvas;
+                ColorCanvas color_canvas;
+                ColoredBrailleCanvas color_dot_canvas;
+
+                switch (_mode)
+                {
+                case Mode::bw_dot:
+                    bw_dot_canvas = BrailleCanvas::from_pixels(out_w, out_h);
+                    break;
+                case Mode::bw:
+                    bw_canvas = BWBlockCanvas::from_pixels(out_w, out_h);
+                    break;
+                case Mode::colored:
+                    color_canvas = ColorCanvas::from_pixels(out_w, out_h);
+                    break;
+                case Mode::colored_dot:
+                    color_dot_canvas = ColoredBrailleCanvas::from_pixels(out_w, out_h);
+                    break;
+                }
+
+                TerminalStateGuard term_guard;
+
+                // Only enable keyboard input in interactive mode
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
+
+                std::string frame_output;
+                frame_output.reserve(out_w * out_h * 40);
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    // Check for keyboard input (pause/stop) - only in interactive mode
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    if (!cap.read(frame))
+                        break;
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    // Resize and convert
+                    cv::resize(frame, resized, cv::Size(out_w, out_h), 0, 0, cv::INTER_AREA);
+                    cv::cvtColor(resized, rgb, cv::COLOR_BGR2RGB);
+
+                    frame_output = ansi::CURSOR_HOME;
+
+                    switch (_mode)
+                    {
+                    case Mode::bw_dot:
+                        bw_dot_canvas.load_frame_rgb_fast(rgb.data, out_w, out_h, _threshold);
+                        frame_output += bw_dot_canvas.render();
+                        break;
+                    case Mode::bw:
+                        bw_canvas.load_frame_rgb(rgb.data, out_w, out_h, _threshold);
+                        frame_output += bw_canvas.render();
+                        break;
+                    case Mode::colored:
+                        color_canvas.load_frame_rgb(rgb.data, out_w, out_h);
+                        frame_output += color_canvas.render();
+                        break;
+                    case Mode::colored_dot:
+                        color_dot_canvas.load_frame_rgb(rgb.data, out_w, out_h, _threshold);
+                        frame_output += color_dot_canvas.render();
+                        break;
+                    }
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                cap.release();
+                term_guard.restore();
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+        };
+
+        /**
+         * @brief Play video using OpenCV with fallback to FFmpeg
+         * @param source Path to video file or webcam source
+         * @param width Terminal width in characters
+         * @param mode Rendering mode
+         * @param threshold Brightness threshold for BW modes
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         */
+        inline void play_video_opencv(const std::string &source, int width = 80,
+                                      Mode mode = Mode::bw_dot, int threshold = 128,
+                                      Shell shell = Shell::noninteractive,
+                                      char pause_key = 'p', char stop_key = 's')
+        {
+            OpenCVVideoPlayer player(source, width, mode, threshold);
+            if (!player.play(shell, pause_key, stop_key))
+            {
+                // Webcam failed - throw exception
+                if (player.is_webcam())
+                {
+                    throw std::runtime_error("Failed to open webcam. OpenCV required for webcam support.");
+                }
+
+                // Video file failed - fall back to FFmpeg
+                std::cerr << "Warning: OpenCV failed, falling back to FFmpeg\n";
+                if (mode == Mode::colored || mode == Mode::colored_dot)
+                    play_video_colored(source, width, shell, pause_key, stop_key);
+                else
+                    play_video(source, width, threshold, shell, pause_key, stop_key);
+            }
+        }
+
+        /**
+         * @brief Play from webcam
+         * @param source Webcam source ("0", "webcam:0", "/dev/video0", etc.)
+         * @param width Terminal width in characters
+         * @param mode Rendering mode
+         * @param threshold Brightness threshold for BW modes
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         */
+        inline void play_webcam(const std::string &source = "0", int width = 80,
+                                Mode mode = Mode::bw_dot, int threshold = 128,
+                                Shell shell = Shell::noninteractive,
+                                char pause_key = 'p', char stop_key = 's')
+        {
+            if (!is_webcam_source(source))
+            {
+                throw std::runtime_error("Invalid webcam source: " + source);
+            }
+
+            OpenCVVideoPlayer player(source, width, mode, threshold);
+            if (!player.play(shell, pause_key, stop_key))
+            {
+                throw std::runtime_error("Failed to open webcam. Is OpenCV installed with video capture support?");
+            }
+        }
+#else
+        // Stubs when OpenCV not available
+        inline void play_video_opencv(const std::string &source, int width = 80,
+                                      Mode mode = Mode::bw_dot, int threshold = 128,
+                                      Shell shell = Shell::noninteractive,
+                                      char pause_key = 'p', char stop_key = 's')
+        {
+            if (is_webcam_source(source))
+            {
+                throw std::runtime_error("Webcam requires OpenCV. Rebuild with -DPYTHONIC_ENABLE_OPENCV=ON");
+            }
+
+            std::cerr << "Warning: OpenCV not available, using FFmpeg\n";
+            if (mode == Mode::colored || mode == Mode::colored_dot)
+                play_video_colored(source, width, shell, pause_key, stop_key);
+            else
+                play_video(source, width, threshold, shell, pause_key, stop_key);
+        }
+
+        inline void play_webcam(const std::string &source = "0", int width = 80,
+                                Mode mode = Mode::bw_dot, int threshold = 128,
+                                [[maybe_unused]] Shell shell = Shell::noninteractive,
+                                [[maybe_unused]] char pause_key = 'p', [[maybe_unused]] char stop_key = 's')
+        {
+            (void)source;
+            (void)width;
+            (void)mode;
+            (void)threshold;
+            throw std::runtime_error("Webcam requires OpenCV. Rebuild with -DPYTHONIC_ENABLE_OPENCV=ON");
+        }
+#endif
 
     } // namespace draw
 } // namespace pythonic

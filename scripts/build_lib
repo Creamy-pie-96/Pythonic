@@ -20,6 +20,13 @@ if pkg-config --exists OpenCL 2>/dev/null || [ -f /usr/include/CL/opencl.hpp ] |
   echo "Found OpenCL - enabling GPU acceleration"
 fi
 
+# Optional: Enable OpenCV if installed (for webcam support and advanced image/video processing)
+ENABLE_OPENCV=OFF
+if pkg-config --exists opencv4 2>/dev/null || pkg-config --exists opencv 2>/dev/null; then
+  ENABLE_OPENCV=ON
+  echo "Found OpenCV - enabling webcam support and advanced processing"
+fi
+
 # Safety check before rm -rf
 if [[ -z "$BUILD_DIR" || "$BUILD_DIR" == "/" ]]; then
   echo "Refusing to delete unsafe BUILD_DIR: '$BUILD_DIR'"
@@ -34,7 +41,8 @@ cmake "$ROOT_DIR" \
   -DCMAKE_INSTALL_PREFIX="$INSTALL_DIR" \
   -DPYTHONIC_ENABLE_GRAPH_VIEWER=ON \
   -DPYTHONIC_ENABLE_SDL2_AUDIO=$ENABLE_SDL2_AUDIO \
-  -DPYTHONIC_ENABLE_OPENCL=$ENABLE_OPENCL
+  -DPYTHONIC_ENABLE_OPENCL=$ENABLE_OPENCL \
+  -DPYTHONIC_ENABLE_OPENCV=$ENABLE_OPENCV
 
 cmake --build . -j$(nproc)
 cmake --install .
@@ -51,4 +59,9 @@ if [[ "$ENABLE_OPENCL" == "ON" ]]; then
   echo "  OpenCL GPU: enabled"
 else
   echo "  OpenCL GPU: disabled (install ocl-icd-opencl-dev to enable)"
+fi
+if [[ "$ENABLE_OPENCV" == "ON" ]]; then
+  echo "  OpenCV: enabled (webcam support available)"
+else
+  echo "  OpenCV: disabled (install libopencv-dev to enable webcam support)"
 fi

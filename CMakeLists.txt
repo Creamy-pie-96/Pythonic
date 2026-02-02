@@ -108,6 +108,26 @@ if(PYTHONIC_ENABLE_OPENCL)
     endif()
 endif()
 
+# ============================================================================
+# Optional: OpenCV for image/video processing and webcam support
+# ============================================================================
+option(PYTHONIC_ENABLE_OPENCV "Enable OpenCV for advanced image/video processing and webcam support" OFF)
+
+if(PYTHONIC_ENABLE_OPENCV)
+    find_package(OpenCV QUIET COMPONENTS core imgproc videoio imgcodecs)
+    if(OpenCV_FOUND)
+        message(STATUS "Found OpenCV: ${OpenCV_VERSION}")
+        message(STATUS "  OpenCV image/video processing enabled")
+        message(STATUS "  Webcam capture enabled")
+        set(PYTHONIC_OPENCV_FOUND TRUE)
+    else()
+        message(WARNING "OpenCV not found. OpenCV features disabled.")
+        message(STATUS "  Install OpenCV: sudo apt install libopencv-dev (Ubuntu)")
+        message(STATUS "  Or: brew install opencv (macOS)")
+        set(PYTHONIC_ENABLE_OPENCV OFF)
+    endif()
+endif()
+
 # Create a library
 add_library(pythonic src/pythonicDispatchStubs.cpp)
 
@@ -134,6 +154,13 @@ if(PYTHONIC_OPENCL_FOUND)
     target_compile_definitions(pythonic PUBLIC PYTHONIC_ENABLE_OPENCL)
     target_include_directories(pythonic PUBLIC ${OpenCL_INCLUDE_DIRS})
     target_link_libraries(pythonic PUBLIC ${OpenCL_LIBRARIES})
+endif()
+
+# Link OpenCV if enabled
+if(PYTHONIC_OPENCV_FOUND)
+    target_compile_definitions(pythonic PUBLIC PYTHONIC_ENABLE_OPENCV)
+    target_include_directories(pythonic PUBLIC ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(pythonic PUBLIC ${OpenCV_LIBS})
 endif()
 
 # Precompiled headers to speed up compilation

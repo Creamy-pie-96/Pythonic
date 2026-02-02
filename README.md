@@ -97,15 +97,29 @@ brew install imagemagick ffmpeg
 #include <pythonic/pythonic.hpp>
 using namespace Pythonic;
 
-// Print image in braille (black & white)
+// Print image in braille (black & white, high resolution)
 print("photo.png", Type::image);
 
-// Print image in true color
-print("photo.png", Type::image, Render::colored);
+// Print image in true color (block characters)
+print("photo.png", Type::image, Mode::colored);
+
+// Print image in colored braille (combines color + high resolution)
+print("photo.png", Type::image, Mode::colored_dot);
 
 // Play video in true color
-print("video.mp4", Type::video, Render::colored);
+print("video.mp4", Type::video, Mode::colored);
 ```
+
+### Rendering Modes
+
+Pythonic supports four rendering modes for images and videos:
+
+| Mode                | Description                 | Resolution             | Colors                         |
+| ------------------- | --------------------------- | ---------------------- | ------------------------------ |
+| `Mode::bw_dot`      | Braille patterns (default)  | 8x terminal resolution | B&W                            |
+| `Mode::bw`          | Block characters (▀▄█)      | 2x terminal resolution | B&W                            |
+| `Mode::colored`     | Block characters with color | 2x terminal resolution | True color                     |
+| `Mode::colored_dot` | Braille with color          | 8x terminal resolution | True color (averaged per cell) |
 
 ## Optional: Audio Playback for Videos
 
@@ -160,10 +174,10 @@ Use in code:
 using namespace Pythonic;
 
 // Play video with audio
-print("video.mp4", Type::video, Render::BW, Audio::on);
+print("video.mp4", Type::video, Mode::bw_dot, Parser::default_parser, Audio::on);
 
 // Play video with audio in true color
-print("video.mp4", Type::video, Render::colored, Audio::on);
+print("video.mp4", Type::video, Mode::colored, Parser::default_parser, Audio::on);
 ```
 
 > **Note:** If audio libraries are not available, `Audio::on` will automatically fall back to silent video playback.
@@ -196,6 +210,82 @@ cmake --build build
 ```
 
 > **Note:** OpenCL support is optional. If not available, video rendering will use CPU with optimized buffering.
+
+## Optional: OpenCV for Webcam and Advanced Processing
+
+For webcam capture and advanced image/video processing, you can enable OpenCV support:
+
+### Ubuntu/Debian:
+
+```bash
+sudo apt-get install libopencv-dev
+```
+
+### macOS:
+
+```bash
+brew install opencv
+```
+
+### Windows (vcpkg):
+
+```bash
+vcpkg install opencv:x64-windows
+```
+
+Then build with OpenCV support:
+
+```bash
+cmake -B build -DPYTHONIC_ENABLE_OPENCV=ON
+cmake --build build
+```
+
+Use in code:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace Pythonic;
+
+// Capture from webcam (requires OpenCV)
+print("0", Type::webcam);  // Use device 0
+print("/dev/video0", Type::webcam);  // Linux device path
+
+// Use OpenCV backend for image/video processing
+print("photo.png", Type::image, Mode::colored, Parser::opencv);
+print("video.mp4", Type::video, Mode::colored_dot, Parser::opencv);
+```
+
+### Parser Backends
+
+| Parser                   | Description                                        | Supports             |
+| ------------------------ | -------------------------------------------------- | -------------------- |
+| `Parser::default_parser` | FFmpeg for video, ImageMagick for images (default) | All media formats    |
+| `Parser::opencv`         | OpenCV for everything                              | Media files + webcam |
+
+> **Note:** Webcam capture always requires OpenCV. If OpenCV is not available, an exception is thrown for webcam sources.
+
+## Proprietary Media Format (.pi, .pv)
+
+Pythonic includes a media encryption system for protecting images and videos:
+
+```cpp
+#include <pythonic/pythonicMedia.hpp>
+using namespace pythonic::media;
+
+// Convert image to encrypted Pythonic format
+convert("photo.jpg");  // Creates photo.pi
+
+// Convert video to encrypted Pythonic format
+convert("video.mp4");  // Creates video.pv
+
+// Revert back to original format
+revert("photo.pi");   // Creates photo_restored.jpg
+revert("video.pv");   // Creates video_restored.mp4
+
+// Print encrypted files directly (auto-detected)
+print("photo.pi");    // Works like original image
+print("video.pv");    // Works like original video
+```
 
 ## Disclaimer:
 

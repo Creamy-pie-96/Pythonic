@@ -3,6 +3,7 @@
 #include <iostream>
 #include "pythonicVars.hpp"
 #include "pythonicDraw.hpp"
+#include "pythonicMedia.hpp"
 
 namespace pythonic
 {
@@ -11,7 +12,12 @@ namespace pythonic
 
         using namespace pythonic::vars;
         using pythonic::draw::Audio;  // Import Audio enum from draw namespace
-        using pythonic::draw::Render; // Import Render enum from draw namespace
+        using pythonic::draw::Mode;   // Import Mode enum from draw namespace
+        using pythonic::draw::Parser; // Import Parser enum from draw namespace
+        using pythonic::draw::Shell;  // Import Shell enum from draw namespace
+
+        // Legacy alias for backward compatibility
+        using Render = Mode;
 
         /**
          * @brief Media type hints for the print function
@@ -19,6 +25,7 @@ namespace pythonic
          * Usage:
          *   print("file.png", Type::image);       // Force treat as image
          *   print("file.mp4", Type::video);       // Force treat as video
+         *   print("0", Type::webcam);             // Capture from webcam (requires OpenCV)
          *   print("info.mp4", Type::video_info);  // Show video info only
          *   print("file.png", Type::auto_detect); // Auto-detect from extension
          */
@@ -27,6 +34,7 @@ namespace pythonic
             auto_detect, // Detect from file extension (default)
             image,       // Force treat as image
             video,       // Force treat as video (play it)
+            webcam,      // Capture from webcam (requires OpenCV)
             video_info,  // Show video metadata only (no playback)
             text         // Force treat as plain text
         };
@@ -220,88 +228,157 @@ namespace pythonic
         }
 
         /**
-         * @brief Print with explicit media type hint, render mode, and audio option
+         * @brief Print with explicit media type hint, render mode, parser, and audio option
          *
-         * Usage:
-         *   print("file.png", Type::image);                              // BW braille image
-         *   print("file.png", Type::image, Render::colored);             // True color image
-         *   print("file.mp4", Type::video);                              // BW braille video
-         *   print("file.mp4", Type::video, Render::colored);             // True color video
-         *   print("file.mp4", Type::video, Render::BW, Audio::on);       // Video with audio (BW)
-         *   print("file.mp4", Type::video, Render::colored, Audio::on);  // Video with audio (colored)
-         *   print("file.mp4", Type::video_info);                         // Show video metadata only
-         *   print("hello", Type::text);                                  // Force plain text output
+         * New API (v2):
+         *   print("file.png", Type::image);                                    // BW braille (default)
+         *   print("file.png", Type::image, Mode::colored);                     // True color blocks
+         *   print("file.png", Type::image, Mode::bw);                          // BW blocks
+         *   print("file.png", Type::image, Mode::colored_dot);                 // Colored braille
+         *   print("file.mp4", Type::video, Mode::bw_dot, Parser::opencv);      // Use OpenCV backend
+         *   print("0", Type::webcam);                                          // Webcam capture (requires OpenCV)
+         *   print("file.mp4", Type::video, Mode::bw_dot, Parser::default_parser, Audio::on);  // With audio
          *
-         * @param filepath Path or text to print
-         * @param type Media type hint (auto_detect, image, video, video_info, text)
-         * @param render Render mode (Render::BW for braille, Render::colored for true color)
+         * Modes:
+         *   Mode::bw       - Black & white using half-block characters (▀▄█)
+         *   Mode::bw_dot   - Black & white using Braille patterns (default, higher resolution)
+         *   Mode::colored  - True color (24-bit) using half-block characters
+         *   Mode::colored_dot - True color using Braille patterns (one color per cell)
+         *
+         * Parsers:
+         *   Parser::default_parser - FFmpeg for video, ImageMagick for images (default)
+         *   Parser::opencv         - OpenCV for everything (also supports webcam)
+         *
+         * @param filepath Path to media file, webcam source ("0", "/dev/video0", "webcam"), or text
+         * @param type Media type hint (auto_detect, image, video, webcam, video_info, text)
+         * @param mode Render mode (bw_dot default for highest resolution)
+         * @param parser Parser backend (default_parser or opencv)
          * @param audio Audio mode (Audio::off default, Audio::on for audio playback)
-         * @param max_width Terminal width for media rendering
-         * @param threshold Brightness threshold for braille conversion (BW mode only, 0-255)
+         * @param max_width Terminal width for media rendering (default: 80)
+         * @param threshold Brightness threshold for BW modes (0-255, default: 128)
+         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
+         * @param pause_key Key to pause/resume video playback (default 'p', '\0' to disable)
+         * @param stop_key Key to stop video playback (default 's', '\0' to disable)
          */
         inline void print(const std::string &filepath, Type type = Type::auto_detect,
-                          Render render = Render::BW, Audio audio = Audio::off,
-                          int max_width = 80, int threshold = 128)
+                          Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
+                          Audio audio = Audio::off, int max_width = 80, int threshold = 128,
+                          Shell shell = Shell::noninteractive,
+                          char pause_key = 'p', char stop_key = 's')
         {
+            // Helper to handle Pythonic format files
+            auto handle_pythonic_format = [&](const std::string &path) -> std::string
+            {
+                if (pythonic::draw::is_pythonic_image_file(path) ||
+                    pythonic::draw::is_pythonic_video_file(path))
+                {
+                    return pythonic::media::extract_to_temp(path);
+                }
+                return path;
+            };
+
+            // Helper to render image with appropriate mode and parser
+            auto render_image = [&](const std::string &path)
+            {
+                std::string actual_path = handle_pythonic_format(path);
+                bool is_temp = (actual_path != path);
+
+                if (parser == Parser::opencv)
+                {
+                    pythonic::draw::print_image_opencv(actual_path, max_width, threshold, mode);
+                }
+                else
+                {
+                    // Use unified mode-aware rendering function
+                    pythonic::draw::print_image_with_mode(actual_path, max_width, threshold, mode);
+                }
+
+                if (is_temp)
+                    std::remove(actual_path.c_str());
+            };
+
+            // Helper to play video with appropriate mode and parser
+            auto play_video_impl = [&](const std::string &path)
+            {
+                std::string actual_path = handle_pythonic_format(path);
+                bool is_temp = (actual_path != path);
+
+                if (parser == Parser::opencv)
+                {
+                    // OpenCV supports all 4 modes
+                    pythonic::draw::play_video_opencv(actual_path, max_width, mode, threshold,
+                                                      shell, pause_key, stop_key);
+                }
+                else if (audio == Audio::on)
+                {
+                    // Audio player supports all modes
+                    pythonic::draw::play_video_audio(actual_path, max_width, mode,
+                                                     shell, pause_key, stop_key);
+                }
+                else
+                {
+                    // FFmpeg-based players - use unified function for all modes
+                    pythonic::draw::play_video_with_mode(actual_path, max_width, mode, threshold,
+                                                         shell, pause_key, stop_key);
+                }
+
+                if (is_temp)
+                    std::remove(actual_path.c_str());
+            };
+
             switch (type)
             {
             case Type::image:
-                if (render == Render::colored)
-                    pythonic::draw::print_image_colored(filepath, max_width);
-                else
-                    pythonic::draw::print_image(filepath, max_width, threshold);
+                render_image(filepath);
                 break;
+
             case Type::video:
-                if (audio == Audio::on)
-                {
-                    pythonic::draw::play_video_audio(filepath, max_width, render);
-                }
-                else
-                {
-                    if (render == Render::colored)
-                        pythonic::draw::play_video_colored(filepath, max_width);
-                    else
-                        pythonic::draw::play_video(filepath, max_width, threshold);
-                }
+                play_video_impl(filepath);
                 break;
+
+            case Type::webcam:
+                // Webcam always requires OpenCV
+                pythonic::draw::play_webcam(filepath, max_width, mode, threshold, shell, pause_key, stop_key);
+                break;
+
             case Type::video_info:
                 pythonic::draw::print_video_info(filepath);
                 break;
+
             case Type::text:
                 std::cout << filepath << std::endl;
                 break;
+
             case Type::auto_detect:
             default:
-                if (pythonic::draw::is_video_file(filepath))
+                // Check for webcam source first
+                if (pythonic::draw::is_webcam_source(filepath))
                 {
-                    if (audio == Audio::on)
-                    {
-                        pythonic::draw::play_video_audio(filepath, max_width, render);
-                    }
-                    else if (render == Render::colored)
-                        pythonic::draw::play_video_colored(filepath, max_width);
-                    else
-                        pythonic::draw::play_video(filepath, max_width, threshold);
+                    pythonic::draw::play_webcam(filepath, max_width, mode, threshold, shell, pause_key, stop_key);
+                }
+                else if (pythonic::draw::is_video_file(filepath))
+                {
+                    play_video_impl(filepath);
                 }
                 else if (pythonic::draw::is_image_file(filepath))
                 {
-                    if (render == Render::colored)
-                        pythonic::draw::print_image_colored(filepath, max_width);
-                    else
-                        pythonic::draw::print_image(filepath, max_width, threshold);
+                    render_image(filepath);
                 }
                 else
+                {
+                    // Not a media file, just print as text
                     std::cout << filepath << std::endl;
+                }
                 break;
             }
         }
 
         // Overload for const char*
         inline void print(const char *filepath, Type type = Type::auto_detect,
-                          Render render = Render::BW, Audio audio = Audio::off,
-                          int max_width = 80, int threshold = 128)
+                          Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
+                          Audio audio = Audio::off, int max_width = 80, int threshold = 128)
         {
-            print(std::string(filepath), type, render, audio, max_width, threshold);
+            print(std::string(filepath), type, mode, parser, audio, max_width, threshold);
         }
 
         /**

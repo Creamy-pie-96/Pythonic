@@ -17,21 +17,26 @@ The `print` and `pprint` helpers in Pythonic provide a convenient way to output 
 
 ### Function Signatures and Parameters
 
-| Function                                                                | Description                                                                                                                                         |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `print(args...)`                                                        | Prints any number of arguments (of any type), separated by a space, ending with a newline. For `var` types, uses the simple `str()` representation. |
-| `print(filepath)`                                                       | Auto-detects file type and renders accordingly (image/video/text).                                                                                  |
-| `print(filepath, Type::type)`                                           | Prints media files with explicit type hint. Uses black & white (braille) rendering by default.                                                      |
-| `print(filepath, Type::type, Render::mode)`                             | Prints media files with explicit type and render mode (`Render::BW` or `Render::colored`).                                                          |
-| `print(filepath, Type::type, Render::mode, Audio::mode)`                | Prints media files with explicit type, render mode, and audio control.                                                                              |
-| `print(filepath, Type::type, Render::mode, Audio::mode, width, thresh)` | Full control over rendering with custom width and threshold.                                                                                        |
-| `pprint(var v, size_t indent_step=2)`                                   | Pretty-prints a `var` object with indentation. `indent_step` sets the number of spaces per indent level (default: 2).                               |
+| Function                                                                                                             | Description                                                                                                                                         |
+| -------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `print(args...)`                                                                                                     | Prints any number of arguments (of any type), separated by a space, ending with a newline. For `var` types, uses the simple `str()` representation. |
+| `print(filepath)`                                                                                                    | Auto-detects file type and renders accordingly (image/video/text).                                                                                  |
+| `print(filepath, Type::type)`                                                                                        | Prints media files with explicit type hint. Uses BW braille (Mode::bw_dot) rendering by default.                                                    |
+| `print(filepath, Type::type, Mode::mode)`                                                                            | Prints media files with explicit type and render mode.                                                                                              |
+| `print(filepath, Type::type, Mode::mode, Parser::parser)`                                                            | Prints media files with explicit type, mode, and parser backend.                                                                                    |
+| `print(filepath, Type::type, Mode::mode, Parser::parser, Audio::mode)`                                               | Prints media files with explicit type, mode, parser, and audio control.                                                                             |
+| `print(filepath, Type::type, Mode::mode, Parser::parser, Audio::mode, width, threshold)`                             | Full control over rendering with custom width and threshold.                                                                                        |
+| `print(filepath, Type::type, Mode::mode, Parser::parser, Audio::mode, width, threshold, shell, pause_key, stop_key)` | Full control including shell mode and video playback controls.                                                                                      |
+| `pprint(var v, size_t indent_step=2)`                                                                                | Pretty-prints a `var` object with indentation. `indent_step` sets the number of spaces per indent level (default: 2).                               |
 
 **Parameters:**
 
 - `args...` (print): Any number of arguments of any type.
 - `v` (pprint): The `var` object to pretty-print.
 - `indent_step` (pprint): (Optional) Number of spaces for each indentation level. Default is 2.
+- `shell`: (Optional) Shell mode. `Shell::noninteractive` (default) disables keyboard controls. `Shell::interactive` enables them.
+- `pause_key`: (Optional) Key to pause/resume video playback. Default is `'p'`. Use `'\0'` to disable.
+- `stop_key`: (Optional) Key to stop video playback. Default is `'s'`. Use `'\0'` to disable.
 
 > **Note:** The current implementation does not support custom separators or end characters for `print`. Output always ends with a newline, and arguments are separated by a single space.
 
@@ -71,16 +76,28 @@ Use the `Type` enum to specify how to handle media files:
 | `Type::image`       | Force treat as image (render as braille or colored)  |
 | `Type::video`       | Force treat as video (play with real-time rendering) |
 | `Type::video_info`  | Show video metadata only (no playback)               |
+| `Type::webcam`      | Capture from webcam (requires OpenCV)                |
 | `Type::text`        | Force treat as plain text                            |
 
-### Render Enum
+### Mode Enum
 
-Use the `Render` enum to control the visual output:
+Use the `Mode` enum to control the visual output:
 
-| Render            | Description                                                                |
-| ----------------- | -------------------------------------------------------------------------- |
-| `Render::BW`      | Black and white using braille characters (default, 2×4 pixels per char)    |
-| `Render::colored` | True color (24-bit ANSI) using half-block characters (1×2 pixels per char) |
+| Mode                | Description                                                                    |
+| ------------------- | ------------------------------------------------------------------------------ |
+| `Mode::bw`          | Black and white using half-block characters (▀▄█, 1×2 pixels per char)         |
+| `Mode::bw_dot`      | Black and white using braille characters (default, 2×4 pixels per char)        |
+| `Mode::colored`     | True color (24-bit ANSI) using half-block characters (1×2 pixels per char)     |
+| `Mode::colored_dot` | True color using braille characters with averaged colors (2×4 pixels per char) |
+
+### Parser Enum
+
+Use the `Parser` enum to select the backend for media processing:
+
+| Parser                   | Description                                          |
+| ------------------------ | ---------------------------------------------------- |
+| `Parser::default_parser` | FFmpeg for video, ImageMagick for images (default)   |
+| `Parser::opencv`         | OpenCV for everything (also supports webcam capture) |
 
 ### Audio Enum
 
@@ -91,18 +108,38 @@ Use the `Audio` enum to control audio playback for videos:
 | `Audio::off` | No audio playback (default, silent video)              |
 | `Audio::on`  | Enable synchronized audio (requires SDL2 or PortAudio) |
 
+### Shell Enum
+
+Use the `Shell` enum to control keyboard input handling during video playback:
+
+| Shell                   | Description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| `Shell::noninteractive` | No keyboard input handling (default, safe for scripts/pipes) |
+| `Shell::interactive`    | Enable keyboard controls for pause/stop                      |
+
+> **Important:** By default, video playback uses `Shell::noninteractive` to avoid terminal issues when running in scripts, CI/CD pipelines, or non-interactive environments. Use `Shell::interactive` only when running in a real terminal where user input is expected.
+
 ### Supported Formats
 
-**Images:** PNG, JPG, JPEG, GIF, BMP, PPM, PGM, PBM
+**Images:** PNG, JPG, JPEG, GIF, BMP, PPM, PGM, PBM, `.pi` (Pythonic Image)
 
-**Videos:** MP4, AVI, MKV, MOV, WEBM, FLV, WMV, M4V, GIF
+**Videos:** MP4, AVI, MKV, MOV, WEBM, FLV, WMV, M4V, GIF, `.pv` (Pythonic Video)
+
+**Webcam:** Device index ("0", "1") or path ("/dev/video0", "/dev/video1")
 
 ### Dependencies
 
 Media printing requires these external tools:
 
-- **ImageMagick** - For image format conversion (`convert` command)
-- **FFmpeg** - For video decoding (`ffmpeg` and `ffprobe` commands)
+- **ImageMagick** - For image format conversion (`convert` command) - used with `Parser::default_parser`
+- **FFmpeg** - For video decoding (`ffmpeg` and `ffprobe` commands) - used with `Parser::default_parser`
+- **OpenCV** - For all media operations including webcam capture - used with `Parser::opencv`
+
+For OpenCV support:
+
+- **Ubuntu:** `sudo apt install libopencv-dev`
+- **macOS:** `brew install opencv`
+- Build with: `cmake -B build -DPYTHONIC_ENABLE_OPENCV=ON`
 
 For audio playback (video_audio):
 
@@ -121,30 +158,30 @@ int main() {
     // Auto-detect from extension (default BW braille)
     print("photo.png");
 
-    // Explicit type hint with black & white braille
+    // Explicit type hint with black & white braille dots
     print("photo.png", Type::image);
 
-    // True color rendering (24-bit ANSI)
-    print("photo.png", Type::image, Render::colored);
+    // Different rendering modes
+    print("photo.png", Type::image, Mode::bw);          // BW half-blocks
+    print("photo.png", Type::image, Mode::bw_dot);      // BW braille (default)
+    print("photo.png", Type::image, Mode::colored);     // True color half-blocks
+    print("photo.png", Type::image, Mode::colored_dot); // True color braille
 
-    // Full control: colored, 100 char width
-    print("photo.jpg", Type::image, Render::colored, 100);
+    // With custom width (100 chars)
+    print("photo.jpg", Type::image, Mode::colored, 100);
 
     // BW with custom width and threshold
-    print("photo.jpg", Type::image, Render::BW, 80, 128);
+    print("photo.jpg", Type::image, Mode::bw_dot, 80, 128);
+
+    // Using OpenCV parser instead of ImageMagick
+    print("photo.png", Type::image, Mode::colored, Parser::opencv);
+
+    // Pythonic encrypted format (.pi files)
+    print("secret.pi", Type::image, Mode::colored);
 
     return 0;
 }
 ```
-
-    print("photo.jpg", Type::image, 80, 128);
-    // Parameters: filepath, type, max_width=80, threshold=128
-
-    return 0;
-
-}
-
-````
 
 ### Video Printing Examples
 
@@ -164,21 +201,67 @@ int main() {
     // Play video in BW braille (default, silent)
     print("video.mp4", Type::video);
 
-    // Play video in true color (silent)
-    print("video.mp4", Type::video, Render::colored);
+    // Different rendering modes
+    print("video.mp4", Type::video, Mode::bw);          // BW half-blocks
+    print("video.mp4", Type::video, Mode::bw_dot);      // BW braille (default)
+    print("video.mp4", Type::video, Mode::colored);     // True color half-blocks
+    print("video.mp4", Type::video, Mode::colored_dot); // True color braille
 
     // Play video with audio (requires SDL2 or PortAudio)
-    print("video.mp4", Type::video, Render::BW, Audio::on);
+    print("video.mp4", Type::video, Mode::bw_dot, Audio::on);
 
     // Play video with audio in true color
-    print("video.mp4", Type::video, Render::colored, Audio::on);
+    print("video.mp4", Type::video, Mode::colored, Audio::on);
 
     // Play with custom width (silent)
-    print("video.mp4", Type::video, Render::colored, Audio::off, 60);
+    print("video.mp4", Type::video, Mode::colored, Audio::off, 60);
+
+    // Using OpenCV parser instead of FFmpeg
+    print("video.mp4", Type::video, Mode::colored, Parser::opencv);
+
+    // Pythonic encrypted format (.pv files)
+    print("secret.pv", Type::video, Mode::colored);
 
     return 0;
 }
-````
+```
+
+### Video Playback Controls
+
+During video playback in **interactive mode** (`Shell::interactive`), you can control the player using keyboard keys:
+
+- **Pause/Resume**: Press the `pause_key` (default: `'p'`) to toggle between paused and playing states
+- **Stop**: Press the `stop_key` (default: `'s'`) to stop playback and continue program execution
+
+> **Note:** By default, keyboard controls are disabled (`Shell::noninteractive`) for safety in scripts and non-interactive environments. You must explicitly enable them with `Shell::interactive`.
+
+```cpp
+#include "pythonic/pythonic.hpp"
+using namespace Pythonic;
+
+int main() {
+    // Default: no keyboard controls (safe for scripts)
+    print("video.mp4", Type::video);
+
+    // Enable keyboard controls for interactive use
+    // Full signature: print(filepath, type, mode, parser, audio, width, threshold, shell, pause_key, stop_key)
+    print("video.mp4", Type::video, Mode::colored, Parser::default_parser,
+          Audio::off, 80, 128, Shell::interactive, 'p', 's');
+
+    // Interactive with custom keys: 'p' to pause, 'q' to quit
+    print("video.mp4", Type::video, Mode::colored, Parser::default_parser,
+          Audio::off, 80, 128, Shell::interactive, 'p', 'q');
+
+    // Interactive with only stop key (no pause)
+    print("video.mp4", Type::video, Mode::colored, Parser::default_parser,
+          Audio::off, 80, 128, Shell::interactive, '\0', 'x');
+
+    std::cout << "Video finished or stopped, program continues..." << std::endl;
+    return 0;
+}
+```
+
+When paused, a `[PAUSED - Press 'p' to resume]` indicator is shown at the top of the screen.
 
 ### Audio Playback Requirements
 
@@ -201,6 +284,63 @@ To enable audio playback with `Audio::on`, you need to:
    ```
 
 > **Note:** If audio libraries are not available, `Audio::on` will fall back to silent video playback.
+
+### Webcam Examples
+
+Webcam support requires OpenCV. Build with OpenCV enabled:
+
+```bash
+cmake -B build -DPYTHONIC_ENABLE_OPENCV=ON
+cmake --build build
+```
+
+```cpp
+#include "pythonic/pythonic.hpp"
+using namespace Pythonic;
+
+int main() {
+    // Open default webcam (device 0)
+    print("0", Type::webcam);
+
+    // Colored braille rendering
+    print("0", Type::webcam, Mode::colored_dot);
+
+    // Different rendering modes
+    print("0", Type::webcam, Mode::bw);          // BW half-blocks
+    print("0", Type::webcam, Mode::colored);     // True color half-blocks
+
+    // Device path (Linux)
+    print("/dev/video0", Type::webcam, Mode::colored);
+
+    // With custom width
+    print("0", Type::webcam, Mode::colored_dot, 80);
+
+    return 0;
+}
+```
+
+### Pythonic Encrypted Format Examples
+
+Pythonic supports proprietary encrypted media formats for secure distribution:
+
+```cpp
+#include "pythonic/pythonic.hpp"
+using namespace Pythonic;
+
+int main() {
+    // Printing .pi (Pythonic Image) files
+    print("secret.pi", Type::image, Mode::colored);
+
+    // Printing .pv (Pythonic Video) files
+    print("secret.pv", Type::video, Mode::colored);
+    print("secret.pv", Type::video, Mode::colored_dot, Audio::on);
+
+    // These files are encrypted and can only be played with this library
+    // See docs/Media/media.md for how to create .pi/.pv files
+
+    return 0;
+}
+```
 
 ### Technical Details
 

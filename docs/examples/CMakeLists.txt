@@ -54,6 +54,14 @@ if(OpenCL_FOUND)
     message(STATUS "OpenCL found - GPU acceleration enabled")
 endif()
 
+# ============================================================================
+# Optional: OpenCV for advanced image/video processing and webcam support
+# ============================================================================
+find_package(OpenCV QUIET COMPONENTS core imgproc videoio imgcodecs)
+if(OpenCV_FOUND)
+    message(STATUS "OpenCV found (${OpenCV_VERSION}) - webcam support enabled")
+endif()
+
 # Add your executable
 # --> Replace 'demoapp' with your project executable name
 # --> Add all your .cpp files here if you have multiple
@@ -82,6 +90,13 @@ if(OpenCL_FOUND)
     target_compile_definitions(demoapp PRIVATE PYTHONIC_ENABLE_OPENCL)
     target_include_directories(demoapp PRIVATE ${OpenCL_INCLUDE_DIRS})
     target_link_libraries(demoapp PRIVATE ${OpenCL_LIBRARIES})
+endif()
+
+# Link optional OpenCV for advanced image/video processing and webcam
+if(OpenCV_FOUND)
+    target_compile_definitions(demoapp PRIVATE PYTHONIC_ENABLE_OPENCV)
+    target_include_directories(demoapp PRIVATE ${OpenCV_INCLUDE_DIRS})
+    target_link_libraries(demoapp PRIVATE ${OpenCV_LIBS})
 endif()
 
 # If you installed Pythonic with the optional Graph Viewer enabled
