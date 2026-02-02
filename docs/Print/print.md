@@ -354,6 +354,263 @@ int main() {
 
 ---
 
+## `export_media` - Exporting ASCII Art
+
+### Overview
+
+The `export_media` function converts images and videos to ASCII/Braille art and saves them in various formats. This is the complement to `print` - while `print` displays to the terminal, `export_media` saves to files.
+
+### Function Signature
+
+```cpp
+bool export_media(
+    const std::string& input_path,
+    const std::string& output_name,
+    Type type = Type::auto_detect,
+    Format format = Format::text,
+    Mode mode = Mode::bw_dot,
+    int max_width = 80,
+    int threshold = 128,
+    Audio audio = Audio::off,
+    int fps = 0,
+    const ExportConfig& config = ExportConfig()  // Customize rendering style
+);
+```
+
+### Parameters
+
+| Parameter     | Type           | Default             | Description                                                        |
+| ------------- | -------------- | ------------------- | ------------------------------------------------------------------ |
+| `input_path`  | `std::string`  | required            | Path to source media file (image or video)                         |
+| `output_name` | `std::string`  | required            | Output filename (extension will be added/replaced based on format) |
+| `type`        | `Type`         | `Type::auto_detect` | Media type hint (auto_detect, image, video)                        |
+| `format`      | `Format`       | `Format::text`      | Output format (see Format enum below)                              |
+| `mode`        | `Mode`         | `Mode::bw_dot`      | Render mode (bw, bw_dot, colored, colored_dot)                     |
+| `max_width`   | `int`          | `80`                | Width of rendered output in characters                             |
+| `threshold`   | `int`          | `128`               | Brightness threshold for BW modes (0-255)                          |
+| `audio`       | `Audio`        | `Audio::off`        | Whether to include audio in video exports                          |
+| `fps`         | `int`          | `0`                 | Frame rate for video export (0 = original fps)                     |
+| `config`      | `ExportConfig` | `ExportConfig()`    | Rendering customization (dot_size, density, colors)                |
+
+### Format Enum
+
+| Format             | Extension | Description                                           |
+| ------------------ | --------- | ----------------------------------------------------- |
+| `Format::text`     | `.txt`    | Plain text file with ASCII/Braille characters         |
+| `Format::image`    | `.png`    | PNG image with rendered Braille dots as actual pixels |
+| `Format::video`    | `.mp4`    | MP4 video with rendered ASCII art frames              |
+| `Format::pythonic` | `.pi/.pv` | Proprietary encrypted Pythonic format                 |
+
+### ExportConfig - Customizing Rendering Style
+
+Use `ExportConfig` to customize how ASCII/Braille art is rendered to images and videos:
+
+```cpp
+struct ExportConfig {
+    int dot_size = 2;                    // Dot radius in pixels
+    int dot_density = 3;                 // Spacing multiplier (higher = more spaced out)
+    RGB bg_color = RGB(0, 0, 0);         // Background color (default: black)
+    RGB default_fg = RGB(255, 255, 255); // Default foreground color (default: white)
+    bool preserve_colors = true;         // Use ANSI colors if present in source
+};
+```
+
+**Configuration Options:**
+
+| Option            | Default            | Description                                                     |
+| ----------------- | ------------------ | --------------------------------------------------------------- |
+| `dot_size`        | `2`                | Radius of rendered Braille dots in pixels                       |
+| `dot_density`     | `3`                | Spacing between dots (higher = more spaced out, lower = denser) |
+| `bg_color`        | `RGB(0,0,0)`       | Background color where no dots are rendered                     |
+| `default_fg`      | `RGB(255,255,255)` | Default dot color when source has no ANSI colors                |
+| `preserve_colors` | `true`             | Whether to use ANSI colors from source (colored modes)          |
+
+**Builder Pattern:**
+
+```cpp
+ExportConfig config;
+config.set_dot_size(3)
+      .set_density(2)
+      .set_background(20, 20, 30)      // Dark blue-ish background
+      .set_foreground(0, 255, 128)     // Bright green dots
+      .set_preserve_colors(true);
+```
+
+**RGB Helper Struct:**
+
+```cpp
+struct RGB {
+    uint8_t r, g, b;
+    RGB();                              // Default: black (0, 0, 0)
+    RGB(uint8_t r, uint8_t g, uint8_t b);
+};
+
+// Examples
+RGB black;                   // 0, 0, 0
+RGB white(255, 255, 255);
+RGB red(255, 0, 0);
+RGB custom(128, 64, 192);    // Purple-ish
+```
+
+### Usage Examples
+
+#### Exporting Images
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace py;
+
+int main() {
+    // Export to text file (default)
+    export_media("photo.png", "output");  // Creates output.txt
+
+    // Export to PNG with rendered Braille dots
+    export_media("photo.png", "output", Type::image, Format::image);  // Creates output.png
+
+    // Export with specific render mode
+    export_media("photo.png", "output", Type::image, Format::image, Mode::colored);
+    export_media("photo.png", "output", Type::image, Format::image, Mode::colored_dot);
+    export_media("photo.png", "output", Type::image, Format::image, Mode::bw);
+    export_media("photo.png", "output", Type::image, Format::image, Mode::bw_dot);
+
+    // Export with custom width and threshold
+    export_media("photo.png", "output", Type::image, Format::image,
+                 Mode::bw_dot, 100, 100);  // 100 chars wide, threshold=100
+
+    // Export to Pythonic encrypted format
+    export_media("photo.png", "output", Type::image, Format::pythonic);  // Creates output.pi
+
+    return 0;
+}
+```
+
+#### Exporting Videos
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace py;
+
+int main() {
+    // Export video to ASCII art video
+    export_media("video.mp4", "output", Type::video, Format::video);  // Creates output.mp4
+
+    // Export with specific render mode
+    export_media("video.mp4", "output", Type::video, Format::video, Mode::colored);
+
+    // Export with audio
+    export_media("video.mp4", "output", Type::video, Format::video,
+                 Mode::colored, 80, 128, Audio::on);
+
+    // Export with custom fps
+    export_media("video.mp4", "output", Type::video, Format::video,
+                 Mode::colored, 80, 128, Audio::on, 24);  // 24 fps
+
+    // Use original video fps (default when fps=0)
+    export_media("video.mp4", "output", Type::video, Format::video,
+                 Mode::colored, 80, 128, Audio::on, 0);  // Original fps
+
+    // Export to Pythonic encrypted format
+    export_media("video.mp4", "output", Type::video, Format::pythonic);  // Creates output.pv
+
+    return 0;
+}
+```
+
+#### Custom Styling with ExportConfig
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace py;
+using namespace pythonic::ex;
+
+int main() {
+    // Create custom export config
+    ExportConfig config;
+    config.set_dot_size(4)             // Larger dots
+          .set_density(2)               // Tighter spacing
+          .set_background(32, 32, 48)   // Deep purple background
+          .set_foreground(0, 255, 128)  // Bright green default color
+          .set_preserve_colors(true);   // Keep original image colors
+
+    // Export image with custom styling
+    export_media("photo.png", "styled_output", Type::image, Format::image,
+                 Mode::colored_dot, 100, 128, Audio::off, 0, config);
+
+    // Export video with custom styling
+    export_media("video.mp4", "styled_video", Type::video, Format::video,
+                 Mode::colored, 80, 128, Audio::on, 0, config);
+
+    return 0;
+}
+```
+
+### Complete Export Example
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace py;
+
+int main() {
+    std::string input_video = "media/video.mp4";
+
+    // Export in all 4 render modes
+    export_media(input_video, "export_bw", Type::video, Format::video,
+                 Mode::bw, 80, 128, Audio::on);
+
+    export_media(input_video, "export_bw_dot", Type::video, Format::video,
+                 Mode::bw_dot, 80, 128, Audio::on);
+
+    export_media(input_video, "export_colored", Type::video, Format::video,
+                 Mode::colored, 80, 128, Audio::on);
+
+    export_media(input_video, "export_colored_dot", Type::video, Format::video,
+                 Mode::colored_dot, 80, 128, Audio::on);
+
+    std::cout << "All exports complete!" << std::endl;
+    return 0;
+}
+```
+
+### How Video Export Works
+
+1. **Frame extraction**: FFmpeg extracts frames from the source video
+2. **ASCII rendering**: Each frame is rendered to ASCII/Braille art using the specified mode
+3. **Image rendering**: The ASCII art is rendered to actual pixels (proper Braille dot rendering)
+4. **Video encoding**: All frames are combined back into an MP4 video
+5. **Audio muxing** (optional): Audio track is extracted and muxed with the video
+
+### Output Quality
+
+The exported video/image quality depends on:
+
+- **Width** (`max_width`): Higher = more detail, larger file
+- **Mode**: `colored` modes preserve more visual information
+- **FPS**: Higher = smoother video, larger file
+
+### Dependencies
+
+Video export requires **FFmpeg** to be installed:
+
+```bash
+# Ubuntu/Debian
+sudo apt install ffmpeg
+
+# macOS
+brew install ffmpeg
+```
+
+Image export requires **ImageMagick** for PNG conversion:
+
+```bash
+# Ubuntu/Debian
+sudo apt install imagemagick
+
+# macOS
+brew install imagemagick
+```
+
+---
+
 ## `pprint`
 
 ### Function Signature

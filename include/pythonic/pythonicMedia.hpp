@@ -48,7 +48,7 @@ namespace pythonic
         /**
          * @brief Media type for conversion
          */
-        enum class Type
+        enum class MediaType
         {
             auto_detect, // Detect from file extension
             image,       // Force treat as image
@@ -475,7 +475,7 @@ namespace pythonic
          *
          * @throws std::runtime_error if file cannot be read or type cannot be determined
          */
-        inline std::string convert(const std::string &filepath, Type type = Type::auto_detect,
+        inline std::string convert(const std::string &filepath, MediaType type = MediaType::auto_detect,
                                    bool compress = true)
         {
             // Read source file
@@ -502,13 +502,13 @@ namespace pythonic
 
             switch (type)
             {
-            case Type::image:
+            case MediaType::image:
                 is_image = true;
                 break;
-            case Type::video:
+            case MediaType::video:
                 is_video = true;
                 break;
-            case Type::auto_detect:
+            case MediaType::auto_detect:
             default:
                 is_image = is_image_extension(ext);
                 is_video = is_video_extension(ext);
@@ -591,7 +591,7 @@ namespace pythonic
          *
          * @throws std::runtime_error if file is invalid or cannot be read
          */
-        inline std::string revert(const std::string &filepath)
+        inline std::string revert(const std::string &filepath, const std::string &output_name = "")
         {
             // Read source file
             std::ifstream infile(filepath, std::ios::binary | std::ios::ate);
@@ -660,7 +660,25 @@ namespace pythonic
 
             // Create output filename
             std::string original_ext = header.get_extension();
-            std::string output_path = get_basename(filepath) + "_restored" + original_ext;
+            std::string output_path;
+            if (output_name.empty())
+            {
+                // Default: use input basename + _reverted
+                output_path = get_basename(filepath) + "_reverted" + original_ext;
+            }
+            else
+            {
+                // Use provided output name (strip any extension and add original)
+                size_t dot = output_name.rfind('.');
+                if (dot != std::string::npos && dot > 0)
+                {
+                    output_path = output_name.substr(0, dot) + original_ext;
+                }
+                else
+                {
+                    output_path = output_name + original_ext;
+                }
+            }
 
             // Write output file
             std::ofstream outfile(output_path, std::ios::binary);

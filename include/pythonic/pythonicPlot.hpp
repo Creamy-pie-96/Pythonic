@@ -873,9 +873,28 @@ namespace pythonic
             }
 
             /**
-             * @brief Render the figure to a string using colored Braille
+             * @brief Render the figure and output to stdout
+             *
+             * Use render_to_string() if you need the output as a string.
              */
-            std::string render()
+            void render()
+            {
+                std::cout << render_to_string() << std::flush;
+            }
+
+            /**
+             * @brief Display the figure to stdout (alias for render())
+             */
+            void show()
+            {
+                render();
+            }
+
+            /**
+             * @brief Render the figure to a string using colored Braille
+             * @return The rendered figure as a string
+             */
+            std::string render_to_string()
             {
                 clear_pixels();
 
@@ -1148,14 +1167,6 @@ namespace pythonic
                 if (s.back() == '.')
                     s.pop_back();
                 return s;
-            }
-
-            /**
-             * @brief Display the figure to stdout
-             */
-            void show()
-            {
-                std::cout << render() << std::flush;
             }
 
         private:
@@ -1460,31 +1471,58 @@ namespace pythonic
         // ==================== Animation Support ====================
 
         /**
-         * @brief Animate a time-varying plot
+         * @brief Animate a time-varying plot with optional dependency functions
          *
-         * @param f Function f(t, x) where t is time and x is the variable
+         * Supports both simple animations and complex multi-parameter animations:
+         *
+         * Simple usage:
+         *   animate([](double t, double x) { return sin(x + t); }, -PI, PI);
+         *
+         * With dependencies:
+         *   animate(
+         *       [](double t, double x, double a, double b) { return a * sin(x) + b * cos(t); },
+         *       x_min, x_max, duration, fps, width, height,
+         *       [](double t) { return 1.0 + 0.5 * sin(t); },     // dep1 -> a
+         *       [](double t) { return cos(2 * t); }               // dep2 -> b
+         *   );
+         *
+         * @param f Main function f(t, x, deps...) taking time, x variable, and optional dependency values
          * @param x_min X range minimum
          * @param x_max X range maximum
          * @param duration Animation duration in seconds
          * @param fps Frames per second
+         * @param width Figure width in characters
+         * @param height Figure height in characters
+         * @param deps... Optional dependency functions, each takes t and returns a value
          */
-        template <typename Func>
-        inline void animate(Func &&f, double x_min, double x_max,
+        template <typename MainFunc, typename... DepFuncs>
+        inline void animate(MainFunc &&f, double x_min, double x_max,
                             double duration = 10.0, double fps = 30,
-                            int width = 80, int height = 24)
+                            int width = 80, int height = 24,
+                            DepFuncs &&...deps)
         {
             Figure fig(width, height);
             fig.xlim(x_min, x_max);
 
-            // First pass: estimate y range
+            // Helper to evaluate all dependency functions
+            auto eval_deps = [&deps...](double t)
+            {
+                return std::make_tuple(deps(t)...);
+            };
+
+            // First pass: estimate y range by sampling over time and x
             double y_min = std::numeric_limits<double>::max();
             double y_max = std::numeric_limits<double>::lowest();
 
             for (double t = 0; t <= duration; t += 0.5)
             {
+                auto dep_values = eval_deps(t);
                 for (double x = x_min; x <= x_max; x += (x_max - x_min) / 100)
                 {
-                    double y = f(t, x);
+                    // Apply f with unpacked dependency values
+                    double y = std::apply([&](auto... dvals)
+                                          { return f(t, x, dvals...); }, dep_values);
+
                     if (std::isfinite(y))
                     {
                         y_min = std::min(y_min, y);
@@ -1514,9 +1552,113 @@ namespace pythonic
 
                     fig.clear();
                     fig.set_time(t);
-                    fig.plot_animated(f, x_min, x_max, "cyan");
 
-                    std::cout << "\033[H" << fig.render();
+                    // Evaluate dependency values at this time
+                    auto dep_values = eval_deps(t);
+
+                    // Create a wrapper function for plot_animated that captures dep_values
+                    auto f_at_t = [&f, &dep_values](double t_, double x)
+                    {
+                        return std::apply([&](auto... dvals)
+                                          { return f(t_, x, dvals...); }, dep_values);
+                    };
+
+                    fig.plot_animated(f_at_t, x_min, x_max, "cyan");
+
+                    std::cout << "\033[H" << fig.render_to_string();
+                    std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
+                              << "s (Press Ctrl+C to stop)" << std::flush;
+
+                    std::this_thread::sleep_for(frame_time);
+                }
+            }
+            catch (...)
+            {
+            }
+
+            // Show cursor
+            std::cout << "\033[?25h" << std::flush;
+        }
+
+        /**
+         * @brief Animate with multiple plot functions rendered together
+         *
+         * Each entry is a tuple of (function, color_name)
+         * All functions receive the same t and x values.
+         *
+         * Example:
+         *   animate_plots(x_min, x_max, duration, fps, width, height,
+         *       std::make_tuple([](double t, double x) { return sin(x + t); }, "red"),
+         *       std::make_tuple([](double t, double x) { return cos(x - t); }, "blue")
+         *   );
+         */
+        template <typename... PlotEntries>
+        inline void animate_plots(double x_min, double x_max,
+                                  double duration = 10.0, double fps = 30,
+                                  int width = 80, int height = 24,
+                                  PlotEntries &&...plots)
+        {
+            Figure fig(width, height);
+            fig.xlim(x_min, x_max);
+
+            // First pass: estimate y range across all plot functions
+            double y_min = std::numeric_limits<double>::max();
+            double y_max = std::numeric_limits<double>::lowest();
+
+            auto sample_range = [&](auto &&plot_tuple)
+            {
+                auto &f = std::get<0>(plot_tuple);
+                for (double t = 0; t <= duration; t += 0.5)
+                {
+                    for (double x = x_min; x <= x_max; x += (x_max - x_min) / 100)
+                    {
+                        double y = f(t, x);
+                        if (std::isfinite(y))
+                        {
+                            y_min = std::min(y_min, y);
+                            y_max = std::max(y_max, y);
+                        }
+                    }
+                }
+            };
+
+            // Sample each plot function
+            (sample_range(plots), ...);
+
+            fig.ylim(y_min - 0.1 * (y_max - y_min), y_max + 0.1 * (y_max - y_min));
+
+            // Hide cursor
+            std::cout << "\033[?25l" << std::flush;
+
+            auto frame_time = std::chrono::microseconds(static_cast<int>(1000000.0 / fps));
+            auto start_time = std::chrono::steady_clock::now();
+
+            try
+            {
+                while (true)
+                {
+                    auto now = std::chrono::steady_clock::now();
+                    double t = std::chrono::duration<double>(now - start_time).count();
+
+                    if (t > duration)
+                    {
+                        t = std::fmod(t, duration); // Loop
+                    }
+
+                    fig.clear();
+                    fig.set_time(t);
+
+                    // Plot each function with its color
+                    auto plot_one = [&](auto &&plot_tuple)
+                    {
+                        auto &f = std::get<0>(plot_tuple);
+                        const auto &color = std::get<1>(plot_tuple);
+                        fig.plot_animated(f, x_min, x_max, color);
+                    };
+
+                    (plot_one(plots), ...);
+
+                    std::cout << "\033[H" << fig.render_to_string();
                     std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
                               << "s (Press Ctrl+C to stop)" << std::flush;
 

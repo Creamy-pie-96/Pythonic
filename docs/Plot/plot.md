@@ -9,7 +9,7 @@
 ## 🚀 Quick Start
 
 ```cpp
-#include "pythonic/pythonicPlot.hpp"
+#include <pythonic/pythonic.hpp>
 using namespace pythonic::plot;
 
 int main() {
@@ -18,12 +18,12 @@ int main() {
     // Plot a sine wave
     fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
 
-    std::cout << fig.render();
+    fig.show();  // or fig.render() or std::cout << fig.render_to_string();
     return 0;
 }
 ```
 
-Compile:
+**Compile:**
 
 ```bash
 g++ -std=c++20 -Iinclude -o plot my_plot.cpp
@@ -32,39 +32,23 @@ g++ -std=c++20 -Iinclude -o plot my_plot.cpp
 
 ---
 
-## 📖 Understanding the Module
+## 📐 Resolution & Dimensions
 
-### 1. The Figure Class
+### Braille Resolution
 
-```cpp
-class Figure
-{
-private:
-    size_t _char_width;    // Terminal width in characters
-    size_t _char_height;   // Terminal height in characters
-    size_t _pixel_width;   // char_width × 2 (Braille has 2 dots wide)
-    size_t _pixel_height;  // char_height × 4 (Braille has 4 dots tall)
-
-    std::vector<std::vector<RGBA>> _pixels;  // High-res pixel buffer
-    std::vector<PlotData> _plots;             // All plotted data
-
-    Range _x_range;   // X axis min/max
-    Range _y_range;   // Y axis min/max
-```
-
-**Resolution math:**
+Each terminal character cell maps to a 2×4 Braille dot grid, providing **8× the resolution** of standard ASCII art:
 
 ```
 Terminal: 80 × 24 characters
 Braille:  Each char = 2 × 4 dots
 
-Pixel buffer: 80×2 = 160 pixels wide
-              24×4 = 96 pixels tall
+Pixel buffer: 80 × 2 = 160 pixels wide
+              24 × 4 = 96 pixels tall
 
-That's 15,360 "pixels" to work with!
+Total: 15,360 "pixels" to work with!
 ```
 
-**Visual:**
+**Visual representation:**
 
 ```
 One Braille character cell:
@@ -76,441 +60,555 @@ One Braille character cell:
 └───┘
 ```
 
----
-
-### 2. The Range Structure
+### Supported Render Modes
 
 ```cpp
-struct Range
-{
-    double min, max;
-
-    double span() const { return max - min; }
-    double center() const { return (min + max) / 2.0; }
-
-    void include(double value)  // Expand to include a value
-    {
-        min = std::min(min, value);
-        max = std::max(max, value);
-    }
-
-    static Range nice(double data_min, double data_max)
-    {
-        // Creates "nice" rounded axis limits
-        // e.g., for data 0.3-8.7, returns 0-10
-    }
+enum class PlotMode {
+    braille_colored,  // Default - colored Braille dots
+    braille_bw,       // Black and white Braille
+    block_colored,    // Colored half-blocks (▀)
+    block_bw          // BW half-blocks
 };
 ```
 
-**Auto-scaling example:**
+---
 
-```
-Your data: y values from -0.7 to 3.2
-           x values from 0.5 to 15.8
+## 🎨 API Reference
 
-Auto-scaled ranges:
-  Y: -1.0 to 4.0 (nice round numbers)
-  X:  0.0 to 20.0 (nice round numbers)
+### Figure Class
+
+```cpp
+class Figure {
+    // Constructor
+    Figure(size_t char_width = 80, size_t char_height = 24,
+           PlotMode mode = PlotMode::braille_colored);
+
+    // Configuration (chainable methods)
+    Figure& xlim(double min, double max);      // Set X axis range
+    Figure& ylim(double min, double max);      // Set Y axis range
+    Figure& title(const std::string& t);       // Set plot title
+    Figure& xlabel(const std::string& l);      // Set X axis label
+    Figure& ylabel(const std::string& l);      // Set Y axis label
+    Figure& grid(bool show);                   // Show/hide grid
+    Figure& legend(bool show);                 // Show/hide legend
+
+    // Plotting
+    Figure& plot(func, x_min, x_max, color, label);  // Plot function
+    Figure& scatter(x_vec, y_vec, color, label);     // Scatter plot
+    Figure& parametric(fx, fy, t_min, t_max, color); // Parametric plot
+
+    // Annotations
+    Figure& print(text, x, y, color);         // Add text annotation
+
+    // Variables (Desmos-style)
+    Figure& add_variable(name, value, min, max, step);
+    Figure& set_var(name, value);
+
+    // Rendering
+    void render();                             // Print to stdout
+    void show();                               // Alias for render()
+    std::string render_to_string();            // Get as string
+    Figure& clear();                           // Clear all plots
+};
 ```
 
 ---
 
-### 3. Coordinate Conversion
+## 📈 Plotting Functions
+
+### Basic Function Plot
 
 ```cpp
-int data_to_pixel_x(double x) const
-{
-    double normalized = (x - _x_range.min) / _x_range.span();
-    return _plot_x0 + static_cast<int>(normalized * _plot_width);
-}
+Figure fig(80, 24);
 
-int data_to_pixel_y(double y) const
-{
-    double normalized = (y - _y_range.min) / _y_range.span();
-    // Y is inverted: screen Y increases downward, data Y increases upward
-    return _plot_y1 - static_cast<int>(normalized * _plot_height);
-}
+// Using lambda
+fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
+
+// Using std::function
+std::function<double(double)> f = [](double x) { return x * x; };
+fig.plot(f, -5, 5, "yellow", "x²");
+
+// Multiple functions on same axes
+fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin");
+fig.plot([](double x) { return cos(x); }, -PI, PI, "yellow", "cos");
+fig.plot([](double x) { return tan(x); }, -PI/2.5, PI/2.5, "magenta", "tan");
+
+fig.show();
 ```
 
-**Coordinate systems:**
+### Scatter Plot
 
+```cpp
+Figure fig(80, 24);
+
+std::vector<double> x = {1, 2, 3, 4, 5};
+std::vector<double> y = {2.3, 4.1, 3.7, 5.2, 4.8};
+
+fig.scatter(x, y, "cyan", "data points");
+fig.show();
+
+// Using pythonic var
+var x_var = {1, 2, 3, 4, 5};
+var y_var = {2.3, 4.1, 3.7, 5.2, 4.8};
+fig.scatter(x_var, y_var, "green");
 ```
-Data coordinates:          Screen/Pixel coordinates:
-      Y ↑                        (0,0) ──────────► X
-        │                          │
-        │     ●                    │  margin_top
-        │    / \                   │  ┌─────────┐
-        │   /   \                  │  │ plot    │
-   ─────┼───────────► X            │  │ area    │
-        │                          ▼  └─────────┘
-                                   Y   margin_bottom
+
+### Parametric Plot
+
+```cpp
+Figure fig(80, 24);
+
+// Circle
+fig.parametric(
+    [](double t) { return cos(t); },  // x(t)
+    [](double t) { return sin(t); },  // y(t)
+    0, 2*PI,                          // t range
+    "cyan",                           // color
+    "circle"                          // label
+);
+
+// Lissajous curve
+fig.parametric(
+    [](double t) { return sin(3*t); },
+    [](double t) { return sin(4*t); },
+    0, 2*PI, "magenta", "lissajous"
+);
+
+fig.show();
 ```
 
 ---
 
-### 4. The Plot Method
+## 🎯 Axis Configuration
+
+### Setting Axis Ranges
 
 ```cpp
-Figure &plot(std::function<double(double)> func,
-             double x_min, double x_max,
-             const std::string &color = "",
-             const std::string &label = "")
-{
-    PlotData data;
-    data.color = color.empty() ? next_color() : colors::from_name(color);
-    data.label = label;
+Figure fig(80, 24);
 
-    // Sample the function at many points
-    int num_samples = static_cast<int>(_plot_width * 2);  // 2 samples per pixel
-    double step = (x_max - x_min) / num_samples;
+// Fixed ranges
+fig.xlim(-10, 10);
+fig.ylim(-5, 5);
 
-    for (double x = x_min; x <= x_max; x += step) {
-        double y = func(x);
-        if (std::isfinite(y)) {
-            data.x_data.push_back(x);
-            data.y_data.push_back(y);
-        }
-    }
-
-    _plots.push_back(data);
-    return *this;
-}
+// Auto-scale (default behavior)
+// Ranges are automatically calculated from data
 ```
 
-**Sampling visualization:**
+### Labels and Titles
 
+```cpp
+Figure fig(80, 24);
+
+fig.title("Trigonometric Functions")
+   .xlabel("angle (radians)")
+   .ylabel("amplitude");
+
+fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
+fig.show();
 ```
-Function: sin(x) from -π to π
-Plot width: 100 pixels
-Samples: 200 points
 
-x values: -3.14, -3.11, -3.08, ..., 3.08, 3.11, 3.14
-y values:  0.00, -0.03, -0.06, ..., 0.06, 0.03,  0.00
+### Grid and Legend
+
+```cpp
+Figure fig(80, 24);
+
+fig.grid(true);    // Show grid (default)
+fig.grid(false);   // Hide grid
+
+fig.legend(true);  // Show legend (default)
+fig.legend(false); // Hide legend
 ```
 
 ---
 
-### 5. The Color Palette
+## 🎨 Colors
+
+### Named Colors
 
 ```cpp
-namespace colors
-{
-    inline RGBA red(255, 0, 0);
-    inline RGBA cyan(0, 255, 255);
-    // ... more colors ...
-
-    inline const std::vector<RGBA> &palette()
-    {
-        static std::vector<RGBA> p = {
-            RGBA(31, 119, 180),   // Tableau blue
-            RGBA(255, 127, 14),   // Tableau orange
-            RGBA(44, 160, 44),    // Tableau green
-            RGBA(214, 39, 40),    // Tableau red
-            RGBA(148, 103, 189),  // Tableau purple
-            // ... more colors
-        };
-        return p;
-    }
-}
+// Available named colors:
+"red", "green", "blue", "yellow", "cyan", "magenta",
+"orange", "purple", "white", "black", "gray" (or "grey")
 ```
 
-**Auto-cycling colors:**
+### Auto-Cycling Colors
+
+When no color is specified, colors are automatically assigned from the Tableau palette:
 
 ```cpp
-fig.plot(func1);  // Gets first palette color (blue)
-fig.plot(func2);  // Gets second (orange)
-fig.plot(func3);  // Gets third (green)
-// ...and so on, cycling when exhausted
+fig.plot(f1);  // Gets first palette color (blue)
+fig.plot(f2);  // Gets second (orange)
+fig.plot(f3);  // Gets third (green)
+// ...cycles when exhausted
+```
+
+### Custom RGBA Colors
+
+```cpp
+RGBA custom_color(255, 128, 64, 255);  // RGBA
+fig.plot([](double x) { return sin(x); }, -PI, PI, custom_color);
 ```
 
 ---
 
-### 6. The Pixel Font
+## ✏️ Text Annotations
 
-For axis labels and text annotations, we use a tiny 3×5 pixel font:
+### Adding Text to Plots
 
 ```cpp
-namespace font
-{
-    struct Glyph
-    {
-        uint8_t rows[5];  // 5 rows, each 3 bits wide
-    };
+Figure fig(80, 24);
 
-    inline const std::map<char, Glyph> &get_font()
-    {
-        static std::map<char, Glyph> font = {
-            {'0', {0b111, 0b101, 0b101, 0b101, 0b111}},
-            {'1', {0b010, 0b110, 0b010, 0b010, 0b111}},
-            // ... more characters
-        };
-        return font;
-    }
-}
+fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
+
+// Add annotations at data coordinates
+fig.print("Maximum", PI/2, 1.0, "green");
+fig.print("Minimum", -PI/2, -1.0, "red");
+fig.print("Zero", 0, 0, "yellow");
+
+fig.show();
 ```
 
-**Font visualization (digit "5"):**
+### Method Chaining
 
 ```cpp
-{'5', {0b111, 0b100, 0b111, 0b001, 0b111}}
-
-0b111 → ███
-0b100 → █
-0b111 → ███
-0b001 →   █
-0b111 → ███
+fig.title("Annotated Graph")
+   .xlim(-PI, PI)
+   .ylim(-1.5, 1.5)
+   .plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)")
+   .print("Peak", PI/2, 1.0, "green")
+   .print("Valley", -PI/2, -1.0, "red");
 ```
 
 ---
 
-### 7. Drawing Text
+## 🎬 Animation
+
+Pythonic provides two powerful animation functions: `animate()` and `animate_plots()`.
+
+### Simple Animation (`animate`)
+
+Animate a time-varying function with a single call:
 
 ```cpp
-void draw_text(const std::string &text, int x, int y, const RGBA &color)
-{
-    const auto &font_map = font::get_font();
+#include <pythonic/pythonic.hpp>
+using namespace pythonic::plot;
 
-    for (char c : text) {
-        auto it = font_map.find(c);
-        if (it == font_map.end()) {
-            x += 4;  // Skip unknown characters
-            continue;
-        }
+int main() {
+    // animate(f, x_min, x_max, duration, fps, width, height)
+    animate(
+        [](double t, double x) { return sin(x + t); },  // f(t, x)
+        -PI, PI,     // x range
+        10.0,        // duration in seconds
+        30,          // frames per second
+        80, 24       // figure dimensions
+    );
 
-        const auto &glyph = it->second;
-        for (int row = 0; row < 5; ++row) {
-            for (int col = 0; col < 3; ++col) {
-                if (glyph.rows[row] & (1 << (2 - col))) {
-                    set_pixel(x + col, y + row, color);
-                }
-            }
-        }
-        x += 4;  // Move to next character (3 pixels + 1 space)
-    }
+    return 0;
 }
+```
+
+**Parameters:**
+
+- `f` - Function `f(t, x)` where `t` is time and `x` is the variable
+- `x_min, x_max` - X axis range
+- `duration` - Animation duration in seconds (default: 10.0)
+- `fps` - Frames per second (default: 30)
+- `width, height` - Figure dimensions in characters (default: 80, 24)
+
+**Features:**
+
+- Auto-scales Y axis by sampling over time
+- Loops automatically when duration is exceeded
+- Hides cursor during animation for clean display
+- Press Ctrl+C to stop
+
+---
+
+### Complex Animation with Dependencies (`animate`)
+
+The same `animate` function also supports functions with time-varying parameters:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace pythonic::plot;
+
+int main() {
+    // f(t, x, a, b) = a * sin(x) + b * cos(t)
+    // where 'a' and 'b' are provided by dependency functions
+
+    animate(
+        // Main function: receives t, x, and values from dependency functions
+        [](double t, double x, double a, double b) {
+            return a * sin(x) + b * cos(t);
+        },
+        -PI, PI,           // x range
+        10.0, 30,          // duration, fps
+        80, 24,            // width, height
+        // Dependency functions - each takes t and returns a value
+        [](double t) { return 1.0 + 0.5 * sin(t); },  // -> a
+        [](double t) { return cos(2 * t); }           // -> b
+    );
+
+    return 0;
+}
+```
+
+**Use cases:**
+
+- Amplitude modulation: `a(t) * sin(x)` where `a` varies with time
+- Frequency modulation: `sin(f(t) * x)` where frequency varies
+- Multiple coupled oscillations
+- Physics simulations with time-varying parameters
+
+---
+
+### Multi-Plot Animation (`animate_plots`)
+
+Animate multiple functions simultaneously, each with its own color:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace pythonic::plot;
+
+int main() {
+    animate_plots(
+        -PI, PI,      // x range
+        10.0, 30,     // duration, fps
+        80, 24,       // width, height
+        // Plot entries: std::make_tuple(function, color)
+        std::make_tuple(
+            [](double t, double x) { return sin(x + t); },
+            "cyan"
+        ),
+        std::make_tuple(
+            [](double t, double x) { return cos(x - t); },
+            "yellow"
+        ),
+        std::make_tuple(
+            [](double t, double x) { return sin(2*x + t) * 0.5; },
+            "magenta"
+        )
+    );
+
+    return 0;
+}
+```
+
+**Features:**
+
+- Variadic - add as many plot functions as you want
+- Each function gets its own color
+- All share the same Y-axis scale (auto-computed)
+
+---
+
+### Manual Animation Control
+
+For more control over animation, use the Figure class directly:
+
+```cpp
+Figure fig(80, 24);
+
+// Hide cursor for smooth animation
+std::cout << "\033[?25l" << std::flush;
+
+for (double t = 0; t < 20; t += 0.05) {
+    fig.clear();
+    fig.set_time(t);
+
+    fig.plot_animated(
+        [](double t, double x) { return sin(x + t); },
+        -PI, PI, "cyan"
+    );
+
+    std::cout << "\033[H" << fig.render_to_string();
+    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+}
+
+// Show cursor
+std::cout << "\033[?25h" << std::flush;
 ```
 
 ---
 
-### 8. The Render Pipeline
+## 🔧 Desmos-style Variables
+
+### Adding Sliders
 
 ```cpp
-std::string render()
-{
-    // 1. Clear pixel buffer
-    clear_pixels();
+Figure fig(80, 24);
 
-    // 2. Auto-scale if needed
-    if (_auto_scale) update_ranges();
+// Add a variable with range and step
+fig.add_variable("a", 1.0, 0.1, 5.0, 0.1);  // name, value, min, max, step
+fig.add_variable("b", 0.5, 0.0, 2.0, 0.1);
 
-    // 3. Draw background elements
-    if (_show_grid) draw_grid();
-    draw_axes();
+// Use variables in plot function
+fig.plot([&](double x) {
+    double a = fig.get_var("a");
+    double b = fig.get_var("b");
+    return a * sin(b * x);
+}, -PI, PI, "cyan");
 
-    // 4. Draw all plot data
-    for (const auto &plot : _plots) {
-        draw_plot_data(plot);
-    }
-
-    // 5. Draw labels and annotations
-    draw_labels_to_pixels();
-
-    // 6. Convert to output
-    return render_header() + render_braille();
-}
+// Update variable dynamically
+fig.set_var("a", 2.0);
+fig.render();
 ```
 
 ---
 
-### 9. Braille Rendering
+## 🐍 Pythonic var Integration
+
+### Using var Lambdas
 
 ```cpp
-std::string render_braille()
-{
-    std::ostringstream out;
+using namespace Pythonic;
+using namespace pythonic::plot;
 
-    // Braille dot positions in each 2×4 cell:
-    // [0] [3]    bits 0, 3
-    // [1] [4]    bits 1, 4
-    // [2] [5]    bits 2, 5
-    // [6] [7]    bits 6, 7
+var f = lambda_(x, sin(x));
 
-    static const int dot_map[4][2] = {
-        {0, 3}, {1, 4}, {2, 5}, {6, 7}
-    };
-
-    for (int cy = 0; cy < _char_height; ++cy) {
-        for (int cx = 0; cx < _char_width; ++cx) {
-            uint8_t pattern = 0;
-            RGBA dominant_color;
-
-            // Check each of the 8 pixels in this cell
-            for (int row = 0; row < 4; ++row) {
-                for (int col = 0; col < 2; ++col) {
-                    int px = cx * 2 + col;
-                    int py = cy * 4 + row;
-                    RGBA pixel = _pixels[py][px];
-
-                    if (pixel.a > 0) {
-                        pattern |= (1 << dot_map[row][col]);
-                        dominant_color = pixel;  // Remember color
-                    }
-                }
-            }
-
-            // Output ANSI color + Braille character
-            out << ansi::fg_color(dominant_color.r, dominant_color.g, dominant_color.b);
-            out << braille_to_utf8(pattern);  // Unicode 0x2800 + pattern
-        }
-        out << ansi::RESET << '\n';
-    }
-
-    return out.str();
-}
+plot(f, -PI, PI, "cyan");  // Quick plot with var lambda
 ```
 
-**Braille pattern example:**
+### Using var Data
 
-```
-Pixels:     Pattern bits:    Unicode:
-██          0b00000001 |     0x2800 + 0x49 = 0x2849
-  ██        0b00001000 |
-██          0b01000000       = ⡉
+```cpp
+var x_data = {1.0, 2.0, 3.0, 4.0, 5.0};
+var y_data = {1.1, 4.0, 8.9, 16.1, 25.0};
 
-Result: ⡉ (Braille pattern: dots 1, 4, 7)
+Figure fig(80, 24);
+fig.scatter(x_data, y_data, "cyan", "measurements");
+fig.show();
 ```
 
 ---
 
-### 10. Drawing Plot Data
+## 💡 Quick Plotting Functions
+
+### One-Liner Plots
 
 ```cpp
-void draw_plot_data(const PlotData &data)
-{
-    for (size_t i = 1; i < data.x_data.size(); ++i) {
-        int x0 = data_to_pixel_x(data.x_data[i - 1]);
-        int y0 = data_to_pixel_y(data.y_data[i - 1]);
-        int x1 = data_to_pixel_x(data.x_data[i]);
-        int y1 = data_to_pixel_y(data.y_data[i]);
+using namespace pythonic::plot;
 
-        // Draw line segment with anti-aliasing
-        draw_line_aa(x0, y0, x1, y1, data.color);
-    }
-}
+// Quick function plot
+plot([](double x) { return sin(x); }, -PI, PI, "cyan");
+
+// Quick parametric plot
+parametric(
+    [](double t) { return cos(t); },
+    [](double t) { return sin(t); },
+    0, 2*PI, "cyan"
+);
+
+// Quick scatter plot
+scatter({1,2,3,4,5}, {2.3,4.1,3.7,5.2,4.8}, "cyan");
 ```
 
 ---
 
-## 🎨 Complete Example
+## 📊 Complete Examples
+
+### Trigonometric Functions
 
 ```cpp
-#include "pythonic/pythonicPlot.hpp"
+#include <pythonic/pythonic.hpp>
 using namespace pythonic::plot;
 
 int main() {
     Figure fig(80, 24);
 
-    fig.title("Trigonometric Functions");
-    fig.xlim(-PI, PI);
-    fig.ylim(-1.5, 1.5);
+    fig.title("Trigonometric Functions")
+       .xlim(-PI, PI)
+       .ylim(-1.5, 1.5);
 
-    // Plot multiple functions
     fig.plot([](double x) { return sin(x); }, -PI, PI, "cyan", "sin(x)");
     fig.plot([](double x) { return cos(x); }, -PI, PI, "yellow", "cos(x)");
     fig.plot([](double x) { return sin(2*x)/2; }, -PI, PI, "magenta", "sin(2x)/2");
 
-    // Add text annotations
     fig.print("Maximum", PI/2, 1.0, "green");
     fig.print("Zero", 0, 0, "white");
 
-    std::cout << fig.render();
+    fig.show();
     return 0;
 }
 ```
 
-**Output (conceptual):**
+### Polynomial with Roots
 
+```cpp
+Figure fig(80, 24);
+
+// f(x) = (x-1)(x+2)(x-3) = x³ - 2x² - 5x + 6
+fig.plot([](double x) { return (x-1)*(x+2)*(x-3); }, -3, 4, "cyan", "polynomial");
+
+// Mark the roots
+fig.print("root", 1, 0, "red");
+fig.print("root", -2, 0, "red");
+fig.print("root", 3, 0, "red");
+
+fig.show();
 ```
-      Trigonometric Functions
-      ▄ sin(x)  ▄ cos(x)  ▄ sin(2x)/2
-                    Y
-   1.5┤        ⢀⣀⡀
-   1.0┤Maximum⡴⠁  ⠈⠢⣀
-      │     ⡔⠁      ⠈⠢⡀
-   0.0├Zero─╋───────────────X
-      │   ⡰⠁          ⠈⠢⡀
-  -1.0┤ ⡠⠃              ⠈⠢
-  -1.5┤⠐⠁
-      └──────────────────────
-     -3.14              3.14
+
+### Real-time Data Visualization
+
+```cpp
+Figure fig(80, 24);
+std::vector<double> x_data, y_data;
+
+std::cout << "\033[?25l";  // Hide cursor
+
+for (int i = 0; i < 100; ++i) {
+    x_data.push_back(i);
+    y_data.push_back(sin(i * 0.1) + 0.1 * (rand() % 10 - 5));
+
+    fig.clear();
+    fig.scatter(x_data, y_data, "cyan", "live data");
+
+    std::cout << "\033[H" << fig.render_to_string();
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
+}
+
+std::cout << "\033[?25h";  // Show cursor
 ```
 
 ---
 
-## 📚 API Reference
+## 🎯 Tips & Best Practices
 
-### Figure Configuration
-
-| Method           | Description      |
-| ---------------- | ---------------- |
-| `xlim(min, max)` | Set X axis range |
-| `ylim(min, max)` | Set Y axis range |
-| `title(str)`     | Set plot title   |
-| `xlabel(str)`    | Set X axis label |
-| `ylabel(str)`    | Set Y axis label |
-| `legend(bool)`   | Show/hide legend |
-| `grid(bool)`     | Show/hide grid   |
-
-### Plotting
-
-| Method                                   | Description         |
-| ---------------------------------------- | ------------------- |
-| `plot(func, x_min, x_max, color, label)` | Plot a function     |
-| `scatter(x_vec, y_vec, color, label)`    | Scatter plot        |
-| `print(text, x, y, color)`               | Add text annotation |
-
-### Rendering
-
-| Method     | Description            |
-| ---------- | ---------------------- |
-| `render()` | Generate output string |
-| `show()`   | Print to stdout        |
-| `clear()`  | Clear all plots        |
-
----
-
-## 🎯 Tips & Tricks
-
-### 1. High-DPI Output
+### High-DPI Output
 
 ```cpp
 Figure fig(160, 48);  // Double the resolution
 ```
 
-### 2. Aspect Ratio
+### Aspect Ratio for Square Plots
 
 ```cpp
-// For a square plot area:
-Figure fig(40, 20);  // Width:Height ≈ 2:1 accounts for Braille aspect
+// For visually square plot area:
+Figure fig(40, 20);  // Width:Height ≈ 2:1 accounts for Braille aspect ratio
 ```
 
-### 3. Animation
+### Performance Tips
 
-```cpp
-for (double t = 0; t < 10; t += 0.1) {
-    fig.clear();
-    fig.plot([t](double x) { return sin(x + t); }, -PI, PI);
-
-    std::cout << "\033[H";  // Cursor home
-    std::cout << fig.render();
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
-}
-```
+- Use `render_to_string()` and print once rather than multiple renders
+- For animation, use `\033[H` (cursor home) instead of clearing terminal
+- Reduce number of samples for faster plotting
 
 ---
 
-## 📚 Next Steps
+## 🔗 Related Documentation
 
 - [pythonicDraw Tutorial](../LiveDraw/pythonicDraw_tutorial.md) - Understanding Braille graphics
 - [LiveDraw Tutorial](../LiveDraw/livedraw.md) - Interactive drawing
+- [Print Documentation](../Print/print.md) - Output functions
+
+---
+
+## 📚 Mathematical Constants
+
+Available in `pythonic::plot` namespace:
+
+```cpp
+constexpr double PI = 3.14159265358979323846;
+constexpr double E = 2.71828182845904523536;
+constexpr double TAU = 2.0 * PI;  // 2π
+```

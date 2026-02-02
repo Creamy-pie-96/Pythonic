@@ -30,6 +30,10 @@ build/
 examples/graph_visualization/external/
 dist/
 media/
+*.mp4
+*.png
+*.pi
+*.pv
 install/
 out/
 bin/
