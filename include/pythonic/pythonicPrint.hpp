@@ -925,7 +925,7 @@ namespace pythonic
                     std::system(mkdir_cmd.c_str());
 
                     // Initialize progress bar (estimate frames from duration)
-                    ExportProgress progress(100, 50);  // Will update after extraction
+                    ExportProgress progress(100, 50); // Will update after extraction
                     progress.set_stage("Extracting frames");
                     progress.update(0);
 
