@@ -173,6 +173,7 @@ endif()
 # Precompiled headers to speed up compilation
 target_precompile_headers(pythonic PRIVATE
     <algorithm>
+    <iterator>
     <stdexcept>
     <pythonic/pythonicDispatchForwardDecls.hpp>
     <pythonic/pythonicError.hpp>

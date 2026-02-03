@@ -4,8 +4,8 @@
 #include "pythonic/pythonicOverflow.hpp"
 #include "pythonic/pythonicPromotion.hpp"
 #include <stdexcept>
-
 #include <algorithm>
+#include <iterator>  // For std::equal, std::lexicographical_compare on MSVC
 
 namespace pythonic {
 namespace dispatch {
