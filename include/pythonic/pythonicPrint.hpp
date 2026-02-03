@@ -1327,28 +1327,54 @@ namespace pythonic
                         std::cout << "\n\033[90mUsing CPU encoder (GPU disabled by user)\033[0m\n";
                     }
 
-                    // Build encoder-specific options
-                    std::string encoder_opts;
-                    if (encoder == "h264_nvenc")
+                    // Build encoder-specific options (returns pair: encoder_opts, is_hw_encoder)
+                    auto build_encoder_opts = [](const std::string &enc) -> std::pair<std::string, bool>
                     {
-                        encoder_opts = "-c:v h264_nvenc -preset fast -rc vbr -cq 23";
-                    }
-                    else if (encoder == "h264_qsv")
+                        if (enc == "h264_nvenc")
+                            return {"-c:v h264_nvenc -preset fast -rc vbr -cq 23", true};
+                        if (enc == "h264_qsv")
+                            return {"-c:v h264_qsv -preset faster -global_quality 23", true};
+                        if (enc == "h264_vaapi")
+                            return {"-vaapi_device /dev/dri/renderD128 -c:v h264_vaapi -qp 23", true};
+                        if (enc == "h264_videotoolbox")
+                            return {"-c:v h264_videotoolbox -q:v 65", true};
+                        return {"-c:v libx264 -preset faster -crf 23", false};
+                    };
+
+                    auto [encoder_opts, is_hw_encoder] = build_encoder_opts(encoder);
+
+                    // Video filter to ensure dimensions are divisible by 2 (required for yuv420p)
+                    // Using single quotes for shell compatibility
+                    std::string scale_filter = "-vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2'";
+
+                    // Lambda to build and execute FFmpeg command with fallback
+                    auto run_encode = [&](const std::string &audio_path) -> int
                     {
-                        encoder_opts = "-c:v h264_qsv -preset faster -global_quality 23";
-                    }
-                    else if (encoder == "h264_vaapi")
-                    {
-                        encoder_opts = "-vaapi_device /dev/dri/renderD128 -c:v h264_vaapi -qp 23";
-                    }
-                    else if (encoder == "h264_videotoolbox")
-                    {
-                        encoder_opts = "-c:v h264_videotoolbox -q:v 65";
-                    }
-                    else
-                    {
-                        encoder_opts = "-c:v libx264 -preset faster -crf 23";
-                    }
+                        // Use glob pattern for input to handle non-sequential frame numbers
+                        // (some frames may fail to render, causing gaps in the sequence)
+                        std::string base_input = "-framerate " + fps_str + " -pattern_type glob -i '" + temp_dir + "/ascii_*.png'";
+                        std::string audio_input = audio_path.empty() ? "" : " -i '" + audio_path + "'";
+                        std::string audio_opts = audio_path.empty() ? "" : " -c:a aac -shortest";
+                        std::string pix_fmt = " -pix_fmt yuv420p";
+
+                        // Try with hardware encoder first
+                        std::string video_cmd = "ffmpeg -y " + base_input + audio_input + " " +
+                                                scale_filter + " " + encoder_opts + audio_opts + pix_fmt +
+                                                " '" + output_path + "' 2>/dev/null";
+                        int res = std::system(video_cmd.c_str());
+
+                        // If hardware encoder fails, fallback to CPU encoder
+                        if (res != 0 && is_hw_encoder)
+                        {
+                            std::cout << "\n\033[33mHardware encoder failed, falling back to CPU (libx264)\033[0m\n";
+                            std::string cpu_opts = "-c:v libx264 -preset faster -crf 23";
+                            video_cmd = "ffmpeg -y " + base_input + audio_input + " " +
+                                        scale_filter + " " + cpu_opts + audio_opts + pix_fmt +
+                                        " '" + output_path + "' 2>/dev/null";
+                            res = std::system(video_cmd.c_str());
+                        }
+                        return res;
+                    };
 
                     // Combine ASCII frames into video
                     if (audio == Audio::on)
@@ -1360,26 +1386,18 @@ namespace pythonic
 
                         if (audio_result == 0)
                         {
-                            // Create video with audio using detected encoder
-                            std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" "
-                                                                                                              "-i \"" +
-                                                    audio_path + "\" " + encoder_opts + " -c:a aac -pix_fmt yuv420p "
-                                                                                        "-shortest \"" +
-                                                    output_path + "\" 2>/dev/null";
-                            result = std::system(video_cmd.c_str());
+                            result = run_encode(audio_path);
                         }
                         else
                         {
                             // No audio in source or extraction failed, create video without audio
-                            std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" " + encoder_opts + " -pix_fmt yuv420p \"" + output_path + "\" 2>/dev/null";
-                            result = std::system(video_cmd.c_str());
+                            result = run_encode("");
                         }
                     }
                     else
                     {
-                        // Create video without audio using detected encoder
-                        std::string video_cmd = "ffmpeg -y -framerate " + fps_str + " -i \"" + temp_dir + "/ascii_%05d.png\" " + encoder_opts + " -pix_fmt yuv420p \"" + output_path + "\" 2>/dev/null";
-                        result = std::system(video_cmd.c_str());
+                        // Create video without audio
+                        result = run_encode("");
                     }
 
                     // Cleanup
