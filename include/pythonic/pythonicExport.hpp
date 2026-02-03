@@ -95,6 +95,160 @@ namespace pythonic
         }
 
         /**
+         * @brief Parse ANSI 256-color escape sequence
+         * @param ansi ANSI escape sequence like "\033[38;5;XXXm" or combined "\033[38;5;FG;48;5;BGm"
+         * @param r Output red component
+         * @param g Output green component
+         * @param b Output blue component
+         * @param is_foreground Output: true if this is a foreground color
+         * @return true if parsed successfully
+         */
+        inline bool parse_ansi_256(const std::string &ansi, uint8_t &r, uint8_t &g, uint8_t &b, bool &is_foreground)
+        {
+            // Convert color index to RGB
+            auto color_to_rgb = [](int color_index, uint8_t &r, uint8_t &g, uint8_t &b) -> bool
+            {
+                // Standard colors (0-15): Use basic color mapping
+                if (color_index < 16)
+                {
+                    static const uint8_t basic_colors[16][3] = {
+                        {0, 0, 0},       // 0 Black
+                        {128, 0, 0},     // 1 Red
+                        {0, 128, 0},     // 2 Green
+                        {128, 128, 0},   // 3 Yellow
+                        {0, 0, 128},     // 4 Blue
+                        {128, 0, 128},   // 5 Magenta
+                        {0, 128, 128},   // 6 Cyan
+                        {192, 192, 192}, // 7 White
+                        {128, 128, 128}, // 8 Bright Black
+                        {255, 0, 0},     // 9 Bright Red
+                        {0, 255, 0},     // 10 Bright Green
+                        {255, 255, 0},   // 11 Bright Yellow
+                        {0, 0, 255},     // 12 Bright Blue
+                        {255, 0, 255},   // 13 Bright Magenta
+                        {0, 255, 255},   // 14 Bright Cyan
+                        {255, 255, 255}  // 15 Bright White
+                    };
+                    r = basic_colors[color_index][0];
+                    g = basic_colors[color_index][1];
+                    b = basic_colors[color_index][2];
+                    return true;
+                }
+                // Color cube (16-231): 6x6x6 RGB
+                else if (color_index < 232)
+                {
+                    int idx = color_index - 16;
+                    int ri = idx / 36;
+                    int gi = (idx % 36) / 6;
+                    int bi = idx % 6;
+                    r = ri ? (ri * 40 + 55) : 0;
+                    g = gi ? (gi * 40 + 55) : 0;
+                    b = bi ? (bi * 40 + 55) : 0;
+                    return true;
+                }
+                // Grayscale (232-255): 24 shades
+                else if (color_index < 256)
+                {
+                    int gray = (color_index - 232) * 10 + 8;
+                    r = g = b = static_cast<uint8_t>(gray);
+                    return true;
+                }
+                return false;
+            };
+
+            // Match ESC[38;5;Nm (foreground only)
+            std::regex fg_only_regex(R"(\x1b\[38;5;(\d+)m)");
+            std::smatch match;
+            if (std::regex_search(ansi, match, fg_only_regex) && match.prefix().str().empty())
+            {
+                int color_index = std::stoi(match[1].str());
+                is_foreground = true;
+                return color_to_rgb(color_index, r, g, b);
+            }
+
+            // Match ESC[48;5;Nm (background only)
+            std::regex bg_only_regex(R"(\x1b\[48;5;(\d+)m)");
+            if (std::regex_search(ansi, match, bg_only_regex) && match.prefix().str().empty())
+            {
+                int color_index = std::stoi(match[1].str());
+                is_foreground = false;
+                return color_to_rgb(color_index, r, g, b);
+            }
+
+            return false;
+        }
+
+        /**
+         * @brief Parse combined ANSI 256-color escape sequence with both fg and bg
+         * @param ansi ANSI escape sequence like "\033[38;5;FG;48;5;BGm"
+         * @param fg_r, fg_g, fg_b Output foreground RGB
+         * @param bg_r, bg_g, bg_b Output background RGB
+         * @param has_fg, has_bg Output: which colors were found
+         * @return true if parsed successfully
+         */
+        inline bool parse_ansi_256_combined(const std::string &ansi,
+                                            uint8_t &fg_r, uint8_t &fg_g, uint8_t &fg_b,
+                                            uint8_t &bg_r, uint8_t &bg_g, uint8_t &bg_b,
+                                            bool &has_fg, bool &has_bg)
+        {
+            has_fg = has_bg = false;
+
+            // Convert color index to RGB
+            auto color_to_rgb = [](int color_index, uint8_t &r, uint8_t &g, uint8_t &b) -> bool
+            {
+                if (color_index < 16)
+                {
+                    static const uint8_t basic_colors[16][3] = {
+                        {0, 0, 0}, {128, 0, 0}, {0, 128, 0}, {128, 128, 0}, {0, 0, 128}, {128, 0, 128}, {0, 128, 128}, {192, 192, 192}, {128, 128, 128}, {255, 0, 0}, {0, 255, 0}, {255, 255, 0}, {0, 0, 255}, {255, 0, 255}, {0, 255, 255}, {255, 255, 255}};
+                    r = basic_colors[color_index][0];
+                    g = basic_colors[color_index][1];
+                    b = basic_colors[color_index][2];
+                    return true;
+                }
+                else if (color_index < 232)
+                {
+                    int idx = color_index - 16;
+                    r = (idx / 36) ? ((idx / 36) * 40 + 55) : 0;
+                    g = ((idx % 36) / 6) ? (((idx % 36) / 6) * 40 + 55) : 0;
+                    b = (idx % 6) ? ((idx % 6) * 40 + 55) : 0;
+                    return true;
+                }
+                else if (color_index < 256)
+                {
+                    int gray = (color_index - 232) * 10 + 8;
+                    r = g = b = static_cast<uint8_t>(gray);
+                    return true;
+                }
+                return false;
+            };
+
+            // Match combined fg+bg: ESC[38;5;FG;48;5;BGm
+            std::regex combined_regex(R"(\x1b\[38;5;(\d+);48;5;(\d+)m)");
+            std::smatch match;
+            if (std::regex_search(ansi, match, combined_regex))
+            {
+                int fg_idx = std::stoi(match[1].str());
+                int bg_idx = std::stoi(match[2].str());
+                has_fg = color_to_rgb(fg_idx, fg_r, fg_g, fg_b);
+                has_bg = color_to_rgb(bg_idx, bg_r, bg_g, bg_b);
+                return has_fg || has_bg;
+            }
+
+            // Also match reverse order: ESC[48;5;BG;38;5;FGm
+            std::regex combined_rev_regex(R"(\x1b\[48;5;(\d+);38;5;(\d+)m)");
+            if (std::regex_search(ansi, match, combined_rev_regex))
+            {
+                int bg_idx = std::stoi(match[1].str());
+                int fg_idx = std::stoi(match[2].str());
+                has_fg = color_to_rgb(fg_idx, fg_r, fg_g, fg_b);
+                has_bg = color_to_rgb(bg_idx, bg_r, bg_g, bg_b);
+                return has_fg || has_bg;
+            }
+
+            return false;
+        }
+
+        /**
          * @brief Strip all ANSI escape codes from a string
          */
         inline std::string strip_ansi(const std::string &input)
@@ -346,7 +500,7 @@ namespace pythonic
 
                     std::string escape = line.substr(start, i - start);
 
-                    // Parse RGB color
+                    // Try parsing 24-bit RGB color first
                     uint8_t r, g, b;
                     if (parse_ansi_rgb(escape, r, g, b))
                     {
@@ -361,14 +515,51 @@ namespace pythonic
                             has_bg = true;
                         }
                     }
-                    // Reset code
-                    else if (escape.find("[0m") != std::string::npos ||
-                             escape.find("[m") != std::string::npos)
+                    // Try parsing combined 256-color (fg+bg in one escape)
+                    else
                     {
-                        current_fg = RGB(255, 255, 255);
-                        current_bg = RGB(0, 0, 0);
-                        has_fg = false;
-                        has_bg = false;
+                        uint8_t fg_r, fg_g, fg_b, bg_r, bg_g, bg_b;
+                        bool got_fg, got_bg;
+                        if (parse_ansi_256_combined(escape, fg_r, fg_g, fg_b, bg_r, bg_g, bg_b, got_fg, got_bg))
+                        {
+                            if (got_fg)
+                            {
+                                current_fg = RGB(fg_r, fg_g, fg_b);
+                                has_fg = true;
+                            }
+                            if (got_bg)
+                            {
+                                current_bg = RGB(bg_r, bg_g, bg_b);
+                                has_bg = true;
+                            }
+                        }
+                        // Try parsing single 256-color
+                        else
+                        {
+                            bool is_foreground;
+                            if (parse_ansi_256(escape, r, g, b, is_foreground))
+                            {
+                                if (is_foreground)
+                                {
+                                    current_fg = RGB(r, g, b);
+                                    has_fg = true;
+                                }
+                                else
+                                {
+                                    current_bg = RGB(r, g, b);
+                                    has_bg = true;
+                                }
+                            }
+                            // Reset code
+                            else if (escape.find("[0m") != std::string::npos ||
+                                     escape.find("[m") != std::string::npos)
+                            {
+                                current_fg = RGB(255, 255, 255);
+                                current_bg = RGB(0, 0, 0);
+                                has_fg = false;
+                                has_bg = false;
+                            }
+                        }
                     }
                     continue;
                 }

@@ -3,6 +3,11 @@
 #include <iostream>
 #include <iomanip>
 #include <chrono>
+#include <thread>
+#include <atomic>
+#if __cplusplus >= 201703L && __has_include(<filesystem>)
+#include <filesystem>
+#endif
 #include "pythonicVars.hpp"
 #include "pythonicDraw.hpp"
 #include "pythonicMedia.hpp"
@@ -1113,15 +1118,30 @@ namespace pythonic
 
                     std::string fps_str = std::to_string(actual_fps);
 
-                    // Create temp directory for frames
-                    std::string temp_dir = "/tmp/pythonic_video_export_" +
-                                           std::to_string(std::hash<std::string>{}(input_path));
+                    // Create temp directory for frames using a simpler, more reliable approach
+                    // Use timestamp + process id for uniqueness
+                    auto now = std::chrono::steady_clock::now().time_since_epoch().count();
+                    std::string temp_dir = "/tmp/pythonic_export_" + std::to_string(now % 1000000);
+
+                    // Use filesystem to create directory (more reliable than system call)
+#if __cplusplus >= 201703L && __has_include(<filesystem>)
+                    try
+                    {
+                        std::filesystem::create_directories(temp_dir);
+                    }
+                    catch (...)
+                    {
+                        // Fallback to system call
+#endif
 #ifdef _WIN32
-                    std::string mkdir_cmd = "mkdir \"" + temp_dir + "\" 2>nul";
+                        std::string mkdir_cmd = "mkdir \"" + temp_dir + "\" 2>nul";
 #else
                     std::string mkdir_cmd = "mkdir -p \"" + temp_dir + "\"";
 #endif
-                    std::system(mkdir_cmd.c_str());
+                        std::system(mkdir_cmd.c_str());
+#if __cplusplus >= 201703L && __has_include(<filesystem>)
+                    }
+#endif
 
                     // Get estimated frame count for preprocessing progress
                     double video_duration = get_video_duration(actual_path);
@@ -1171,23 +1191,15 @@ namespace pythonic
                     if (is_temp_video)
                         std::remove(actual_path.c_str());
 
-                    if (result != 0)
-                    {
-                        std::cout << "\n\033[31mError: Failed to extract frames from video\033[0m\n";
-#ifdef _WIN32
-                        std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
-#else
-                        std::string rm_cmd = "rm -rf \"" + temp_dir + "\"";
-#endif
-                        std::system(rm_cmd.c_str());
-                        return false;
-                    }
-
-                    // Count total frames
+                    // Count extracted frames - this is more reliable than exit code
+                    // FFmpeg may return non-zero even when frames are extracted successfully
                     size_t total_frames = count_frames(temp_dir, "frame_");
+
                     if (total_frames == 0)
                     {
-                        std::cout << "\n\033[31mError: No frames extracted from video\033[0m\n";
+                        // Only fail if no frames were extracted at all
+                        std::cout << "\n\033[31mError: Failed to extract frames from video (exit code: "
+                                  << result << ")\033[0m\n";
 #ifdef _WIN32
                         std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
 #else
@@ -1297,6 +1309,12 @@ namespace pythonic
                     {
                         auto hw_encoders = pythonic::accel::detect_hw_encoders();
                         encoder = hw_encoders.best_h264_encoder();
+
+                        // If GPU was requested but not available, inform user
+                        if (encoder == "libx264")
+                        {
+                            std::cout << "\n\033[33mNote: GPU requested but no hardware encoder found, falling back to CPU\033[0m\n";
+                        }
                     }
 
                     // Log encoder being used
@@ -1306,7 +1324,7 @@ namespace pythonic
                     }
                     else if (!use_gpu)
                     {
-                        std::cout << "\n\033[90mUsing CPU encoder (GPU disabled)\033[0m\n";
+                        std::cout << "\n\033[90mUsing CPU encoder (GPU disabled by user)\033[0m\n";
                     }
 
                     // Build encoder-specific options
