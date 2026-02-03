@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 #include <chrono>
 #include <thread>
 #include <atomic>
@@ -376,15 +377,8 @@ namespace pythonic
          *   print("info.mp4", Type::video_info);  // Show video info only
          *   print("file.png", Type::auto_detect); // Auto-detect from extension
          */
-        enum class Type
-        {
-            auto_detect, // Detect from file extension (default)
-            image,       // Force treat as image
-            video,       // Force treat as video (play it)
-            webcam,      // Capture from webcam (requires OpenCV)
-            video_info,  // Show video metadata only (no playback)
-            text         // Force treat as plain text
-        };
+        // Use Type from draw namespace
+        using Type = pythonic::draw::Type;
 
         // Forward declaration for recursive pretty printing
         inline std::string format_value(const var &v, size_t indent = 0, size_t indent_step = 2, bool top_level = true);
@@ -741,14 +735,8 @@ namespace pythonic
         /**
          * @brief Output format for export function
          */
-        enum class Format
-        {
-            pythonic,     // Save as .pi (image) or .pv (video) - Pythonic's encrypted format
-            text,         // Save as .txt (ASCII art text file)
-            image,        // Save as .png image (render ASCII art to image)
-            video,        // Save as .mp4 video (render ASCII art to video frames)
-            normal = text // Alias for backward compatibility
-        };
+        // Use Format from draw namespace
+        using Format = pythonic::draw::Format;
 
         /**
          * @brief Get basename without extension, truncating any given extension
@@ -795,6 +783,17 @@ namespace pythonic
                 break;
             case Mode::colored_dot:
                 result = pythonic::draw::render_image_colored_dot(actual_path, max_width, threshold);
+                break;
+            case Mode::bw_dithered:
+                result = pythonic::draw::render_image_dithered(actual_path, max_width);
+                break;
+            case Mode::grayscale_dot:
+                // Grayscale-colored dots with dithering for best quality
+                result = pythonic::draw::render_image_grayscale(actual_path, max_width, threshold, true);
+                break;
+            case Mode::flood_dot:
+                // All dots lit, colored by average cell brightness - smoothest appearance
+                result = pythonic::draw::render_image_flood(actual_path, max_width);
                 break;
             }
 
@@ -883,7 +882,8 @@ namespace pythonic
          *   export_media("input.png", "output", Type::image, Format::image);             // output.png (ASCII as image)
          *   export_media("input.mp4", "output", Type::video, Format::video);             // output.mp4 (ASCII video)
          *   export_media("input.png", "output", Type::image, Format::pythonic);          // output.pi
-         *   export_media("input.mp4", "output", Type::video, Format::video, Mode::bw_dot, 80, 128, Audio::off, 0, {}, false); // CPU only
+         *   export_media("input.mp4", "output", Type::video, Format::video, Mode::bw_dot, 80, 128, Audio::off, 0, {}, true, -1, -1); // Full video
+         *   export_media("input.mp4", "output", Type::video, Format::video, Mode::bw_dot, 80, 128, Audio::off, 10, {}, true, 60, 120); // 1:00 to 2:00
          *
          * @param input_path Path to source media file
          * @param output_name Output filename (extension will be ignored/replaced)
@@ -896,6 +896,8 @@ namespace pythonic
          * @param fps Frame rate for video export (0 = use original video fps, default)
          * @param config Export configuration for customizing rendering (dot_size, density, colors)
          * @param use_gpu Use GPU/hardware acceleration if available (default true). When false, uses CPU only.
+         * @param start_time Start time in seconds for video export (-1 = from beginning, default)
+         * @param end_time End time in seconds for video export (-1 = to end, default)
          * @return true on success, false on failure
          */
         inline bool export_media(const std::string &input_path, const std::string &output_name,
@@ -906,7 +908,9 @@ namespace pythonic
                                  Audio audio = Audio::off,
                                  int fps = 0,
                                  const ex::ExportConfig &config = ex::ExportConfig(),
-                                 bool use_gpu = true)
+                                 bool use_gpu = true,
+                                 double start_time = -1.0,
+                                 double end_time = -1.0)
         {
             // Truncate any extension from output_name
             std::string basename = truncate_extension(output_name);
@@ -1118,10 +1122,30 @@ namespace pythonic
 
                     std::string fps_str = std::to_string(actual_fps);
 
-                    // Create temp directory for frames using a simpler, more reliable approach
-                    // Use timestamp + process id for uniqueness
+                    // Get estimated frame count early for temp directory decision
+                    double video_duration = get_video_duration(actual_path);
+                    size_t estimated_frames = static_cast<size_t>(video_duration * actual_fps);
+
+                    // Create temp directory for frames
+                    // For large videos (>1000 frames), prefer disk-based temp to avoid tmpfs limits
+                    // /var/tmp persists across reboots and typically has more space than /tmp
                     auto now = std::chrono::steady_clock::now().time_since_epoch().count();
-                    std::string temp_dir = "/tmp/pythonic_export_" + std::to_string(now % 1000000);
+                    std::string temp_base;
+#ifdef _WIN32
+                    temp_base = std::getenv("TEMP") ? std::getenv("TEMP") : "C:\\Temp";
+#else
+                    if (estimated_frames > 1000)
+                    {
+                        // Large video - use /var/tmp (disk-backed, not tmpfs)
+                        temp_base = "/var/tmp";
+                    }
+                    else
+                    {
+                        // Small video - use /tmp (fast tmpfs)
+                        temp_base = "/tmp";
+                    }
+#endif
+                    std::string temp_dir = temp_base + "/pythonic_export_" + std::to_string(now % 1000000);
 
                     // Use filesystem to create directory (more reliable than system call)
 #if __cplusplus >= 201703L && __has_include(<filesystem>)
@@ -1143,18 +1167,34 @@ namespace pythonic
                     }
 #endif
 
-                    // Get estimated frame count for preprocessing progress
-                    double video_duration = get_video_duration(actual_path);
-                    size_t estimated_frames = static_cast<size_t>(video_duration * actual_fps);
-
                     // Initialize progress bar with preprocessing stage
                     ExportProgress progress(0, 50); // Indeterminate initially
                     progress.set_indeterminate(true);
                     progress.set_stage("Preprocessing");
                     progress.update(0);
 
+                    // Build timestamp options for FFmpeg
+                    std::string time_opts;
+                    if (start_time >= 0)
+                    {
+                        // -ss before -i for fast seeking
+                        time_opts = "-ss " + std::to_string(start_time) + " ";
+                    }
+
+                    std::string duration_opt;
+                    if (end_time >= 0)
+                    {
+                        double duration = (start_time >= 0) ? (end_time - start_time) : end_time;
+                        if (duration > 0)
+                        {
+                            duration_opt = " -t " + std::to_string(duration);
+                        }
+                    }
+
                     // Extract frames from video at the target fps
-                    std::string extract_cmd = "ffmpeg -y -i \"" + actual_path + "\" -vf \"fps=" + fps_str + "\" \"" +
+                    // Note: -ss before -i seeks input (fast), duration/time filters after
+                    std::string extract_cmd = "ffmpeg -y " + time_opts + "-i \"" + actual_path + "\"" + duration_opt +
+                                              " -vf \"fps=" + fps_str + "\" \"" +
                                               temp_dir + "/frame_%05d.png\" 2>/dev/null";
 
                     // Atomic flag to signal extraction done
@@ -1223,8 +1263,8 @@ namespace pythonic
                         num_threads = 4; // Fallback
                     else if (num_threads > 2)
                         num_threads -= 2; // Leave 2 threads free
-                    if (num_threads > 10)
-                        num_threads = 10; // Cap at 10 threads max
+                    if (num_threads > 16)
+                        num_threads = 16; // Cap at 16 threads max for rendering
 
                     // For smaller videos, fewer threads make sense
                     if (total_frames < 100)
@@ -1232,72 +1272,260 @@ namespace pythonic
                     if (total_frames < 50)
                         num_threads = std::min(num_threads, 2);
 
-                    // Atomic counter for progress tracking
-                    std::atomic<size_t> frames_completed{0};
-                    std::atomic<bool> processing_done{false};
+                    // ==================== FAST PATH: Direct BW Block Export ====================
+                    // For bw_block mode, bypass ANSI string generation for 5-10x speedup
+                    if (mode == Mode::bw)
+                    {
+                        progress.set_stage("Direct grayscale export");
+                        progress.set_total(total_frames);
+                        progress.update(0);
 
-                    // Progress update thread
-                    std::thread progress_thread([&progress, &frames_completed, &processing_done, total_frames]()
-                                                {
-                        while (!processing_done.load())
+                        std::atomic<size_t> fast_frames_done{0};
+                        std::atomic<bool> fast_done{false};
+
+                        std::thread fast_progress_thread([&progress, &fast_frames_done, &fast_done, total_frames]()
+                                                         {
+                            while (!fast_done.load()) {
+                                progress.update(fast_frames_done.load());
+                                if (fast_frames_done.load() >= total_frames) break;
+                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                            } });
+
+                        auto fast_worker = [&](size_t start, size_t end)
                         {
-                            size_t completed = frames_completed.load();
+                            for (size_t frame_num = start; frame_num <= end && frame_num <= total_frames; frame_num++)
+                            {
+                                char frame_name[128];
+                                snprintf(frame_name, sizeof(frame_name), "%s/frame_%05zu.png", temp_dir.c_str(), frame_num);
+
+                                // Convert PNG to PPM using ImageMagick
+                                std::string temp_ppm = temp_dir + "/temp_" + std::to_string(frame_num) + ".ppm";
+                                std::string cmd = "convert \"" + std::string(frame_name) + "\" -resize " +
+                                                  std::to_string(max_width) + "x -depth 8 \"" + temp_ppm + "\" 2>/dev/null";
+                                if (std::system(cmd.c_str()) != 0)
+                                {
+                                    fast_frames_done++;
+                                    continue;
+                                }
+
+                                // Read PPM directly
+                                std::ifstream ppm(temp_ppm, std::ios::binary);
+                                if (!ppm)
+                                {
+                                    std::remove(temp_ppm.c_str());
+                                    fast_frames_done++;
+                                    continue;
+                                }
+
+                                std::string magic;
+                                ppm >> magic;
+                                char c;
+                                ppm.get(c);
+                                while (ppm.peek() == '#')
+                                {
+                                    std::string comment;
+                                    std::getline(ppm, comment);
+                                }
+                                int width, height, maxval;
+                                ppm >> width >> height >> maxval;
+                                ppm.get(c);
+
+                                // Load into BWBlockCanvas
+                                pythonic::draw::BWBlockCanvas canvas = pythonic::draw::BWBlockCanvas::from_pixels(width, height);
+                                std::vector<uint8_t> rgb_data(width * height * 3);
+                                ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
+                                ppm.close();
+                                std::remove(temp_ppm.c_str());
+
+                                canvas.load_frame_rgb(rgb_data.data(), width, height, threshold);
+
+                                // Direct export using fast path
+                                auto img = pythonic::ex::render_half_block_direct(
+                                    canvas.get_pixels(), canvas.width(), canvas.height(), config.dot_size);
+
+                                char img_name[128];
+                                snprintf(img_name, sizeof(img_name), "%s/ascii_%05zu.png", temp_dir.c_str(), frame_num);
+                                pythonic::ex::write_png(img, img_name);
+
+                                fast_frames_done++;
+                            }
+                        };
+
+                        // Launch workers
+                        std::vector<std::thread> fast_workers;
+                        size_t frames_per_thread = (total_frames + num_threads - 1) / num_threads;
+                        for (int t = 0; t < num_threads; t++)
+                        {
+                            size_t start = t * frames_per_thread + 1;
+                            size_t end = std::min(start + frames_per_thread - 1, total_frames);
+                            if (start <= total_frames)
+                            {
+                                fast_workers.emplace_back(fast_worker, start, end);
+                            }
+                        }
+                        for (auto &w : fast_workers)
+                            w.join();
+                        fast_done.store(true);
+                        fast_progress_thread.join();
+                        progress.update(total_frames);
+
+                        // Skip to video encoding phase
+                        goto encode_video;
+                    }
+
+                    // ==================== PHASE 1: Multi-threaded ASCII Rendering ====================
+                    // Render all frames to ASCII strings in parallel (CPU-bound work)
+                    // Store in a vector indexed by frame number
+                    {
+                        std::vector<std::string> rendered_frames(total_frames + 1);
+                        std::atomic<size_t> frames_rendered{0};
+                        std::atomic<bool> rendering_done{false};
+
+                        // Progress update thread for rendering phase
+                        std::thread render_progress_thread([&progress, &frames_rendered, &rendering_done, total_frames]()
+                                                           {
+                        while (!rendering_done.load())
+                        {
+                            size_t completed = frames_rendered.load();
                             progress.update(completed);
                             if (completed >= total_frames) break;
                             std::this_thread::sleep_for(std::chrono::milliseconds(100));
                         } });
 
-                    // Worker function to process a range of frames
-                    auto process_frames = [&](size_t start, size_t end)
-                    {
-                        for (size_t frame_num = start; frame_num <= end && frame_num <= total_frames; frame_num++)
+                        // Worker function for rendering phase (CPU-intensive, parallelizable)
+                        auto render_worker = [&](size_t start, size_t end)
                         {
-                            char frame_name[128];
-                            snprintf(frame_name, sizeof(frame_name), "%s/frame_%05zu.png", temp_dir.c_str(), frame_num);
+                            for (size_t frame_num = start; frame_num <= end && frame_num <= total_frames; frame_num++)
+                            {
+                                char frame_name[128];
+                                snprintf(frame_name, sizeof(frame_name), "%s/frame_%05zu.png", temp_dir.c_str(), frame_num);
 
-                            std::ifstream test(frame_name);
-                            if (!test.good())
-                                continue;
-                            test.close();
+                                std::ifstream test(frame_name);
+                                if (!test.good())
+                                {
+                                    rendered_frames[frame_num] = ""; // Mark as failed
+                                    frames_rendered++;
+                                    continue;
+                                }
+                                test.close();
 
-                            // Render frame to ASCII art
-                            std::string rendered = render_image_to_string(frame_name, mode, max_width, threshold);
+                                // Render frame to ASCII art (CPU-bound, thread-safe)
+                                rendered_frames[frame_num] = render_image_to_string(frame_name, mode, max_width, threshold);
+                                frames_rendered++;
+                            }
+                        };
 
-                            // Render ASCII art to proper image using new export module
-                            char img_name[128];
-                            snprintf(img_name, sizeof(img_name), "%s/ascii_%05zu.png", temp_dir.c_str(), frame_num);
-                            pythonic::ex::export_art_to_png(rendered, img_name, config);
+                        // Distribute rendering across threads
+                        std::vector<std::thread> render_workers;
+                        size_t frames_per_thread = (total_frames + num_threads - 1) / num_threads;
 
-                            frames_completed++;
-                        }
-                    };
-
-                    // Distribute frames across threads
-                    std::vector<std::thread> workers;
-                    size_t frames_per_thread = (total_frames + num_threads - 1) / num_threads;
-
-                    for (int t = 0; t < num_threads; t++)
-                    {
-                        size_t start = t * frames_per_thread + 1;
-                        size_t end = std::min(start + frames_per_thread - 1, total_frames);
-                        if (start <= total_frames)
+                        for (int t = 0; t < num_threads; t++)
                         {
-                            workers.emplace_back(process_frames, start, end);
+                            size_t start = t * frames_per_thread + 1;
+                            size_t end = std::min(start + frames_per_thread - 1, total_frames);
+                            if (start <= total_frames)
+                            {
+                                render_workers.emplace_back(render_worker, start, end);
+                            }
                         }
-                    }
 
-                    // Wait for all workers to complete
-                    for (auto &worker : workers)
-                    {
-                        worker.join();
-                    }
+                        // Wait for all renderers to complete
+                        for (auto &worker : render_workers)
+                        {
+                            worker.join();
+                        }
+                        rendering_done.store(true);
+                        render_progress_thread.join();
+                        progress.update(total_frames);
 
-                    processing_done.store(true);
-                    progress_thread.join();
+                        // ==================== PHASE 2: PNG Export (I/O-bound) ====================
+                        // Export rendered frames to PNG files
+                        // Use fewer threads for I/O to avoid disk contention
+                        progress.reset();
+                        progress.set_stage("Exporting frames");
+                        progress.set_total(total_frames);
+                        progress.update(0);
 
-                    // Final progress update
-                    progress.update(total_frames);
+                        std::atomic<size_t> frames_exported{0};
+                        std::atomic<bool> export_done{false};
 
+                        // Progress update thread for export phase
+                        std::thread export_progress_thread([&progress, &frames_exported, &export_done, total_frames]()
+                                                           {
+                        while (!export_done.load())
+                        {
+                            size_t completed = frames_exported.load();
+                            progress.update(completed);
+                            if (completed >= total_frames) break;
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        } });
+
+                        // Worker function for PNG export (I/O-bound)
+                        auto export_worker = [&](size_t start, size_t end)
+                        {
+                            for (size_t frame_num = start; frame_num <= end && frame_num <= total_frames; frame_num++)
+                            {
+                                const std::string &rendered = rendered_frames[frame_num];
+                                if (rendered.empty())
+                                {
+                                    frames_exported++;
+                                    continue; // Skip failed frames
+                                }
+
+                                char img_name[128];
+                                snprintf(img_name, sizeof(img_name), "%s/ascii_%05zu.png", temp_dir.c_str(), frame_num);
+                                pythonic::ex::export_art_to_png(rendered, img_name, config);
+                                frames_exported++;
+                            }
+                        };
+
+                        // Use fewer threads for I/O work (4-6 is usually optimal for disk I/O)
+                        int io_threads = std::min(num_threads, 6);
+
+                        std::vector<std::thread> export_workers;
+                        frames_per_thread = (total_frames + io_threads - 1) / io_threads;
+
+                        for (int t = 0; t < io_threads; t++)
+                        {
+                            size_t start = t * frames_per_thread + 1;
+                            size_t end = std::min(start + frames_per_thread - 1, total_frames);
+                            if (start <= total_frames)
+                            {
+                                export_workers.emplace_back(export_worker, start, end);
+                            }
+                        }
+
+                        // Wait for all exporters to complete
+                        for (auto &worker : export_workers)
+                        {
+                            worker.join();
+                        }
+                        export_done.store(true);
+                        export_progress_thread.join();
+
+                        // Free memory from rendered frames (no longer needed)
+                        rendered_frames.clear();
+                        rendered_frames.shrink_to_fit();
+
+                        // Verify that ASCII frames were created before attempting to encode
+                        size_t ascii_frames_count = count_frames(temp_dir, "ascii_");
+                        if (ascii_frames_count == 0)
+                        {
+                            std::cout << "\n\033[31mError: No ASCII frames were generated. Cannot encode video.\033[0m\n";
+#ifdef _WIN32
+                            std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
+#else
+                            std::string rm_cmd = "rm -rf \"" + temp_dir + "\"";
+#endif
+                            std::system(rm_cmd.c_str());
+                            return false;
+                        }
+
+                        // Final progress update
+                        progress.update(total_frames);
+                    } // End of regular (non-fast-path) export scope
+
+                encode_video:
                     // Update progress for encoding stage
                     progress.set_indeterminate(true);
                     progress.set_stage("Encoding video");
@@ -1344,23 +1572,24 @@ namespace pythonic
                     auto [encoder_opts, is_hw_encoder] = build_encoder_opts(encoder);
 
                     // Video filter to ensure dimensions are divisible by 2 (required for yuv420p)
-                    // Using single quotes for shell compatibility
-                    std::string scale_filter = "-vf 'scale=trunc(iw/2)*2:trunc(ih/2)*2'";
+                    // Properly escaped for shell execution
+                    std::string scale_filter = "-vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\"";
 
                     // Lambda to build and execute FFmpeg command with fallback
                     auto run_encode = [&](const std::string &audio_path) -> int
                     {
-                        // Use glob pattern for input to handle non-sequential frame numbers
-                        // (some frames may fail to render, causing gaps in the sequence)
-                        std::string base_input = "-framerate " + fps_str + " -pattern_type glob -i '" + temp_dir + "/ascii_*.png'";
-                        std::string audio_input = audio_path.empty() ? "" : " -i '" + audio_path + "'";
+                        // Use image2 demuxer with sequential frame pattern
+                        // FFmpeg image2 demuxer needs -framerate before -i for proper timing
+                        // -start_number 1 tells FFmpeg our frames start from 1 (not 0)
+                        std::string base_input = "-framerate " + fps_str + " -start_number 1 -i \"" + temp_dir + "/ascii_%05d.png\"";
+                        std::string audio_input = audio_path.empty() ? "" : " -i \"" + audio_path + "\"";
                         std::string audio_opts = audio_path.empty() ? "" : " -c:a aac -shortest";
                         std::string pix_fmt = " -pix_fmt yuv420p";
 
                         // Try with hardware encoder first
                         std::string video_cmd = "ffmpeg -y " + base_input + audio_input + " " +
                                                 scale_filter + " " + encoder_opts + audio_opts + pix_fmt +
-                                                " '" + output_path + "' 2>/dev/null";
+                                                " \"" + output_path + "\"";
                         int res = std::system(video_cmd.c_str());
 
                         // If hardware encoder fails, fallback to CPU encoder
@@ -1370,9 +1599,10 @@ namespace pythonic
                             std::string cpu_opts = "-c:v libx264 -preset faster -crf 23";
                             video_cmd = "ffmpeg -y " + base_input + audio_input + " " +
                                         scale_filter + " " + cpu_opts + audio_opts + pix_fmt +
-                                        " '" + output_path + "' 2>/dev/null";
+                                        " \"" + output_path + "\"";
                             res = std::system(video_cmd.c_str());
                         }
+
                         return res;
                     };
 
@@ -1400,7 +1630,7 @@ namespace pythonic
                         result = run_encode("");
                     }
 
-                    // Cleanup
+                    // Cleanup - always clean up temp directory
 #ifdef _WIN32
                     std::string rm_cmd = "rmdir /s /q \"" + temp_dir + "\"";
 #else
@@ -1535,6 +1765,78 @@ namespace pythonic
 
             // For other formats, delegate to the main function
             return export_media(input_path, output_name, type, format, mode, max_width, threshold, audio, 0, {}, use_gpu);
+        }
+
+        // ==================== Simplified Config-based API ====================
+
+        // Re-export RenderConfig and Dithering from draw namespace for convenience
+        using RenderConfig = pythonic::draw::RenderConfig;
+        using Dithering = pythonic::draw::Dithering;
+
+        /**
+         * @brief Print/display media file with unified configuration
+         *
+         * Simplified API that uses RenderConfig for all parameters.
+         * All parameters have sensible defaults.
+         *
+         * Usage:
+         *   // With all defaults (auto-detect type, bw_dot mode, 80 width)
+         *   print("image.png");
+         *
+         *   // With custom config
+         *   print("video.mp4", RenderConfig().set_mode(Mode::colored).set_max_width(120));
+         *
+         *   // With dithering
+         *   print("photo.jpg", RenderConfig().set_dithering(Dithering::ordered));
+         *
+         *   // Interactive video playback with audio
+         *   print("movie.mp4", RenderConfig().with_audio().interactive());
+         *
+         * @param filepath Path to media file
+         * @param config Configuration with all rendering parameters
+         */
+        inline void print(const std::string &filepath, const RenderConfig &config)
+        {
+            // Delegate to the full print function with all config parameters
+            print(filepath, config.type, config.mode, config.parser, config.audio,
+                  config.max_width, config.threshold, config.shell,
+                  config.pause_key, config.stop_key);
+        }
+
+        /**
+         * @brief Export media file with unified configuration
+         *
+         * Simplified API that uses RenderConfig for all parameters.
+         * All parameters have sensible defaults.
+         *
+         * Usage:
+         *   // Export with defaults (text output)
+         *   export_media("image.png", "output");
+         *
+         *   // Export video as ASCII video
+         *   export_media("video.mp4", "output", RenderConfig()
+         *       .set_format(Format::video)
+         *       .set_mode(Mode::colored)
+         *       .set_dithering(Dithering::ordered));
+         *
+         *   // Export clip with timestamps
+         *   export_media("movie.mp4", "clip", RenderConfig()
+         *       .set_format(Format::video)
+         *       .set_start_time(60)  // Start at 1:00
+         *       .set_end_time(120)); // End at 2:00
+         *
+         * @param input_path Path to source media file
+         * @param output_name Output filename (extension added based on format)
+         * @param config Configuration with all rendering parameters
+         * @return true on success, false on failure
+         */
+        inline bool export_media(const std::string &input_path, const std::string &output_name,
+                                 const RenderConfig &config)
+        {
+            return export_media(input_path, output_name, config.type, config.format,
+                                config.mode, config.max_width, config.threshold,
+                                config.audio, config.fps, ex::ExportConfig(),
+                                config.use_gpu, config.start_time, config.end_time);
         }
 
     } // namespace print

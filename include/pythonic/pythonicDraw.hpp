@@ -228,17 +228,62 @@ namespace pythonic
          *   - bw_dot:      Black & white using Braille patterns (⠿) - higher resolution
          *   - colored:     True color (24-bit) using half-block characters
          *   - colored_dot: True color using Braille patterns with averaged colors
+         *   - bw_dithered:  Black & white with ordered dithering (smooth grayscale shading)
+         *   - grayscale_dot: Grayscale-colored braille dots (smooth appearance)
+         *   - flood_dot:   Flood-fill braille - all dots lit, colored by average cell brightness
          */
         enum class Mode
         {
-            bw,         // Black & white with block characters (current colored renderer logic, no color)
-            bw_dot,     // Black & white with braille patterns (default, higher resolution)
-            colored,    // True color with block characters
-            colored_dot // True color with braille patterns (one color per cell)
+            bw,            // Black & white with block characters (current colored renderer logic, no color)
+            bw_dot,        // Black & white with braille patterns (default, higher resolution)
+            colored,       // True color with block characters
+            colored_dot,   // True color with braille patterns (one color per cell)
+            bw_dithered,   // Black & white with ordered dithering for grayscale shading
+            grayscale_dot, // Grayscale-colored braille dots (dots colored by brightness)
+            flood_dot      // Flood-fill: all dots lit (⣿), colored by average cell grayscale
         };
 
         // Legacy alias for backward compatibility
         using Render = Mode;
+
+        /**
+         * @brief Media type hint for print() function
+         *
+         * Controls how the input file is interpreted:
+         *   - auto_detect: Detect from file extension (default)
+         *   - image: Force treat as image
+         *   - video: Force treat as video
+         *   - webcam: Capture from webcam (requires OpenCV)
+         *   - video_info: Show video metadata only
+         *   - text: Force treat as plain text
+         */
+        enum class Type
+        {
+            auto_detect, // Detect from file extension (default)
+            image,       // Force treat as image
+            video,       // Force treat as video (play it)
+            webcam,      // Capture from webcam (requires OpenCV)
+            video_info,  // Show video metadata only (no playback)
+            text         // Force treat as plain text
+        };
+
+        /**
+         * @brief Output format for export_media() function
+         *
+         * Controls the output file format:
+         *   - pythonic: Save as .pi (image) or .pv (video) - Pythonic's encrypted format
+         *   - text: Save as .txt (ASCII art text file)
+         *   - image: Save as .png image (render ASCII art to image)
+         *   - video: Save as .mp4 video (render ASCII art to video frames)
+         */
+        enum class Format
+        {
+            pythonic,     // Save as .pi (image) or .pv (video)
+            text,         // Save as .txt (ASCII art text file)
+            image,        // Save as .png image
+            video,        // Save as .mp4 video
+            normal = text // Alias for backward compatibility
+        };
 
         /**
          * @brief Parser backend for media processing
@@ -276,6 +321,177 @@ namespace pythonic
         {
             noninteractive, // No keyboard input (default, safe for scripts)
             interactive     // Enable keyboard controls for pause/stop
+        };
+
+        /**
+         * @brief Dithering algorithm for bw/grayscale rendering
+         */
+        enum class Dithering
+        {
+            none,           // Simple threshold (default) - pixels either on or off
+            ordered,        // Ordered dithering - smooth gradients, fast, stable for video
+            floyd_steinberg // Floyd-Steinberg error diffusion - best quality, slower
+        };
+
+        /**
+         * @brief Unified configuration for rendering images/videos to terminal art
+         *
+         * This consolidates ALL rendering parameters into a single configuration
+         * that can be passed to both print() and export_media() functions.
+         *
+         * Simplified API usage:
+         *   // Print with all defaults
+         *   print("image.png");
+         *
+         *   // Print with custom config
+         *   RenderConfig config;
+         *   config.mode = Mode::grayscale_dot;
+         *   config.dithering = Dithering::ordered;
+         *   print("video.mp4", config);
+         *
+         *   // Builder pattern for one-liners
+         *   print("image.png", RenderConfig().set_mode(Mode::colored).set_max_width(120));
+         *
+         *   // Export with config
+         *   export_media("video.mp4", "output", RenderConfig().set_dithering(Dithering::ordered));
+         */
+        struct RenderConfig
+        {
+            // === Media type and rendering mode ===
+            Type type = Type::auto_detect;          // Media type (auto_detect, image, video, webcam, text)
+            Mode mode = Mode::bw_dot;               // Rendering mode (bw, bw_dot, colored, colored_dot, etc.)
+            Parser parser = Parser::default_parser; // Backend (default_parser or opencv)
+            Format format = Format::text;           // Output format for export (text, image, video, pythonic)
+
+            // === Rendering parameters ===
+            int threshold = 128;                   // Brightness threshold (0-255) for bw modes
+            int max_width = 80;                    // Maximum output width in characters
+            Dithering dithering = Dithering::none; // Dithering algorithm
+
+            // === Dot appearance (for braille modes) ===
+            bool grayscale_dots = false; // Use grayscale ANSI colors for dots based on brightness
+
+            // === Color options ===
+            bool invert = false; // Invert colors (white bg, black fg)
+
+            // === Video playback options ===
+            int fps = 0;                         // Target FPS (0 = use source video FPS)
+            double start_time = -1.0;            // Start time in seconds (-1 = from beginning)
+            double end_time = -1.0;              // End time in seconds (-1 = to end)
+            Audio audio = Audio::off;            // Audio playback mode
+            Shell shell = Shell::noninteractive; // Shell mode for video playback
+            char pause_key = 'p';                // Key to pause/resume (0 to disable)
+            char stop_key = 's';                 // Key to stop (0 to disable)
+
+            // === Export options ===
+            bool use_gpu = true; // Use GPU acceleration for video encoding
+
+            // Default constructor
+            RenderConfig() = default;
+
+            // Builder pattern for easy chaining
+            RenderConfig &set_type(Type t)
+            {
+                type = t;
+                return *this;
+            }
+            RenderConfig &set_mode(Mode m)
+            {
+                mode = m;
+                return *this;
+            }
+            RenderConfig &set_parser(Parser p)
+            {
+                parser = p;
+                return *this;
+            }
+            RenderConfig &set_format(Format f)
+            {
+                format = f;
+                return *this;
+            }
+            RenderConfig &set_threshold(int t)
+            {
+                threshold = t;
+                return *this;
+            }
+            RenderConfig &set_max_width(int w)
+            {
+                max_width = w;
+                return *this;
+            }
+            RenderConfig &set_dithering(Dithering d)
+            {
+                dithering = d;
+                return *this;
+            }
+            RenderConfig &set_grayscale_dots(bool g)
+            {
+                grayscale_dots = g;
+                return *this;
+            }
+            RenderConfig &set_invert(bool i)
+            {
+                invert = i;
+                return *this;
+            }
+            RenderConfig &set_fps(int f)
+            {
+                fps = f;
+                return *this;
+            }
+            RenderConfig &set_start_time(double t)
+            {
+                start_time = t;
+                return *this;
+            }
+            RenderConfig &set_end_time(double t)
+            {
+                end_time = t;
+                return *this;
+            }
+            RenderConfig &set_audio(Audio a)
+            {
+                audio = a;
+                return *this;
+            }
+            RenderConfig &set_shell(Shell s)
+            {
+                shell = s;
+                return *this;
+            }
+            RenderConfig &set_pause_key(char k)
+            {
+                pause_key = k;
+                return *this;
+            }
+            RenderConfig &set_stop_key(char k)
+            {
+                stop_key = k;
+                return *this;
+            }
+            RenderConfig &set_gpu(bool g)
+            {
+                use_gpu = g;
+                return *this;
+            }
+
+            // Convenience methods
+            RenderConfig &with_audio()
+            {
+                audio = Audio::on;
+                return *this;
+            }
+            RenderConfig &interactive()
+            {
+                shell = Shell::interactive;
+                return *this;
+            }
+            RenderConfig &no_gpu()
+            {
+                use_gpu = false;
+                return *this;
+            }
         };
 
         // ==================== Constants for Aspect Ratio Correction ====================
@@ -1264,6 +1480,63 @@ namespace pythonic
 
                 return out;
             }
+
+            /**
+             * @brief Fast render using 24-bit ANSI true color (faster than 256-color)
+             * Uses true color which most modern terminals support.
+             */
+            std::string render_truecolor() const
+            {
+                const char *TOP_HALF = "\xe2\x96\x80"; // ▀
+                const char *RESET = "\033[0m";
+
+                std::string out;
+                out.reserve(_char_height * (_char_width * 40 + 10));
+
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        auto [gray_top, gray_bot] = _pixels[cy][cx];
+
+                        // True color: \033[38;2;r;g;b;48;2;r;g;bm
+                        out += "\033[38;2;";
+                        out += std::to_string(gray_top);
+                        out += ";";
+                        out += std::to_string(gray_top);
+                        out += ";";
+                        out += std::to_string(gray_top);
+                        out += ";48;2;";
+                        out += std::to_string(gray_bot);
+                        out += ";";
+                        out += std::to_string(gray_bot);
+                        out += ";";
+                        out += std::to_string(gray_bot);
+                        out += "m";
+                        out += TOP_HALF;
+                    }
+                    out += RESET;
+                    out += '\n';
+                }
+
+                return out;
+            }
+
+            /**
+             * @brief Get raw grayscale pixel data for direct export (bypasses ANSI string)
+             *
+             * Returns pixels in row-major order, 2 bytes per character cell (top, bottom).
+             * Use this for fast video export to avoid ANSI string parsing overhead.
+             *
+             * @return Vector of (top_gray, bottom_gray) pairs, row-major
+             */
+            const std::vector<std::vector<std::pair<uint8_t, uint8_t>>> &get_pixels() const
+            {
+                return _pixels;
+            }
+
+            size_t width() const { return _char_width; }
+            size_t height() const { return _char_height; }
         };
 
         /**
@@ -1287,6 +1560,10 @@ namespace pythonic
 
             // Storage: one byte per character cell, bits represent dots
             std::vector<std::vector<uint8_t>> _canvas;
+
+            // Optional grayscale storage: average brightness per cell (0-255)
+            // Only populated when grayscale rendering is needed
+            std::vector<std::vector<uint8_t>> _grayscale;
 
         public:
             /**
@@ -1419,6 +1696,190 @@ namespace pythonic
             }
 
             /**
+             * @brief ORDERED DITHERING: Set block with 8-level grayscale shading
+             *
+             * Uses ordered dithering (Bayer-like pattern) optimized for braille's 2×4 dot grid.
+             * This creates proper grayscale shading by turning on more/fewer dots based on brightness.
+             *
+             * The 8 dots in a braille cell naturally support 9 levels of brightness (0-8 dots lit).
+             * Each dot position has a different threshold, creating smooth gradients.
+             *
+             * @param char_x Character cell X coordinate
+             * @param char_y Character cell Y coordinate
+             * @param gray Array of 8 grayscale values [row0_col0, row0_col1, row1_col0, ...]
+             */
+            void set_block_gray_dithered(int char_x, int char_y, const uint8_t gray[8])
+            {
+                if (char_x < 0 || char_x >= (int)_char_width ||
+                    char_y < 0 || char_y >= (int)_char_height)
+                    return;
+
+                // Proper 2×4 ordered dithering matrix based on Bayer pattern
+                // Values are evenly distributed from 0-255 across 8 positions
+                // to create smooth gradients. Each threshold determines at what
+                // brightness level that dot turns on.
+                //
+                // Matrix layout for braille (2 cols × 4 rows):
+                //   [0,0]  [0,1]     thresholds:  16  144
+                //   [1,0]  [1,1]                  80  208
+                //   [2,0]  [2,1]                 112  240
+                //   [3,0]  [3,1]                  48  176
+                //
+                // Dots light up progressively: at 10% brightness only the
+                // lowest threshold dot lights; at 90% almost all light.
+                static constexpr uint8_t dither_thresholds[8] = {
+                    16,  // row 0, col 0 - lights at ~6% brightness (first)
+                    144, // row 0, col 1 - lights at ~56% brightness
+                    80,  // row 1, col 0 - lights at ~31% brightness
+                    208, // row 1, col 1 - lights at ~81% brightness
+                    112, // row 2, col 0 - lights at ~44% brightness
+                    240, // row 2, col 1 - lights at ~94% brightness (last)
+                    48,  // row 3, col 0 - lights at ~19% brightness
+                    176  // row 3, col 1 - lights at ~69% brightness
+                };
+
+                // Compute pattern: dot lights if pixel brightness >= threshold
+                uint8_t pattern = 0;
+                pattern |= (gray[0] >= dither_thresholds[0]) ? 0x01 : 0; // row 0, col 0
+                pattern |= (gray[1] >= dither_thresholds[1]) ? 0x08 : 0; // row 0, col 1
+                pattern |= (gray[2] >= dither_thresholds[2]) ? 0x02 : 0; // row 1, col 0
+                pattern |= (gray[3] >= dither_thresholds[3]) ? 0x10 : 0; // row 1, col 1
+                pattern |= (gray[4] >= dither_thresholds[4]) ? 0x04 : 0; // row 2, col 0
+                pattern |= (gray[5] >= dither_thresholds[5]) ? 0x20 : 0; // row 2, col 1
+                pattern |= (gray[6] >= dither_thresholds[6]) ? 0x40 : 0; // row 3, col 0
+                pattern |= (gray[7] >= dither_thresholds[7]) ? 0x80 : 0; // row 3, col 1
+
+                _canvas[char_y][char_x] = pattern;
+            }
+
+            /**
+             * @brief Set block and store average grayscale for later grayscale rendering
+             *
+             * Use this when you want to render with grayscale-colored dots.
+             * The average brightness of the 8 pixels is stored per cell.
+             *
+             * @param char_x Character cell X coordinate
+             * @param char_y Character cell Y coordinate
+             * @param gray Array of 8 grayscale values
+             * @param threshold Threshold for dot visibility
+             */
+            void set_block_gray_with_brightness(int char_x, int char_y, const uint8_t gray[8], uint8_t threshold)
+            {
+                if (char_x < 0 || char_x >= (int)_char_width ||
+                    char_y < 0 || char_y >= (int)_char_height)
+                    return;
+
+                // Ensure grayscale storage is allocated
+                if (_grayscale.empty() || _grayscale.size() != _char_height ||
+                    (!_grayscale.empty() && _grayscale[0].size() != _char_width))
+                {
+                    _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                }
+
+                // Compute pattern with threshold
+                uint8_t pattern = 0;
+                int sum = 0;
+                for (int i = 0; i < 8; ++i)
+                {
+                    sum += gray[i];
+                }
+
+                pattern |= (gray[0] >= threshold) ? 0x01 : 0;
+                pattern |= (gray[1] >= threshold) ? 0x08 : 0;
+                pattern |= (gray[2] >= threshold) ? 0x02 : 0;
+                pattern |= (gray[3] >= threshold) ? 0x10 : 0;
+                pattern |= (gray[4] >= threshold) ? 0x04 : 0;
+                pattern |= (gray[5] >= threshold) ? 0x20 : 0;
+                pattern |= (gray[6] >= threshold) ? 0x40 : 0;
+                pattern |= (gray[7] >= threshold) ? 0x80 : 0;
+
+                _canvas[char_y][char_x] = pattern;
+                _grayscale[char_y][char_x] = static_cast<uint8_t>(sum / 8); // Average brightness
+            }
+
+            /**
+             * @brief Set block with dithering and store grayscale for colored rendering
+             *
+             * @param char_x Character cell X coordinate
+             * @param char_y Character cell Y coordinate
+             * @param gray Array of 8 grayscale values
+             */
+            void set_block_gray_dithered_with_brightness(int char_x, int char_y, const uint8_t gray[8])
+            {
+                if (char_x < 0 || char_x >= (int)_char_width ||
+                    char_y < 0 || char_y >= (int)_char_height)
+                    return;
+
+                // Ensure grayscale storage is allocated
+                if (_grayscale.empty() || _grayscale.size() != _char_height ||
+                    (!_grayscale.empty() && _grayscale[0].size() != _char_width))
+                {
+                    _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                }
+
+                // Use same proper Bayer-style thresholds as set_block_gray_dithered
+                static constexpr uint8_t dither_thresholds[8] = {
+                    16, 144, 80, 208, 112, 240, 48, 176};
+
+                uint8_t pattern = 0;
+                int sum = 0;
+                for (int i = 0; i < 8; ++i)
+                {
+                    sum += gray[i];
+                }
+
+                // Apply dithering thresholds
+                pattern |= (gray[0] >= dither_thresholds[0]) ? 0x01 : 0;
+                pattern |= (gray[1] >= dither_thresholds[1]) ? 0x08 : 0;
+                pattern |= (gray[2] >= dither_thresholds[2]) ? 0x02 : 0;
+                pattern |= (gray[3] >= dither_thresholds[3]) ? 0x10 : 0;
+                pattern |= (gray[4] >= dither_thresholds[4]) ? 0x04 : 0;
+                pattern |= (gray[5] >= dither_thresholds[5]) ? 0x20 : 0;
+                pattern |= (gray[6] >= dither_thresholds[6]) ? 0x40 : 0;
+                pattern |= (gray[7] >= dither_thresholds[7]) ? 0x80 : 0;
+
+                _canvas[char_y][char_x] = pattern;
+                _grayscale[char_y][char_x] = static_cast<uint8_t>(sum / 8);
+            }
+
+            /**
+             * @brief FLOOD FILL: Set all dots lit and store average grayscale
+             *
+             * Unlike threshold or dithering modes, this lights up ALL 8 dots
+             * in every cell and uses the average grayscale for coloring.
+             * This creates the smoothest appearance for photos and videos
+             * by relying entirely on color gradation rather than dot patterns.
+             *
+             * @param char_x Character cell X coordinate
+             * @param char_y Character cell Y coordinate
+             * @param gray Array of 8 grayscale values
+             */
+            void set_block_flood_fill(int char_x, int char_y, const uint8_t gray[8])
+            {
+                if (char_x < 0 || char_x >= (int)_char_width ||
+                    char_y < 0 || char_y >= (int)_char_height)
+                    return;
+
+                // Ensure grayscale storage is allocated
+                if (_grayscale.empty() || _grayscale.size() != _char_height ||
+                    (!_grayscale.empty() && _grayscale[0].size() != _char_width))
+                {
+                    _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                }
+
+                // All dots lit (⣿)
+                _canvas[char_y][char_x] = 0xFF;
+
+                // Store average brightness for rendering
+                int sum = 0;
+                for (int i = 0; i < 8; ++i)
+                {
+                    sum += gray[i];
+                }
+                _grayscale[char_y][char_x] = static_cast<uint8_t>(sum / 8);
+            }
+
+            /**
              * @brief Set entire character cell directly with bit pattern
              */
             void set_cell(int char_x, int char_y, uint8_t pattern)
@@ -1500,6 +1961,67 @@ namespace pythonic
                         }
 
                         set_block_gray(cx, cy, gray, threshold);
+                    }
+                }
+            }
+
+            /**
+             * @brief ORDERED DITHERED: Load grayscale frame with ordered dithering for smooth gradients
+             *
+             * This version uses ordered dithering instead of simple thresholding,
+             * creating proper grayscale shading by varying the number of lit dots.
+             * Produces much better visual results for photos and videos.
+             *
+             * Faster than Floyd-Steinberg (no error propagation) and more stable
+             * for video (no temporal noise artifacts).
+             *
+             * @param data Grayscale pixel data (row-major)
+             * @param width Image width in pixels
+             * @param height Image height in pixels
+             */
+            void load_frame_ordered_dithered(const uint8_t *data, int width, int height)
+            {
+                // Resize canvas if needed
+                size_t new_cw = (width + 1) / 2;
+                size_t new_ch = (height + 3) / 4;
+
+                if (new_cw != _char_width || new_ch != _char_height)
+                {
+                    _char_width = new_cw;
+                    _char_height = new_ch;
+                    _pixel_width = _char_width * 2;
+                    _pixel_height = _char_height * 4;
+                    _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                }
+
+                // Process each character cell using dithered block operations
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        uint8_t gray[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+
+                        // Extract 2×4 pixel block from source image
+                        int px = cx * 2;
+                        int py = cy * 4;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+
+                                gray[row * 2 + col] = data[y * width + x];
+                            }
+                        }
+
+                        set_block_gray_dithered(cx, cy, gray);
                     }
                 }
             }
@@ -2130,6 +2652,296 @@ namespace pythonic
             }
 
             /**
+             * @brief Load a PGM/PPM image with ordered dithering for grayscale shading
+             *
+             * Unlike regular load_pgm_ppm which uses simple thresholding, this version
+             * uses ordered dithering to create smooth grayscale gradients. Brighter areas
+             * have more dots, darker areas have fewer dots.
+             */
+            bool load_pgm_ppm_dithered(const std::string &filename)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P5" && magic != "P6")
+                    return false;
+
+                bool is_color = (magic == "P6");
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c); // Skip single whitespace
+
+                if (maxval > 255)
+                    return false;
+
+                // Resize canvas to fit image
+                _char_width = (width + 1) / 2;
+                _char_height = (height + 3) / 4;
+                _pixel_width = _char_width * 2;
+                _pixel_height = _char_height * 4;
+                _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+
+                // Read entire image into buffer first
+                std::vector<uint8_t> grayscale(width * height);
+
+                for (int y = 0; y < height; ++y)
+                {
+                    for (int x = 0; x < width; ++x)
+                    {
+                        int gray;
+                        if (is_color)
+                        {
+                            unsigned char rgb[3];
+                            file.read(reinterpret_cast<char *>(rgb), 3);
+                            // Convert to grayscale: 0.299R + 0.587G + 0.114B
+                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
+                        }
+                        else
+                        {
+                            unsigned char g;
+                            file.read(reinterpret_cast<char *>(&g), 1);
+                            gray = g;
+                        }
+                        grayscale[y * width + x] = static_cast<uint8_t>(gray);
+                    }
+                }
+
+                // Apply dithered rendering using block operations
+                load_frame_ordered_dithered(grayscale.data(), width, height);
+
+                return true;
+            }
+
+            /**
+             * @brief Load a PGM/PPM image with grayscale-colored dots
+             *
+             * Loads image and stores both the braille pattern (with threshold)
+             * and the average brightness per cell for grayscale coloring.
+             * Use with render_grayscale() to get ANSI grayscale-colored output.
+             *
+             * @param filename Path to PGM/PPM file
+             * @param threshold Brightness threshold for dot visibility
+             * @param use_dithering If true, use ordered dithering instead of simple threshold
+             * @return true on success
+             */
+            bool load_pgm_ppm_grayscale(const std::string &filename, int threshold = 128, bool use_dithering = false)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P5" && magic != "P6")
+                    return false;
+
+                bool is_color = (magic == "P6");
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c);
+
+                if (maxval > 255)
+                    return false;
+
+                // Resize canvas and grayscale storage
+                _char_width = (width + 1) / 2;
+                _char_height = (height + 3) / 4;
+                _pixel_width = _char_width * 2;
+                _pixel_height = _char_height * 4;
+                _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+
+                // Read entire image into buffer
+                std::vector<uint8_t> graybuf(width * height);
+
+                for (int y = 0; y < height; ++y)
+                {
+                    for (int x = 0; x < width; ++x)
+                    {
+                        int gray;
+                        if (is_color)
+                        {
+                            unsigned char rgb[3];
+                            file.read(reinterpret_cast<char *>(rgb), 3);
+                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
+                        }
+                        else
+                        {
+                            unsigned char g;
+                            file.read(reinterpret_cast<char *>(&g), 1);
+                            gray = g;
+                        }
+                        graybuf[y * width + x] = static_cast<uint8_t>(gray);
+                    }
+                }
+
+                // Process each character cell
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        uint8_t gray[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                        int px = cx * 2;
+                        int py = cy * 4;
+
+                        // Extract 2×4 pixel block
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                int y = py + row;
+                                if (x < width && y < height)
+                                {
+                                    gray[row * 2 + col] = graybuf[y * width + x];
+                                }
+                            }
+                        }
+
+                        if (use_dithering)
+                        {
+                            set_block_gray_dithered_with_brightness(cx, cy, gray);
+                        }
+                        else
+                        {
+                            set_block_gray_with_brightness(cx, cy, gray, static_cast<uint8_t>(threshold));
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            /**
+             * @brief FLOOD DOT: Load PGM/PPM and fill all dots with average grayscale color
+             *
+             * This mode lights up ALL 8 dots in every cell and uses the average
+             * grayscale of the 8 pixels for coloring. Creates the smoothest
+             * appearance for photos and videos.
+             *
+             * @param filename Path to PGM/PPM file
+             * @return true on success
+             */
+            bool load_pgm_ppm_flood(const std::string &filename)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P5" && magic != "P6")
+                    return false;
+
+                bool is_color = (magic == "P6");
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c);
+
+                if (maxval > 255)
+                    return false;
+
+                // Resize canvas and grayscale storage
+                _char_width = (width + 1) / 2;
+                _char_height = (height + 3) / 4;
+                _pixel_width = _char_width * 2;
+                _pixel_height = _char_height * 4;
+                _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0xFF)); // All dots lit
+                _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+
+                // Read entire image into buffer
+                std::vector<uint8_t> graybuf(width * height);
+
+                for (int y = 0; y < height; ++y)
+                {
+                    for (int x = 0; x < width; ++x)
+                    {
+                        int gray;
+                        if (is_color)
+                        {
+                            unsigned char rgb[3];
+                            file.read(reinterpret_cast<char *>(rgb), 3);
+                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
+                        }
+                        else
+                        {
+                            unsigned char g;
+                            file.read(reinterpret_cast<char *>(&g), 1);
+                            gray = g;
+                        }
+                        graybuf[y * width + x] = static_cast<uint8_t>(gray);
+                    }
+                }
+
+                // Process each character cell - compute average grayscale
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int sum = 0;
+                        int count = 0;
+                        int px = cx * 2;
+                        int py = cy * 4;
+
+                        // Average over 2×4 pixel block
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                int y = py + row;
+                                if (x < width && y < height)
+                                {
+                                    sum += graybuf[y * width + x];
+                                    count++;
+                                }
+                            }
+                        }
+
+                        _grayscale[cy][cx] = (count > 0) ? static_cast<uint8_t>(sum / count) : 0;
+                    }
+                }
+
+                return true;
+            }
+
+            /**
              * @brief Load raw pixel data (grayscale)
              * @param data Pixel values (row-major, 0-255)
              * @param width Image width in pixels
@@ -2200,6 +3012,58 @@ namespace pythonic
                 }
 
                 return out.str();
+            }
+
+            /**
+             * @brief Render canvas with grayscale-colored dots
+             *
+             * Uses ANSI true color to render dots where brightness varies
+             * based on the average pixel brightness of each cell.
+             * Creates smoother, more natural-looking grayscale images.
+             *
+             * @param invert If true, render white-on-black (dark dots on light bg)
+             */
+            std::string render_grayscale(bool invert = false) const
+            {
+                enable_ansi_support();
+
+                std::string out;
+                // Pre-allocate: ~35 bytes per char for ANSI codes + braille
+                out.reserve(_char_height * _char_width * 40 + _char_height * 10);
+
+                uint8_t prev_gray = 255; // Invalid to force first color output
+
+                for (size_t y = 0; y < _char_height; ++y)
+                {
+                    for (size_t x = 0; x < _char_width; ++x)
+                    {
+                        uint8_t pattern = _canvas[y][x];
+
+                        // Get grayscale value if available, default to white
+                        uint8_t gray = 255;
+                        if (!_grayscale.empty() && y < _grayscale.size() && x < _grayscale[y].size())
+                        {
+                            gray = _grayscale[y][x];
+                        }
+
+                        if (invert)
+                            gray = 255 - gray;
+
+                        // Only emit color code when gray changes
+                        if (gray != prev_gray)
+                        {
+                            out += ansi::fg_color(gray, gray, gray);
+                            prev_gray = gray;
+                        }
+
+                        out += braille_to_utf8(pattern);
+                    }
+                    out += ansi::RESET;
+                    out += '\n';
+                    prev_gray = 255; // Reset for next line
+                }
+
+                return out;
             }
 
             /**
@@ -2535,6 +3399,116 @@ namespace pythonic
         }
 
         /**
+         * @brief Render an image file with ordered dithering for smooth grayscale shading
+         *
+         * Unlike simple thresholding, this uses ordered dithering to create
+         * proper grayscale shading. Brighter areas have more dots lit, darker areas
+         * have fewer dots - creating natural-looking gradients.
+         *
+         * Perfect for photos and videos where you want to see detail in both
+         * highlights and shadows instead of just black & white.
+         */
+        inline std::string render_image_dithered(const std::string &filename, int max_width = 80)
+        {
+            // Check file exists
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            BrailleCanvas canvas;
+
+            // For other formats, try ImageMagick conversion
+            std::string ppm_file = convert_to_ppm(filename, max_width * 2); // 2 pixels per braille char width
+            if (!ppm_file.empty())
+            {
+                if (canvas.load_pgm_ppm_dithered(ppm_file))
+                {
+                    std::remove(ppm_file.c_str());
+                    return canvas.render();
+                }
+                std::remove(ppm_file.c_str());
+            }
+
+            return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
+        }
+
+        /**
+         * @brief Render an image file with grayscale-colored braille dots
+         *
+         * Creates smooth grayscale rendering where each braille cell's dots
+         * are colored based on the average brightness of that cell.
+         * Combines with dithering for best visual quality.
+         *
+         * @param filename Path to image file
+         * @param max_width Maximum width in characters
+         * @param threshold Brightness threshold for dot visibility (only if not dithering)
+         * @param use_dithering Use ordered dithering for dot patterns
+         * @return Rendered string with ANSI color codes
+         */
+        inline std::string render_image_grayscale(const std::string &filename, int max_width = 80,
+                                                  int threshold = 128, bool use_dithering = true)
+        {
+            // Check file exists
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            BrailleCanvas canvas;
+
+            // Convert to PPM for processing
+            std::string ppm_file = convert_to_ppm(filename, max_width * 2);
+            if (!ppm_file.empty())
+            {
+                if (canvas.load_pgm_ppm_grayscale(ppm_file, threshold, use_dithering))
+                {
+                    std::remove(ppm_file.c_str());
+                    return canvas.render_grayscale();
+                }
+                std::remove(ppm_file.c_str());
+            }
+
+            return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
+        }
+
+        /**
+         * @brief FLOOD DOT: Render with all dots lit, colored by average cell brightness
+         *
+         * This creates the smoothest appearance for photos and videos by lighting
+         * ALL 8 dots in every cell and using grayscale color to represent brightness.
+         * No threshold or dithering noise - just smooth grayscale gradients.
+         *
+         * @param filename Path to image file
+         * @param max_width Maximum width in characters
+         * @return Rendered string with ANSI grayscale color codes
+         */
+        inline std::string render_image_flood(const std::string &filename, int max_width = 80)
+        {
+            // Check file exists
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            BrailleCanvas canvas;
+
+            // Convert to PPM for processing
+            std::string ppm_file = convert_to_ppm(filename, max_width * 2);
+            if (!ppm_file.empty())
+            {
+                if (canvas.load_pgm_ppm_flood(ppm_file))
+                {
+                    std::remove(ppm_file.c_str());
+                    return canvas.render_grayscale();
+                }
+                std::remove(ppm_file.c_str());
+            }
+
+            return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
+        }
+
+        /**
          * @brief Render a DOT graph to terminal string
          */
         inline std::string render_dot(const std::string &dot_content, int max_width = 80, int threshold = 128)
@@ -2788,7 +3762,7 @@ namespace pythonic
          * @param filename Path to image file
          * @param max_width Maximum width in terminal characters
          * @param threshold Brightness threshold (0-255) for BW modes
-         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot)
+         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot, bw_dithered, grayscale_dot)
          */
         inline void print_image_with_mode(const std::string &filename, int max_width = 80,
                                           int threshold = 128, Mode mode = Mode::bw_dot)
@@ -2806,6 +3780,18 @@ namespace pythonic
                 break;
             case Mode::colored_dot:
                 print_image_colored_dot(filename, max_width, threshold);
+                break;
+            case Mode::bw_dithered:
+                // Ordered dithering for smooth grayscale
+                std::cout << render_image_dithered(filename, max_width);
+                break;
+            case Mode::grayscale_dot:
+                // Grayscale-colored braille dots
+                std::cout << render_image_grayscale(filename, max_width, threshold, true);
+                break;
+            case Mode::flood_dot:
+                // All dots lit, colored by average brightness - smoothest
+                std::cout << render_image_flood(filename, max_width);
                 break;
             }
         }
@@ -2874,6 +3860,72 @@ namespace pythonic
                 ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(rgb.cols, rgb.rows);
                 canvas.load_frame_rgb(rgb.data, rgb.cols, rgb.rows, threshold);
                 return canvas.render();
+            }
+            case Mode::bw_dithered:
+            {
+                // Convert to grayscale and apply ordered dithering
+                cv::Mat gray;
+                cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
+                BrailleCanvas canvas = BrailleCanvas::from_pixels(gray.cols, gray.rows);
+                canvas.load_frame_ordered_dithered(gray.data, gray.cols, gray.rows);
+                return canvas.render();
+            }
+            case Mode::grayscale_dot:
+            {
+                // Convert to grayscale and apply grayscale coloring
+                cv::Mat gray;
+                cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
+                BrailleCanvas canvas = BrailleCanvas::from_pixels(gray.cols, gray.rows);
+                // Use dithering with brightness storage
+                for (int cy = 0; cy < (gray.rows + 3) / 4; ++cy)
+                {
+                    for (int cx = 0; cx < (gray.cols + 1) / 2; ++cx)
+                    {
+                        uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                        int px = cx * 2, py = cy * 4;
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col, y = py + row;
+                                if (x < gray.cols && y < gray.rows)
+                                {
+                                    grays[row * 2 + col] = gray.at<uint8_t>(y, x);
+                                }
+                            }
+                        }
+                        canvas.set_block_gray_dithered_with_brightness(cx, cy, grays);
+                    }
+                }
+                return canvas.render_grayscale();
+            }
+            case Mode::flood_dot:
+            {
+                // Flood fill: all dots lit, colored by average brightness
+                cv::Mat gray;
+                cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
+                BrailleCanvas canvas = BrailleCanvas::from_pixels(gray.cols, gray.rows);
+                for (int cy = 0; cy < (gray.rows + 3) / 4; ++cy)
+                {
+                    for (int cx = 0; cx < (gray.cols + 1) / 2; ++cx)
+                    {
+                        uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                        int px = cx * 2, py = cy * 4;
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col, y = py + row;
+                                if (x < gray.cols && y < gray.rows)
+                                {
+                                    grays[row * 2 + col] = gray.at<uint8_t>(y, x);
+                                }
+                            }
+                        }
+                        canvas.set_block_flood_fill(cx, cy, grays);
+                    }
+                }
+                return canvas.render_grayscale();
             }
             }
             return "";
@@ -4313,11 +5365,546 @@ namespace pythonic
             player.play(shell, pause_key, stop_key);
         }
 
+        // ==================== Dithered Video Player ====================
+
+        /**
+         * @brief Video player using ordered dithering for smooth grayscale (Mode::bw_dithered)
+         *
+         * Uses FFmpeg to decode video frames and renders them using
+         * braille characters with ordered dithering for natural grayscale gradients.
+         */
+        class DitheredVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            double _fps;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            std::thread _playback_thread;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            BrailleCanvas _canvas;
+
+        public:
+            DitheredVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0)
+                : _filename(filename), _width(width), _fps(target_fps),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+            }
+
+            ~DitheredVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                bool result = _play_internal();
+                _running = false;
+                return result;
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+                if (_playback_thread.joinable())
+                    _playback_thread.join();
+            }
+
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
+            bool is_playing() const { return _running; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
+                                  "-show_entries stream=width,height,r_frame_rate,duration "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return {0, 0, 0, 0};
+
+                char buffer[256];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                int w = 0, h = 0;
+                double fps = 0, duration = 0;
+                size_t pos = 0, comma;
+
+                comma = result.find(',');
+                if (comma != std::string::npos)
+                {
+                    w = std::stoi(result.substr(0, comma));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    h = std::stoi(result.substr(pos, comma - pos));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    std::string fps_str = result.substr(pos, comma - pos);
+                    size_t slash = fps_str.find('/');
+                    if (slash != std::string::npos)
+                    {
+                        double num = std::stod(fps_str.substr(0, slash));
+                        double den = std::stod(fps_str.substr(slash + 1));
+                        if (den > 0)
+                            fps = num / den;
+                    }
+                    pos = comma + 1;
+                }
+                try
+                {
+                    duration = std::stod(result.substr(pos));
+                }
+                catch (...)
+                {
+                }
+
+                return {w, h, fps, duration};
+            }
+
+        private:
+            bool _play_internal()
+            {
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info. Is FFmpeg installed?\n";
+                    return false;
+                }
+
+                int pixel_w = _width * 2;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = (pixel_h + 3) / 4 * 4;
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
+                                                               "-vf scale=" +
+                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h;
+                std::vector<uint8_t> frame_buffer(frame_size);
+                int char_height = pixel_h / 4;
+                _canvas = BrailleCanvas(_width, char_height);
+
+                TerminalStateGuard term_guard;
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                    keyboard = std::make_unique<KeyboardInput>();
+                bool user_stopped = false;
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    // Use ordered dithering instead of threshold
+                    _canvas.load_frame_ordered_dithered(frame_buffer.data(), pixel_w, pixel_h);
+
+                    std::cout << ansi::CURSOR_HOME;
+                    std::cout << _canvas.render() << std::flush;
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+        };
+
+        /**
+         * @brief Play video with ordered dithering for smooth grayscale
+         */
+        inline void play_video_dithered(const std::string &filename, int width = 80,
+                                        Shell shell = Shell::noninteractive,
+                                        char pause_key = 'p', char stop_key = 's')
+        {
+            DitheredVideoPlayer player(filename, width);
+            player.play(shell, pause_key, stop_key);
+        }
+
+        // ==================== Grayscale Video Player ====================
+
+        /**
+         * @brief Video player using grayscale-colored braille dots (Mode::grayscale_dot)
+         *
+         * Uses FFmpeg to decode video frames and renders them using
+         * braille characters where each cell is colored based on average brightness.
+         * Creates smoother, more visually appealing grayscale output.
+         */
+        class GrayscaleVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            double _fps;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            std::thread _playback_thread;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            BrailleCanvas _canvas;
+
+        public:
+            GrayscaleVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0)
+                : _filename(filename), _width(width), _fps(target_fps),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+                enable_ansi_support();
+            }
+
+            ~GrayscaleVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                bool result = _play_internal();
+                _running = false;
+                return result;
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+                if (_playback_thread.joinable())
+                    _playback_thread.join();
+            }
+
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
+            bool is_playing() const { return _running; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
+                                  "-show_entries stream=width,height,r_frame_rate,duration "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return {0, 0, 0, 0};
+
+                char buffer[256];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                int w = 0, h = 0;
+                double fps = 0, duration = 0;
+                size_t pos = 0, comma;
+
+                comma = result.find(',');
+                if (comma != std::string::npos)
+                {
+                    w = std::stoi(result.substr(0, comma));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    h = std::stoi(result.substr(pos, comma - pos));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    std::string fps_str = result.substr(pos, comma - pos);
+                    size_t slash = fps_str.find('/');
+                    if (slash != std::string::npos)
+                    {
+                        double num = std::stod(fps_str.substr(0, slash));
+                        double den = std::stod(fps_str.substr(slash + 1));
+                        if (den > 0)
+                            fps = num / den;
+                    }
+                    pos = comma + 1;
+                }
+                try
+                {
+                    duration = std::stod(result.substr(pos));
+                }
+                catch (...)
+                {
+                }
+
+                return {w, h, fps, duration};
+            }
+
+        private:
+            bool _play_internal()
+            {
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info. Is FFmpeg installed?\n";
+                    return false;
+                }
+
+                int pixel_w = _width * 2;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = (pixel_h + 3) / 4 * 4;
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
+                                                               "-vf scale=" +
+                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h;
+                std::vector<uint8_t> frame_buffer(frame_size);
+                int char_height = pixel_h / 4;
+                _canvas = BrailleCanvas(_width, char_height);
+
+                TerminalStateGuard term_guard;
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                    keyboard = std::make_unique<KeyboardInput>();
+                bool user_stopped = false;
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    // Load with dithering and grayscale storage
+                    int cw = (pixel_w + 1) / 2;
+                    int ch = (pixel_h + 3) / 4;
+
+                    // Resize canvas if needed
+                    if (cw != (int)_canvas.char_width() || ch != (int)_canvas.char_height())
+                    {
+                        _canvas = BrailleCanvas(cw, ch);
+                    }
+
+                    for (int cy = 0; cy < ch; ++cy)
+                    {
+                        for (int cx = 0; cx < cw; ++cx)
+                        {
+                            uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                            int px = cx * 2;
+                            int py = cy * 4;
+
+                            for (int row = 0; row < 4; ++row)
+                            {
+                                for (int col = 0; col < 2; ++col)
+                                {
+                                    int x = px + col;
+                                    int y = py + row;
+                                    if (x < pixel_w && y < pixel_h)
+                                    {
+                                        grays[row * 2 + col] = frame_buffer[y * pixel_w + x];
+                                    }
+                                }
+                            }
+                            _canvas.set_block_gray_dithered_with_brightness(cx, cy, grays);
+                        }
+                    }
+
+                    std::cout << ansi::CURSOR_HOME;
+                    std::cout << _canvas.render_grayscale() << std::flush;
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+        };
+
+        /**
+         * @brief Play video with grayscale-colored braille dots
+         */
+        inline void play_video_grayscale(const std::string &filename, int width = 80,
+                                         Shell shell = Shell::noninteractive,
+                                         char pause_key = 'p', char stop_key = 's')
+        {
+            GrayscaleVideoPlayer player(filename, width);
+            player.play(shell, pause_key, stop_key);
+        }
+
         /**
          * @brief Unified video playback function that handles all modes
          * @param filename Path to video file
          * @param width Terminal width in characters
-         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot)
+         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot, bw_dithered, grayscale_dot)
          * @param threshold Brightness threshold for BW modes
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
@@ -4341,6 +5928,17 @@ namespace pythonic
                 break;
             case Mode::colored_dot:
                 play_video_colored_dot(filename, width, threshold, shell, pause_key, stop_key);
+                break;
+            case Mode::bw_dithered:
+                play_video_dithered(filename, width, shell, pause_key, stop_key);
+                break;
+            case Mode::grayscale_dot:
+                play_video_grayscale(filename, width, shell, pause_key, stop_key);
+                break;
+            case Mode::flood_dot:
+                // Flood dot uses same renderer as grayscale_dot but with different loading
+                // For video playback, grayscale is similar enough
+                play_video_grayscale(filename, width, shell, pause_key, stop_key);
                 break;
             }
         }

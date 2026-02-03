@@ -28,6 +28,8 @@
 #include <regex>
 #include <cmath>
 #include <algorithm>
+#include <thread>
+#include <chrono>
 
 namespace pythonic
 {
@@ -407,6 +409,62 @@ namespace pythonic
             }
         };
 
+        // ==================== Fast Direct Rendering for Half-Block ====================
+
+        /**
+         * @brief Render grayscale half-block pixel data directly to ImageBuffer
+         *
+         * This bypasses ANSI string generation/parsing for much faster export.
+         * Each input cell has (top_gray, bottom_gray) values.
+         *
+         * @param pixels Vector of (top_gray, bottom_gray) pairs, row-major by cell
+         * @param char_width Number of character cells wide
+         * @param char_height Number of character cells tall
+         * @param pixel_size Size of each half-block pixel in output image
+         * @return ImageBuffer with rendered grayscale image
+         */
+        inline ImageBuffer render_half_block_direct(
+            const std::vector<std::vector<std::pair<uint8_t, uint8_t>>> &pixels,
+            size_t char_width, size_t char_height, int pixel_size = 2)
+        {
+            int img_width = static_cast<int>(char_width * pixel_size);
+            int img_height = static_cast<int>(char_height * pixel_size * 2); // 2 pixels per cell
+
+            ImageBuffer img(img_width, img_height, RGBA(0, 0, 0, 255));
+
+            for (size_t cy = 0; cy < char_height && cy < pixels.size(); ++cy)
+            {
+                for (size_t cx = 0; cx < char_width && cx < pixels[cy].size(); ++cx)
+                {
+                    auto [gray_top, gray_bot] = pixels[cy][cx];
+
+                    int x = static_cast<int>(cx * pixel_size);
+                    int y_top = static_cast<int>(cy * pixel_size * 2);
+                    int y_bot = y_top + pixel_size;
+
+                    // Fill top half
+                    for (int py = y_top; py < y_top + pixel_size && py < img_height; ++py)
+                    {
+                        for (int px = x; px < x + pixel_size && px < img_width; ++px)
+                        {
+                            img.set_pixel(px, py, RGBA(gray_top, gray_top, gray_top, 255));
+                        }
+                    }
+
+                    // Fill bottom half
+                    for (int py = y_bot; py < y_bot + pixel_size && py < img_height; ++py)
+                    {
+                        for (int px = x; px < x + pixel_size && px < img_width; ++px)
+                        {
+                            img.set_pixel(px, py, RGBA(gray_bot, gray_bot, gray_bot, 255));
+                        }
+                    }
+                }
+            }
+
+            return img;
+        }
+
         // ==================== PPM Writer (Simple, No Dependencies) ====================
 
         /**
@@ -436,9 +494,35 @@ namespace pythonic
          */
         inline bool write_png(const ImageBuffer &img, const std::string &filename)
         {
-            // Write temporary PPM
-            std::string temp_ppm = "/tmp/pythonic_export_" +
-                                   std::to_string(std::hash<std::string>{}(filename)) + ".ppm";
+            // Extract the directory from the output filename and use it for temp PPM
+            // This ensures temp file is on the same filesystem as output
+            std::string temp_dir;
+            size_t last_slash = filename.rfind('/');
+            if (last_slash != std::string::npos)
+            {
+                temp_dir = filename.substr(0, last_slash);
+            }
+            else
+            {
+#ifdef _WIN32
+                last_slash = filename.rfind('\\');
+                if (last_slash != std::string::npos)
+                    temp_dir = filename.substr(0, last_slash);
+                else
+                    temp_dir = ".";
+#else
+                temp_dir = ".";
+#endif
+            }
+
+            // Generate unique temp filename using thread id and timestamp
+            std::hash<std::thread::id> hasher;
+            auto thread_hash = hasher(std::this_thread::get_id());
+            auto time_hash = std::chrono::steady_clock::now().time_since_epoch().count();
+
+            std::string temp_ppm = temp_dir + "/pythonic_temp_" +
+                                   std::to_string(thread_hash) + "_" +
+                                   std::to_string(time_hash) + ".ppm";
 
             if (!write_ppm(img, temp_ppm))
                 return false;
