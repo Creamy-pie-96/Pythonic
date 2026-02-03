@@ -247,6 +247,18 @@ namespace pythonic
         using Render = Mode;
 
         /**
+         * @brief Tag type to disambiguate media printing from text printing
+         *
+         * Use this when you want to explicitly render a file as media:
+         *   print(Draw, "image.png");  // Always renders as image
+         *   print("image.png");        // May be ambiguous with text
+         */
+        struct DrawTag
+        {
+        };
+        constexpr DrawTag Draw{};
+
+        /**
          * @brief Media type hint for print() function
          *
          * Controls how the input file is interpreted:

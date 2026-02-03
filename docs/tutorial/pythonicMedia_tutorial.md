@@ -23,20 +23,20 @@ Pythonic format provides **encrypted, optionally compressed** media files that c
 
 ### File Extensions
 
-| Extension | Type  | Description                      |
-| --------- | ----- | -------------------------------- |
-| `.pi`     | Image | Pythonic Image (encrypted)       |
-| `.pv`     | Video | Pythonic Video (encrypted)       |
+| Extension | Type  | Description                |
+| --------- | ----- | -------------------------- |
+| `.pi`     | Image | Pythonic Image (encrypted) |
+| `.pv`     | Video | Pythonic Video (encrypted) |
 
 ### Why Use Pythonic Format?
 
-| Feature           | Benefit                                  |
-| ----------------- | ---------------------------------------- |
-| **Obfuscation**   | XOR encryption with salt-based key       |
-| **Compression**   | RLE compression for terminal graphics    |
-| **Round-trip**    | Lossless conversion back to original     |
-| **Auto-integration** | Works seamlessly with `print()` and `export_media()` |
-| **Metadata**      | Preserves original format for perfect restoration |
+| Feature              | Benefit                                              |
+| -------------------- | ---------------------------------------------------- |
+| **Obfuscation**      | XOR encryption with salt-based key                   |
+| **Compression**      | RLE compression for terminal graphics                |
+| **Round-trip**       | Lossless conversion back to original                 |
+| **Auto-integration** | Works seamlessly with `print()` and `export()` |
+| **Metadata**         | Preserves original format for perfect restoration    |
 
 ---
 
@@ -64,16 +64,16 @@ Pythonic format provides **encrypted, optionally compressed** media files that c
 
 ### Header Breakdown
 
-| Offset | Field                | Size | Purpose                                  |
-| ------ | -------------------- | ---- | ---------------------------------------- |
-| 0-7    | Magic bytes          | 8    | 'PYTHIMG\x01' or 'PYTHVID\x01'          |
-| 8      | Version              | 1    | Format version (v1 = current)            |
-| 9      | Ext length           | 1    | Length of original extension             |
-| 10-25  | Original extension   | 16   | `.jpg`, `.png`, `.mp4`, etc.            |
-| 26-29  | Salt                 | 4    | Random salt for key derivation           |
-| 30     | Compression type     | 1    | 0=none, 1=RLE                           |
-| 34-41  | Original size        | 8    | Size before encryption/compression       |
-| 42-49  | Compressed size      | 8    | Size after compression (0 if none)       |
+| Offset | Field              | Size | Purpose                            |
+| ------ | ------------------ | ---- | ---------------------------------- |
+| 0-7    | Magic bytes        | 8    | 'PYTHIMG\x01' or 'PYTHVID\x01'     |
+| 8      | Version            | 1    | Format version (v1 = current)      |
+| 9      | Ext length         | 1    | Length of original extension       |
+| 10-25  | Original extension | 16   | `.jpg`, `.png`, `.mp4`, etc.       |
+| 26-29  | Salt               | 4    | Random salt for key derivation     |
+| 30     | Compression type   | 1    | 0=none, 1=RLE                      |
+| 34-41  | Original size      | 8    | Size before encryption/compression |
+| 42-49  | Compressed size    | 8    | Size after compression (0 if none) |
 
 **Magic Bytes Identification:**
 
@@ -88,6 +88,7 @@ Pythonic format provides **encrypted, optionally compressed** media files that c
 ### Encryption Algorithm
 
 **Step 1: Key Derivation**
+
 ```cpp
 // Base key (32 bytes): "Pythonic" + random hex values
 ENCRYPT_KEY = {0x50, 0x79, 0x74, 0x68, 0x6F, 0x6E, 0x69, 0x63, ...}
@@ -99,18 +100,20 @@ for (size_t i = 0; i < 32; ++i) {
 ```
 
 **Step 2: Byte Transformation**
+
 ```cpp
 for (size_t i = 0; i < data.size(); ++i) {
     // 1. XOR with rotating key
     size_t key_idx = (i + (i / 32)) % 32;  // Position-dependent
     data[i] ^= file_key[key_idx];
-    
+
     // 2. Bit rotation (left 3, right 5)
     data[i] = (data[i] << 3) | (data[i] >> 5);
 }
 ```
 
 **Decryption:**
+
 ```cpp
 // Reverse order: bit rotation first, then XOR
 data[i] = (data[i] >> 3) | (data[i] << 5);  // Reverse rotation
@@ -141,11 +144,13 @@ Special case (if byte is 0xFF):
 ### Example Compression
 
 **Input:**
+
 ```
 0x00 0x00 0x00 0x00 0x00 0x41 0x42 0xFF 0xFF 0xFF
 ```
 
 **Output:**
+
 ```
 0xFF 0x05 0x00     // 5 zeros
 0x41                // literal 'A'
@@ -154,6 +159,7 @@ Special case (if byte is 0xFF):
 ```
 
 **Compression Ratio:**
+
 ```
 Original: 10 bytes
 Compressed: 7 bytes
@@ -162,12 +168,12 @@ Ratio: 70%
 
 ### Compression Effectiveness
 
-| Content Type           | Typical Ratio | Reason                              |
-| ---------------------- | ------------- | ----------------------------------- |
-| Terminal graphics      | **20-40%**    | Many repeated 0x00 (empty cells)    |
-| Already compressed (.png, .jpg, .mp4) | **98-102%**   | No benefit (already compressed)     |
-| Raw bitmap data        | **60-80%**    | Some repeated pixels                |
-| Text files             | **50-70%**    | Repeated spaces, newlines           |
+| Content Type                          | Typical Ratio | Reason                           |
+| ------------------------------------- | ------------- | -------------------------------- |
+| Terminal graphics                     | **20-40%**    | Many repeated 0x00 (empty cells) |
+| Already compressed (.png, .jpg, .mp4) | **98-102%**   | No benefit (already compressed)  |
+| Raw bitmap data                       | **60-80%**    | Some repeated pixels             |
+| Text files                            | **50-70%**    | Repeated spaces, newlines        |
 
 ---
 
@@ -209,6 +215,7 @@ convert("video.mp4", MediaType::auto_detect, false);
 ```
 
 **When to disable compression:**
+
 - Already compressed media (.jpg, .png, .mp4): No benefit
 - Speed-critical conversions: Skip compression step
 - Small files (< 100 KB): Overhead not worth it
@@ -248,7 +255,7 @@ revert("secret.pi", "output/final");  // Creates: output/final.jpg
 
 ## 5. Integration with Print/Export
 
-**Seamless Decryption:** `print()` and `export_media()` automatically decrypt .pi/.pv files!
+**Seamless Decryption:** `print()` and `export()` automatically decrypt .pi/.pv files!
 
 ### Example 1: Print Encrypted Media
 
@@ -274,7 +281,7 @@ print("movie.pv");     // Plays video with audio
 convert("photo.jpg");  // photo.pi
 
 // Export encrypted file (auto-decrypts, then exports)
-export_media("photo.pi", "output", RenderConfig()
+export("photo.pi", "output", RenderConfig()
     .set_format(Format::image)
     .set_mode(Mode::colored));
 // Creates: output.png (rendered from decrypted photo.pi)
@@ -289,7 +296,7 @@ std::string encrypted_vid = convert("private_video.mp4");
 
 // 2. Use encrypted files everywhere
 print(encrypted_img);  // Display
-export_media(encrypted_vid, "clip", RenderConfig()
+export(encrypted_vid, "clip", RenderConfig()
     .set_format(Format::video)
     .set_start_time(10)
     .set_end_time(20));
@@ -314,10 +321,10 @@ using namespace pythonic::media;
 void encrypt_directory(const std::string &dir) {
     for (const auto &entry : fs::directory_iterator(dir)) {
         if (!entry.is_regular_file()) continue;
-        
+
         std::string path = entry.path().string();
         std::string ext = get_extension(path);
-        
+
         if (is_image_extension(ext) || is_video_extension(ext)) {
             try {
                 std::string output = convert(path);
@@ -339,9 +346,9 @@ void encrypt_directory(const std::string &dir) {
 using namespace pythonic::media;
 
 void analyze_pythonic_file(const std::string &filepath) {
-    auto [is_image, ext, orig_size, comp_size, comp_type] = 
+    auto [is_image, ext, orig_size, comp_size, comp_type] =
         get_info_detailed(filepath);
-    
+
     std::cout << "════════════════════════════════════\n";
     std::cout << "File: " << filepath << "\n";
     std::cout << "────────────────────────────────────\n";
@@ -349,11 +356,11 @@ void analyze_pythonic_file(const std::string &filepath) {
     std::cout << "Original format: " << ext << "\n";
     std::cout << "Original size: " << orig_size << " bytes ("
               << (orig_size / 1024.0) << " KB)\n";
-    
+
     if (comp_type == Compression::rle && comp_size > 0) {
         double ratio = 100.0 * comp_size / orig_size;
         double savings = orig_size - comp_size;
-        
+
         std::cout << "Compressed: " << comp_size << " bytes ("
                   << std::fixed << std::setprecision(1) << ratio << "%)\n";
         std::cout << "Saved: " << savings << " bytes ("
@@ -361,7 +368,7 @@ void analyze_pythonic_file(const std::string &filepath) {
     } else {
         std::cout << "Compression: None\n";
     }
-    
+
     std::cout << "════════════════════════════════════\n";
 }
 ```
@@ -391,10 +398,10 @@ using namespace pythonic::media;
 std::string smart_convert(const std::string &filepath) {
     std::string ext = get_extension(filepath);
     size_t size = std::filesystem::file_size(filepath);
-    
+
     // Heuristics for compression
     bool should_compress = false;
-    
+
     // Text/raw formats: Always compress
     if (ext == ".txt" || ext == ".csv" || ext == ".bmp") {
         should_compress = true;
@@ -407,12 +414,12 @@ std::string smart_convert(const std::string &filepath) {
     else {
         should_compress = (size > 1024 * 1024);
     }
-    
+
     std::string output = convert(filepath, MediaType::auto_detect, should_compress);
-    
-    std::cout << filepath << " → " << output 
+
+    std::cout << filepath << " → " << output
               << (should_compress ? " (compressed)" : " (uncompressed)") << "\n";
-    
+
     return output;
 }
 ```
@@ -421,34 +428,38 @@ std::string smart_convert(const std::string &filepath) {
 
 ## Summary Table
 
-| Function              | Purpose                          | Input           | Output                |
-| --------------------- | -------------------------------- | --------------- | --------------------- |
-| `convert()`           | Encrypt media to .pi/.pv         | .jpg, .mp4, etc | .pi or .pv            |
-| `revert()`            | Decrypt .pi/.pv back to original | .pi or .pv      | Original format       |
-| `get_info()`          | Get metadata (type, ext, size)   | .pi or .pv      | Tuple (bool, str, uint64) |
-| `get_info_detailed()` | Get detailed info + compression  | .pi or .pv      | Tuple (5 values)      |
-| `is_pythonic_format()`| Check if file is .pi/.pv         | Any filename    | bool                  |
-| `extract_to_temp()`   | Decrypt to temp file             | .pi or .pv      | Temp file path        |
+| Function               | Purpose                          | Input           | Output                    |
+| ---------------------- | -------------------------------- | --------------- | ------------------------- |
+| `convert()`            | Encrypt media to .pi/.pv         | .jpg, .mp4, etc | .pi or .pv                |
+| `revert()`             | Decrypt .pi/.pv back to original | .pi or .pv      | Original format           |
+| `get_info()`           | Get metadata (type, ext, size)   | .pi or .pv      | Tuple (bool, str, uint64) |
+| `get_info_detailed()`  | Get detailed info + compression  | .pi or .pv      | Tuple (5 values)          |
+| `is_pythonic_format()` | Check if file is .pi/.pv         | Any filename    | bool                      |
+| `extract_to_temp()`    | Decrypt to temp file             | .pi or .pv      | Temp file path            |
 
 ---
 
 ## Recommendations
 
 ✅ **Enable compression for:**
+
 - Terminal graphics (.txt with Braille/ASCII art)
 - Raw bitmap data (.bmp)
 - Text-based formats (.csv, .log)
 
 ❌ **Disable compression for:**
+
 - Already compressed formats (.jpg, .png, .mp4)
 - Real-time conversion scenarios
 - Very small files (< 100 KB)
 
 📦 **Storage savings:**
+
 - Terminal graphics: 60-80% reduction
 - Videos/Images: Minimal (already compressed)
 
 🔐 **Security level:**
+
 - Obfuscation: ✅ (good for privacy)
 - Cryptographic security: ❌ (not for sensitive secrets)
 - Use case: Protecting media in public repositories, preventing casual viewing

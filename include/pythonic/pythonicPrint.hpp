@@ -132,22 +132,34 @@ namespace pythonic
 
                 if (_indeterminate)
                 {
-                    // Indeterminate progress bar (animated)
+                    // Indeterminate progress bar (animated bouncing pulse)
                     static const char *spinners[] = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
                     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - _start_time).count();
                     int idx = (ms / 100) % 10;
 
                     bar << "\033[93m" << spinners[idx] << "\033[0m ";
 
-                    // Animated bar
-                    int offset = (ms / 150) % _bar_width;
+                    // Animated bar - bouncing pulse pattern
+                    // The pulse travels from left to right and back
+                    int cycle_length = (_bar_width - 6) * 2; // -6 for pulse width, *2 for bounce
+                    int cycle_pos = (ms / 50) % cycle_length;
+                    int offset;
+                    if (cycle_pos < _bar_width - 6)
+                    {
+                        offset = cycle_pos + 3; // Moving right
+                    }
+                    else
+                    {
+                        offset = _bar_width - 3 - (cycle_pos - (_bar_width - 6)); // Moving left
+                    }
+
                     bar << "\033[90m[\033[0m";
                     for (int i = 0; i < _bar_width; i++)
                     {
                         int dist = std::abs(i - offset);
-                        if (dist < 3)
+                        if (dist <= 2)
                             bar << "\033[92m▓\033[0m";
-                        else if (dist < 5)
+                        else if (dist <= 4)
                             bar << "\033[32m▒\033[0m";
                         else
                             bar << "\033[90m░\033[0m";
@@ -569,43 +581,16 @@ namespace pythonic
         }
 
         /**
-         * @brief Print with explicit media type hint, render mode, parser, and audio option
+         * @brief Internal media print implementation
          *
-         * New API (v2):
-         *   print("file.png", Type::image);                                    // BW braille (default)
-         *   print("file.png", Type::image, Mode::colored);                     // True color blocks
-         *   print("file.png", Type::image, Mode::bw);                          // BW blocks
-         *   print("file.png", Type::image, Mode::colored_dot);                 // Colored braille
-         *   print("file.mp4", Type::video, Mode::bw_dot, Parser::opencv);      // Use OpenCV backend
-         *   print("0", Type::webcam);                                          // Webcam capture (requires OpenCV)
-         *   print("file.mp4", Type::video, Mode::bw_dot, Parser::default_parser, Audio::on);  // With audio
-         *
-         * Modes:
-         *   Mode::bw       - Black & white using half-block characters (▀▄█)
-         *   Mode::bw_dot   - Black & white using Braille patterns (default, higher resolution)
-         *   Mode::colored  - True color (24-bit) using half-block characters
-         *   Mode::colored_dot - True color using Braille patterns (one color per cell)
-         *
-         * Parsers:
-         *   Parser::default_parser - FFmpeg for video, ImageMagick for images (default)
-         *   Parser::opencv         - OpenCV for everything (also supports webcam)
-         *
-         * @param filepath Path to media file, webcam source ("0", "/dev/video0", "webcam"), or text
-         * @param type Media type hint (auto_detect, image, video, webcam, video_info, text)
-         * @param mode Render mode (bw_dot default for highest resolution)
-         * @param parser Parser backend (default_parser or opencv)
-         * @param audio Audio mode (Audio::off default, Audio::on for audio playback)
-         * @param max_width Terminal width for media rendering (default: 80)
-         * @param threshold Brightness threshold for BW modes (0-255, default: 128)
-         * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
-         * @param pause_key Key to pause/resume video playback (default 'p', '\0' to disable)
-         * @param stop_key Key to stop video playback (default 's', '\0' to disable)
+         * This function handles actual media rendering. It's called by print(Draw, ...).
+         * Users should use print(Draw, filepath, config) for media rendering.
          */
-        inline void print(const std::string &filepath, Type type = Type::auto_detect,
-                          Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
-                          Audio audio = Audio::off, int max_width = 80, int threshold = 128,
-                          Shell shell = Shell::noninteractive,
-                          char pause_key = 'p', char stop_key = 's')
+        inline void print_media_impl(const std::string &filepath, Type type = Type::auto_detect,
+                                     Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
+                                     Audio audio = Audio::off, int max_width = 80, int threshold = 128,
+                                     Shell shell = Shell::noninteractive,
+                                     char pause_key = 'p', char stop_key = 's')
         {
             // Helper to handle Pythonic format files
             auto handle_pythonic_format = [&](const std::string &path) -> std::string
@@ -714,20 +699,43 @@ namespace pythonic
             }
         }
 
-        // Overload for const char*
-        inline void print(const char *filepath, Type type = Type::auto_detect,
-                          Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
-                          Audio audio = Audio::off, int max_width = 80, int threshold = 128)
+        // Overload for const char* - internal media implementation
+        inline void print_media_impl(const char *filepath, Type type = Type::auto_detect,
+                                     Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
+                                     Audio audio = Audio::off, int max_width = 80, int threshold = 128)
         {
-            print(std::string(filepath), type, mode, parser, audio, max_width, threshold);
+            print_media_impl(std::string(filepath), type, mode, parser, audio, max_width, threshold);
         }
 
+        // Re-export DrawTag from draw namespace for convenience
+        using DrawTag = pythonic::draw::DrawTag;
+        constexpr DrawTag Draw = pythonic::draw::Draw;
+
+        // Re-export RenderConfig and other types from draw namespace
+        using RenderConfig = pythonic::draw::RenderConfig;
+        using Dithering = pythonic::draw::Dithering;
+
         /**
-         * @brief Specialized print for media files (std::string overload)
+         * @brief Print media file with explicit Draw tag
+         *
+         * Use Draw tag to explicitly render a file as media:
+         *   print(Draw, "image.png");              // Renders as image
+         *   print(Draw, "video.mp4");              // Plays video
+         *   print(Draw, "video.mp4", config);      // Plays video with config
+         *
+         * Without Draw tag, print() outputs text to stdout (like std::cout):
+         *   print("hello.png");                    // Outputs: hello.png
+         *
+         * @param tag Draw tag to indicate media rendering
+         * @param filepath Path to media file
+         * @param config Optional RenderConfig for rendering parameters
          */
-        inline void print(const std::string &filepath)
+        inline void print(DrawTag, const std::string &filepath,
+                          const RenderConfig &config = RenderConfig())
         {
-            print(filepath, Type::auto_detect);
+            print_media_impl(filepath, config.type, config.mode, config.parser, config.audio,
+                             config.max_width, config.threshold, config.shell,
+                             config.pause_key, config.stop_key);
         }
 
         // ==================== Export Format ====================
@@ -870,48 +878,58 @@ namespace pythonic
             return 0;
         }
 
+        // Re-export ExportConfig and RenderConfig for convenience
+        using ExportConfig = pythonic::ex::ExportConfig;
+        using RenderConfig = pythonic::draw::RenderConfig;
+        using Dithering = pythonic::draw::Dithering;
+
         /**
-         * @brief Export media as ASCII/braille art
+         * @brief Cross-platform null device for suppressing output
+         */
+        inline std::string null_device()
+        {
+#ifdef _WIN32
+            return "NUL";
+#else
+            return "/dev/null";
+#endif
+        }
+
+        /**
+         * @brief Export media as ASCII/braille art - UNIFIED API
          *
-         * Renders the image or video to terminal art (braille, blocks, colored)
-         * and saves it in the specified format.
+         * This is the single, unified export function that handles all export operations.
+         * Uses RenderConfig for rendering parameters and ExportConfig for pixel-level output control.
          *
          * Usage:
-         *   export_media("input.png", "output");                                          // text file (default)
-         *   export_media("input.png", "output", Type::image, Format::text);              // output.txt
-         *   export_media("input.png", "output", Type::image, Format::image);             // output.png (ASCII as image)
-         *   export_media("input.mp4", "output", Type::video, Format::video);             // output.mp4 (ASCII video)
-         *   export_media("input.png", "output", Type::image, Format::pythonic);          // output.pi
-         *   export_media("input.mp4", "output", Type::video, Format::video, Mode::bw_dot, 80, 128, Audio::off, 0, {}, true, -1, -1); // Full video
-         *   export_media("input.mp4", "output", Type::video, Format::video, Mode::bw_dot, 80, 128, Audio::off, 10, {}, true, 60, 120); // 1:00 to 2:00
+         *   export("input.png", "output");                                    // Defaults: text output
+         *   export("input.png", "output", RenderConfig().set_format(Format::image));  // PNG output
+         *   export("video.mp4", "output", RenderConfig().set_format(Format::video).with_audio());
+         *   export("image.png", "output", RenderConfig(), ExportConfig().set_dot_size(3));
          *
-         * @param input_path Path to source media file
-         * @param output_name Output filename (extension will be ignored/replaced)
-         * @param type Media type hint (auto_detect, image, video)
-         * @param format Output format (text=.txt, image=.png, video=.mp4, pythonic=.pi/.pv)
-         * @param mode Render mode (bw_dot, bw, colored, colored_dot)
-         * @param max_width Width for rendering (default 80)
-         * @param threshold Brightness threshold for BW modes (0-255)
-         * @param audio Audio mode for video export (Audio::on to include audio track)
-         * @param fps Frame rate for video export (0 = use original video fps, default)
-         * @param config Export configuration for customizing rendering (dot_size, density, colors)
-         * @param use_gpu Use GPU/hardware acceleration if available (default true). When false, uses CPU only.
-         * @param start_time Start time in seconds for video export (-1 = from beginning, default)
-         * @param end_time End time in seconds for video export (-1 = to end, default)
+         * @param input_path   Path to source media file
+         * @param output_name  Output filename (extension auto-added based on format)
+         * @param render_cfg   RenderConfig: type, mode, format, max_width, threshold, fps, start_time, end_time, audio, use_gpu
+         * @param export_cfg   ExportConfig: dot_size, dot_density, bg_color, default_fg, preserve_colors
          * @return true on success, false on failure
          */
-        inline bool export_media(const std::string &input_path, const std::string &output_name,
-                                 Type type = Type::auto_detect,
-                                 Format format = Format::text,
-                                 Mode mode = Mode::bw_dot,
-                                 int max_width = 80, int threshold = 128,
-                                 Audio audio = Audio::off,
-                                 int fps = 0,
-                                 const ex::ExportConfig &config = ex::ExportConfig(),
-                                 bool use_gpu = true,
-                                 double start_time = -1.0,
-                                 double end_time = -1.0)
+        inline bool emit(const std::string &input_path, const std::string &output_name,
+                         const RenderConfig &render_cfg = RenderConfig(),
+                         const ExportConfig &export_cfg = ExportConfig())
         {
+            // Extract values from config
+            Type type = render_cfg.type;
+            Format format = render_cfg.format;
+            Mode mode = render_cfg.mode;
+            int max_width = render_cfg.max_width;
+            int threshold = render_cfg.threshold;
+            Audio audio = render_cfg.audio;
+            int fps = render_cfg.fps;
+            bool use_gpu = render_cfg.use_gpu;
+            double start_time = render_cfg.start_time;
+            double end_time = render_cfg.end_time;
+            const ExportConfig &config = export_cfg;
+
             // Truncate any extension from output_name
             std::string basename = truncate_extension(output_name);
 
@@ -1585,11 +1603,12 @@ namespace pythonic
                         std::string audio_input = audio_path.empty() ? "" : " -i \"" + audio_path + "\"";
                         std::string audio_opts = audio_path.empty() ? "" : " -c:a aac -shortest";
                         std::string pix_fmt = " -pix_fmt yuv420p";
+                        std::string suppress_output = " 2>" + null_device();
 
                         // Try with hardware encoder first
-                        std::string video_cmd = "ffmpeg -y " + base_input + audio_input + " " +
+                        std::string video_cmd = "ffmpeg -y -hide_banner -loglevel error " + base_input + audio_input + " " +
                                                 scale_filter + " " + encoder_opts + audio_opts + pix_fmt +
-                                                " \"" + output_path + "\"";
+                                                " \"" + output_path + "\"" + suppress_output;
                         int res = std::system(video_cmd.c_str());
 
                         // If hardware encoder fails, fallback to CPU encoder
@@ -1597,9 +1616,9 @@ namespace pythonic
                         {
                             std::cout << "\n\033[33mHardware encoder failed, falling back to CPU (libx264)\033[0m\n";
                             std::string cpu_opts = "-c:v libx264 -preset faster -crf 23";
-                            video_cmd = "ffmpeg -y " + base_input + audio_input + " " +
+                            video_cmd = "ffmpeg -y -hide_banner -loglevel error " + base_input + audio_input + " " +
                                         scale_filter + " " + cpu_opts + audio_opts + pix_fmt +
-                                        " \"" + output_path + "\"";
+                                        " \"" + output_path + "\"" + suppress_output;
                             res = std::system(video_cmd.c_str());
                         }
 
@@ -1660,184 +1679,11 @@ namespace pythonic
             return false;
         }
 
-        /**
-         * @brief Export alias with simpler signature
-         */
-        inline bool export_media(const std::string &input_path, const std::string &output_name)
-        {
-            return export_media(input_path, output_name, Type::auto_detect);
-        }
+        // ==================== UNIFIED EXPORT API ====================
 
-        // Re-export ExportConfig from ex namespace for convenience
-        using ExportConfig = pythonic::ex::ExportConfig;
-
-        /**
-         * @brief Export media with custom rendering configuration
-         *
-         * Allows fine-grained control over dot size, density, and colors.
-         *
-         * Usage:
-         *   ExportConfig config;
-         *   config.set_dot_size(3).set_density(4).set_background(32, 32, 32);
-         *   export_media("input.png", "output", config, Type::image, Format::image);
-         *
-         * @param input_path Path to source media file
-         * @param output_name Output filename (extension added based on format)
-         * @param config Export configuration (dot_size, density, colors)
-         * @param type Media type hint (auto_detect, image, video)
-         * @param format Output format (text, image, video, pythonic)
-         * @param mode Render mode (bw_dot, bw, colored, colored_dot)
-         * @param max_width Width for ASCII rendering
-         * @param threshold Brightness threshold for BW modes
-         * @param audio Audio mode for video export
-         * @param use_gpu Use GPU/hardware acceleration if available (default true)
-         * @return true on success
-         */
-        inline bool export_media(const std::string &input_path, const std::string &output_name,
-                                 const ExportConfig &config,
-                                 Type type = Type::auto_detect,
-                                 Format format = Format::image,
-                                 Mode mode = Mode::bw_dot,
-                                 int max_width = 80, int threshold = 128,
-                                 Audio audio = Audio::off,
-                                 bool use_gpu = true)
-        {
-            // Truncate any extension from output_name
-            std::string basename = truncate_extension(output_name);
-
-            // Fix max_width if invalid
-            if (max_width <= 0)
-                max_width = 80;
-
-            // Determine actual type from input
-            Type actual_type = type;
-            if (type == Type::auto_detect)
-            {
-                if (pythonic::draw::is_video_file(input_path) ||
-                    pythonic::draw::is_pythonic_video_file(input_path))
-                {
-                    actual_type = Type::video;
-                }
-                else
-                {
-                    actual_type = Type::image;
-                }
-            }
-
-            // Handle IMAGE format with ExportConfig
-            if (format == Format::image)
-            {
-                std::string output_path = basename + ".png";
-                std::string rendered;
-
-                if (actual_type == Type::video)
-                {
-                    // Extract first frame
-                    std::string actual_path = input_path;
-                    bool is_temp = false;
-                    if (pythonic::draw::is_pythonic_video_file(input_path))
-                    {
-                        actual_path = pythonic::media::extract_to_temp(input_path);
-                        is_temp = true;
-                    }
-
-                    std::string temp_frame = "/tmp/pythonic_export_frame_" +
-                                             std::to_string(std::hash<std::string>{}(input_path)) + ".png";
-                    std::string cmd = "ffmpeg -y -i \"" + actual_path + "\" -vframes 1 \"" + temp_frame + "\" 2>/dev/null";
-                    int result = std::system(cmd.c_str());
-
-                    if (is_temp)
-                        std::remove(actual_path.c_str());
-
-                    if (result != 0)
-                        return false;
-
-                    rendered = render_image_to_string(temp_frame, mode, max_width, threshold);
-                    std::remove(temp_frame.c_str());
-                }
-                else
-                {
-                    rendered = render_image_to_string(input_path, mode, max_width, threshold);
-                }
-
-                return pythonic::ex::export_art_to_png(rendered, output_path, config);
-            }
-
-            // For other formats, delegate to the main function
-            return export_media(input_path, output_name, type, format, mode, max_width, threshold, audio, 0, {}, use_gpu);
-        }
-
-        // ==================== Simplified Config-based API ====================
-
-        // Re-export RenderConfig and Dithering from draw namespace for convenience
-        using RenderConfig = pythonic::draw::RenderConfig;
-        using Dithering = pythonic::draw::Dithering;
-
-        /**
-         * @brief Print/display media file with unified configuration
-         *
-         * Simplified API that uses RenderConfig for all parameters.
-         * All parameters have sensible defaults.
-         *
-         * Usage:
-         *   // With all defaults (auto-detect type, bw_dot mode, 80 width)
-         *   print("image.png");
-         *
-         *   // With custom config
-         *   print("video.mp4", RenderConfig().set_mode(Mode::colored).set_max_width(120));
-         *
-         *   // With dithering
-         *   print("photo.jpg", RenderConfig().set_dithering(Dithering::ordered));
-         *
-         *   // Interactive video playback with audio
-         *   print("movie.mp4", RenderConfig().with_audio().interactive());
-         *
-         * @param filepath Path to media file
-         * @param config Configuration with all rendering parameters
-         */
-        inline void print(const std::string &filepath, const RenderConfig &config)
-        {
-            // Delegate to the full print function with all config parameters
-            print(filepath, config.type, config.mode, config.parser, config.audio,
-                  config.max_width, config.threshold, config.shell,
-                  config.pause_key, config.stop_key);
-        }
-
-        /**
-         * @brief Export media file with unified configuration
-         *
-         * Simplified API that uses RenderConfig for all parameters.
-         * All parameters have sensible defaults.
-         *
-         * Usage:
-         *   // Export with defaults (text output)
-         *   export_media("image.png", "output");
-         *
-         *   // Export video as ASCII video
-         *   export_media("video.mp4", "output", RenderConfig()
-         *       .set_format(Format::video)
-         *       .set_mode(Mode::colored)
-         *       .set_dithering(Dithering::ordered));
-         *
-         *   // Export clip with timestamps
-         *   export_media("movie.mp4", "clip", RenderConfig()
-         *       .set_format(Format::video)
-         *       .set_start_time(60)  // Start at 1:00
-         *       .set_end_time(120)); // End at 2:00
-         *
-         * @param input_path Path to source media file
-         * @param output_name Output filename (extension added based on format)
-         * @param config Configuration with all rendering parameters
-         * @return true on success, false on failure
-         */
-        inline bool export_media(const std::string &input_path, const std::string &output_name,
-                                 const RenderConfig &config)
-        {
-            return export_media(input_path, output_name, config.type, config.format,
-                                config.mode, config.max_width, config.threshold,
-                                config.audio, config.fps, ex::ExportConfig(),
-                                config.use_gpu, config.start_time, config.end_time);
-        }
+        // ==================== UNIFIED EXPORT API ====================
+        // The main export() function is defined above at line ~920
+        // export(input_path, output_name, RenderConfig = {}, ExportConfig = {})
 
     } // namespace print
 } // namespace pythonic
