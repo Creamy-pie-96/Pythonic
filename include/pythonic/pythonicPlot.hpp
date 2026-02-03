@@ -448,6 +448,8 @@ namespace pythonic
             RGBA _grid_color;
             RGBA _axis_color;
             RGBA _bg_color;
+            RGBA _label_color; // Color for "X" and "Y" axis labels
+            RGBA _range_color; // Color for min/max range values
 
             // Variables for dynamic plots
             std::map<std::string, Variable> _variables;
@@ -467,9 +469,9 @@ namespace pythonic
 
         public:
             /**
-             * @brief Create a new figure
-             * @param char_width Width in terminal characters
-             * @param char_height Height in terminal characters
+             * @brief Create a new figure with dimensions in terminal characters
+             * @param char_width Width in terminal characters (each char = 2 pixels for Braille)
+             * @param char_height Height in terminal characters (each char = 4 pixels for Braille)
              * @param mode Rendering mode (default: braille_colored for best quality)
              */
             Figure(size_t char_width = 80, size_t char_height = 24,
@@ -487,10 +489,37 @@ namespace pythonic
                   _grid_color(30, 30, 50, 255),
                   _axis_color(80, 80, 120, 255),
                   _bg_color(0, 0, 0, 255),
+                  _label_color(150, 220, 255, 255), // Bright sky blue for X/Y labels
+                  _range_color(180, 140, 255, 255), // Light purple for min/max values
                   _time(0),
                   _mode(mode)
             {
                 update_plot_area();
+            }
+
+            /**
+             * @brief Create a figure with dimensions in pixels
+             *
+             * This factory method lets you specify the desired pixel resolution,
+             * and automatically calculates the terminal character dimensions.
+             *
+             * @param pixel_width Desired width in pixels (will be rounded to multiple of 2)
+             * @param pixel_height Desired height in pixels (will be rounded to multiple of 4)
+             * @param mode Rendering mode (default: braille_colored)
+             * @return A new Figure with the specified pixel resolution
+             *
+             * Example:
+             *   auto fig = Figure::from_pixels(320, 160);  // 160 chars x 40 chars
+             */
+            static Figure from_pixels(size_t pixel_width, size_t pixel_height,
+                                      PlotMode mode = PlotMode::braille_colored)
+            {
+                // Round up to nearest Braille cell boundary
+                // Braille: 2 pixels wide, 4 pixels tall per character
+                size_t char_width = (pixel_width + 1) / 2;   // Round up to ensure we cover the width
+                size_t char_height = (pixel_height + 3) / 4; // Round up to ensure we cover the height
+
+                return Figure(char_width, char_height, mode);
             }
 
             // ==================== Configuration ====================
@@ -546,6 +575,26 @@ namespace pythonic
             Figure &legend(bool show)
             {
                 _show_legend = show;
+                return *this;
+            }
+
+            /**
+             * @brief Set the color for axis labels ("X" and "Y")
+             * @param color Color name (e.g., "cyan", "white") or will use default bright sky blue
+             */
+            Figure &label_color(const std::string &color)
+            {
+                _label_color = colors::from_name(color);
+                return *this;
+            }
+
+            /**
+             * @brief Set the color for axis range values (min/max numbers)
+             * @param color Color name (e.g., "magenta", "yellow") or will use default light purple
+             */
+            Figure &range_color(const std::string &color)
+            {
+                _range_color = colors::from_name(color);
                 return *this;
             }
 
@@ -700,14 +749,22 @@ namespace pythonic
              * @brief Plot a time-varying function y = f(t, x)
              *
              * Used for animations where 't' is the time variable.
+             * @param f Function f(t, x) -> y
+             * @param x_min Minimum x value
+             * @param x_max Maximum x value
+             * @param color Plot color
+             * @param label Legend label
+             * @param num_points Number of sample points
              */
             template <typename Func>
             Figure &plot_animated(Func &&f, double x_min, double x_max,
                                   const std::string &color = "",
+                                  const std::string &label = "",
                                   int num_points = 500)
             {
                 PlotData data;
                 data.color = color.empty() ? next_color() : colors::from_name(color);
+                data.label = label;
 
                 double step = (x_max - x_min) / num_points;
                 for (int i = 0; i <= num_points; ++i)
@@ -979,30 +1036,30 @@ namespace pythonic
              */
             void draw_labels_to_pixels()
             {
-                // Use a gray/muted color for axis labels so they don't clash with plot colors
-                RGBA label_color(100, 120, 140, 255); // Muted steel blue
-                RGBA range_color(80, 100, 120, 255);  // Slightly darker for numbers
+                // Use member color variables for axis labels
+                // _label_color: for "X" and "Y" labels
+                // _range_color: for min/max range numbers
 
                 // Draw Y label at top of Y axis (above plot area)
                 if (_x_range.min <= 0 && _x_range.max >= 0)
                 {
                     int y_axis_x = data_to_pixel_x(0);
-                    draw_text("Y", y_axis_x - 2, _plot_y0 - 8, label_color);
+                    draw_text("Y", y_axis_x - 2, _plot_y0 - 8, _label_color);
                 }
                 else
                 {
-                    draw_text("Y", _plot_x0 - 2, _plot_y0 - 8, label_color);
+                    draw_text("Y", _plot_x0 - 2, _plot_y0 - 8, _label_color);
                 }
 
                 // Draw X label at end of X axis (right of plot area)
                 if (_y_range.min <= 0 && _y_range.max >= 0)
                 {
                     int x_axis_y = data_to_pixel_y(0);
-                    draw_text("X", _plot_x1 + 2, x_axis_y - 2, label_color);
+                    draw_text("X", _plot_x1 + 2, x_axis_y - 2, _label_color);
                 }
                 else
                 {
-                    draw_text("X", _plot_x1 + 2, _plot_y1 - 3, label_color);
+                    draw_text("X", _plot_x1 + 2, _plot_y1 - 3, _label_color);
                 }
 
                 // Note: We don't draw "O" at origin anymore - it's unnecessary clutter
@@ -1014,19 +1071,19 @@ namespace pythonic
                 std::string y_max_str = format_number(_y_range.max);
 
                 // X axis range - below the plot area
-                draw_text(x_min_str, _plot_x0, _plot_y1 + 2, range_color);
-                draw_text(x_max_str, _plot_x1 - font::text_width(x_max_str), _plot_y1 + 2, range_color);
+                draw_text(x_min_str, _plot_x0, _plot_y1 + 2, _range_color);
+                draw_text(x_max_str, _plot_x1 - font::text_width(x_max_str), _plot_y1 + 2, _range_color);
 
                 // Y axis range - left of plot area (labels positioned to not overlap with plot)
                 int y_label_x = _plot_x0 - font::text_width(y_max_str) - 2;
                 if (y_label_x < 0)
                     y_label_x = 0;
-                draw_text(y_max_str, y_label_x, _plot_y0, range_color);
+                draw_text(y_max_str, y_label_x, _plot_y0, _range_color);
 
                 y_label_x = _plot_x0 - font::text_width(y_min_str) - 2;
                 if (y_label_x < 0)
                     y_label_x = 0;
-                draw_text(y_min_str, y_label_x, _plot_y1 - 5, range_color);
+                draw_text(y_min_str, y_label_x, _plot_y1 - 5, _range_color);
 
                 // Draw user text annotations
                 for (const auto &annot : _text_annotations)
@@ -1471,15 +1528,251 @@ namespace pythonic
         // ==================== Animation Support ====================
 
         /**
-         * @brief Animate a time-varying plot with optional dependency functions
+         * @brief Configuration for plot animations
+         *
+         * Use this struct to configure animation parameters.
+         * All fields have sensible defaults, so you only need to set what you want to customize.
+         *
+         * Example:
+         *   AnimateConfig cfg;
+         *   cfg.x_min = -PI;
+         *   cfg.x_max = PI;
+         *   cfg.duration = 10.0;
+         *   cfg.width = 120;
+         *   cfg.height = 40;
+         *
+         *   // Or using the fluent builder pattern:
+         *   auto cfg = AnimateConfig().x_range(-PI, PI).size(120, 40).fps(60);
+         */
+        struct AnimateConfig
+        {
+            double x_min = -10.0;                ///< X-axis minimum
+            double x_max = 10.0;                 ///< X-axis maximum
+            double duration = 10.0;              ///< Animation duration in seconds
+            double fps = 30.0;                   ///< Frames per second
+            int width = 80;                      ///< Width in terminal characters
+            int height = 24;                     ///< Height in terminal characters
+            bool use_pixels = false;             ///< If true, width/height are pixels (converted to chars)
+            std::string label_color = "cyan";    ///< Color for X/Y axis labels
+            std::string range_color = "magenta"; ///< Color for min/max range values
+            std::string title = "";              ///< Optional title
+
+            // Fluent builder methods for chaining
+            AnimateConfig &x_range(double min, double max)
+            {
+                x_min = min;
+                x_max = max;
+                return *this;
+            }
+            AnimateConfig &time(double dur)
+            {
+                duration = dur;
+                return *this;
+            }
+            AnimateConfig &framerate(double f)
+            {
+                fps = f;
+                return *this;
+            }
+            AnimateConfig &size(int w, int h)
+            {
+                width = w;
+                height = h;
+                use_pixels = false;
+                return *this;
+            }
+            AnimateConfig &size_px(int w, int h)
+            {
+                width = w;
+                height = h;
+                use_pixels = true;
+                return *this;
+            }
+            AnimateConfig &labels(const std::string &lc)
+            {
+                label_color = lc;
+                return *this;
+            }
+            AnimateConfig &ranges(const std::string &rc)
+            {
+                range_color = rc;
+                return *this;
+            }
+            AnimateConfig &set_title(const std::string &t)
+            {
+                title = t;
+                return *this;
+            }
+
+            // Get actual character dimensions (converts pixels if needed)
+            int char_width() const { return use_pixels ? (width + 1) / 2 : width; }
+            int char_height() const { return use_pixels ? (height + 3) / 4 : height; }
+        };
+
+        // Internal implementation for multi-plot animation
+        namespace detail
+        {
+            template <typename... PlotEntries>
+            inline void animate_impl(const AnimateConfig &cfg, PlotEntries &&...plots)
+            {
+                Figure fig(cfg.char_width(), cfg.char_height());
+                fig.xlim(cfg.x_min, cfg.x_max);
+                fig.label_color(cfg.label_color);
+                fig.range_color(cfg.range_color);
+                if (!cfg.title.empty())
+                {
+                    fig.title(cfg.title);
+                }
+
+                // First pass: estimate y range across all plot functions
+                double y_min = std::numeric_limits<double>::max();
+                double y_max = std::numeric_limits<double>::lowest();
+
+                auto sample_range = [&](auto &&plot_tuple)
+                {
+                    auto &f = std::get<0>(plot_tuple);
+                    for (double t = 0; t <= cfg.duration; t += 0.5)
+                    {
+                        for (double x = cfg.x_min; x <= cfg.x_max; x += (cfg.x_max - cfg.x_min) / 100)
+                        {
+                            double y = f(t, x);
+                            if (std::isfinite(y))
+                            {
+                                y_min = std::min(y_min, y);
+                                y_max = std::max(y_max, y);
+                            }
+                        }
+                    }
+                };
+
+                (sample_range(plots), ...);
+                fig.ylim(y_min - 0.1 * (y_max - y_min), y_max + 0.1 * (y_max - y_min));
+
+                // Hide cursor
+                std::cout << "\033[?25l" << std::flush;
+
+                auto frame_time = std::chrono::microseconds(static_cast<int>(1000000.0 / cfg.fps));
+                auto start_time = std::chrono::steady_clock::now();
+
+                try
+                {
+                    while (true)
+                    {
+                        auto now = std::chrono::steady_clock::now();
+                        double t = std::chrono::duration<double>(now - start_time).count();
+
+                        if (t > cfg.duration)
+                        {
+                            t = std::fmod(t, cfg.duration);
+                        }
+
+                        fig.clear();
+                        fig.set_time(t);
+
+                        auto plot_one = [&](auto &&plot_tuple)
+                        {
+                            auto &f = std::get<0>(plot_tuple);
+                            const auto &color = std::get<1>(plot_tuple);
+
+                            if constexpr (std::tuple_size_v<std::decay_t<decltype(plot_tuple)>> >= 3)
+                            {
+                                const auto &label = std::get<2>(plot_tuple);
+                                fig.plot_animated(f, cfg.x_min, cfg.x_max, color, label);
+                            }
+                            else
+                            {
+                                fig.plot_animated(f, cfg.x_min, cfg.x_max, color);
+                            }
+                        };
+
+                        (plot_one(plots), ...);
+
+                        std::cout << "\033[H" << fig.render_to_string();
+                        std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
+                                  << "s (Press Ctrl+C to stop)" << std::flush;
+
+                        std::this_thread::sleep_for(frame_time);
+                    }
+                }
+                catch (...)
+                {
+                }
+
+                std::cout << "\033[?25h" << std::flush;
+            }
+        } // namespace detail
+
+        /**
+         * @brief Main animation function - supports single or multiple plots
+         *
+         * This is the primary user-facing animation function. It supports:
+         * - Single function animation
+         * - Multiple functions with different colors and legends
+         * - Configurable dimensions (characters or pixels)
+         * - Custom colors for labels and range values
+         *
+         * Usage examples:
+         *
+         * 1. Simple single function:
+         *    animate(AnimateConfig().x_range(-PI, PI),
+         *            std::make_tuple([](double t, double x) { return sin(x + t); }, "red", "sin"));
+         *
+         * 2. Multiple functions with legends:
+         *    animate(AnimateConfig().x_range(-PI, PI).size(120, 40).time(20),
+         *            std::make_tuple([](double t, double x) { return sin(t + x); }, "red", "sin"),
+         *            std::make_tuple([](double t, double x) { return cos(t + x); }, "cyan", "cos"));
+         *
+         * 3. With pixel dimensions:
+         *    animate(AnimateConfig().x_range(-PI, PI).size_px(320, 160),
+         *            std::make_tuple([](double t, double x) { return sin(t + x); }, "green"));
+         *
+         * @param cfg Animation configuration
+         * @param plots Variadic plot entries as tuples of (function, color, [label])
+         */
+        template <typename... PlotEntries>
+        inline void animate(const AnimateConfig &cfg, PlotEntries &&...plots)
+        {
+            detail::animate_impl(cfg, std::forward<PlotEntries>(plots)...);
+        }
+
+        /**
+         * @brief Convenience overload for simple single-plot animations
+         *
+         * Usage:
+         *   animate([](double t, double x) { return sin(x + t); }, -PI, PI);
+         *   animate([](double t, double x) { return sin(x + t); }, -PI, PI, 20.0, 30, 120, 40);
+         */
+        template <typename Func>
+        inline void animate(Func &&f, double x_min, double x_max,
+                            double duration = 10.0, double fps = 30,
+                            int width = 80, int height = 24,
+                            const std::string &color = "cyan",
+                            const std::string &label = "")
+        {
+            AnimateConfig cfg;
+            cfg.x_min = x_min;
+            cfg.x_max = x_max;
+            cfg.duration = duration;
+            cfg.fps = fps;
+            cfg.width = width;
+            cfg.height = height;
+
+            detail::animate_impl(cfg, std::make_tuple(std::forward<Func>(f), color, label));
+        }
+
+        // ==================== Legacy Functions (kept for backward compatibility) ====================
+
+        /**
+         * @brief [LEGACY] Animate a time-varying plot with optional dependency functions
+         * @deprecated Use animate(AnimateConfig, plots...) instead
          *
          * Supports both simple animations and complex multi-parameter animations:
          *
          * Simple usage:
-         *   animate([](double t, double x) { return sin(x + t); }, -PI, PI);
+         *   animate_legacy([](double t, double x) { return sin(x + t); }, -PI, PI);
          *
          * With dependencies:
-         *   animate(
+         *   animate_legacy(
          *       [](double t, double x, double a, double b) { return a * sin(x) + b * cos(t); },
          *       x_min, x_max, duration, fps, width, height,
          *       [](double t) { return 1.0 + 0.5 * sin(t); },     // dep1 -> a
@@ -1496,10 +1789,10 @@ namespace pythonic
          * @param deps... Optional dependency functions, each takes t and returns a value
          */
         template <typename MainFunc, typename... DepFuncs>
-        inline void animate(MainFunc &&f, double x_min, double x_max,
-                            double duration = 10.0, double fps = 30,
-                            int width = 80, int height = 24,
-                            DepFuncs &&...deps)
+        inline void animate_legacy(MainFunc &&f, double x_min, double x_max,
+                                   double duration = 10.0, double fps = 30,
+                                   int width = 80, int height = 24,
+                                   DepFuncs &&...deps)
         {
             Figure fig(width, height);
             fig.xlim(x_min, x_max);
@@ -1648,12 +1941,23 @@ namespace pythonic
                     fig.clear();
                     fig.set_time(t);
 
-                    // Plot each function with its color
+                    // Plot each function with its color and optional label
+                    // Supports both 2-element tuples (func, color) and 3-element (func, color, label)
                     auto plot_one = [&](auto &&plot_tuple)
                     {
                         auto &f = std::get<0>(plot_tuple);
                         const auto &color = std::get<1>(plot_tuple);
-                        fig.plot_animated(f, x_min, x_max, color);
+
+                        // Check if tuple has a third element (label)
+                        if constexpr (std::tuple_size_v<std::decay_t<decltype(plot_tuple)>> >= 3)
+                        {
+                            const auto &label = std::get<2>(plot_tuple);
+                            fig.plot_animated(f, x_min, x_max, color, label);
+                        }
+                        else
+                        {
+                            fig.plot_animated(f, x_min, x_max, color);
+                        }
                     };
 
                     (plot_one(plots), ...);
@@ -1671,6 +1975,41 @@ namespace pythonic
 
             // Show cursor
             std::cout << "\033[?25h" << std::flush;
+        }
+
+        /**
+         * @brief Animate with multiple plot functions using pixel dimensions
+         *
+         * This overload allows specifying the plot area in pixels instead of characters.
+         * The pixel dimensions are converted to character dimensions automatically.
+         *
+         * @param x_min Minimum x value for the plot
+         * @param x_max Maximum x value for the plot
+         * @param duration Animation duration in seconds
+         * @param fps Frames per second
+         * @param pixel_width Desired width in pixels (will be converted to characters)
+         * @param pixel_height Desired height in pixels (will be converted to characters)
+         * @param plots Variadic plot entries as tuples of (function, color, [label])
+         *
+         * Example:
+         *   animate_plots_px(x_min, x_max, duration, fps, 320, 160,
+         *       std::make_tuple([](double t, double x) { return sin(x + t); }, "red", "sin"),
+         *       std::make_tuple([](double t, double x) { return cos(x - t); }, "blue", "cos")
+         *   );
+         */
+        template <typename... PlotEntries>
+        inline void animate_plots_px(double x_min, double x_max,
+                                     double duration, double fps,
+                                     int pixel_width, int pixel_height,
+                                     PlotEntries &&...plots)
+        {
+            // Convert pixel dimensions to character dimensions
+            // Braille: 2 pixels wide, 4 pixels tall per character
+            int char_width = (pixel_width + 1) / 2;
+            int char_height = (pixel_height + 3) / 4;
+
+            animate_plots(x_min, x_max, duration, fps, char_width, char_height,
+                          std::forward<PlotEntries>(plots)...);
         }
 
         // ==================== Simple Function Wrappers ====================

@@ -283,110 +283,120 @@ fig.title("Annotated Graph")
 
 ## 🎬 Animation
 
-Pythonic provides two powerful animation functions: `animate()` and `animate_plots()`.
+Pythonic provides a unified `animate()` function for creating beautiful terminal animations.
 
-### Simple Animation (`animate`)
+### AnimateConfig - Configuration Struct
 
-Animate a time-varying function with a single call:
+The `AnimateConfig` struct lets you configure all animation parameters:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace pythonic::plot;
+
+// Create config with fluent builder pattern
+auto cfg = AnimateConfig()
+    .x_range(-PI, PI)       // X axis range
+    .time(20.0)             // Duration in seconds
+    .framerate(30)          // FPS
+    .size(120, 35)          // Size in characters (width, height)
+    // OR
+    .size_px(240, 140)      // Size in pixels (auto-converts to chars)
+    .labels("cyan")         // Color for X/Y axis labels
+    .ranges("magenta")      // Color for min/max range values
+    .set_title("My Animation");
+```
+
+**Available configuration methods:**
+
+| Method               | Description                                | Default   |
+| -------------------- | ------------------------------------------ | --------- |
+| `.x_range(min, max)` | X axis range                               | -10 to 10 |
+| `.time(seconds)`     | Animation duration                         | 10.0      |
+| `.framerate(fps)`    | Frames per second                          | 30        |
+| `.size(w, h)`        | Size in terminal characters                | 80×24     |
+| `.size_px(w, h)`     | Size in pixels (Braille converts to chars) | -         |
+| `.labels(color)`     | Color for X/Y axis labels                  | "cyan"    |
+| `.ranges(color)`     | Color for min/max values                   | "magenta" |
+| `.set_title(text)`   | Plot title                                 | ""        |
+
+---
+
+### Simple Single-Plot Animation
 
 ```cpp
 #include <pythonic/pythonic.hpp>
 using namespace pythonic::plot;
 
 int main() {
-    // animate(f, x_min, x_max, duration, fps, width, height)
+    // Simplest form: function, x_range
     animate(
-        [](double t, double x) { return sin(x + t); },  // f(t, x)
-        -PI, PI,     // x range
-        10.0,        // duration in seconds
-        30,          // frames per second
-        80, 24       // figure dimensions
+        [](double t, double x) { return sin(x + t); },
+        -PI, PI  // x range
+    );
+
+    // With more options (positional arguments)
+    animate(
+        [](double t, double x) { return sin(x + t); },
+        -PI, PI,   // x range
+        10.0,      // duration
+        30,        // fps
+        80, 24,    // width, height
+        "cyan",    // color
+        "sin(x+t)" // legend label
     );
 
     return 0;
 }
 ```
 
-**Parameters:**
-
-- `f` - Function `f(t, x)` where `t` is time and `x` is the variable
-- `x_min, x_max` - X axis range
-- `duration` - Animation duration in seconds (default: 10.0)
-- `fps` - Frames per second (default: 30)
-- `width, height` - Figure dimensions in characters (default: 80, 24)
-
-**Features:**
-
-- Auto-scales Y axis by sampling over time
-- Loops automatically when duration is exceeded
-- Hides cursor during animation for clean display
-- Press Ctrl+C to stop
-
 ---
 
-### Complex Animation with Dependencies (`animate`)
+### Multi-Plot Animation with Config
 
-The same `animate` function also supports functions with time-varying parameters:
+For multiple plots with full control:
 
 ```cpp
 #include <pythonic/pythonic.hpp>
 using namespace pythonic::plot;
 
 int main() {
-    // f(t, x, a, b) = a * sin(x) + b * cos(t)
-    // where 'a' and 'b' are provided by dependency functions
+    // Configure the animation
+    auto cfg = AnimateConfig()
+        .x_range(-2 * M_PI, 2 * M_PI)
+        .time(20.0)
+        .framerate(24)
+        .size_px(240, 140)  // Pixel dimensions (converted to chars)
+        .labels("cyan")
+        .ranges("magenta")
+        .set_title("Frequency Modulation Demo");
 
-    animate(
-        // Main function: receives t, x, and values from dependency functions
-        [](double t, double x, double a, double b) {
-            return a * sin(x) + b * cos(t);
-        },
-        -PI, PI,           // x range
-        10.0, 30,          // duration, fps
-        80, 24,            // width, height
-        // Dependency functions - each takes t and returns a value
-        [](double t) { return 1.0 + 0.5 * sin(t); },  // -> a
-        [](double t) { return cos(2 * t); }           // -> b
-    );
-
-    return 0;
-}
-```
-
-**Use cases:**
-
-- Amplitude modulation: `a(t) * sin(x)` where `a` varies with time
-- Frequency modulation: `sin(f(t) * x)` where frequency varies
-- Multiple coupled oscillations
-- Physics simulations with time-varying parameters
-
----
-
-### Multi-Plot Animation (`animate_plots`)
-
-Animate multiple functions simultaneously, each with its own color:
-
-```cpp
-#include <pythonic/pythonic.hpp>
-using namespace pythonic::plot;
-
-int main() {
-    animate_plots(
-        -PI, PI,      // x range
-        10.0, 30,     // duration, fps
-        80, 24,       // width, height
-        // Plot entries: std::make_tuple(function, color)
+    // Animate with multiple plots
+    animate(cfg,
+        // Each plot is a tuple: (function, color, label)
         std::make_tuple(
-            [](double t, double x) { return sin(x + t); },
-            "cyan"
+            [](double t, double x) {
+                double w = 1.0 + 0.5 * std::sin(0.5 * t);  // Varying frequency
+                double amp = 1.0 + 0.3 * std::cos(0.8 * t); // Varying amplitude
+                return amp * std::sin(w * t + x);
+            },
+            "red",
+            "sin(w*t+x)*A"
         ),
         std::make_tuple(
-            [](double t, double x) { return cos(x - t); },
-            "yellow"
+            [](double t, double x) {
+                double w = 1.0 + 0.5 * std::sin(0.5 * t);
+                return std::cos(w * t + x);
+            },
+            "cyan",
+            "cos(w*t+x)"
         ),
         std::make_tuple(
-            [](double t, double x) { return sin(2*x + t) * 0.5; },
-            "magenta"
+            [](double t, double x) {
+                (void)x;  // Envelope - doesn't depend on x
+                return 1.0 + 0.3 * std::cos(0.8 * t);
+            },
+            "yellow",
+            "envelope"
         )
     );
 
@@ -394,11 +404,118 @@ int main() {
 }
 ```
 
-**Features:**
+**Plot tuple format:**
 
-- Variadic - add as many plot functions as you want
-- Each function gets its own color
-- All share the same Y-axis scale (auto-computed)
+- 2 elements: `(function, color)`
+- 3 elements: `(function, color, label)` - label appears in legend
+
+---
+
+### Complete Animation Example
+
+Here's a comprehensive example demonstrating all features:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace Pythonic;
+using namespace pythonic::plot;
+
+int main() {
+    print("=== Animated Plot Demo ===");
+    print("Press Ctrl+C to stop");
+
+    // Configure with fluent API
+    auto cfg = AnimateConfig()
+        .x_range(-2 * M_PI, 2 * M_PI)
+        .time(20.0)
+        .framerate(24)
+        .size_px(240, 140)
+        .labels("cyan")
+        .ranges("magenta")
+        .set_title("Frequency Modulated Waves");
+
+    animate(cfg,
+        // Amplitude-modulated sine wave
+        std::make_tuple(
+            [](double t, double x) -> double {
+                double w = 1.0 + 0.5 * std::sin(0.5 * t);
+                double amp = 1.0 + 0.3 * std::cos(0.8 * t);
+                double phi = 0.1 * x * x;  // Position-dependent phase
+                return amp * std::sin(w * t + x + phi);
+            },
+            "red", "sin(w*t+x+φ)*A"
+        ),
+        // Cosine wave
+        std::make_tuple(
+            [](double t, double x) -> double {
+                double w = 1.0 + 0.5 * std::sin(0.5 * t);
+                return std::cos(w * t + x);
+            },
+            "cyan", "cos(w*t+x)"
+        ),
+        // Upper envelope
+        std::make_tuple(
+            [](double t, double x) -> double {
+                (void)x;
+                return 1.0 + 0.3 * std::cos(0.8 * t);
+            },
+            "yellow", "±Amplitude"
+        ),
+        // Lower envelope (no label)
+        std::make_tuple(
+            [](double t, double x) -> double {
+                (void)x;
+                return -(1.0 + 0.3 * std::cos(0.8 * t));
+            },
+            "yellow", ""
+        )
+    );
+
+    print("Animation finished!");
+    return 0;
+}
+```
+
+---
+
+### Figure Class - Pixel Dimensions
+
+You can also create figures with pixel dimensions:
+
+```cpp
+// Method 1: Factory function
+auto fig = Figure::from_pixels(320, 160);  // 160×40 characters
+
+// Method 2: Standard constructor (character dimensions)
+Figure fig(120, 35);  // 120×35 characters = 240×140 pixels
+```
+
+---
+
+### Animation Features
+
+- **Auto Y-scaling**: Y axis is automatically computed from function range
+- **Looping**: Animation loops when duration is exceeded
+- **Clean display**: Cursor is hidden during animation
+- **Multi-color**: Each plot can have its own color and legend
+- **Legends**: Labels appear in the legend area above the plot
+- **Configurable colors**: Axis labels and range values can be customized
+
+---
+
+### Legacy Functions (Backward Compatibility)
+
+For backward compatibility, these functions are still available:
+
+```cpp
+// Legacy single-plot with dependency functions
+animate_legacy(f, x_min, x_max, duration, fps, width, height, deps...);
+
+// Legacy multi-plot (still works)
+animate_plots(x_min, x_max, duration, fps, width, height, plots...);
+```
+
+However, we recommend using the unified `animate()` function with `AnimateConfig` for new code.
 
 ---
 
