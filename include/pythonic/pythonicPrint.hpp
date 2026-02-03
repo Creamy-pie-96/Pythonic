@@ -1304,8 +1304,9 @@ namespace pythonic
                         std::thread fast_progress_thread([&progress, &fast_frames_done, &fast_done, total_frames]()
                                                          {
                             while (!fast_done.load()) {
-                                progress.update(fast_frames_done.load());
-                                if (fast_frames_done.load() >= total_frames) break;
+                                size_t completed = fast_frames_done.load();
+                                progress.update(completed);
+                                if (completed >= total_frames) break;
                                 std::this_thread::sleep_for(std::chrono::milliseconds(100));
                             } });
 
@@ -1384,7 +1385,9 @@ namespace pythonic
                         for (auto &w : fast_workers)
                             w.join();
                         fast_done.store(true);
-                        fast_progress_thread.join();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+                        if (fast_progress_thread.joinable())
+                            fast_progress_thread.join();
                         progress.update(total_frames);
 
                         // Skip to video encoding phase
@@ -1453,7 +1456,9 @@ namespace pythonic
                             worker.join();
                         }
                         rendering_done.store(true);
-                        render_progress_thread.join();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+                        if (render_progress_thread.joinable())
+                            render_progress_thread.join();
                         progress.update(total_frames);
 
                         // ==================== PHASE 2: PNG Export (I/O-bound) ====================
@@ -1519,7 +1524,9 @@ namespace pythonic
                             worker.join();
                         }
                         export_done.store(true);
-                        export_progress_thread.join();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(150));
+                        if (export_progress_thread.joinable())
+                            export_progress_thread.join();
 
                         // Free memory from rendered frames (no longer needed)
                         rendered_frames.clear();
