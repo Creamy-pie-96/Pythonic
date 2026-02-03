@@ -60,6 +60,7 @@
 #include <thread>
 #include <chrono>
 #include <atomic>
+#include <csignal>
 #include <map>
 #include <set>
 #include <memory>
@@ -1527,6 +1528,9 @@ namespace pythonic
 
         // ==================== Animation Support ====================
 
+        // Global flag for signal handling in animations
+        inline std::atomic<bool> g_animation_interrupted{false};
+
         /**
          * @brief Configuration for plot animations
          *
@@ -1542,7 +1546,7 @@ namespace pythonic
          *   cfg.height = 40;
          *
          *   // Or using the fluent builder pattern:
-         *   auto cfg = AnimateConfig().x_range(-PI, PI).size(120, 40).fps(60);
+         *   auto cfg = AnimateConfig().x_range(-PI, PI).size(120, 40).fps(60).loop(false);
          */
         struct AnimateConfig
         {
@@ -1553,6 +1557,7 @@ namespace pythonic
             int width = 80;                      ///< Width in terminal characters
             int height = 24;                     ///< Height in terminal characters
             bool use_pixels = false;             ///< If true, width/height are pixels (converted to chars)
+            bool loop_animation = true;          ///< If true, loop animation; if false, stop after duration
             std::string label_color = "cyan";    ///< Color for X/Y axis labels
             std::string range_color = "magenta"; ///< Color for min/max range values
             std::string title = "";              ///< Optional title
@@ -1603,6 +1608,11 @@ namespace pythonic
                 title = t;
                 return *this;
             }
+            AnimateConfig &loop(bool l)
+            {
+                loop_animation = l;
+                return *this;
+            }
 
             // Get actual character dimensions (converts pixels if needed)
             int char_width() const { return use_pixels ? (width + 1) / 2 : width; }
@@ -1612,6 +1622,53 @@ namespace pythonic
         // Internal implementation for multi-plot animation
         namespace detail
         {
+            // Signal handler for clean Ctrl+C exit
+            inline void animation_signal_handler(int /*sig*/)
+            {
+                g_animation_interrupted.store(true);
+            }
+
+            // RAII helper to manage terminal state and signal handlers
+            class TerminalStateGuard
+            {
+            public:
+                TerminalStateGuard()
+                {
+                    // Reset interrupt flag
+                    g_animation_interrupted.store(false);
+
+                    // Save old signal handler and install ours
+                    _old_handler = std::signal(SIGINT, animation_signal_handler);
+
+                    // Hide cursor
+                    std::cout << "\033[?25l" << std::flush;
+                }
+
+                ~TerminalStateGuard()
+                {
+                    // Restore cursor
+                    std::cout << "\033[?25h" << std::flush;
+
+                    // Clear screen back to normal position and add newline
+                    std::cout << "\n"
+                              << std::flush;
+
+                    // Restore old signal handler
+                    if (_old_handler != SIG_ERR)
+                    {
+                        std::signal(SIGINT, _old_handler);
+                    }
+                }
+
+                bool interrupted() const
+                {
+                    return g_animation_interrupted.load();
+                }
+
+            private:
+                void (*_old_handler)(int) = SIG_DFL;
+            };
+
             template <typename... PlotEntries>
             inline void animate_impl(const AnimateConfig &cfg, PlotEntries &&...plots)
             {
@@ -1648,57 +1705,71 @@ namespace pythonic
                 (sample_range(plots), ...);
                 fig.ylim(y_min - 0.1 * (y_max - y_min), y_max + 0.1 * (y_max - y_min));
 
-                // Hide cursor
-                std::cout << "\033[?25l" << std::flush;
+                // Use RAII guard for terminal state and signal handling
+                TerminalStateGuard terminal_guard;
 
                 auto frame_time = std::chrono::microseconds(static_cast<int>(1000000.0 / cfg.fps));
                 auto start_time = std::chrono::steady_clock::now();
 
-                try
+                while (!terminal_guard.interrupted())
                 {
-                    while (true)
-                    {
-                        auto now = std::chrono::steady_clock::now();
-                        double t = std::chrono::duration<double>(now - start_time).count();
+                    auto now = std::chrono::steady_clock::now();
+                    double t = std::chrono::duration<double>(now - start_time).count();
 
-                        if (t > cfg.duration)
+                    // Handle looping vs stopping
+                    if (t > cfg.duration)
+                    {
+                        if (cfg.loop_animation)
                         {
                             t = std::fmod(t, cfg.duration);
+                            start_time = now - std::chrono::duration_cast<std::chrono::steady_clock::duration>(
+                                                   std::chrono::duration<double>(t));
                         }
-
-                        fig.clear();
-                        fig.set_time(t);
-
-                        auto plot_one = [&](auto &&plot_tuple)
+                        else
                         {
-                            auto &f = std::get<0>(plot_tuple);
-                            const auto &color = std::get<1>(plot_tuple);
+                            // Non-looping: stop after duration
+                            break;
+                        }
+                    }
 
-                            if constexpr (std::tuple_size_v<std::decay_t<decltype(plot_tuple)>> >= 3)
-                            {
-                                const auto &label = std::get<2>(plot_tuple);
-                                fig.plot_animated(f, cfg.x_min, cfg.x_max, color, label);
-                            }
-                            else
-                            {
-                                fig.plot_animated(f, cfg.x_min, cfg.x_max, color);
-                            }
-                        };
+                    fig.clear();
+                    fig.set_time(t);
 
-                        (plot_one(plots), ...);
+                    auto plot_one = [&](auto &&plot_tuple)
+                    {
+                        auto &f = std::get<0>(plot_tuple);
+                        const auto &color = std::get<1>(plot_tuple);
 
-                        std::cout << "\033[H" << fig.render_to_string();
+                        if constexpr (std::tuple_size_v<std::decay_t<decltype(plot_tuple)>> >= 3)
+                        {
+                            const auto &label = std::get<2>(plot_tuple);
+                            fig.plot_animated(f, cfg.x_min, cfg.x_max, color, label);
+                        }
+                        else
+                        {
+                            fig.plot_animated(f, cfg.x_min, cfg.x_max, color);
+                        }
+                    };
+
+                    (plot_one(plots), ...);
+
+                    std::cout << "\033[H" << fig.render_to_string();
+
+                    // Show different message depending on loop setting
+                    if (cfg.loop_animation)
+                    {
                         std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
                                   << "s (Press Ctrl+C to stop)" << std::flush;
-
-                        std::this_thread::sleep_for(frame_time);
                     }
-                }
-                catch (...)
-                {
-                }
+                    else
+                    {
+                        std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
+                                  << "s / " << cfg.duration << "s" << std::flush;
+                    }
 
-                std::cout << "\033[?25h" << std::flush;
+                    std::this_thread::sleep_for(frame_time);
+                }
+                // TerminalStateGuard destructor will restore terminal state
             }
         } // namespace detail
 

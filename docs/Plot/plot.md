@@ -303,21 +303,29 @@ auto cfg = AnimateConfig()
     .size_px(240, 140)      // Size in pixels (auto-converts to chars)
     .labels("cyan")         // Color for X/Y axis labels
     .ranges("magenta")      // Color for min/max range values
-    .set_title("My Animation");
+    .set_title("My Animation")
+    .loop(false);           // Stop after duration (don't loop)
 ```
 
 **Available configuration methods:**
 
-| Method               | Description                                | Default   |
-| -------------------- | ------------------------------------------ | --------- |
-| `.x_range(min, max)` | X axis range                               | -10 to 10 |
-| `.time(seconds)`     | Animation duration                         | 10.0      |
-| `.framerate(fps)`    | Frames per second                          | 30        |
-| `.size(w, h)`        | Size in terminal characters                | 80×24     |
-| `.size_px(w, h)`     | Size in pixels (Braille converts to chars) | -         |
-| `.labels(color)`     | Color for X/Y axis labels                  | "cyan"    |
-| `.ranges(color)`     | Color for min/max values                   | "magenta" |
-| `.set_title(text)`   | Plot title                                 | ""        |
+| Method               | Description                                          | Default   |
+| -------------------- | ---------------------------------------------------- | --------- |
+| `.x_range(min, max)` | X axis range                                         | -10 to 10 |
+| `.time(seconds)`     | Animation duration                                   | 10.0      |
+| `.framerate(fps)`    | Frames per second                                    | 30        |
+| `.size(w, h)`        | Size in terminal characters                          | 80×24     |
+| `.size_px(w, h)`     | Size in pixels (Braille converts to chars)           | -         |
+| `.labels(color)`     | Color for X/Y axis labels                            | "cyan"    |
+| `.ranges(color)`     | Color for min/max values                             | "magenta" |
+| `.set_title(text)`   | Plot title                                           | ""        |
+| `.loop(bool)`        | Loop animation (true) or stop after duration (false) | true      |
+
+**Signal Handling:**
+
+- Press **Ctrl+C** to stop the animation at any time
+- Terminal state (cursor visibility) is automatically restored via RAII
+- Signal handlers are properly restored after animation ends
 
 ---
 
@@ -408,6 +416,39 @@ int main() {
 
 - 2 elements: `(function, color)`
 - 3 elements: `(function, color, label)` - label appears in legend
+
+---
+
+### Non-Looping Animation
+
+Use `.loop(false)` to make the animation stop after the specified duration:
+
+```cpp
+#include <pythonic/pythonic.hpp>
+using namespace pythonic::plot;
+
+int main() {
+    auto cfg = AnimateConfig()
+        .x_range(-PI, PI)
+        .time(5.0)          // Run for exactly 5 seconds
+        .framerate(30)
+        .size(80, 24)
+        .loop(false);       // Stop after duration (don't repeat)
+
+    animate(cfg,
+        std::make_tuple(
+            [](double t, double x) { return std::sin(x + t); },
+            "green",
+            "wave"
+        )
+    );
+
+    std::cout << "Animation completed after 5 seconds!\n";
+    return 0;
+}
+```
+
+> **Note:** When `.loop(true)` (default), the animation repeats until you press Ctrl+C.
 
 ---
 
