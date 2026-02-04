@@ -143,21 +143,87 @@ The built-in 3×5 pixel font supports:
 
 Configuration class for media rendering with builder pattern.
 
-| Method                     | Default                  | Description              |
-| -------------------------- | ------------------------ | ------------------------ |
-| `set_type(Type)`           | `Type::auto_detect`      | Media type hint          |
-| `set_mode(Mode)`           | `Mode::bw_dot`           | Rendering style          |
-| `set_parser(Parser)`       | `Parser::default_parser` | Backend (FFmpeg/OpenCV)  |
-| `set_max_width(int)`       | `80`                     | Terminal width           |
-| `set_threshold(int)`       | `128`                    | B&W threshold (0-255)    |
-| `set_dithering(Dithering)` | `Dithering::none`        | Dithering algorithm      |
-| `set_fps(int)`             | `0` (original)           | Target FPS               |
-| `set_start_time(double)`   | `-1.0` (beginning)       | Video start (seconds)    |
-| `set_end_time(double)`     | `-1.0` (end)             | Video end (seconds)      |
-| `set_audio(Audio)`         | `Audio::off`             | Audio playback           |
-| `set_shell(Shell)`         | `Shell::noninteractive`  | Keyboard controls        |
-| `with_audio()`             | —                        | Shorthand for Audio::on  |
-| `interactive()`            | —                        | Enable keyboard controls |
+| Method                          | Default                  | Description                   |
+| ------------------------------- | ------------------------ | ----------------------------- |
+| `set_type(Type)`                | `Type::auto_detect`      | Media type hint               |
+| `set_mode(Mode)`                | `Mode::bw_dot`           | Rendering style               |
+| `set_parser(Parser)`            | `Parser::default_parser` | Backend (FFmpeg/OpenCV)       |
+| `set_max_width(int)`            | `80`                     | Terminal width                |
+| `set_threshold(int)`            | `128`                    | B&W threshold (0-255)         |
+| `set_dithering(Dithering)`      | `Dithering::none`        | Dithering algorithm           |
+| `set_fps(int)`                  | `0` (original)           | Target FPS                    |
+| `set_start_time(double)`        | `-1.0` (beginning)       | Video start (seconds)         |
+| `set_end_time(double)`          | `-1.0` (end)             | Video end (seconds)           |
+| `set_audio(Audio)`              | `Audio::off`             | Audio playback                |
+| `set_shell(Shell)`              | `Shell::noninteractive`  | Keyboard controls             |
+| `with_audio()`                  | —                        | Shorthand for Audio::on       |
+| `interactive()`                 | —                        | Enable keyboard controls      |
+| `set_volume(int)`               | `100`                    | Initial volume (0-100%)       |
+| `set_volume_step(int)`          | `10`                     | Volume change per key (1-100) |
+| `set_seek_frames(int)`          | `90`                     | Frames to seek per press      |
+| `set_buffer_ahead_frames(int)`  | `60`                     | Frames to preload ahead       |
+| `set_buffer_behind_frames(int)` | `90`                     | Frames to keep behind         |
+
+---
+
+## Interactive Video Playback
+
+When `interactive()` is enabled, video playback runs in a multithreaded mode with non-blocking keyboard controls. This works with or without audio.
+**Note** Interactive mode is not supported for opencv.
+
+### Keyboard Controls
+
+| Key       | Action                                       |
+| --------- | -------------------------------------------- |
+| ↑ (Up)    | Increase volume (default: 10%, configurable) |
+| ↓ (Down)  | Decrease volume (default: 10%, configurable) |
+| ← (Left)  | Seek backward (default: 90 frames)           |
+| → (Right) | Seek forward (default: 90 frames)            |
+| `p`       | Pause / Resume playback                      |
+| `s`       | Stop playback                                |
+
+### On-Screen Display
+
+When interactive mode is enabled, the player shows:
+
+1. **Progress Bar** (bottom): Shows playback position with time labels
+   - White blocks: Played portion
+   - Gray blocks: Remaining portion
+   - Time format: `MM:SS` for start, current, and end times
+
+2. **Volume Bar** (right side): 10-segment bar with braille patterns
+   - Green (⣿): Low volume (0-40%)
+   - Yellow (⣿): Medium volume (41-70%)
+   - Red (⣿): High volume (71-100%)
+   - Gray (⣀): Empty segments
+   - Smooth gradient with partial braille characters
+
+### Frame Buffering
+
+The player uses a frame buffer for smooth seeking:
+
+- **buffer_ahead_frames**: Preloaded frames for smooth playback (default: 60)
+- **buffer_behind_frames**: Cached frames for backward seeking (default: 90)
+
+### Example
+
+```cpp
+// Full-featured interactive video playback
+print(Media, "movie.mp4", RenderConfig()
+    .set_mode(Mode::colored_dot)
+    .with_audio()
+    .interactive()
+    .set_volume(80)           // Start at 80% volume
+    .set_volume_step(5)       // 5% volume change per keypress
+    .set_seek_frames(120)     // Seek 4 seconds per keypress (at 30fps)
+    .set_buffer_ahead_frames(90)
+    .set_buffer_behind_frames(120));
+
+// Interactive without audio (controls still work)
+print(Media, "video.mp4", RenderConfig()
+    .set_mode(Mode::colored)
+    .interactive());           // Volume bar hidden when no audio
+```
 
 ---
 
@@ -243,18 +309,31 @@ print(Media, "video.mp4");
 // Video with audio
 print(Media, "video.mp4", RenderConfig().with_audio());
 
-// Interactive with controls
+// Interactive with keyboard controls (see Interactive Video Playback section)
 print(Media, "movie.mp4", RenderConfig()
     .set_mode(Mode::colored)
     .with_audio()
-    .interactive()
-    .set_pause_key('p')
-    .set_stop_key('s'));
+    .interactive());
+
+// Interactive without audio (volume controls hidden)
+print(Media, "video.mp4", RenderConfig()
+    .set_mode(Mode::colored_dot)
+    .interactive());
 
 // Play video segment (1:00 to 2:00)
 print(Media, "movie.mp4", RenderConfig()
     .set_start_time(60)
     .set_end_time(120));
+
+// Full interactive setup with custom controls
+print(Media, "movie.mp4", RenderConfig()
+    .set_mode(Mode::colored_dot)
+    .with_audio()
+    .interactive()
+    .set_volume(70)           // 70% initial volume
+    .set_seek_frames(60)      // Seek 2 seconds at 30fps
+    .set_pause_key('p')
+    .set_stop_key('s'));
 ```
 
 ### Webcam Capture

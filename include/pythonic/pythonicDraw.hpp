@@ -405,6 +405,19 @@ namespace pythonic
             char pause_key = 'p';                // Key to pause/resume (0 to disable)
             char stop_key = 's';                 // Key to stop (0 to disable)
 
+            // === Interactive playback controls (arrow keys) ===
+            int vol_up_key = 0x1B5B41;        // Up arrow (ESC [ A) - volume up
+            int vol_down_key = 0x1B5B42;      // Down arrow (ESC [ B) - volume down
+            int seek_backward_key = 0x1B5B44; // Left arrow (ESC [ D) - seek backward
+            int seek_forward_key = 0x1B5B43;  // Right arrow (ESC [ C) - seek forward
+            int seek_frames = 90;             // Number of frames to seek (default ~3 seconds at 30fps)
+            int volume = 100;                 // Initial volume (0-100)
+            int volume_step = 10;             // Volume change per key press (1-100, default 10)
+
+            // === Buffering options ===
+            int buffer_ahead_frames = 60;  // Frames to preload ahead (default ~2 seconds at 30fps)
+            int buffer_behind_frames = 90; // Frames to keep behind for seeking back (default ~3 seconds)
+
             // === Export options ===
             bool use_gpu = true; // Use GPU acceleration for video encoding
 
@@ -490,6 +503,37 @@ namespace pythonic
             RenderConfig &set_stop_key(char k)
             {
                 stop_key = k;
+                return *this;
+            }
+            RenderConfig &set_volume(int v)
+            {
+                volume = (v < 0) ? 0 : (v > 100) ? 100
+                                                 : v;
+                return *this;
+            }
+            RenderConfig &set_volume_step(int step)
+            {
+                // Clamp to valid range: 1-100
+                if (step <= 0)
+                    step = 1;
+                else if (step > 100)
+                    step = 100;
+                volume_step = step;
+                return *this;
+            }
+            RenderConfig &set_seek_frames(int f)
+            {
+                seek_frames = (f < 1) ? 1 : f;
+                return *this;
+            }
+            RenderConfig &set_buffer_ahead(int frames)
+            {
+                buffer_ahead_frames = (frames < 10) ? 10 : frames;
+                return *this;
+            }
+            RenderConfig &set_buffer_behind(int frames)
+            {
+                buffer_behind_frames = (frames < 10) ? 10 : frames;
                 return *this;
             }
             RenderConfig &set_gpu(bool g)
@@ -8218,6 +8262,596 @@ namespace pythonic
             }
         };
 
+        // ==================== Threaded Video Playback System ====================
+
+        /**
+         * @brief Commands that can be sent from keyboard thread to player
+         */
+        enum class PlayerCommand
+        {
+            None,
+            Pause,
+            Stop,
+            VolumeUp,
+            VolumeDown,
+            SeekBackward,
+            SeekForward
+        };
+
+        /**
+         * @brief Thread-safe command queue for non-blocking keyboard input
+         */
+        class CommandQueue
+        {
+        private:
+            std::queue<PlayerCommand> _queue;
+            mutable std::mutex _mutex;
+
+        public:
+            void push(PlayerCommand cmd)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _queue.push(cmd);
+            }
+
+            bool try_pop(PlayerCommand &cmd)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                if (_queue.empty())
+                    return false;
+                cmd = _queue.front();
+                _queue.pop();
+                return true;
+            }
+
+            void clear()
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                while (!_queue.empty())
+                    _queue.pop();
+            }
+        };
+
+        /**
+         * @brief Non-blocking keyboard input manager that runs in its own thread
+         *
+         * Monitors keyboard for arrow keys and control characters without blocking
+         * video playback. Commands are pushed to a queue for the main player to consume.
+         */
+        class KeyboardManager
+        {
+        private:
+            std::atomic<bool> _running{false};
+            std::thread _thread;
+            CommandQueue &_cmd_queue;
+            char _pause_key;
+            char _stop_key;
+            int _vol_up_key;
+            int _vol_down_key;
+            int _seek_back_key;
+            int _seek_fwd_key;
+
+#ifndef _WIN32
+            struct termios _old_termios;
+            bool _termios_saved = false;
+#endif
+
+            void set_raw_mode()
+            {
+#ifndef _WIN32
+                struct termios raw;
+                if (tcgetattr(STDIN_FILENO, &_old_termios) == 0)
+                {
+                    _termios_saved = true;
+                    raw = _old_termios;
+                    raw.c_lflag &= ~(ICANON | ECHO);
+                    raw.c_cc[VMIN] = 0;
+                    raw.c_cc[VTIME] = 0;
+                    tcsetattr(STDIN_FILENO, TCSANOW, &raw);
+                }
+#endif
+            }
+
+            void restore_terminal()
+            {
+#ifndef _WIN32
+                if (_termios_saved)
+                {
+                    tcsetattr(STDIN_FILENO, TCSANOW, &_old_termios);
+                    _termios_saved = false;
+                }
+#endif
+            }
+
+            int read_key_nonblocking()
+            {
+#ifdef _WIN32
+                if (_kbhit())
+                {
+                    int ch = _getch();
+                    if (ch == 0 || ch == 224)
+                    {
+                        int ext = _getch();
+                        // Arrow keys: Up=72, Down=80, Left=75, Right=77
+                        switch (ext)
+                        {
+                        case 72:
+                            return 0x1B5B41; // Up
+                        case 80:
+                            return 0x1B5B42; // Down
+                        case 75:
+                            return 0x1B5B44; // Left
+                        case 77:
+                            return 0x1B5B43; // Right
+                        }
+                    }
+                    return ch;
+                }
+                return -1;
+#else
+                char buf[4] = {0};
+                ssize_t n = read(STDIN_FILENO, buf, sizeof(buf));
+                if (n <= 0)
+                    return -1;
+
+                // Check for escape sequence (arrow keys)
+                if (n >= 3 && buf[0] == '\x1B' && buf[1] == '[')
+                {
+                    // Encode as multi-byte: 0x1B5Bxx where xx is the arrow char
+                    return (0x1B << 16) | ('[' << 8) | buf[2];
+                }
+
+                return static_cast<unsigned char>(buf[0]);
+#endif
+            }
+
+            void keyboard_thread_func()
+            {
+                set_raw_mode();
+
+                while (_running)
+                {
+                    int key = read_key_nonblocking();
+                    if (key != -1)
+                    {
+                        if (_stop_key != '\0' && key == _stop_key)
+                            _cmd_queue.push(PlayerCommand::Stop);
+                        else if (_pause_key != '\0' && key == _pause_key)
+                            _cmd_queue.push(PlayerCommand::Pause);
+                        else if (key == _vol_up_key)
+                            _cmd_queue.push(PlayerCommand::VolumeUp);
+                        else if (key == _vol_down_key)
+                            _cmd_queue.push(PlayerCommand::VolumeDown);
+                        else if (key == _seek_back_key)
+                            _cmd_queue.push(PlayerCommand::SeekBackward);
+                        else if (key == _seek_fwd_key)
+                            _cmd_queue.push(PlayerCommand::SeekForward);
+                    }
+
+                    // Small sleep to avoid busy-waiting
+                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                }
+
+                restore_terminal();
+            }
+
+        public:
+            KeyboardManager(CommandQueue &queue, char pause_key, char stop_key,
+                            int vol_up, int vol_down, int seek_back, int seek_fwd)
+                : _cmd_queue(queue), _pause_key(pause_key), _stop_key(stop_key),
+                  _vol_up_key(vol_up), _vol_down_key(vol_down),
+                  _seek_back_key(seek_back), _seek_fwd_key(seek_fwd)
+            {
+            }
+
+            ~KeyboardManager()
+            {
+                stop();
+            }
+
+            void start()
+            {
+                if (_running.exchange(true))
+                    return;
+                _thread = std::thread(&KeyboardManager::keyboard_thread_func, this);
+            }
+
+            void stop()
+            {
+                _running = false;
+                if (_thread.joinable())
+                    _thread.join();
+            }
+
+            bool is_running() const { return _running; }
+        };
+
+        /**
+         * @brief Synchronized frame data for video buffer
+         */
+        struct VideoFrame
+        {
+            std::vector<uint8_t> data;
+            int64_t frame_number = 0;
+            double timestamp = 0.0; // in seconds
+        };
+
+        /**
+         * @brief Synchronized audio chunk for audio buffer
+         */
+        struct AudioChunk
+        {
+            std::vector<uint8_t> data;
+            double timestamp = 0.0; // in seconds
+        };
+
+        /**
+         * @brief Thread-safe ring buffer for video frames with seeking support
+         *
+         * Maintains a sliding window of frames:
+         * - Behind frames: for quick backward seeking
+         * - Ahead frames: preloaded for smooth playback
+         */
+        class VideoFrameBuffer
+        {
+        private:
+            std::deque<VideoFrame> _frames;
+            mutable std::mutex _mutex;
+            std::condition_variable _cv_producer; // For decoder waiting on full buffer
+            std::condition_variable _cv_consumer; // For renderer waiting on empty buffer
+            std::atomic<bool> _finished{false};
+
+            size_t _max_ahead;
+            size_t _max_behind;
+            int64_t _current_frame = 0;
+            int64_t _frame_offset = 0; // Offset added to frame numbers after seeking
+
+            // Seeking state
+            std::atomic<bool> _seek_requested{false};
+            std::atomic<double> _seek_time{-1.0}; // Time in seconds to seek to
+
+        public:
+            VideoFrameBuffer(size_t ahead = 60, size_t behind = 90)
+                : _max_ahead(ahead), _max_behind(behind)
+            {
+            }
+
+            /**
+             * @brief Push a decoded frame to the buffer (called by decoder thread)
+             * Blocks if buffer is full, unless finished
+             */
+            void push(VideoFrame frame)
+            {
+                std::unique_lock<std::mutex> lock(_mutex);
+
+                // Wait if we have too many future frames
+                _cv_producer.wait(lock, [this]
+                                  {
+                    if (_finished || _seek_requested)
+                        return true;
+                    size_t ahead_count = 0;
+                    for (const auto &f : _frames)
+                    {
+                        if (f.frame_number >= _current_frame)
+                            ahead_count++;
+                    }
+                    return ahead_count < _max_ahead; });
+
+                if (_finished || _seek_requested)
+                    return;
+
+                // Apply offset to frame number
+                frame.frame_number += _frame_offset;
+                _frames.push_back(std::move(frame));
+                _cv_consumer.notify_one();
+            }
+
+            /**
+             * @brief Get the next frame for rendering (called by render thread)
+             * Blocks if buffer is empty, unless finished
+             */
+            bool pop(VideoFrame &frame)
+            {
+                std::unique_lock<std::mutex> lock(_mutex);
+
+                _cv_consumer.wait(lock, [this]
+                                  {
+                    if (_finished)
+                        return true;
+                    if (_seek_requested)
+                        return true;  // Wake up to let render loop handle seeking
+                    for (const auto &f : _frames)
+                    {
+                        if (f.frame_number >= _current_frame)
+                            return true;
+                    }
+                    return false; });
+
+                if (_frames.empty() || _seek_requested)
+                    return false;
+
+                // Find the frame at or after current position
+                for (auto it = _frames.begin(); it != _frames.end(); ++it)
+                {
+                    if (it->frame_number >= _current_frame)
+                    {
+                        frame = *it;
+                        _current_frame = it->frame_number + 1;
+
+                        // Remove old frames (keep _max_behind)
+                        while (_frames.size() > _max_behind && _frames.front().frame_number < _current_frame - (int64_t)_max_behind)
+                        {
+                            _frames.pop_front();
+                        }
+
+                        _cv_producer.notify_one();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            /**
+             * @brief Request a seek to a specific time
+             * @param time_seconds Time in seconds to seek to
+             */
+            void request_seek(double time_seconds)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _seek_time = time_seconds;
+                _seek_requested = true;
+                _cv_producer.notify_all();
+                _cv_consumer.notify_all();
+            }
+
+            /**
+             * @brief Get and clear seek request (called by decode thread)
+             * @return The requested seek time, or -1 if no seek pending
+             */
+            double get_and_clear_seek_request()
+            {
+                if (!_seek_requested)
+                    return -1.0;
+
+                std::lock_guard<std::mutex> lock(_mutex);
+                double t = _seek_time.load();
+                _seek_requested = false;
+                _seek_time = -1.0;
+                return t;
+            }
+
+            /**
+             * @brief Called after seeking is complete to reset buffer state
+             * @param new_start_frame The frame number to start from after seek
+             * @param fps Frames per second for calculating offset
+             */
+            void complete_seek(int64_t new_start_frame, double fps)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _frames.clear();
+                _frame_offset = new_start_frame;
+                _current_frame = new_start_frame;
+                _seek_requested = false;
+            }
+
+            /**
+             * @brief Initialize the frame offset for initial playback position
+             * @param start_frame The frame offset for initial playback (based on start_time * fps)
+             */
+            void set_initial_offset(int64_t start_frame)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _frame_offset = start_frame;
+                _current_frame = start_frame;
+            }
+
+            bool has_seek_request() const { return _seek_requested; }
+            int64_t get_current_frame() const { return _current_frame; }
+            int64_t get_frame_offset() const { return _frame_offset; }
+
+            void finish()
+            {
+                _finished = true;
+                _seek_requested = false; // Clear seek request to unblock render loop
+                _cv_producer.notify_all();
+                _cv_consumer.notify_all();
+            }
+
+            bool is_finished() const { return _finished; }
+
+            void reset()
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _frames.clear();
+                _finished = false;
+                _seek_requested = false;
+                _seek_time = -1.0;
+                _current_frame = 0;
+                _frame_offset = 0;
+            }
+
+            size_t size() const
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                return _frames.size();
+            }
+        };
+
+        /**
+         * @brief Thread-safe audio buffer with timestamp support for sync
+         */
+        class SyncedAudioBuffer
+        {
+        private:
+            std::deque<AudioChunk> _chunks;
+            mutable std::mutex _mutex;
+            std::condition_variable _cv;
+            std::atomic<bool> _finished{false};
+            std::atomic<int> _volume{100}; // 0-100
+            size_t _max_chunks = 128;
+
+            // Leftover data from previous chunk
+            std::vector<uint8_t> _leftover;
+            size_t _leftover_pos = 0;
+
+            // Seeking state
+            std::atomic<bool> _seek_requested{false};
+            std::atomic<double> _seek_time{-1.0};
+
+        public:
+            void push(AudioChunk chunk)
+            {
+                std::unique_lock<std::mutex> lock(_mutex);
+                _cv.wait(lock, [this]
+                         { return _chunks.size() < _max_chunks || _finished || _seek_requested; });
+                if (_finished || _seek_requested)
+                    return;
+                _chunks.push_back(std::move(chunk));
+                _cv.notify_one();
+            }
+
+            /**
+             * @brief Fill audio buffer with volume-adjusted samples
+             */
+            size_t fill_buffer(uint8_t *dest, size_t len)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                size_t filled = 0;
+                int vol = _volume.load();
+
+                auto apply_volume = [vol](int16_t sample) -> int16_t
+                {
+                    if (vol == 100)
+                        return sample;
+                    return static_cast<int16_t>((static_cast<int32_t>(sample) * vol) / 100);
+                };
+
+                // First use leftover
+                while (_leftover_pos < _leftover.size() && len >= 2)
+                {
+                    int16_t sample;
+                    std::memcpy(&sample, _leftover.data() + _leftover_pos, sizeof(sample));
+                    sample = apply_volume(sample);
+                    std::memcpy(dest, &sample, sizeof(sample));
+                    dest += 2;
+                    _leftover_pos += 2;
+                    filled += 2;
+                    len -= 2;
+                }
+
+                // Then get new chunks
+                while (len >= 2 && !_chunks.empty())
+                {
+                    auto &chunk = _chunks.front();
+                    size_t chunk_pos = 0;
+
+                    while (chunk_pos < chunk.data.size() && len >= 2)
+                    {
+                        int16_t sample;
+                        std::memcpy(&sample, chunk.data.data() + chunk_pos, sizeof(sample));
+                        sample = apply_volume(sample);
+                        std::memcpy(dest, &sample, sizeof(sample));
+                        dest += 2;
+                        chunk_pos += 2;
+                        filled += 2;
+                        len -= 2;
+                    }
+
+                    if (chunk_pos >= chunk.data.size())
+                    {
+                        _chunks.pop_front();
+                        _cv.notify_one();
+                    }
+                    else
+                    {
+                        // Save leftover
+                        _leftover.assign(chunk.data.begin() + chunk_pos, chunk.data.end());
+                        _leftover_pos = 0;
+                        _chunks.pop_front();
+                        _cv.notify_one();
+                    }
+                }
+
+                return filled;
+            }
+
+            void set_volume(int vol)
+            {
+                _volume = (vol < 0) ? 0 : (vol > 100) ? 100
+                                                      : vol;
+            }
+
+            int get_volume() const { return _volume; }
+
+            void clear()
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _chunks.clear();
+                _leftover.clear();
+                _leftover_pos = 0;
+            }
+
+            void finish()
+            {
+                _finished = true;
+                _cv.notify_all();
+            }
+
+            bool is_finished() const { return _finished; }
+
+            void reset()
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _chunks.clear();
+                _leftover.clear();
+                _leftover_pos = 0;
+                _finished = false;
+                _seek_requested = false;
+                _seek_time = -1.0;
+            }
+
+            /**
+             * @brief Request a seek to a specific time
+             */
+            void request_seek(double time_seconds)
+            {
+                _seek_time = time_seconds;
+                _seek_requested = true;
+                _cv.notify_all();
+            }
+
+            /**
+             * @brief Get and clear seek request
+             * @return The requested seek time, or -1 if no seek pending
+             */
+            double get_and_clear_seek_request()
+            {
+                if (!_seek_requested)
+                    return -1.0;
+
+                std::lock_guard<std::mutex> lock(_mutex);
+                double t = _seek_time.load();
+                _seek_requested = false;
+                _seek_time = -1.0;
+                return t;
+            }
+
+            /**
+             * @brief Clear buffer after seeking
+             */
+            void complete_seek()
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _chunks.clear();
+                _leftover.clear();
+                _leftover_pos = 0;
+                _seek_requested = false;
+            }
+
+            bool has_seek_request() const { return _seek_requested; }
+        };
+
         /**
          * @brief Audio-Video player with synchronized audio playback
          *
@@ -8878,6 +9512,1155 @@ namespace pythonic
         };
 
         /**
+         * @brief Threaded Audio-Video player with non-blocking controls
+         *
+         * Features:
+         * - Non-blocking keyboard input (doesn't halt video playback)
+         * - Volume control via up/down arrows
+         * - Seeking via left/right arrows with frame buffer
+         * - Pause/Stop with 'p' and 's' keys
+         * - Thread-safe buffered decoding and playback
+         */
+        class ThreadedAudioVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            double _fps;
+            double _start_time;
+            double _end_time;
+            Render _render_mode;
+            RenderConfig _config;
+
+            std::atomic<bool> _running{false};
+            std::atomic<bool> _paused{false};
+            std::atomic<bool> _audio_initialized{false};
+
+            std::thread _decode_thread;
+            std::thread _audio_decode_thread;
+
+            VideoFrameBuffer _video_buffer;
+            SyncedAudioBuffer _audio_buffer;
+            CommandQueue _cmd_queue;
+
+            // Video info
+            int _vid_width = 0;
+            int _vid_height = 0;
+            double _vid_fps = 30.0;
+            double _duration = 0.0;
+            int64_t _total_frames = 0;
+
+            // Audio parameters
+            int _sample_rate = 44100;
+            int _channels = 2;
+
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+            SDL_AudioDeviceID _audio_device = 0;
+
+            static void sdl_audio_callback(void *userdata, Uint8 *stream, int len)
+            {
+                auto *self = static_cast<ThreadedAudioVideoPlayer *>(userdata);
+
+                // If not running or paused, output silence
+                if (!self->_running || self->_paused)
+                {
+                    std::memset(stream, 0, len);
+                    return;
+                }
+
+                size_t filled = self->_audio_buffer.fill_buffer(stream, static_cast<size_t>(len));
+                if (filled < static_cast<size_t>(len))
+                {
+                    std::memset(stream + filled, 0, len - filled);
+                }
+            }
+#endif
+
+#ifdef PYTHONIC_ENABLE_PORTAUDIO
+            PaStream *_pa_stream = nullptr;
+
+            static int pa_audio_callback(const void *input, void *output,
+                                         unsigned long frameCount,
+                                         const PaStreamCallbackTimeInfo *timeInfo,
+                                         PaStreamCallbackFlags statusFlags,
+                                         void *userData)
+            {
+                (void)input;
+                (void)timeInfo;
+                (void)statusFlags;
+                auto *self = static_cast<ThreadedAudioVideoPlayer *>(userData);
+                auto *out = static_cast<uint8_t *>(output);
+
+                // If not running or paused, output silence
+                if (!self->_running || self->_paused)
+                {
+                    size_t bytes = frameCount * self->_channels * sizeof(int16_t);
+                    std::memset(out, 0, bytes);
+                    return self->_running ? paContinue : paComplete;
+                }
+
+                size_t bytes_needed = frameCount * self->_channels * sizeof(int16_t);
+                size_t filled = self->_audio_buffer.fill_buffer(out, bytes_needed);
+                if (filled < bytes_needed)
+                {
+                    std::memset(out + filled, 0, bytes_needed - filled);
+                }
+
+                return self->_running ? paContinue : paComplete;
+            }
+#endif
+
+        public:
+            ThreadedAudioVideoPlayer(const std::string &filename, const RenderConfig &config)
+                : _filename(filename), _width(config.max_width), _fps(config.fps),
+                  _start_time(config.start_time), _end_time(config.end_time),
+                  _render_mode(config.mode), _config(config),
+                  _video_buffer(config.buffer_ahead_frames, config.buffer_behind_frames)
+            {
+                _audio_buffer.set_volume(config.volume);
+                enable_ansi_support();
+            }
+
+            ~ThreadedAudioVideoPlayer()
+            {
+                stop();
+                cleanup_audio();
+            }
+
+            bool play()
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                // Get video info first
+                if (!detect_video_info())
+                {
+                    std::cerr << "Error: Could not read video info.\n";
+                    _running = false;
+                    return false;
+                }
+
+                // Initialize audio only if requested
+                bool audio_ok = false;
+                if (_config.audio == Audio::on)
+                {
+                    // Detect audio params
+                    detect_audio_params();
+
+                    // Initialize audio
+                    audio_ok = init_audio();
+                    if (!audio_ok)
+                    {
+                        std::cerr << "Warning: Audio not available, playing video only.\n";
+                    }
+                }
+
+                // Set initial frame offset based on user's start_time
+                double target_fps = (_fps > 0) ? _fps : _vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+                double initial_start = (_start_time >= 0) ? _start_time : 0.0;
+                int64_t initial_frame_offset = static_cast<int64_t>(initial_start * target_fps);
+                _video_buffer.set_initial_offset(initial_frame_offset);
+
+                // Start decode threads
+                _decode_thread = std::thread(&ThreadedAudioVideoPlayer::video_decode_thread, this);
+
+                if (audio_ok)
+                {
+                    _audio_decode_thread = std::thread(&ThreadedAudioVideoPlayer::audio_decode_thread, this);
+                }
+
+                // Create keyboard manager for non-blocking input
+                KeyboardManager keyboard(_cmd_queue, _config.pause_key, _config.stop_key,
+                                         _config.vol_up_key, _config.vol_down_key,
+                                         _config.seek_backward_key, _config.seek_forward_key);
+
+                if (_config.shell == Shell::interactive)
+                {
+                    keyboard.start();
+                }
+
+                // Run rendering in main thread
+                render_loop();
+
+                // Signal all threads to stop
+                _running = false;
+
+                // Cleanup
+                keyboard.stop();
+
+                _video_buffer.finish();
+                _audio_buffer.finish();
+
+                if (_decode_thread.joinable())
+                    _decode_thread.join();
+                if (_audio_decode_thread.joinable())
+                    _audio_decode_thread.join();
+
+                return true;
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+                _video_buffer.finish();
+                _audio_buffer.finish();
+
+                if (_decode_thread.joinable())
+                    _decode_thread.join();
+                if (_audio_decode_thread.joinable())
+                    _audio_decode_thread.join();
+            }
+
+        private:
+            bool detect_video_info()
+            {
+                // Get video stream info
+                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
+                                  "-show_entries stream=width,height,r_frame_rate,nb_frames "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return false;
+
+                char buffer[256];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                // Parse: width,height,r_frame_rate
+                std::istringstream iss(result);
+                std::string line;
+                while (std::getline(iss, line))
+                {
+                    if (line.empty())
+                        continue;
+
+                    std::istringstream linestream(line);
+                    std::string token;
+                    std::vector<std::string> tokens;
+                    while (std::getline(linestream, token, ','))
+                    {
+                        tokens.push_back(token);
+                    }
+
+                    if (tokens.size() >= 3)
+                    {
+                        try
+                        {
+                            _vid_width = std::stoi(tokens[0]);
+                            _vid_height = std::stoi(tokens[1]);
+
+                            // Parse frame rate (may be in format "30/1" or "29.97")
+                            std::string fps_str = tokens[2];
+                            size_t slash = fps_str.find('/');
+                            if (slash != std::string::npos)
+                            {
+                                double num = std::stod(fps_str.substr(0, slash));
+                                double den = std::stod(fps_str.substr(slash + 1));
+                                if (den > 0)
+                                    _vid_fps = num / den;
+                            }
+                            else
+                            {
+                                _vid_fps = std::stod(fps_str);
+                            }
+
+                            if (tokens.size() >= 4 && !tokens[3].empty() && tokens[3] != "N/A")
+                            {
+                                _total_frames = std::stoll(tokens[3]);
+                            }
+
+                            break;
+                        }
+                        catch (...)
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                // Get duration separately
+                std::string dur_cmd = "ffprobe -v quiet -show_entries format=duration "
+                                      "-of csv=p=0 \"" +
+                                      _filename + "\" 2>/dev/null";
+                FILE *dur_pipe = popen(dur_cmd.c_str(), "r");
+                if (dur_pipe)
+                {
+                    char dur_buf[64];
+                    if (fgets(dur_buf, sizeof(dur_buf), dur_pipe))
+                    {
+                        try
+                        {
+                            _duration = std::stod(dur_buf);
+                        }
+                        catch (...)
+                        {
+                            _duration = 0.0;
+                        }
+                    }
+                    pclose(dur_pipe);
+                }
+
+                // Calculate total frames from duration and fps if not available
+                if (_total_frames == 0 && _duration > 0 && _vid_fps > 0)
+                {
+                    _total_frames = static_cast<int64_t>(_duration * _vid_fps);
+                }
+
+                return _vid_width > 0 && _vid_height > 0;
+            }
+
+            void detect_audio_params()
+            {
+                std::string cmd = "ffprobe -v quiet -select_streams a:0 "
+                                  "-show_entries stream=sample_rate,channels "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return;
+
+                char buffer[128];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                size_t comma = result.find(',');
+                if (comma != std::string::npos)
+                {
+                    try
+                    {
+                        _sample_rate = std::stoi(result.substr(0, comma));
+                        _channels = std::stoi(result.substr(comma + 1));
+                    }
+                    catch (...)
+                    {
+                    }
+                }
+
+                if (_sample_rate < 8000)
+                    _sample_rate = 44100;
+                if (_channels < 1 || _channels > 8)
+                    _channels = 2;
+            }
+
+            bool init_audio()
+            {
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+                if (SDL_Init(SDL_INIT_AUDIO) < 0)
+                {
+                    return false;
+                }
+
+                SDL_AudioSpec want, have;
+                SDL_zero(want);
+                want.freq = _sample_rate;
+                want.format = AUDIO_S16SYS;
+                want.channels = _channels;
+                want.samples = 4096;
+                want.callback = sdl_audio_callback;
+                want.userdata = this;
+
+                _audio_device = SDL_OpenAudioDevice(nullptr, 0, &want, &have, 0);
+                if (_audio_device == 0)
+                {
+                    SDL_Quit();
+                    return false;
+                }
+
+                SDL_PauseAudioDevice(_audio_device, 0);
+                _audio_initialized = true;
+                return true;
+
+#elif defined(PYTHONIC_ENABLE_PORTAUDIO)
+                PaError err = Pa_Initialize();
+                if (err != paNoError)
+                    return false;
+
+                err = Pa_OpenDefaultStream(&_pa_stream, 0, _channels, paInt16,
+                                           _sample_rate, 1024,
+                                           pa_audio_callback, this);
+                if (err != paNoError)
+                {
+                    Pa_Terminate();
+                    return false;
+                }
+
+                err = Pa_StartStream(_pa_stream);
+                if (err != paNoError)
+                {
+                    Pa_CloseStream(_pa_stream);
+                    Pa_Terminate();
+                    return false;
+                }
+
+                _audio_initialized = true;
+                return true;
+#else
+                return false;
+#endif
+            }
+
+            void cleanup_audio()
+            {
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+                if (_audio_device != 0)
+                {
+                    SDL_CloseAudioDevice(_audio_device);
+                    _audio_device = 0;
+                }
+                if (_audio_initialized)
+                {
+                    SDL_Quit();
+                    _audio_initialized = false;
+                }
+#elif defined(PYTHONIC_ENABLE_PORTAUDIO)
+                if (_pa_stream)
+                {
+                    Pa_StopStream(_pa_stream);
+                    Pa_CloseStream(_pa_stream);
+                    _pa_stream = nullptr;
+                }
+                if (_audio_initialized)
+                {
+                    Pa_Terminate();
+                    _audio_initialized = false;
+                }
+#endif
+            }
+
+            void video_decode_thread()
+            {
+                // Calculate pixel dimensions based on mode
+                int pixel_w, pixel_h;
+                bool needs_rgb = false;
+
+                switch (_render_mode)
+                {
+                case Mode::colored:
+                    pixel_w = _width;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = ((pixel_h + 1) / 2) * 2;
+                    needs_rgb = true;
+                    break;
+                case Mode::colored_dot:
+                case Mode::flood_dot_colored:
+                case Mode::colored_dithered:
+                    pixel_w = _width * 2;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = (pixel_h + 3) / 4 * 4;
+                    needs_rgb = true;
+                    break;
+                case Mode::bw:
+                    pixel_w = _width;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = ((pixel_h + 1) / 2) * 2;
+                    needs_rgb = true;
+                    break;
+                default:
+                    pixel_w = _width * 2;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = (pixel_h + 3) / 4 * 4;
+                    needs_rgb = (_render_mode == Mode::grayscale_dot || _render_mode == Mode::flood_dot);
+                    break;
+                }
+
+                double target_fps = (_fps > 0) ? _fps : _vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                std::string pix_fmt = needs_rgb ? "rgb24" : "gray";
+                size_t bytes_per_pixel = needs_rgb ? 3 : 1;
+                size_t frame_size = pixel_w * pixel_h * bytes_per_pixel;
+                std::vector<uint8_t> buffer(frame_size);
+                double frame_time = 1.0 / target_fps;
+
+                double current_start_time = (_start_time >= 0) ? _start_time : 0.0;
+                FILE *pipe = nullptr;
+
+                auto start_ffmpeg = [&](double seek_time) -> bool
+                {
+                    if (pipe)
+                    {
+                        pclose(pipe);
+                        pipe = nullptr;
+                    }
+
+                    std::string time_opts = "-ss " + std::to_string(seek_time) + " ";
+                    std::string duration_opt;
+                    if (_end_time >= 0)
+                    {
+                        double dur = _end_time - seek_time;
+                        if (dur > 0)
+                            duration_opt = " -t " + std::to_string(dur);
+                    }
+
+                    std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                      " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                      " -pix_fmt " + pix_fmt + " -f rawvideo -v quiet - 2>/dev/null";
+
+                    pipe = popen(cmd.c_str(), "r");
+                    return pipe != nullptr;
+                };
+
+                // Start initial decoding
+                if (!start_ffmpeg(current_start_time))
+                {
+                    return;
+                }
+
+                int64_t frame_num = 0;
+                int64_t frame_offset = static_cast<int64_t>(current_start_time * target_fps);
+
+                while (_running)
+                {
+                    // Check for seek request
+                    double seek_time = _video_buffer.get_and_clear_seek_request();
+                    if (seek_time >= 0)
+                    {
+                        // Restart FFmpeg at new position
+                        current_start_time = seek_time;
+                        frame_offset = static_cast<int64_t>(seek_time * target_fps);
+                        frame_num = 0;
+
+                        if (!start_ffmpeg(seek_time))
+                            break;
+
+                        // Signal buffer that seek is complete
+                        _video_buffer.complete_seek(frame_offset, target_fps);
+                        continue;
+                    }
+
+                    size_t bytes_read = fread(buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    VideoFrame frame;
+                    frame.data = buffer;
+                    frame.frame_number = frame_num; // Will be offset in push()
+                    frame.timestamp = (frame_offset + frame_num) * frame_time;
+
+                    _video_buffer.push(std::move(frame));
+                    ++frame_num;
+                }
+
+                if (pipe)
+                    pclose(pipe);
+                _video_buffer.finish();
+            }
+
+            void audio_decode_thread()
+            {
+                const size_t chunk_size = 4096;
+                std::vector<uint8_t> buffer(chunk_size);
+                double samples_per_sec = _sample_rate * _channels * 2; // 16-bit = 2 bytes
+
+                double current_start_time = (_start_time >= 0) ? _start_time : 0.0;
+                FILE *pipe = nullptr;
+
+                auto start_ffmpeg = [&](double seek_time) -> bool
+                {
+                    if (pipe)
+                    {
+                        pclose(pipe);
+                        pipe = nullptr;
+                    }
+
+                    std::string time_opts = "-ss " + std::to_string(seek_time) + " ";
+                    std::string duration_opt;
+                    if (_end_time >= 0)
+                    {
+                        double dur = _end_time - seek_time;
+                        if (dur > 0)
+                            duration_opt = " -t " + std::to_string(dur);
+                    }
+
+                    std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                      " -f s16le -acodec pcm_s16le -ar " +
+                                      std::to_string(_sample_rate) +
+                                      " -ac " + std::to_string(_channels) + " -v quiet - 2>/dev/null";
+
+                    pipe = popen(cmd.c_str(), "r");
+                    return pipe != nullptr;
+                };
+
+                // Start initial decoding
+                if (!start_ffmpeg(current_start_time))
+                {
+                    return;
+                }
+
+                double timestamp = current_start_time;
+
+                while (_running)
+                {
+                    // Check for seek request
+                    double seek_time = _audio_buffer.get_and_clear_seek_request();
+                    if (seek_time >= 0)
+                    {
+                        current_start_time = seek_time;
+                        timestamp = seek_time;
+
+                        if (!start_ffmpeg(seek_time))
+                            break;
+
+                        _audio_buffer.complete_seek();
+                        continue;
+                    }
+
+                    size_t bytes_read = fread(buffer.data(), 1, chunk_size, pipe);
+                    if (bytes_read == 0)
+                        break;
+
+                    AudioChunk chunk;
+                    chunk.data.assign(buffer.begin(), buffer.begin() + bytes_read);
+                    chunk.timestamp = timestamp;
+                    timestamp += bytes_read / samples_per_sec;
+
+                    _audio_buffer.push(std::move(chunk));
+                }
+
+                if (pipe)
+                    pclose(pipe);
+                _audio_buffer.finish();
+            }
+
+            void render_loop()
+            {
+                // Calculate pixel dimensions
+                int pixel_w, pixel_h;
+                bool needs_rgb = false;
+
+                switch (_render_mode)
+                {
+                case Mode::colored:
+                    pixel_w = _width;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = ((pixel_h + 1) / 2) * 2;
+                    needs_rgb = true;
+                    break;
+                case Mode::colored_dot:
+                case Mode::flood_dot_colored:
+                case Mode::colored_dithered:
+                    pixel_w = _width * 2;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = (pixel_h + 3) / 4 * 4;
+                    needs_rgb = true;
+                    break;
+                case Mode::bw:
+                    pixel_w = _width;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = ((pixel_h + 1) / 2) * 2;
+                    needs_rgb = true;
+                    break;
+                default:
+                    pixel_w = _width * 2;
+                    pixel_h = (int)((double)pixel_w * _vid_height / _vid_width);
+                    pixel_h = (pixel_h + 3) / 4 * 4;
+                    needs_rgb = (_render_mode == Mode::grayscale_dot || _render_mode == Mode::flood_dot);
+                    break;
+                }
+
+                double target_fps = (_fps > 0) ? _fps : _vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                // Create canvases
+                BrailleCanvas braille_canvas;
+                BWBlockCanvas bw_block_canvas;
+                ColorCanvas color_canvas;
+                ColoredBrailleCanvas colored_braille_canvas;
+
+                switch (_render_mode)
+                {
+                case Mode::colored:
+                    color_canvas = ColorCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                case Mode::colored_dot:
+                case Mode::flood_dot_colored:
+                case Mode::colored_dithered:
+                    colored_braille_canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                case Mode::bw:
+                    bw_block_canvas = BWBlockCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                default:
+                    braille_canvas = BrailleCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                }
+
+                TerminalStateGuard term_guard;
+
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_count = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::microseconds total_pause_time{0};
+                std::chrono::steady_clock::time_point pause_start;
+                bool user_stopped = false;
+
+                std::string frame_output;
+                frame_output.reserve(pixel_w * pixel_h * 50);
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    // Process commands from keyboard thread
+                    PlayerCommand cmd;
+                    while (_cmd_queue.try_pop(cmd))
+                    {
+                        switch (cmd)
+                        {
+                        case PlayerCommand::Stop:
+                            user_stopped = true;
+                            break;
+                        case PlayerCommand::Pause:
+                            _paused = !_paused;
+                            if (_paused)
+                            {
+                                pause_start = std::chrono::steady_clock::now();
+                                std::cout << ansi::CURSOR_HOME
+                                          << "[PAUSED - Press '" << _config.pause_key
+                                          << "' to resume, Vol: " << _audio_buffer.get_volume() << "%]"
+                                          << std::flush;
+                            }
+                            else
+                            {
+                                total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                    std::chrono::steady_clock::now() - pause_start);
+                            }
+                            break;
+                        case PlayerCommand::VolumeUp:
+                            _audio_buffer.set_volume(_audio_buffer.get_volume() + _config.volume_step);
+                            if (_paused)
+                            {
+                                std::cout << ansi::CURSOR_HOME
+                                          << "[PAUSED - Vol: " << _audio_buffer.get_volume() << "%]    "
+                                          << std::flush;
+                            }
+                            break;
+                        case PlayerCommand::VolumeDown:
+                            _audio_buffer.set_volume(_audio_buffer.get_volume() - _config.volume_step);
+                            if (_paused)
+                            {
+                                std::cout << ansi::CURSOR_HOME
+                                          << "[PAUSED - Vol: " << _audio_buffer.get_volume() << "%]    "
+                                          << std::flush;
+                            }
+                            break;
+                        case PlayerCommand::SeekBackward:
+                        {
+                            // Calculate new seek time based on current position
+                            double target_fps = (_fps > 0) ? _fps : _vid_fps;
+                            if (target_fps <= 0)
+                                target_fps = 30;
+
+                            int64_t current_frame = _video_buffer.get_current_frame();
+                            double current_time = current_frame / target_fps;
+                            double seek_amount = _config.seek_frames / target_fps;
+
+                            // Clamp to user's start_time, not absolute 0
+                            double min_time = (_start_time >= 0) ? _start_time : 0.0;
+                            double seek_time = std::max(min_time, current_time - seek_amount);
+
+                            // Request seek on both audio and video
+                            _video_buffer.request_seek(seek_time);
+                            if (_config.audio == Audio::on)
+                                _audio_buffer.request_seek(seek_time);
+                            break;
+                        }
+                        case PlayerCommand::SeekForward:
+                        {
+                            // Calculate new seek time
+                            double target_fps = (_fps > 0) ? _fps : _vid_fps;
+                            if (target_fps <= 0)
+                                target_fps = 30;
+
+                            int64_t current_frame = _video_buffer.get_current_frame();
+                            double current_time = current_frame / target_fps;
+                            double seek_time = current_time + (_config.seek_frames / target_fps);
+
+                            // Clamp to end_time if set, otherwise duration
+                            double max_time = (_end_time >= 0) ? _end_time : (_duration > 0) ? _duration
+                                                                                             : seek_time;
+                            if (seek_time > max_time - 1.0)
+                                seek_time = std::max((_start_time >= 0 ? _start_time : 0.0), max_time - 1.0);
+
+                            // Request seek on both audio and video
+                            _video_buffer.request_seek(seek_time);
+                            if (_config.audio == Audio::on)
+                                _audio_buffer.request_seek(seek_time);
+                            break;
+                        }
+                        default:
+                            break;
+                        }
+                    }
+
+                    if (user_stopped)
+                        break;
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    // If seeking is in progress, wait (but check for finished too)
+                    if (_video_buffer.has_seek_request())
+                    {
+                        // Don't wait forever - check if decoder finished
+                        if (_video_buffer.is_finished())
+                            break;
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                        continue;
+                    }
+
+                    VideoFrame frame;
+                    if (!_video_buffer.pop(frame))
+                    {
+                        if (_video_buffer.is_finished())
+                            break;
+                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    frame_output = ansi::CURSOR_HOME;
+
+                    switch (_render_mode)
+                    {
+                    case Mode::colored:
+                        color_canvas.load_frame_rgb(frame.data.data(), pixel_w, pixel_h);
+                        frame_output += color_canvas.render();
+                        break;
+                    case Mode::colored_dot:
+                        colored_braille_canvas.load_frame_rgb(frame.data.data(), pixel_w, pixel_h, 128);
+                        frame_output += colored_braille_canvas.render();
+                        break;
+                    case Mode::bw:
+                        bw_block_canvas.load_frame_rgb(frame.data.data(), pixel_w, pixel_h, 128);
+                        frame_output += bw_block_canvas.render();
+                        break;
+                    case Mode::bw_dot:
+                        braille_canvas.load_frame_fast(frame.data.data(), pixel_w, pixel_h, 128);
+                        frame_output += braille_canvas.render();
+                        break;
+                    case Mode::bw_dithered:
+                        braille_canvas.load_frame_ordered_dithered(frame.data.data(), pixel_w, pixel_h);
+                        frame_output += braille_canvas.render();
+                        break;
+                    case Mode::grayscale_dot:
+                        // Load with grayscale values preserved for coloring
+                        {
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                uint8_t r = frame.data[idx];
+                                                uint8_t g = frame.data[idx + 1];
+                                                uint8_t b = frame.data[idx + 2];
+                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                            }
+                                        }
+                                    }
+                                    braille_canvas.set_block_gray_dithered_with_brightness(cx, cy, grays);
+                                }
+                            }
+                        }
+                        frame_output += braille_canvas.render_grayscale();
+                        break;
+                    case Mode::flood_dot:
+                        // All dots on, colored by average brightness
+                        {
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                uint8_t r = frame.data[idx];
+                                                uint8_t g = frame.data[idx + 1];
+                                                uint8_t b = frame.data[idx + 2];
+                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                            }
+                                        }
+                                    }
+                                    braille_canvas.set_block_flood_fill(cx, cy, grays);
+                                }
+                            }
+                        }
+                        frame_output += braille_canvas.render_grayscale();
+                        break;
+                    case Mode::flood_dot_colored:
+                        // All dots on, colored by average RGB
+                        {
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    int sum_r = 0, sum_g = 0, sum_b = 0;
+                                    int count = 0;
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                sum_r += frame.data[idx];
+                                                sum_g += frame.data[idx + 1];
+                                                sum_b += frame.data[idx + 2];
+                                                count++;
+                                            }
+                                        }
+                                    }
+                                    if (count > 0)
+                                    {
+                                        colored_braille_canvas.set_pattern(cx, cy, 0xFF);
+                                        colored_braille_canvas.set_color(cx, cy, sum_r / count, sum_g / count, sum_b / count);
+                                    }
+                                }
+                            }
+                        }
+                        frame_output += colored_braille_canvas.render();
+                        break;
+                    case Mode::colored_dithered:
+                        // Dithered dots, colored by average RGB
+                        {
+                            static const int bayer2x2[2][2] = {{0, 2}, {3, 1}};
+                            static const int dot_map[4][2] = {{0, 3}, {1, 4}, {2, 5}, {6, 7}};
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t pattern = 0;
+                                    int sum_r = 0, sum_g = 0, sum_b = 0;
+                                    int count = 0;
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                uint8_t r = frame.data[idx];
+                                                uint8_t g = frame.data[idx + 1];
+                                                uint8_t b = frame.data[idx + 2];
+                                                sum_r += r;
+                                                sum_g += g;
+                                                sum_b += b;
+                                                count++;
+
+                                                uint8_t gray = (r * 77 + g * 150 + b * 29) >> 8;
+                                                int bayer_x = col & 1;
+                                                int bayer_y = row & 1;
+                                                int threshold_val = ((bayer2x2[bayer_y][bayer_x] + 1) * 255) / 5;
+                                                if (gray > threshold_val)
+                                                {
+                                                    pattern |= (1 << dot_map[row][col]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (count > 0)
+                                    {
+                                        colored_braille_canvas.set_pattern(cx, cy, pattern);
+                                        colored_braille_canvas.set_color(cx, cy, sum_r / count, sum_g / count, sum_b / count);
+                                    }
+                                }
+                            }
+                        }
+                        frame_output += colored_braille_canvas.render();
+                        break;
+                    default:
+                        braille_canvas.load_frame_fast(frame.data.data(), pixel_w, pixel_h, _config.threshold);
+                        frame_output += braille_canvas.render();
+                        break;
+                    }
+
+                    // Render progress bar at bottom
+                    // Calculate progress percentage
+                    double current_time = frame.timestamp;
+                    double actual_start = _start_time > 0 ? _start_time : 0.0;
+                    double actual_end = _end_time > 0 ? _end_time : (_duration > 0 ? _duration : 100.0);
+                    double total_duration = actual_end - actual_start;
+                    if (total_duration <= 0)
+                        total_duration = 1.0; // Avoid division by zero
+
+                    // Progress is relative to user's start/end range
+                    double progress = std::max(0.0, std::min(1.0, (current_time - actual_start) / total_duration));
+
+                    // Format times as MM:SS
+                    auto format_time = [](double secs) -> std::string
+                    {
+                        int total = static_cast<int>(secs);
+                        int mins = total / 60;
+                        int s = total % 60;
+                        char buf[16];
+                        snprintf(buf, sizeof(buf), "%02d:%02d", mins, s);
+                        return std::string(buf);
+                    };
+
+                    std::string start_str = format_time(actual_start);
+                    std::string current_str = format_time(current_time);
+                    std::string end_str = format_time(actual_end);
+
+                    // Progress bar width (account for time labels and padding)
+                    int bar_width = _width - 16; // Leave room for "MM:SS [ ... ] MM:SS"
+                    if (bar_width < 10)
+                        bar_width = 10;
+
+                    // Build progress bar using colored braille (white for played, gray for remaining)
+                    frame_output += "\n"; // New line for progress bar
+                    frame_output += start_str + " ";
+
+                    // Render progress bar with colored half-blocks
+                    int filled = static_cast<int>(progress * bar_width);
+                    for (int i = 0; i < bar_width; ++i)
+                    {
+                        if (i < filled)
+                        {
+                            // Played: White
+                            frame_output += "\033[38;2;255;255;255m█\033[0m";
+                        }
+                        else
+                        {
+                            // Remaining: Dark gray
+                            frame_output += "\033[38;2;80;80;80m█\033[0m";
+                        }
+                    }
+
+                    frame_output += " " + end_str;
+
+                    // Add current time in the middle and volume indicator
+                    int vol = _audio_buffer.get_volume();
+                    frame_output += "  [" + current_str + "]";
+
+                    // Volume bar: use gradient from green (0%) to yellow (50%) to red (100%)
+                    if (_config.audio == Audio::on)
+                    {
+                        frame_output += " Vol:";
+
+                        // 10 segment volume bar using braille dots for smoother fill
+                        // Each segment = 10% (matches 10% increment)
+                        const int vol_segments = 10;
+                        int vol_filled = vol / 10;  // 0-10 filled segments
+                        int vol_partial = vol % 10; // Partial fill for current segment (0-9)
+
+                        for (int i = 0; i < vol_segments; ++i)
+                        {
+                            // Calculate color based on position (gradient: green -> yellow -> red)
+                            int r, g, b;
+                            float pos = (float)i / (vol_segments - 1);
+                            if (pos < 0.5f)
+                            {
+                                // Green to Yellow (0.0 - 0.5)
+                                r = (int)(pos * 2 * 255);
+                                g = 255;
+                                b = 0;
+                            }
+                            else
+                            {
+                                // Yellow to Red (0.5 - 1.0)
+                                r = 255;
+                                g = (int)((1.0f - (pos - 0.5f) * 2) * 255);
+                                b = 0;
+                            }
+
+                            if (i < vol_filled)
+                            {
+                                // Fully filled segment
+                                char color[40];
+                                snprintf(color, sizeof(color), "\033[38;2;%d;%d;%dm⣿\033[0m", r, g, b);
+                                frame_output += color;
+                            }
+                            else if (i == vol_filled && vol_partial > 0)
+                            {
+                                // Partially filled using braille patterns for smooth transition
+                                // ⡀⡄⡆⡇⣇⣧⣷⣿ represent 1-8 dots (12.5% each)
+                                const char *partial_braille[] = {"⡀", "⡄", "⡆", "⡇", "⣇", "⣧", "⣷", "⣿"};
+                                int partial_idx = (vol_partial * 7) / 9; // Map 1-9 to 0-7
+                                char color[50];
+                                snprintf(color, sizeof(color), "\033[38;2;%d;%d;%dm%s\033[0m",
+                                         r, g, b, partial_braille[partial_idx]);
+                                frame_output += color;
+                            }
+                            else
+                            {
+                                // Empty segment: dark gray braille
+                                frame_output += "\033[38;2;50;50;50m⣀\033[0m";
+                            }
+                        }
+                    }
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
+
+                    ++frame_count;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                term_guard.restore();
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_count / (std::chrono::duration<double>(total_time).count());
+
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_count << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+            }
+        };
+
+        /**
          * @brief Play video with audio using SDL2 or PortAudio
          * @param filename Path to video file
          * @param width Terminal width in characters
@@ -9522,6 +11305,105 @@ namespace pythonic
             (void)mode;
             (void)threshold;
             throw std::runtime_error("Webcam requires OpenCV. Rebuild with -DPYTHONIC_ENABLE_OPENCV=ON");
+        }
+
+        // Stub for play_video_opencv_audio when OpenCV not available
+        inline void play_video_opencv_audio(const std::string &source, int width = 80,
+                                            Mode mode = Mode::bw_dot, int threshold = 128,
+                                            double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+        {
+            std::cerr << "Warning: OpenCV not available.\n";
+            // Fall back to FFmpeg with audio
+#if defined(PYTHONIC_ENABLE_SDL2_AUDIO) || defined(PYTHONIC_ENABLE_PORTAUDIO)
+            AudioVideoPlayer player(source, width, mode, fps, start_time, end_time);
+            player.play();
+#else
+            std::cerr << "Audio playback also not available. Playing silent video...\n";
+            play_video_with_mode(source, width, mode, threshold, Shell::noninteractive, 'p', 's', fps, start_time, end_time);
+#endif
+        }
+#endif
+
+        // ==================== Threaded Video Playback API ====================
+
+#if defined(PYTHONIC_ENABLE_SDL2_AUDIO) || defined(PYTHONIC_ENABLE_PORTAUDIO)
+        /**
+         * @brief Play video with full interactive controls using threaded architecture
+         *
+         * Features:
+         * - Non-blocking keyboard input (doesn't halt video playback)
+         * - Volume control via up/down arrows
+         * - Seeking via left/right arrows
+         * - Pause/Stop with configurable keys
+         * - Synchronized audio playback
+         *
+         * @param source Path to video file
+         * @param config RenderConfig with all playback options
+         *
+         * Example:
+         * @code
+         * RenderConfig config;
+         * config.set_mode(Mode::colored)
+         *       .set_max_width(120)
+         *       .with_audio()
+         *       .interactive()
+         *       .set_volume(80)
+         *       .set_seek_frames(150);  // 5 seconds at 30fps
+         * play_video_threaded("video.mp4", config);
+         * @endcode
+         */
+        inline void play_video_threaded(const std::string &source, const RenderConfig &config)
+        {
+            if (is_webcam_source(source))
+            {
+                // Webcams don't support seeking or audio
+                play_video_opencv(source, config.max_width, config.mode, config.threshold,
+                                  config.shell, config.pause_key, config.stop_key);
+                return;
+            }
+
+            ThreadedAudioVideoPlayer player(source, config);
+            player.play();
+        }
+
+        /**
+         * @brief Convenience function with sensible defaults for interactive playback
+         */
+        inline void play_video_threaded(const std::string &source, int width = 80,
+                                        Mode mode = Mode::bw_dot, int threshold = 128)
+        {
+            RenderConfig config;
+            config.set_max_width(width)
+                .set_mode(mode)
+                .set_threshold(threshold)
+                .with_audio()
+                .interactive();
+
+            play_video_threaded(source, config);
+        }
+#else
+        /**
+         * @brief Fallback when audio not compiled in
+         */
+        inline void play_video_threaded(const std::string &source, const RenderConfig &config)
+        {
+            std::cerr << "Warning: Audio playback not available.\n"
+                      << "Rebuild with -DPYTHONIC_ENABLE_SDL2_AUDIO=ON or -DPYTHONIC_ENABLE_PORTAUDIO=ON\n"
+                      << "Falling back to silent video playback...\n\n";
+
+            play_video_with_mode(source, config.max_width, config.mode, config.threshold,
+                                 config.shell, config.pause_key, config.stop_key,
+                                 config.fps, config.start_time, config.end_time);
+        }
+
+        inline void play_video_threaded(const std::string &source, int width = 80,
+                                        Mode mode = Mode::bw_dot, int threshold = 128)
+        {
+            std::cerr << "Warning: Audio playback not available.\n"
+                      << "Rebuild with -DPYTHONIC_ENABLE_SDL2_AUDIO=ON or -DPYTHONIC_ENABLE_PORTAUDIO=ON\n"
+                      << "Falling back to silent video playback...\n\n";
+
+            play_video_with_mode(source, width, mode, threshold, Shell::interactive, 'p', 's', 0, -1, -1);
         }
 #endif
 

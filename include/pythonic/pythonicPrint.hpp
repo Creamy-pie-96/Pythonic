@@ -649,7 +649,31 @@ namespace pythonic
                 std::string actual_path = handle_pythonic_format(path);
                 bool is_temp = (actual_path != path);
 
-                if (parser == Parser::opencv)
+                // Use threaded player for interactive mode for best experience
+                // (non-blocking keyboard, full controls even without audio)
+                if (shell == Shell::interactive)
+                {
+                    // Build RenderConfig for threaded player
+                    pythonic::draw::RenderConfig config;
+                    config.set_max_width(max_width)
+                        .set_mode(mode)
+                        .set_threshold(threshold)
+                        .set_fps(fps)
+                        .set_start_time(start_time)
+                        .set_end_time(end_time)
+                        .set_pause_key(pause_key)
+                        .set_stop_key(stop_key)
+                        .interactive();
+
+                    // Only enable audio if requested
+                    if (audio == Audio::on)
+                    {
+                        config.with_audio();
+                    }
+
+                    pythonic::draw::play_video_threaded(actual_path, config);
+                }
+                else if (parser == Parser::opencv)
                 {
                     if (audio == Audio::on)
                     {
