@@ -49,6 +49,56 @@ bool emit(input_path, output_name, RenderConfig = {}, ExportConfig = {})
 
 ---
 
+## Text-to-Braille Art Export
+
+Export text strings as braille art using `TextArt` tag:
+
+```cpp
+bool emit(TextArt, text, output_name, TextConfig = {})
+```
+
+| Parameter     | Type          | Default        | Description                       |
+| ------------- | ------------- | -------------- | --------------------------------- |
+| `TextArt`     | tag           | Required       | Tag indicating text-to-braille    |
+| `text`        | `std::string` | Required       | Text to render                    |
+| `output_name` | `std::string` | Required       | Output filename (.txt auto-added) |
+| `TextConfig`  | config object | `TextConfig()` | Text rendering options            |
+
+### TextConfig
+
+| Field       | Type      | Default        | Description              |
+| ----------- | --------- | -------------- | ------------------------ |
+| `mode`      | `Mode`    | `Mode::bw_dot` | Rendering mode           |
+| `fg_r`      | `uint8_t` | `255`          | Foreground red (0-255)   |
+| `fg_g`      | `uint8_t` | `255`          | Foreground green (0-255) |
+| `fg_b`      | `uint8_t` | `255`          | Foreground blue (0-255)  |
+| `max_width` | `int`     | `0`            | Max width (0=auto)       |
+
+### Examples
+
+```cpp
+// Export text as braille art
+emit(TextArt, "Hello World!", "hello");  // → hello.txt
+
+// Colored text
+emit(TextArt, "COLORED!", "color_text",
+    TextConfig{.mode = Mode::colored});
+
+// Custom color (red)
+emit(TextArt, "RED TEXT", "red_text",
+    TextConfig{
+        .mode = Mode::colored,
+        .fg_r = 255,
+        .fg_g = 0,
+        .fg_b = 0
+    });
+
+// Multi-line text
+emit(TextArt, "Line 1\nLine 2\nLine 3", "multiline");
+```
+
+---
+
 ## RenderConfig
 
 Controls how media is rendered to ASCII/Braille art.
@@ -98,24 +148,39 @@ Controls pixel-level rendering for PNG/video output.
 
 ## Mode Enum
 
-| Mode                  | Description                  | Resolution  | Colors    |
-| --------------------- | ---------------------------- | ----------- | --------- |
-| `Mode::bw_dot`        | Braille patterns (default)   | 8× terminal | B&W       |
-| `Mode::bw`            | Half-block characters        | 2× terminal | B&W       |
-| `Mode::colored`       | Half-block with color        | 2× terminal | 24-bit    |
-| `Mode::colored_dot`   | Braille with color           | 8× terminal | 24-bit    |
-| `Mode::grayscale_dot` | Grayscale braille            | 8× terminal | Grayscale |
-| `Mode::flood_dot`     | Flood-filled colored braille | 8× terminal | 24-bit    |
+| Mode                      | Description                         | Resolution  | Colors    |
+| ------------------------- | ----------------------------------- | ----------- | --------- |
+| `Mode::bw_dot`            | Braille patterns (default)          | 8× terminal | B&W       |
+| `Mode::bw`                | Half-block characters               | 2× terminal | B&W       |
+| `Mode::colored`           | Half-block with color               | 2× terminal | 24-bit    |
+| `Mode::colored_dot`       | Braille with color                  | 8× terminal | 24-bit    |
+| `Mode::grayscale_dot`     | Grayscale braille                   | 8× terminal | Grayscale |
+| `Mode::bw_dithered`       | B&W braille with dithering          | 8× terminal | B&W       |
+| `Mode::flood_dot`         | Flood-filled braille (grayscale)    | 8× terminal | Grayscale |
+| `Mode::flood_dot_colored` | Flood-filled braille with color     | 8× terminal | 24-bit    |
+| `Mode::colored_dithered`  | Colored braille with ordered dither | 8× terminal | 24-bit    |
 
 ---
 
 ## Dithering Enum
 
-| Dithering            | Description                     | Quality |
-| -------------------- | ------------------------------- | ------- |
-| `Dithering::none`    | No dithering (default)          | Fast    |
-| `Dithering::ordered` | Ordered/Bayer dithering         | Good    |
-| `Dithering::floyd`   | Floyd-Steinberg error diffusion | Best    |
+Controls dithering algorithm for `Mode::bw_dithered` and `Mode::colored_dithered`:
+
+| Dithering                    | Description                       | Quality | Best For     |
+| ---------------------------- | --------------------------------- | ------- | ------------ |
+| `Dithering::none`            | Simple threshold (no dithering)   | Fast    | Binary       |
+| `Dithering::ordered`         | Ordered/Bayer dithering (default) | Good    | Video        |
+| `Dithering::floyd_steinberg` | Floyd-Steinberg error diffusion   | Best    | Still images |
+
+**Usage example:**
+
+```cpp
+// Export with Floyd-Steinberg dithering for best quality
+emit("photo.png", "output", RenderConfig()
+    .set_mode(Mode::colored_dithered)
+    .set_dithering(Dithering::floyd_steinberg)
+    .set_format(Format::image));
+```
 
 ---
 

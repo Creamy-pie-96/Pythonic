@@ -48,6 +48,7 @@
 #include <fstream>
 #include <cstdint>
 #include <cstdlib>
+#include <map>
 #include <cctype>
 #include <cstring>
 #include <functional>
@@ -231,16 +232,20 @@ namespace pythonic
          *   - bw_dithered:  Black & white with ordered dithering (smooth grayscale shading)
          *   - grayscale_dot: Grayscale-colored braille dots (smooth appearance)
          *   - flood_dot:   Flood-fill braille - all dots lit, colored by average cell brightness
+         *   - flood_dot_colored: Flood-fill braille with RGB colors (all dots lit, averaged colors)
+         *   - colored_dithered: Colored braille with dithering for smoother appearance
          */
         enum class Mode
         {
-            bw,            // Black & white with block characters (current colored renderer logic, no color)
-            bw_dot,        // Black & white with braille patterns (default, higher resolution)
-            colored,       // True color with block characters
-            colored_dot,   // True color with braille patterns (one color per cell)
-            bw_dithered,   // Black & white with ordered dithering for grayscale shading
-            grayscale_dot, // Grayscale-colored braille dots (dots colored by brightness)
-            flood_dot      // Flood-fill: all dots lit (⣿), colored by average cell grayscale
+            bw,                // Black & white with block characters (current colored renderer logic, no color)
+            bw_dot,            // Black & white with braille patterns (default, higher resolution)
+            colored,           // True color with block characters
+            colored_dot,       // True color with braille patterns (one color per cell)
+            bw_dithered,       // Black & white with ordered dithering for grayscale shading
+            grayscale_dot,     // Grayscale-colored braille dots (dots colored by brightness)
+            flood_dot,         // Flood-fill: all dots lit (⣿), colored by average cell grayscale
+            flood_dot_colored, // Flood-fill: all dots lit (⣿), colored by average cell RGB color
+            colored_dithered   // Colored braille with dithering for smoother appearance
         };
 
         // Legacy alias for backward compatibility
@@ -309,6 +314,11 @@ namespace pythonic
             default_parser, // FFmpeg for video, ImageMagick for images (default)
             opencv          // OpenCV for everything (images, videos, webcam)
         };
+
+        // Convenience constants for Parser enum
+        // Allows using `opencv` instead of `Parser::opencv`
+        constexpr Parser default_parser = Parser::default_parser;
+        constexpr Parser opencv = Parser::opencv;
 
         /**
          * @brief Audio playback mode for video
@@ -1190,6 +1200,51 @@ namespace pythonic
             }
 
             /**
+             * @brief Set the Braille dot pattern for a character cell
+             * @param cx Character column (0-based)
+             * @param cy Character row (0-based)
+             * @param pattern 8-bit pattern where each bit represents a dot
+             */
+            void set_pattern(size_t cx, size_t cy, uint8_t pattern)
+            {
+                if (cx < _char_width && cy < _char_height)
+                {
+                    _patterns[cy][cx] = pattern;
+                }
+            }
+
+            /**
+             * @brief Get the Braille dot pattern for a character cell
+             * @param cx Character column (0-based)
+             * @param cy Character row (0-based)
+             * @return 8-bit pattern where each bit represents a dot, or 0 if out of bounds
+             */
+            uint8_t get_pattern(size_t cx, size_t cy) const
+            {
+                if (cx < _char_width && cy < _char_height)
+                {
+                    return _patterns[cy][cx];
+                }
+                return 0;
+            }
+
+            /**
+             * @brief Set the color for a character cell
+             * @param cx Character column (0-based)
+             * @param cy Character row (0-based)
+             * @param r Red component (0-255)
+             * @param g Green component (0-255)
+             * @param b Blue component (0-255)
+             */
+            void set_color(size_t cx, size_t cy, uint8_t r, uint8_t g, uint8_t b)
+            {
+                if (cx < _char_width && cy < _char_height)
+                {
+                    _colors[cy][cx] = RGB(r, g, b);
+                }
+            }
+
+            /**
              * @brief Load RGB frame and convert to colored Braille
              *
              * For each 2×4 cell:
@@ -1285,6 +1340,499 @@ namespace pythonic
             {
                 // Use a dynamic threshold based on local average
                 load_frame_rgb(data, width, height, 128); // For now, use fixed threshold
+            }
+
+            /**
+             * @brief Load RGB frame with flood fill (all dots on, colored by average RGB)
+             *
+             * For each 2×4 cell:
+             * - All 8 dots are lit (pattern = 0xFF = ⣿)
+             * - Color is the average RGB of all 8 pixels
+             *
+             * This creates the smoothest appearance with true colors.
+             */
+            void load_frame_rgb_flood(const uint8_t *data, int width, int height)
+            {
+                // Resize if needed
+                size_t new_cw = (width + 1) / 2;
+                size_t new_ch = (height + 3) / 4;
+
+                if (new_cw != _char_width || new_ch != _char_height)
+                {
+                    _char_width = new_cw;
+                    _char_height = new_ch;
+                    _pixel_width = _char_width * 2;
+                    _pixel_height = _char_height * 4;
+                    _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                    _colors.assign(_char_height, std::vector<RGB>(_char_width));
+                }
+
+                // Process each character cell
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int px = cx * 2;
+                        int py = cy * 4;
+
+                        int r_sum = 0, g_sum = 0, b_sum = 0;
+                        int pixel_count = 0;
+
+                        // Process 2×4 block - average ALL pixels
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+
+                                size_t idx = (y * width + x) * 3;
+                                r_sum += data[idx];
+                                g_sum += data[idx + 1];
+                                b_sum += data[idx + 2];
+                                pixel_count++;
+                            }
+                        }
+
+                        // All dots lit
+                        _patterns[cy][cx] = 0xFF;
+
+                        // Average color of ALL pixels in cell
+                        if (pixel_count > 0)
+                        {
+                            _colors[cy][cx] = RGB(
+                                static_cast<uint8_t>(r_sum / pixel_count),
+                                static_cast<uint8_t>(g_sum / pixel_count),
+                                static_cast<uint8_t>(b_sum / pixel_count));
+                        }
+                        else
+                        {
+                            _colors[cy][cx] = RGB(0, 0, 0);
+                        }
+                    }
+                }
+            }
+
+            /**
+             * @brief Load RGB frame with ordered dithering for colored output
+             *
+             * Uses Bayer 2x2 dithering matrix to determine which dots are lit,
+             * then colors them based on average RGB. Provides smoother appearance
+             * than simple threshold for colored content.
+             */
+            void load_frame_rgb_dithered(const uint8_t *data, int width, int height)
+            {
+                // Bayer 2x2 dithering matrix (scaled to 0-255)
+                static const int BAYER[2][2] = {
+                    {0, 128},
+                    {192, 64}};
+
+                // Resize if needed
+                size_t new_cw = (width + 1) / 2;
+                size_t new_ch = (height + 3) / 4;
+
+                if (new_cw != _char_width || new_ch != _char_height)
+                {
+                    _char_width = new_cw;
+                    _char_height = new_ch;
+                    _pixel_width = _char_width * 2;
+                    _pixel_height = _char_height * 4;
+                    _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                    _colors.assign(_char_height, std::vector<RGB>(_char_width));
+                }
+
+                // Process each character cell
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int px = cx * 2;
+                        int py = cy * 4;
+
+                        uint8_t pattern = 0;
+                        int r_sum = 0, g_sum = 0, b_sum = 0;
+                        int on_count = 0;
+
+                        // Process 2×4 block with dithering
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+
+                                size_t idx = (y * width + x) * 3;
+                                uint8_t r = data[idx];
+                                uint8_t g = data[idx + 1];
+                                uint8_t b = data[idx + 2];
+
+                                // Grayscale for dithering decision
+                                uint8_t gray = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+
+                                // Apply dithering threshold
+                                int dither_threshold = BAYER[row % 2][col % 2];
+                                if (gray >= dither_threshold)
+                                {
+                                    pattern |= BRAILLE_DOTS[row][col];
+                                    r_sum += r;
+                                    g_sum += g;
+                                    b_sum += b;
+                                    on_count++;
+                                }
+                            }
+                        }
+
+                        _patterns[cy][cx] = pattern;
+
+                        // Average color of "on" pixels
+                        if (on_count > 0)
+                        {
+                            _colors[cy][cx] = RGB(
+                                static_cast<uint8_t>(r_sum / on_count),
+                                static_cast<uint8_t>(g_sum / on_count),
+                                static_cast<uint8_t>(b_sum / on_count));
+                        }
+                        else
+                        {
+                            _colors[cy][cx] = RGB(128, 128, 128); // Default gray for empty cells
+                        }
+                    }
+                }
+            }
+
+            /**
+             * @brief Load a PPM file with flood fill mode (all dots on, RGB colored)
+             *
+             * For each 2×4 cell, all 8 dots are lit and colored by average RGB.
+             *
+             * @param filename Path to PPM file (P6 format)
+             * @return true on success
+             */
+            bool load_ppm_flood(const std::string &filename)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P6")
+                    return false;
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c);
+
+                if (maxval > 255)
+                    return false;
+
+                // Resize canvas
+                _char_width = (width + 1) / 2;
+                _char_height = (height + 3) / 4;
+                _pixel_width = _char_width * 2;
+                _pixel_height = _char_height * 4;
+                _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0xFF)); // All dots lit
+                _colors.assign(_char_height, std::vector<RGB>(_char_width));
+
+                // Read entire image into buffer
+                std::vector<uint8_t> rgbbuf(width * height * 3);
+                file.read(reinterpret_cast<char *>(rgbbuf.data()), rgbbuf.size());
+
+                // Process each character cell - compute average RGB
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int px = cx * 2;
+                        int py = cy * 4;
+                        int r_sum = 0, g_sum = 0, b_sum = 0;
+                        int count = 0;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+                                size_t idx = (y * width + x) * 3;
+                                r_sum += rgbbuf[idx];
+                                g_sum += rgbbuf[idx + 1];
+                                b_sum += rgbbuf[idx + 2];
+                                count++;
+                            }
+                        }
+
+                        if (count > 0)
+                        {
+                            _colors[cy][cx] = RGB(r_sum / count, g_sum / count, b_sum / count);
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            /**
+             * @brief Load a PPM file with dithering (colored dithered dots)
+             *
+             * Uses Bayer 2x2 dithering for dot patterns with RGB coloring.
+             *
+             * @param filename Path to PPM file (P6 format)
+             * @return true on success
+             */
+            bool load_ppm_dithered(const std::string &filename)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P6")
+                    return false;
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c);
+
+                if (maxval > 255)
+                    return false;
+
+                // Bayer 2x2 matrix
+                static const int BAYER[2][2] = {{0, 128}, {192, 64}};
+
+                // Resize canvas
+                _char_width = (width + 1) / 2;
+                _char_height = (height + 3) / 4;
+                _pixel_width = _char_width * 2;
+                _pixel_height = _char_height * 4;
+                _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                _colors.assign(_char_height, std::vector<RGB>(_char_width));
+
+                // Read entire image into buffer
+                std::vector<uint8_t> rgbbuf(width * height * 3);
+                file.read(reinterpret_cast<char *>(rgbbuf.data()), rgbbuf.size());
+
+                // Process each character cell
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int px = cx * 2;
+                        int py = cy * 4;
+                        uint8_t pattern = 0;
+                        int r_sum = 0, g_sum = 0, b_sum = 0;
+                        int on_count = 0;
+                        int total_count = 0;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+
+                                size_t idx = (y * width + x) * 3;
+                                uint8_t r = rgbbuf[idx];
+                                uint8_t g = rgbbuf[idx + 1];
+                                uint8_t b = rgbbuf[idx + 2];
+                                r_sum += r;
+                                g_sum += g;
+                                b_sum += b;
+                                total_count++;
+
+                                // Grayscale for dithering
+                                uint8_t gray = (299 * r + 587 * g + 114 * b) / 1000;
+                                if (gray >= BAYER[row % 2][col % 2])
+                                {
+                                    pattern |= BRAILLE_DOTS[row][col];
+                                    on_count++;
+                                }
+                            }
+                        }
+
+                        _patterns[cy][cx] = pattern;
+
+                        // Average color of all pixels (not just "on" ones for better color fidelity)
+                        if (total_count > 0)
+                        {
+                            _colors[cy][cx] = RGB(r_sum / total_count, g_sum / total_count, b_sum / total_count);
+                        }
+                    }
+                }
+
+                return true;
+            }
+
+            /**
+             * @brief Load a PPM image with Floyd-Steinberg dithering (colored)
+             *
+             * Floyd-Steinberg error diffusion provides higher quality dithering
+             * with better edge preservation. Slightly slower than ordered dithering.
+             *
+             * @param filename Path to PPM file (P6 format)
+             * @return true on success
+             */
+            bool load_ppm_dithered_floyd(const std::string &filename)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P6")
+                    return false;
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c);
+
+                if (maxval > 255)
+                    return false;
+
+                // Resize canvas
+                _char_width = (width + 1) / 2;
+                _char_height = (height + 3) / 4;
+                _pixel_width = _char_width * 2;
+                _pixel_height = _char_height * 4;
+                _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
+                _colors.assign(_char_height, std::vector<RGB>(_char_width));
+
+                // Read entire image into buffer
+                std::vector<uint8_t> rgbbuf(width * height * 3);
+                file.read(reinterpret_cast<char *>(rgbbuf.data()), rgbbuf.size());
+
+                // Convert to grayscale float buffer for error diffusion
+                std::vector<std::vector<float>> gray(height, std::vector<float>(width));
+                for (int y = 0; y < height; ++y)
+                {
+                    for (int x = 0; x < width; ++x)
+                    {
+                        size_t idx = (y * width + x) * 3;
+                        gray[y][x] = static_cast<float>((299 * rgbbuf[idx] + 587 * rgbbuf[idx + 1] + 114 * rgbbuf[idx + 2]) / 1000);
+                    }
+                }
+
+                // Apply Floyd-Steinberg dithering
+                std::vector<std::vector<bool>> dithered(height, std::vector<bool>(width, false));
+                for (int y = 0; y < height; ++y)
+                {
+                    for (int x = 0; x < width; ++x)
+                    {
+                        float old_pixel = gray[y][x];
+                        float new_pixel = (old_pixel >= 128.0f) ? 255.0f : 0.0f;
+                        dithered[y][x] = (new_pixel > 0);
+
+                        float error = old_pixel - new_pixel;
+
+                        // Distribute error to neighbors
+                        if (x + 1 < width)
+                            gray[y][x + 1] += error * 7.0f / 16.0f;
+                        if (y + 1 < height)
+                        {
+                            if (x > 0)
+                                gray[y + 1][x - 1] += error * 3.0f / 16.0f;
+                            gray[y + 1][x] += error * 5.0f / 16.0f;
+                            if (x + 1 < width)
+                                gray[y + 1][x + 1] += error * 1.0f / 16.0f;
+                        }
+                    }
+                }
+
+                // Build patterns and colors from dithered result
+                for (size_t cy = 0; cy < _char_height; ++cy)
+                {
+                    for (size_t cx = 0; cx < _char_width; ++cx)
+                    {
+                        int px = cx * 2;
+                        int py = cy * 4;
+                        uint8_t pattern = 0;
+                        int r_sum = 0, g_sum = 0, b_sum = 0;
+                        int total_count = 0;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            int y = py + row;
+                            if (y >= height)
+                                continue;
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col;
+                                if (x >= width)
+                                    continue;
+
+                                size_t idx = (y * width + x) * 3;
+                                r_sum += rgbbuf[idx];
+                                g_sum += rgbbuf[idx + 1];
+                                b_sum += rgbbuf[idx + 2];
+                                total_count++;
+
+                                if (dithered[y][x])
+                                {
+                                    pattern |= BRAILLE_DOTS[row][col];
+                                }
+                            }
+                        }
+
+                        _patterns[cy][cx] = pattern;
+
+                        if (total_count > 0)
+                        {
+                            _colors[cy][cx] = RGB(r_sum / total_count, g_sum / total_count, b_sum / total_count);
+                        }
+                    }
+                }
+
+                return true;
             }
 
             /**
@@ -2739,6 +3287,73 @@ namespace pythonic
             }
 
             /**
+             * @brief Load a PGM/PPM image with Floyd-Steinberg error diffusion dithering
+             *
+             * Floyd-Steinberg dithering provides the best quality for images with
+             * smooth gradients, distributing quantization error to neighboring pixels.
+             * Better for still images, slightly slower than ordered dithering.
+             */
+            bool load_pgm_ppm_floyd_steinberg(const std::string &filename)
+            {
+                std::ifstream file(filename, std::ios::binary);
+                if (!file)
+                    return false;
+
+                std::string magic;
+                file >> magic;
+
+                if (magic != "P5" && magic != "P6")
+                    return false;
+
+                bool is_color = (magic == "P6");
+
+                // Skip comments
+                char c;
+                file.get(c);
+                while (file.peek() == '#')
+                {
+                    std::string comment;
+                    std::getline(file, comment);
+                }
+
+                int width, height, maxval;
+                file >> width >> height >> maxval;
+                file.get(c); // Skip single whitespace
+
+                if (maxval > 255)
+                    return false;
+
+                // Read entire image into grayscale buffer
+                std::vector<uint8_t> grayscale(width * height);
+
+                for (int y = 0; y < height; ++y)
+                {
+                    for (int x = 0; x < width; ++x)
+                    {
+                        int gray;
+                        if (is_color)
+                        {
+                            unsigned char rgb[3];
+                            file.read(reinterpret_cast<char *>(rgb), 3);
+                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
+                        }
+                        else
+                        {
+                            unsigned char g;
+                            file.read(reinterpret_cast<char *>(&g), 1);
+                            gray = g;
+                        }
+                        grayscale[y * width + x] = static_cast<uint8_t>(gray);
+                    }
+                }
+
+                // Use Floyd-Steinberg dithering
+                load_frame_dithered(grayscale.data(), width, height);
+
+                return true;
+            }
+
+            /**
              * @brief Load a PGM/PPM image with grayscale-colored dots
              *
              * Loads image and stores both the braille pattern (with threshold)
@@ -3419,8 +4034,13 @@ namespace pythonic
          *
          * Perfect for photos and videos where you want to see detail in both
          * highlights and shadows instead of just black & white.
+         *
+         * @param filename Path to image file
+         * @param max_width Maximum width in characters
+         * @param dithering Dithering algorithm (ordered=Bayer, floyd_steinberg=error diffusion, none=threshold)
          */
-        inline std::string render_image_dithered(const std::string &filename, int max_width = 80)
+        inline std::string render_image_dithered(const std::string &filename, int max_width = 80,
+                                                 Dithering dithering = Dithering::ordered)
         {
             // Check file exists
             std::ifstream test(filename);
@@ -3434,12 +4054,24 @@ namespace pythonic
             std::string ppm_file = convert_to_ppm(filename, max_width * 2); // 2 pixels per braille char width
             if (!ppm_file.empty())
             {
-                if (canvas.load_pgm_ppm_dithered(ppm_file))
+                // Use appropriate dithering method based on config
+                bool loaded = false;
+                if (dithering == Dithering::floyd_steinberg)
                 {
-                    std::remove(ppm_file.c_str());
-                    return canvas.render();
+                    loaded = canvas.load_pgm_ppm_floyd_steinberg(ppm_file);
                 }
+                else if (dithering == Dithering::ordered)
+                {
+                    loaded = canvas.load_pgm_ppm_dithered(ppm_file); // Bayer ordered dithering
+                }
+                else
+                {
+                    loaded = canvas.load_pgm_ppm(ppm_file, 128); // Simple threshold, no dithering
+                }
+
                 std::remove(ppm_file.c_str());
+                if (loaded)
+                    return canvas.render();
             }
 
             return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
@@ -3515,6 +4147,90 @@ namespace pythonic
                     return canvas.render_grayscale();
                 }
                 std::remove(ppm_file.c_str());
+            }
+
+            return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
+        }
+
+        /**
+         * @brief FLOOD DOT COLORED: Render with all dots lit, colored by average RGB
+         *
+         * Similar to flood_dot but uses full RGB color instead of grayscale.
+         * ALL 8 dots in every cell are lit and colored by the average color.
+         *
+         * @param filename Path to image file
+         * @param max_width Maximum width in characters
+         * @return Rendered string with ANSI RGB color codes
+         */
+        inline std::string render_image_flood_colored(const std::string &filename, int max_width = 80)
+        {
+            enable_ansi_support();
+
+            // Check file exists
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            ColoredBrailleCanvas canvas;
+
+            // Convert to PPM for processing
+            std::string ppm_file = convert_to_ppm(filename, max_width * 2);
+            if (!ppm_file.empty())
+            {
+                if (canvas.load_ppm_flood(ppm_file))
+                {
+                    std::remove(ppm_file.c_str());
+                    return canvas.render();
+                }
+                std::remove(ppm_file.c_str());
+            }
+
+            return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
+        }
+
+        /**
+         * @brief COLORED DITHERED: Render with dithered dots, colored by average RGB
+         *
+         * Uses configured dithering for dot patterns while coloring each cell
+         * by its average RGB color. Good balance of detail and color.
+         *
+         * @param filename Path to image file
+         * @param max_width Maximum width in characters
+         * @param dithering Dithering algorithm (ordered=Bayer, floyd_steinberg=error diffusion)
+         * @return Rendered string with ANSI RGB color codes
+         */
+        inline std::string render_image_colored_dithered(const std::string &filename, int max_width = 80,
+                                                         Dithering dithering = Dithering::ordered)
+        {
+            enable_ansi_support();
+
+            // Check file exists
+            std::ifstream test(filename);
+            if (!test.good())
+                return "Error: Cannot open file '" + filename + "'\n";
+            test.close();
+
+            ColoredBrailleCanvas canvas;
+
+            // Convert to PPM for processing
+            std::string ppm_file = convert_to_ppm(filename, max_width * 2);
+            if (!ppm_file.empty())
+            {
+                bool loaded = false;
+                if (dithering == Dithering::floyd_steinberg)
+                {
+                    loaded = canvas.load_ppm_dithered_floyd(ppm_file);
+                }
+                else
+                {
+                    loaded = canvas.load_ppm_dithered(ppm_file); // Bayer ordered dithering
+                }
+
+                std::remove(ppm_file.c_str());
+                if (loaded)
+                    return canvas.render();
+                ;
             }
 
             return "Error: Could not load image. Install ImageMagick for PNG/JPG support.\n";
@@ -3774,10 +4490,12 @@ namespace pythonic
          * @param filename Path to image file
          * @param max_width Maximum width in terminal characters
          * @param threshold Brightness threshold (0-255) for BW modes
-         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot, bw_dithered, grayscale_dot)
+         * @param mode Rendering mode (bw, bw_dot, colored, colored_dot, bw_dithered, grayscale_dot, flood_dot, flood_dot_colored, colored_dithered)
+         * @param dithering Dithering algorithm to use for dithered modes (default: ordered)
          */
         inline void print_image_with_mode(const std::string &filename, int max_width = 80,
-                                          int threshold = 128, Mode mode = Mode::bw_dot)
+                                          int threshold = 128, Mode mode = Mode::bw_dot,
+                                          Dithering dithering = Dithering::ordered)
         {
             switch (mode)
             {
@@ -3794,8 +4512,8 @@ namespace pythonic
                 print_image_colored_dot(filename, max_width, threshold);
                 break;
             case Mode::bw_dithered:
-                // Ordered dithering for smooth grayscale
-                std::cout << render_image_dithered(filename, max_width);
+                // Use configured dithering algorithm
+                std::cout << render_image_dithered(filename, max_width, dithering);
                 break;
             case Mode::grayscale_dot:
                 // Grayscale-colored braille dots
@@ -3804,6 +4522,14 @@ namespace pythonic
             case Mode::flood_dot:
                 // All dots lit, colored by average brightness - smoothest
                 std::cout << render_image_flood(filename, max_width);
+                break;
+            case Mode::flood_dot_colored:
+                // All dots lit, colored by average RGB
+                std::cout << render_image_flood_colored(filename, max_width);
+                break;
+            case Mode::colored_dithered:
+                // Colored braille with dithering
+                std::cout << render_image_colored_dithered(filename, max_width, dithering);
                 break;
             }
         }
@@ -3938,6 +4664,100 @@ namespace pythonic
                     }
                 }
                 return canvas.render_grayscale();
+            }
+            case Mode::flood_dot_colored:
+            {
+                // Flood fill colored: all dots lit, colored by average RGB
+                ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(rgb.cols, rgb.rows);
+                for (int cy = 0; cy < (rgb.rows + 3) / 4; ++cy)
+                {
+                    for (int cx = 0; cx < (rgb.cols + 1) / 2; ++cx)
+                    {
+                        // Accumulate RGB
+                        int sum_r = 0, sum_g = 0, sum_b = 0, count = 0;
+                        int px = cx * 2, py = cy * 4;
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col, y = py + row;
+                                if (x < rgb.cols && y < rgb.rows)
+                                {
+                                    cv::Vec3b color = rgb.at<cv::Vec3b>(y, x);
+                                    sum_r += color[0];
+                                    sum_g += color[1];
+                                    sum_b += color[2];
+                                    count++;
+                                }
+                            }
+                        }
+                        if (count > 0)
+                        {
+                            uint8_t avg_r = sum_r / count;
+                            uint8_t avg_g = sum_g / count;
+                            uint8_t avg_b = sum_b / count;
+                            canvas.set_pattern(cx, cy, 0xFF); // All 8 dots on
+                            canvas.set_color(cx, cy, avg_r, avg_g, avg_b);
+                        }
+                    }
+                }
+                return canvas.render();
+            }
+            case Mode::colored_dithered:
+            {
+                // Colored dithered: use dithering for dots, color by average RGB
+                // Bayer 2x2 matrix for ordered dithering
+                const int bayer2x2[2][2] = {{0, 2}, {3, 1}};
+                ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(rgb.cols, rgb.rows);
+
+                for (int cy = 0; cy < (rgb.rows + 3) / 4; ++cy)
+                {
+                    for (int cx = 0; cx < (rgb.cols + 1) / 2; ++cx)
+                    {
+                        uint8_t pattern = 0;
+                        int sum_r = 0, sum_g = 0, sum_b = 0, count = 0;
+                        int px = cx * 2, py = cy * 4;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col, y = py + row;
+                                if (x < rgb.cols && y < rgb.rows)
+                                {
+                                    cv::Vec3b color = rgb.at<cv::Vec3b>(y, x);
+                                    sum_r += color[0];
+                                    sum_g += color[1];
+                                    sum_b += color[2];
+                                    count++;
+
+                                    // Calculate grayscale for dithering
+                                    uint8_t gray = (color[0] * 77 + color[1] * 150 + color[2] * 29) >> 8;
+                                    int bayer_x = col & 1;
+                                    int bayer_y = row & 1;
+                                    int threshold_val = ((bayer2x2[bayer_y][bayer_x] + 1) * 255) / 5;
+
+                                    // Braille dot position mapping
+                                    static const int dot_map[4][2] = {{0, 3}, {1, 4}, {2, 5}, {6, 7}};
+                                    if (gray > threshold_val)
+                                    {
+                                        pattern |= (1 << dot_map[row][col]);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (count > 0)
+                        {
+                            uint8_t avg_r = sum_r / count;
+                            uint8_t avg_g = sum_g / count;
+                            uint8_t avg_b = sum_b / count;
+                            canvas.set_pattern(cx, cy, pattern);
+                            canvas.set_color(cx, cy, avg_r, avg_g, avg_b);
+                        }
+                    }
+                }
+                return canvas.render();
             }
             }
             return "";
@@ -4236,6 +5056,281 @@ namespace pythonic
             TerminalStateGuard &operator=(const TerminalStateGuard &) = delete;
         };
 
+        // ==================== Text to Braille Art Rendering ====================
+
+        /**
+         * @brief 5x7 pixel font for text rendering in braille
+         *
+         * Each glyph is stored as 7 rows of 5-bit patterns.
+         * This is the standard bitmap font size that properly renders
+         * diagonals and distinguishes similar letters (M vs N vs H, etc.)
+         */
+        namespace text_font
+        {
+            struct Glyph
+            {
+                uint8_t rows[7];
+            };
+
+            inline const std::map<char, Glyph> &get_font()
+            {
+                static std::map<char, Glyph> font = {
+                    // Numbers (5x7)
+                    {'0', {0b01110, 0b10001, 0b10011, 0b10101, 0b11001, 0b10001, 0b01110}},
+                    {'1', {0b00100, 0b01100, 0b00100, 0b00100, 0b00100, 0b00100, 0b01110}},
+                    {'2', {0b01110, 0b10001, 0b00001, 0b00110, 0b01000, 0b10000, 0b11111}},
+                    {'3', {0b11111, 0b00010, 0b00100, 0b00010, 0b00001, 0b10001, 0b01110}},
+                    {'4', {0b00010, 0b00110, 0b01010, 0b10010, 0b11111, 0b00010, 0b00010}},
+                    {'5', {0b11111, 0b10000, 0b11110, 0b00001, 0b00001, 0b10001, 0b01110}},
+                    {'6', {0b00110, 0b01000, 0b10000, 0b11110, 0b10001, 0b10001, 0b01110}},
+                    {'7', {0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b01000, 0b01000}},
+                    {'8', {0b01110, 0b10001, 0b10001, 0b01110, 0b10001, 0b10001, 0b01110}},
+                    {'9', {0b01110, 0b10001, 0b10001, 0b01111, 0b00001, 0b00010, 0b01100}},
+
+                    // Uppercase letters (5x7)
+                    {'A', {0b01110, 0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001}},
+                    {'B', {0b11110, 0b10001, 0b10001, 0b11110, 0b10001, 0b10001, 0b11110}},
+                    {'C', {0b01110, 0b10001, 0b10000, 0b10000, 0b10000, 0b10001, 0b01110}},
+                    {'D', {0b11100, 0b10010, 0b10001, 0b10001, 0b10001, 0b10010, 0b11100}},
+                    {'E', {0b11111, 0b10000, 0b10000, 0b11110, 0b10000, 0b10000, 0b11111}},
+                    {'F', {0b11111, 0b10000, 0b10000, 0b11110, 0b10000, 0b10000, 0b10000}},
+                    {'G', {0b01110, 0b10001, 0b10000, 0b10111, 0b10001, 0b10001, 0b01111}},
+                    {'H', {0b10001, 0b10001, 0b10001, 0b11111, 0b10001, 0b10001, 0b10001}},
+                    {'I', {0b01110, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b01110}},
+                    {'J', {0b00111, 0b00010, 0b00010, 0b00010, 0b00010, 0b10010, 0b01100}},
+                    {'K', {0b10001, 0b10010, 0b10100, 0b11000, 0b10100, 0b10010, 0b10001}},
+                    {'L', {0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b10000, 0b11111}},
+                    {'M', {0b10001, 0b11011, 0b10101, 0b10101, 0b10001, 0b10001, 0b10001}},
+                    {'N', {0b10001, 0b10001, 0b11001, 0b10101, 0b10011, 0b10001, 0b10001}},
+                    {'O', {0b01110, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110}},
+                    {'P', {0b11110, 0b10001, 0b10001, 0b11110, 0b10000, 0b10000, 0b10000}},
+                    {'Q', {0b01110, 0b10001, 0b10001, 0b10001, 0b10101, 0b10010, 0b01101}},
+                    {'R', {0b11110, 0b10001, 0b10001, 0b11110, 0b10100, 0b10010, 0b10001}},
+                    {'S', {0b01111, 0b10000, 0b10000, 0b01110, 0b00001, 0b00001, 0b11110}},
+                    {'T', {0b11111, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100}},
+                    {'U', {0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01110}},
+                    {'V', {0b10001, 0b10001, 0b10001, 0b10001, 0b10001, 0b01010, 0b00100}},
+                    {'W', {0b10001, 0b10001, 0b10001, 0b10101, 0b10101, 0b10101, 0b01010}},
+                    {'X', {0b10001, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001, 0b10001}},
+                    {'Y', {0b10001, 0b10001, 0b01010, 0b00100, 0b00100, 0b00100, 0b00100}},
+                    {'Z', {0b11111, 0b00001, 0b00010, 0b00100, 0b01000, 0b10000, 0b11111}},
+
+                    // Lowercase letters (5x7 - properly distinct from uppercase)
+                    {'a', {0b00000, 0b00000, 0b01110, 0b00001, 0b01111, 0b10001, 0b01111}},
+                    {'b', {0b10000, 0b10000, 0b10110, 0b11001, 0b10001, 0b10001, 0b11110}},
+                    {'c', {0b00000, 0b00000, 0b01110, 0b10000, 0b10000, 0b10001, 0b01110}},
+                    {'d', {0b00001, 0b00001, 0b01101, 0b10011, 0b10001, 0b10001, 0b01111}},
+                    {'e', {0b00000, 0b00000, 0b01110, 0b10001, 0b11111, 0b10000, 0b01110}},
+                    {'f', {0b00110, 0b01001, 0b01000, 0b11100, 0b01000, 0b01000, 0b01000}},
+                    {'g', {0b00000, 0b01111, 0b10001, 0b10001, 0b01111, 0b00001, 0b01110}},
+                    {'h', {0b10000, 0b10000, 0b10110, 0b11001, 0b10001, 0b10001, 0b10001}},
+                    {'i', {0b00100, 0b00000, 0b01100, 0b00100, 0b00100, 0b00100, 0b01110}},
+                    {'j', {0b00010, 0b00000, 0b00110, 0b00010, 0b00010, 0b10010, 0b01100}},
+                    {'k', {0b10000, 0b10000, 0b10010, 0b10100, 0b11000, 0b10100, 0b10010}},
+                    {'l', {0b01100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b01110}},
+                    {'m', {0b00000, 0b00000, 0b11010, 0b10101, 0b10101, 0b10001, 0b10001}},
+                    {'n', {0b00000, 0b00000, 0b10110, 0b11001, 0b10001, 0b10001, 0b10001}},
+                    {'o', {0b00000, 0b00000, 0b01110, 0b10001, 0b10001, 0b10001, 0b01110}},
+                    {'p', {0b00000, 0b00000, 0b11110, 0b10001, 0b11110, 0b10000, 0b10000}},
+                    {'q', {0b00000, 0b00000, 0b01101, 0b10011, 0b01111, 0b00001, 0b00001}},
+                    {'r', {0b00000, 0b00000, 0b10110, 0b11001, 0b10000, 0b10000, 0b10000}},
+                    {'s', {0b00000, 0b00000, 0b01110, 0b10000, 0b01110, 0b00001, 0b11110}},
+                    {'t', {0b01000, 0b01000, 0b11100, 0b01000, 0b01000, 0b01001, 0b00110}},
+                    {'u', {0b00000, 0b00000, 0b10001, 0b10001, 0b10001, 0b10011, 0b01101}},
+                    {'v', {0b00000, 0b00000, 0b10001, 0b10001, 0b10001, 0b01010, 0b00100}},
+                    {'w', {0b00000, 0b00000, 0b10001, 0b10001, 0b10101, 0b10101, 0b01010}},
+                    {'x', {0b00000, 0b00000, 0b10001, 0b01010, 0b00100, 0b01010, 0b10001}},
+                    {'y', {0b00000, 0b00000, 0b10001, 0b10001, 0b01111, 0b00001, 0b01110}},
+                    {'z', {0b00000, 0b00000, 0b11111, 0b00010, 0b00100, 0b01000, 0b11111}},
+
+                    // Symbols (5x7)
+                    {' ', {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}},
+                    {'.', {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b01100, 0b01100}},
+                    {',', {0b00000, 0b00000, 0b00000, 0b00000, 0b01100, 0b00100, 0b01000}},
+                    {'!', {0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00000, 0b00100}},
+                    {'?', {0b01110, 0b10001, 0b00001, 0b00010, 0b00100, 0b00000, 0b00100}},
+                    {':', {0b00000, 0b01100, 0b01100, 0b00000, 0b01100, 0b01100, 0b00000}},
+                    {';', {0b00000, 0b01100, 0b01100, 0b00000, 0b01100, 0b00100, 0b01000}},
+                    {'-', {0b00000, 0b00000, 0b00000, 0b11111, 0b00000, 0b00000, 0b00000}},
+                    {'+', {0b00000, 0b00100, 0b00100, 0b11111, 0b00100, 0b00100, 0b00000}},
+                    {'=', {0b00000, 0b00000, 0b11111, 0b00000, 0b11111, 0b00000, 0b00000}},
+                    {'(', {0b00010, 0b00100, 0b01000, 0b01000, 0b01000, 0b00100, 0b00010}},
+                    {')', {0b01000, 0b00100, 0b00010, 0b00010, 0b00010, 0b00100, 0b01000}},
+                    {'[', {0b01110, 0b01000, 0b01000, 0b01000, 0b01000, 0b01000, 0b01110}},
+                    {']', {0b01110, 0b00010, 0b00010, 0b00010, 0b00010, 0b00010, 0b01110}},
+                    {'{', {0b00110, 0b01000, 0b01000, 0b11000, 0b01000, 0b01000, 0b00110}},
+                    {'}', {0b01100, 0b00010, 0b00010, 0b00011, 0b00010, 0b00010, 0b01100}},
+                    {'*', {0b00000, 0b00100, 0b10101, 0b01110, 0b10101, 0b00100, 0b00000}},
+                    {'/', {0b00001, 0b00010, 0b00010, 0b00100, 0b01000, 0b01000, 0b10000}},
+                    {'\\', {0b10000, 0b01000, 0b01000, 0b00100, 0b00010, 0b00010, 0b00001}},
+                    {'_', {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b11111}},
+                    {'\'', {0b00100, 0b00100, 0b01000, 0b00000, 0b00000, 0b00000, 0b00000}},
+                    {'"', {0b01010, 0b01010, 0b10100, 0b00000, 0b00000, 0b00000, 0b00000}},
+                    {'@', {0b01110, 0b10001, 0b10111, 0b10101, 0b10110, 0b10000, 0b01111}},
+                    {'#', {0b01010, 0b01010, 0b11111, 0b01010, 0b11111, 0b01010, 0b01010}},
+                    {'$', {0b00100, 0b01111, 0b10100, 0b01110, 0b00101, 0b11110, 0b00100}},
+                    {'%', {0b11000, 0b11001, 0b00010, 0b00100, 0b01000, 0b10011, 0b00011}},
+                    {'&', {0b01100, 0b10010, 0b10100, 0b01000, 0b10101, 0b10010, 0b01101}},
+                    {'<', {0b00010, 0b00100, 0b01000, 0b10000, 0b01000, 0b00100, 0b00010}},
+                    {'>', {0b01000, 0b00100, 0b00010, 0b00001, 0b00010, 0b00100, 0b01000}},
+                    {'^', {0b00100, 0b01010, 0b10001, 0b00000, 0b00000, 0b00000, 0b00000}},
+                    {'|', {0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100, 0b00100}},
+                    {'`', {0b01000, 0b00100, 0b00010, 0b00000, 0b00000, 0b00000, 0b00000}},
+                    {'~', {0b00000, 0b00000, 0b01000, 0b10101, 0b00010, 0b00000, 0b00000}},
+                    {'\n', {0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000, 0b00000}},
+                };
+                return font;
+            }
+
+            inline int char_width() { return 5; }
+            inline int char_height() { return 7; }
+            inline int char_spacing() { return 1; }
+        }
+
+        /**
+         * @brief Render text as braille art
+         *
+         * @param text The text to render
+         * @param mode Rendering mode (bw_dot, colored_dot, etc.)
+         * @param max_width Maximum width in terminal characters (0 = auto)
+         * @param fg_r Foreground red (for colored modes)
+         * @param fg_g Foreground green
+         * @param fg_b Foreground blue
+         * @return Rendered string
+         */
+        inline std::string render_text_art(const std::string &text, Mode mode = Mode::bw_dot,
+                                           int max_width = 0, uint8_t fg_r = 255, uint8_t fg_g = 255, uint8_t fg_b = 255)
+        {
+            enable_ansi_support();
+
+            // Split text into lines
+            std::vector<std::string> lines;
+            std::string current_line;
+            for (char c : text)
+            {
+                if (c == '\n')
+                {
+                    lines.push_back(current_line);
+                    current_line.clear();
+                }
+                else
+                {
+                    current_line += c;
+                }
+            }
+            if (!current_line.empty())
+                lines.push_back(current_line);
+
+            if (lines.empty())
+                return "";
+
+            // Calculate pixel dimensions
+            int font_w = text_font::char_width();
+            int font_h = text_font::char_height();
+            int spacing = text_font::char_spacing();
+
+            // Find max line length
+            size_t max_chars = 0;
+            for (const auto &line : lines)
+                max_chars = std::max(max_chars, line.length());
+
+            int pixel_w = max_chars * (font_w + spacing) - spacing;
+            int pixel_h = lines.size() * (font_h + 1);
+
+            // Create canvas based on mode
+            if (mode == Mode::bw_dot || mode == Mode::bw)
+            {
+                BrailleCanvas canvas = BrailleCanvas::from_pixels(pixel_w, pixel_h);
+
+                // Draw each line
+                int y = 0;
+                for (const auto &line : lines)
+                {
+                    int x = 0;
+                    const auto &glyphs = text_font::get_font();
+                    for (char c : line)
+                    {
+                        auto it = glyphs.find(c);
+                        if (it == glyphs.end())
+                        {
+                            x += font_w + spacing;
+                            continue;
+                        }
+                        const auto &glyph = it->second;
+                        for (int row = 0; row < font_h; ++row)
+                        {
+                            uint8_t bits = glyph.rows[row];
+                            for (int col = 0; col < font_w; ++col)
+                            {
+                                if (bits & (1 << (font_w - 1 - col)))
+                                {
+                                    canvas.set_pixel(x + col, y + row, true);
+                                }
+                            }
+                        }
+                        x += font_w + spacing;
+                    }
+                    y += font_h + 1;
+                }
+                return canvas.render();
+            }
+            else
+            {
+                // Colored modes
+                ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
+
+                // Draw each line
+                int y = 0;
+                for (const auto &line : lines)
+                {
+                    int x = 0;
+                    const auto &glyphs = text_font::get_font();
+                    for (char c : line)
+                    {
+                        auto it = glyphs.find(c);
+                        if (it == glyphs.end())
+                        {
+                            x += font_w + spacing;
+                            continue;
+                        }
+                        const auto &glyph = it->second;
+                        for (int row = 0; row < font_h; ++row)
+                        {
+                            uint8_t bits = glyph.rows[row];
+                            for (int col = 0; col < font_w; ++col)
+                            {
+                                if (bits & (1 << (font_w - 1 - col)))
+                                {
+                                    int px = x + col;
+                                    int py = y + row;
+                                    int cx = px / 2;
+                                    int cy = py / 4;
+                                    int lx = px % 2;
+                                    int ly = py % 4;
+                                    static const int dot_map[4][2] = {{0, 3}, {1, 4}, {2, 5}, {6, 7}};
+                                    uint8_t pattern = (1 << dot_map[ly][lx]);
+                                    canvas.set_pattern(cx, cy, canvas.get_pattern(cx, cy) | pattern);
+                                    canvas.set_color(cx, cy, fg_r, fg_g, fg_b);
+                                }
+                            }
+                        }
+                        x += font_w + spacing;
+                    }
+                    y += font_h + 1;
+                }
+                return canvas.render();
+            }
+        }
+
+        /**
+         * @brief Print text as braille art to stdout
+         */
+        inline void print_text_art(const std::string &text, Mode mode = Mode::bw_dot,
+                                   uint8_t fg_r = 255, uint8_t fg_g = 255, uint8_t fg_b = 255)
+        {
+            std::cout << render_text_art(text, mode, 0, fg_r, fg_g, fg_b) << std::flush;
+        }
+
         /**
          * @brief Video player for terminal using braille graphics
          *
@@ -4259,9 +5354,11 @@ namespace pythonic
         {
         private:
             std::string _filename;
-            int _width;     // Output width in terminal characters
-            int _threshold; // Binarization threshold
-            double _fps;    // Target FPS (0 = use video's native FPS)
+            int _width;         // Output width in terminal characters
+            int _threshold;     // Binarization threshold
+            double _fps;        // Target FPS (0 = use video's native FPS)
+            double _start_time; // Start time in seconds (-1 = from beginning)
+            double _end_time;   // End time in seconds (-1 = to end)
             std::atomic<bool> _running;
             std::atomic<bool> _paused;
             std::thread _playback_thread;
@@ -4278,9 +5375,13 @@ namespace pythonic
              * @param width Width in terminal characters (height auto-calculated)
              * @param threshold Brightness threshold for binary conversion (default: 128)
              * @param target_fps Target FPS, 0 = use video's native FPS
+             * @param start_time Start time in seconds (-1 = from beginning)
+             * @param end_time End time in seconds (-1 = to end)
              */
-            VideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0)
+            VideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0,
+                        double start_time = -1.0, double end_time = -1.0)
                 : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
                   _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
             }
@@ -4455,9 +5556,20 @@ namespace pythonic
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
                 // Build FFmpeg command to pipe raw grayscale frames
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double duration = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (duration > 0)
+                        duration_opt = " -t " + std::to_string(duration);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
 
                 FILE *pipe = popen(cmd.c_str(), "r");
@@ -4586,12 +5698,16 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video(const std::string &filename, int width = 80, int threshold = 128,
                                Shell shell = Shell::noninteractive,
-                               char pause_key = 'p', char stop_key = 's')
+                               char pause_key = 'p', char stop_key = 's',
+                               double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            VideoPlayer player(filename, width, threshold);
+            VideoPlayer player(filename, width, threshold, fps, start_time, end_time);
             player.play(shell, pause_key, stop_key);
         }
 
@@ -4622,6 +5738,8 @@ namespace pythonic
             std::string _filename;
             int _width;
             double _fps;
+            double _start_time;
+            double _end_time;
             std::atomic<bool> _running;
             std::atomic<bool> _paused;
             std::thread _playback_thread;
@@ -4631,8 +5749,10 @@ namespace pythonic
             char _stop_key;
 
         public:
-            ColoredVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0)
+            ColoredVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0,
+                               double start_time = -1.0, double end_time = -1.0)
                 : _filename(filename), _width(width), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
                   _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
                 enable_ansi_support();
@@ -4757,9 +5877,20 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
 
                 FILE *pipe = popen(cmd.c_str(), "r");
@@ -4882,12 +6013,16 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_colored(const std::string &filename, int width = 80,
                                        Shell shell = Shell::noninteractive,
-                                       char pause_key = 'p', char stop_key = 's')
+                                       char pause_key = 'p', char stop_key = 's',
+                                       double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            ColoredVideoPlayer player(filename, width);
+            ColoredVideoPlayer player(filename, width, fps, start_time, end_time);
             player.play(shell, pause_key, stop_key);
         }
 
@@ -4905,6 +6040,8 @@ namespace pythonic
             int _width;
             int _threshold;
             double _fps;
+            double _start_time;
+            double _end_time;
             std::atomic<bool> _running;
             std::atomic<bool> _paused;
             std::thread _playback_thread;
@@ -4915,8 +6052,10 @@ namespace pythonic
             BWBlockCanvas _canvas;
 
         public:
-            BWBlockVideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0)
+            BWBlockVideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0,
+                               double start_time = -1.0, double end_time = -1.0)
                 : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
                   _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
             }
@@ -5004,9 +6143,20 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
 
                 FILE *pipe = popen(cmd.c_str(), "r");
@@ -5125,12 +6275,16 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_bw_block(const std::string &filename, int width = 80, int threshold = 128,
                                         Shell shell = Shell::noninteractive,
-                                        char pause_key = 'p', char stop_key = 's')
+                                        char pause_key = 'p', char stop_key = 's',
+                                        double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            BWBlockVideoPlayer player(filename, width, threshold);
+            BWBlockVideoPlayer player(filename, width, threshold, fps, start_time, end_time);
             player.play(shell, pause_key, stop_key);
         }
 
@@ -5148,6 +6302,8 @@ namespace pythonic
             int _width;
             int _threshold;
             double _fps;
+            double _start_time;
+            double _end_time;
             std::atomic<bool> _running;
             std::atomic<bool> _paused;
             std::thread _playback_thread;
@@ -5158,8 +6314,10 @@ namespace pythonic
             ColoredBrailleCanvas _canvas;
 
         public:
-            ColoredBrailleVideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0)
+            ColoredBrailleVideoPlayer(const std::string &filename, int width = 80, int threshold = 128, double target_fps = 0,
+                                      double start_time = -1.0, double end_time = -1.0)
                 : _filename(filename), _width(width), _threshold(threshold), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
                   _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
             }
@@ -5247,9 +6405,20 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
 
                 FILE *pipe = popen(cmd.c_str(), "r");
@@ -5368,12 +6537,16 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_colored_dot(const std::string &filename, int width = 80, int threshold = 128,
                                            Shell shell = Shell::noninteractive,
-                                           char pause_key = 'p', char stop_key = 's')
+                                           char pause_key = 'p', char stop_key = 's',
+                                           double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            ColoredBrailleVideoPlayer player(filename, width, threshold);
+            ColoredBrailleVideoPlayer player(filename, width, threshold, fps, start_time, end_time);
             player.play(shell, pause_key, stop_key);
         }
 
@@ -5391,6 +6564,8 @@ namespace pythonic
             std::string _filename;
             int _width;
             double _fps;
+            double _start_time;
+            double _end_time;
             std::atomic<bool> _running;
             std::atomic<bool> _paused;
             std::thread _playback_thread;
@@ -5401,8 +6576,10 @@ namespace pythonic
             BrailleCanvas _canvas;
 
         public:
-            DitheredVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0)
+            DitheredVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0,
+                                double start_time = -1.0, double end_time = -1.0)
                 : _filename(filename), _width(width), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
                   _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
             }
@@ -5518,11 +6695,20 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
-
                 FILE *pipe = popen(cmd.c_str(), "r");
                 if (!pipe)
                 {
@@ -5619,12 +6805,16 @@ namespace pythonic
 
         /**
          * @brief Play video with ordered dithering for smooth grayscale
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_dithered(const std::string &filename, int width = 80,
                                         Shell shell = Shell::noninteractive,
-                                        char pause_key = 'p', char stop_key = 's')
+                                        char pause_key = 'p', char stop_key = 's',
+                                        double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            DitheredVideoPlayer player(filename, width);
+            DitheredVideoPlayer player(filename, width, fps, start_time, end_time);
             player.play(shell, pause_key, stop_key);
         }
 
@@ -5643,6 +6833,8 @@ namespace pythonic
             std::string _filename;
             int _width;
             double _fps;
+            double _start_time;
+            double _end_time;
             std::atomic<bool> _running;
             std::atomic<bool> _paused;
             std::thread _playback_thread;
@@ -5653,8 +6845,10 @@ namespace pythonic
             BrailleCanvas _canvas;
 
         public:
-            GrayscaleVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0)
+            GrayscaleVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0,
+                                 double start_time = -1.0, double end_time = -1.0)
                 : _filename(filename), _width(width), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
                   _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
                 enable_ansi_support();
@@ -5752,6 +6946,7 @@ namespace pythonic
             }
 
         private:
+            // GrayscaleVideoPlayer::_play_internal
             bool _play_internal()
             {
                 auto [vid_w, vid_h, vid_fps, duration] = get_info();
@@ -5771,9 +6966,20 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
 
                 FILE *pipe = popen(cmd.c_str(), "r");
@@ -5903,12 +7109,911 @@ namespace pythonic
 
         /**
          * @brief Play video with grayscale-colored braille dots
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_grayscale(const std::string &filename, int width = 80,
                                          Shell shell = Shell::noninteractive,
-                                         char pause_key = 'p', char stop_key = 's')
+                                         char pause_key = 'p', char stop_key = 's',
+                                         double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            GrayscaleVideoPlayer player(filename, width);
+            GrayscaleVideoPlayer player(filename, width, fps, start_time, end_time);
+            player.play(shell, pause_key, stop_key);
+        }
+
+        // ==================== Flood Dot Video Player ====================
+
+        /**
+         * @brief Video player using flood-fill braille rendering (Mode::flood_dot)
+         *
+         * Lights ALL 8 dots in every character cell and colors them by average
+         * brightness. Creates the smoothest appearance for videos by relying
+         * entirely on color gradation rather than dot patterns.
+         */
+        class FloodDotVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            double _fps;
+            double _start_time;
+            double _end_time;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            std::thread _playback_thread;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            BrailleCanvas _canvas;
+
+        public:
+            FloodDotVideoPlayer(const std::string &filename, int width = 80, double target_fps = 0,
+                                double start_time = -1.0, double end_time = -1.0)
+                : _filename(filename), _width(width), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+                enable_ansi_support();
+            }
+
+            ~FloodDotVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                bool result = _play_internal();
+                _running = false;
+                return result;
+            }
+
+            void stop()
+            {
+                _running = false;
+                _paused = false;
+                if (_playback_thread.joinable())
+                    _playback_thread.join();
+            }
+
+            void toggle_pause() { _paused = !_paused; }
+            bool is_paused() const { return _paused; }
+            bool is_playing() const { return _running; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
+                                  "-show_entries stream=width,height,r_frame_rate,duration "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return {0, 0, 0, 0};
+
+                char buffer[256];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                int w = 0, h = 0;
+                double fps = 0, duration = 0;
+                size_t pos = 0, comma;
+
+                comma = result.find(',');
+                if (comma != std::string::npos)
+                {
+                    w = std::stoi(result.substr(0, comma));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    h = std::stoi(result.substr(pos, comma - pos));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    std::string fps_str = result.substr(pos, comma - pos);
+                    size_t slash = fps_str.find('/');
+                    if (slash != std::string::npos)
+                    {
+                        double num = std::stod(fps_str.substr(0, slash));
+                        double den = std::stod(fps_str.substr(slash + 1));
+                        if (den > 0)
+                            fps = num / den;
+                    }
+                    pos = comma + 1;
+                }
+                try
+                {
+                    duration = std::stod(result.substr(pos));
+                }
+                catch (...)
+                {
+                }
+
+                return {w, h, fps, duration};
+            }
+
+        private:
+            bool _play_internal()
+            {
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info. Is FFmpeg installed?\n";
+                    return false;
+                }
+
+                int pixel_w = _width * 2;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = (pixel_h + 3) / 4 * 4;
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h;
+                std::vector<uint8_t> frame_buffer(frame_size);
+                int char_height = pixel_h / 4;
+                _canvas = BrailleCanvas(_width, char_height);
+
+                TerminalStateGuard term_guard;
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                    keyboard = std::make_unique<KeyboardInput>();
+                bool user_stopped = false;
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+                std::chrono::steady_clock::time_point pause_start;
+                std::chrono::microseconds total_pause_time{0};
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                                if (_paused)
+                                {
+                                    pause_start = std::chrono::steady_clock::now();
+                                    std::cout << ansi::CURSOR_HOME << "[PAUSED - Press '" << _pause_key << "' to resume]" << std::flush;
+                                }
+                                else
+                                {
+                                    total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
+                                        std::chrono::steady_clock::now() - pause_start);
+                                }
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    // Load with flood fill (all dots on, colored by average brightness)
+                    int cw = (pixel_w + 1) / 2;
+                    int ch = (pixel_h + 3) / 4;
+
+                    // Resize canvas if needed
+                    if (cw != (int)_canvas.char_width() || ch != (int)_canvas.char_height())
+                    {
+                        _canvas = BrailleCanvas(cw, ch);
+                    }
+
+                    for (int cy = 0; cy < ch; ++cy)
+                    {
+                        for (int cx = 0; cx < cw; ++cx)
+                        {
+                            uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                            int px = cx * 2;
+                            int py = cy * 4;
+
+                            for (int row = 0; row < 4; ++row)
+                            {
+                                for (int col = 0; col < 2; ++col)
+                                {
+                                    int x = px + col;
+                                    int y = py + row;
+                                    if (x < pixel_w && y < pixel_h)
+                                    {
+                                        grays[row * 2 + col] = frame_buffer[y * pixel_w + x];
+                                    }
+                                }
+                            }
+                            // Use flood fill instead of dithering - all dots on
+                            _canvas.set_block_flood_fill(cx, cy, grays);
+                        }
+                    }
+
+                    std::cout << ansi::CURSOR_HOME;
+                    std::cout << _canvas.render_grayscale() << std::flush;
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+                std::cout << "Playback " << (user_stopped ? "stopped" : "finished") << ": "
+                          << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+        };
+
+        /**
+         * @brief Play video with flood-fill braille dots (all dots on, colored by brightness)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
+         */
+        inline void play_video_flood(const std::string &filename, int width = 80,
+                                     Shell shell = Shell::noninteractive,
+                                     char pause_key = 'p', char stop_key = 's',
+                                     double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+        {
+            FloodDotVideoPlayer player(filename, width, fps, start_time, end_time);
+            player.play(shell, pause_key, stop_key);
+        }
+
+        /**
+         * @brief Video player for colored flood-fill mode (all dots on, RGB colored)
+         */
+        class ColoredFloodVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            double _fps;
+            double _start_time;
+            double _end_time;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            ColoredBrailleCanvas _canvas;
+
+        public:
+            ColoredFloodVideoPlayer(const std::string &filename, int max_width = 80,
+                                    double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+                : _filename(filename), _width(max_width), _fps(fps), _start_time(start_time), _end_time(end_time),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+                enable_ansi_support();
+            }
+
+            ~ColoredFloodVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                return _play_internal();
+            }
+
+            void stop() { _running = false; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
+                                  "-show_entries stream=width,height,r_frame_rate,duration "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return {0, 0, 0, 0};
+
+                char buffer[256];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                int w = 0, h = 0;
+                double fps = 0, duration = 0;
+                size_t pos = 0, comma;
+
+                comma = result.find(',');
+                if (comma != std::string::npos)
+                {
+                    w = std::stoi(result.substr(0, comma));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    h = std::stoi(result.substr(pos, comma - pos));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    std::string fps_str = result.substr(pos, comma - pos);
+                    size_t slash = fps_str.find('/');
+                    if (slash != std::string::npos)
+                    {
+                        double num = std::stod(fps_str.substr(0, slash));
+                        double den = std::stod(fps_str.substr(slash + 1));
+                        if (den > 0)
+                            fps = num / den;
+                    }
+                    pos = comma + 1;
+                }
+                try
+                {
+                    duration = std::stod(result.substr(pos));
+                }
+                catch (...)
+                {
+                }
+
+                return {w, h, fps, duration};
+            }
+
+        private:
+            bool _play_internal()
+            {
+                enable_ansi_support();
+
+                // Get video info using ffprobe
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info.\n";
+                    return false;
+                }
+
+                // Braille: 2 pixels wide, 4 pixels tall per char
+                int pixel_w = _width * 2;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = (pixel_h + 3) / 4 * 4; // Round to multiple of 4
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg video decoder.\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h * 3;
+                std::vector<uint8_t> frame_buffer(frame_size);
+
+                _canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
+
+                TerminalStateGuard term_guard;
+
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    // Load with flood fill (all dots on, RGB colored)
+                    _load_frame_flood(frame_buffer.data(), pixel_w, pixel_h);
+
+                    std::cout << ansi::CURSOR_HOME << _canvas.render() << std::flush;
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+
+                std::cout << "Played " << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+
+            void _load_frame_flood(const uint8_t *data, int width, int height)
+            {
+                int cols = (width + 1) / 2;
+                int rows = (height + 3) / 4;
+
+                for (int cy = 0; cy < rows; ++cy)
+                {
+                    for (int cx = 0; cx < cols; ++cx)
+                    {
+                        int sum_r = 0, sum_g = 0, sum_b = 0;
+                        int count = 0;
+                        int px = cx * 2, py = cy * 4;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col, y = py + row;
+                                if (x < width && y < height)
+                                {
+                                    int idx = (y * width + x) * 3;
+                                    sum_r += data[idx];
+                                    sum_g += data[idx + 1];
+                                    sum_b += data[idx + 2];
+                                    count++;
+                                }
+                            }
+                        }
+
+                        if (count > 0)
+                        {
+                            uint8_t avg_r = sum_r / count;
+                            uint8_t avg_g = sum_g / count;
+                            uint8_t avg_b = sum_b / count;
+                            _canvas.set_pattern(cx, cy, 0xFF); // All 8 dots on
+                            _canvas.set_color(cx, cy, avg_r, avg_g, avg_b);
+                        }
+                    }
+                }
+            }
+        };
+
+        /**
+         * @brief Play video with colored flood-fill braille dots (all dots on, RGB colored)
+         */
+        inline void play_video_colored_flood(const std::string &filename, int width = 80,
+                                             Shell shell = Shell::noninteractive,
+                                             char pause_key = 'p', char stop_key = 's',
+                                             double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+        {
+            ColoredFloodVideoPlayer player(filename, width, fps, start_time, end_time);
+            player.play(shell, pause_key, stop_key);
+        }
+
+        /**
+         * @brief Video player for colored dithered mode (dithered dots, RGB colored)
+         */
+        class ColoredDitheredVideoPlayer
+        {
+        private:
+            std::string _filename;
+            int _width;
+            double _fps;
+            double _start_time;
+            double _end_time;
+            std::atomic<bool> _running;
+            std::atomic<bool> _paused;
+            Shell _shell;
+            char _pause_key;
+            char _stop_key;
+
+            ColoredBrailleCanvas _canvas;
+            static constexpr int bayer2x2[2][2] = {{0, 2}, {3, 1}};
+
+        public:
+            ColoredDitheredVideoPlayer(const std::string &filename, int max_width = 80,
+                                       double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+                : _filename(filename), _width(max_width), _fps(fps), _start_time(start_time), _end_time(end_time),
+                  _running(false), _paused(false), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
+            {
+                enable_ansi_support();
+            }
+
+            ~ColoredDitheredVideoPlayer()
+            {
+                stop();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+            }
+
+            bool play(Shell shell = Shell::noninteractive, char pause_key = 'p', char stop_key = 's')
+            {
+                if (_running.exchange(true))
+                    return false;
+
+                _shell = shell;
+                _pause_key = pause_key;
+                _stop_key = stop_key;
+                _paused = false;
+
+                return _play_internal();
+            }
+
+            void stop() { _running = false; }
+
+            std::tuple<int, int, double, double> get_info() const
+            {
+                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
+                                  "-show_entries stream=width,height,r_frame_rate,duration "
+                                  "-of csv=p=0 \"" +
+                                  _filename + "\" 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                    return {0, 0, 0, 0};
+
+                char buffer[256];
+                std::string result;
+                while (fgets(buffer, sizeof(buffer), pipe))
+                    result += buffer;
+                pclose(pipe);
+
+                int w = 0, h = 0;
+                double fps = 0, duration = 0;
+                size_t pos = 0, comma;
+
+                comma = result.find(',');
+                if (comma != std::string::npos)
+                {
+                    w = std::stoi(result.substr(0, comma));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    h = std::stoi(result.substr(pos, comma - pos));
+                    pos = comma + 1;
+                }
+                comma = result.find(',', pos);
+                if (comma != std::string::npos)
+                {
+                    std::string fps_str = result.substr(pos, comma - pos);
+                    size_t slash = fps_str.find('/');
+                    if (slash != std::string::npos)
+                    {
+                        double num = std::stod(fps_str.substr(0, slash));
+                        double den = std::stod(fps_str.substr(slash + 1));
+                        if (den > 0)
+                            fps = num / den;
+                    }
+                    pos = comma + 1;
+                }
+                try
+                {
+                    duration = std::stod(result.substr(pos));
+                }
+                catch (...)
+                {
+                }
+
+                return {w, h, fps, duration};
+            }
+
+        private:
+            bool _play_internal()
+            {
+                enable_ansi_support();
+
+                // Get video info using ffprobe
+                auto [vid_w, vid_h, vid_fps, duration] = get_info();
+                if (vid_w == 0 || vid_h == 0)
+                {
+                    std::cerr << "Error: Could not read video info.\n";
+                    return false;
+                }
+
+                // Braille: 2 pixels wide, 4 pixels tall per char
+                int pixel_w = _width * 2;
+                int pixel_h = (int)(pixel_w * vid_h / vid_w);
+                pixel_h = (pixel_h + 3) / 4 * 4; // Round to multiple of 4
+
+                double target_fps = (_fps > 0) ? _fps : vid_fps;
+                if (target_fps <= 0)
+                    target_fps = 30;
+
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
+
+                // Build time seeking options
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
+
+                FILE *pipe = popen(cmd.c_str(), "r");
+                if (!pipe)
+                {
+                    std::cerr << "Error: Could not start FFmpeg video decoder.\n";
+                    return false;
+                }
+
+                size_t frame_size = pixel_w * pixel_h * 3;
+                std::vector<uint8_t> frame_buffer(frame_size);
+
+                _canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
+
+                TerminalStateGuard term_guard;
+
+                std::unique_ptr<KeyboardInput> keyboard;
+                if (_shell == Shell::interactive)
+                {
+                    keyboard = std::make_unique<KeyboardInput>();
+                }
+                bool user_stopped = false;
+
+                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
+
+                size_t frame_num = 0;
+                auto start_time = std::chrono::steady_clock::now();
+
+                while (_running && !term_guard.was_interrupted() && !user_stopped)
+                {
+                    if (keyboard)
+                    {
+                        int key = keyboard->get_key();
+                        if (key != -1)
+                        {
+                            if (_stop_key != '\0' && key == _stop_key)
+                            {
+                                user_stopped = true;
+                                break;
+                            }
+                            if (_pause_key != '\0' && key == _pause_key)
+                            {
+                                _paused = !_paused;
+                            }
+                        }
+                    }
+
+                    if (_paused)
+                    {
+                        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+                        continue;
+                    }
+
+                    auto frame_start = std::chrono::steady_clock::now();
+
+                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
+                    if (bytes_read < frame_size)
+                        break;
+
+                    // Load with dithering
+                    _load_frame_dithered(frame_buffer.data(), pixel_w, pixel_h);
+
+                    std::cout << ansi::CURSOR_HOME << _canvas.render() << std::flush;
+
+                    ++frame_num;
+
+                    auto frame_end = std::chrono::steady_clock::now();
+                    auto elapsed = frame_end - frame_start;
+
+                    if (elapsed < frame_duration)
+                        std::this_thread::sleep_for(frame_duration - elapsed);
+                }
+
+                pclose(pipe);
+                term_guard.restore();
+
+                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
+
+                auto total_time = std::chrono::steady_clock::now() - start_time;
+                double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
+
+                std::cout << "Played " << frame_num << " frames, "
+                          << std::fixed << std::setprecision(1) << actual_fps << " fps average\n";
+
+                return !user_stopped;
+            }
+
+            void _load_frame_dithered(const uint8_t *data, int width, int height)
+            {
+                static const int dot_map[4][2] = {{0, 3}, {1, 4}, {2, 5}, {6, 7}};
+                int cols = (width + 1) / 2;
+                int rows = (height + 3) / 4;
+
+                for (int cy = 0; cy < rows; ++cy)
+                {
+                    for (int cx = 0; cx < cols; ++cx)
+                    {
+                        uint8_t pattern = 0;
+                        int sum_r = 0, sum_g = 0, sum_b = 0;
+                        int count = 0;
+                        int px = cx * 2, py = cy * 4;
+
+                        for (int row = 0; row < 4; ++row)
+                        {
+                            for (int col = 0; col < 2; ++col)
+                            {
+                                int x = px + col, y = py + row;
+                                if (x < width && y < height)
+                                {
+                                    int idx = (y * width + x) * 3;
+                                    uint8_t r = data[idx];
+                                    uint8_t g = data[idx + 1];
+                                    uint8_t b = data[idx + 2];
+                                    sum_r += r;
+                                    sum_g += g;
+                                    sum_b += b;
+                                    count++;
+
+                                    // Grayscale for dithering
+                                    uint8_t gray = (r * 77 + g * 150 + b * 29) >> 8;
+                                    int bayer_x = col & 1;
+                                    int bayer_y = row & 1;
+                                    int threshold_val = ((bayer2x2[bayer_y][bayer_x] + 1) * 255) / 5;
+
+                                    if (gray > threshold_val)
+                                    {
+                                        pattern |= (1 << dot_map[row][col]);
+                                    }
+                                }
+                            }
+                        }
+
+                        if (count > 0)
+                        {
+                            uint8_t avg_r = sum_r / count;
+                            uint8_t avg_g = sum_g / count;
+                            uint8_t avg_b = sum_b / count;
+                            _canvas.set_pattern(cx, cy, pattern);
+                            _canvas.set_color(cx, cy, avg_r, avg_g, avg_b);
+                        }
+                    }
+                }
+            }
+        };
+
+        /**
+         * @brief Play video with colored dithered braille dots
+         */
+        inline void play_video_colored_dithered(const std::string &filename, int width = 80,
+                                                Shell shell = Shell::noninteractive,
+                                                char pause_key = 'p', char stop_key = 's',
+                                                double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+        {
+            ColoredDitheredVideoPlayer player(filename, width, fps, start_time, end_time);
             player.play(shell, pause_key, stop_key);
         }
 
@@ -5921,36 +8026,44 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_with_mode(const std::string &filename, int width = 80,
                                          Mode mode = Mode::bw_dot, int threshold = 128,
                                          Shell shell = Shell::noninteractive,
-                                         char pause_key = 'p', char stop_key = 's')
+                                         char pause_key = 'p', char stop_key = 's',
+                                         double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
             switch (mode)
             {
             case Mode::bw:
-                play_video_bw_block(filename, width, threshold, shell, pause_key, stop_key);
+                play_video_bw_block(filename, width, threshold, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             case Mode::bw_dot:
-                play_video(filename, width, threshold, shell, pause_key, stop_key);
+                play_video(filename, width, threshold, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             case Mode::colored:
-                play_video_colored(filename, width, shell, pause_key, stop_key);
+                play_video_colored(filename, width, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             case Mode::colored_dot:
-                play_video_colored_dot(filename, width, threshold, shell, pause_key, stop_key);
+                play_video_colored_dot(filename, width, threshold, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             case Mode::bw_dithered:
-                play_video_dithered(filename, width, shell, pause_key, stop_key);
+                play_video_dithered(filename, width, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             case Mode::grayscale_dot:
-                play_video_grayscale(filename, width, shell, pause_key, stop_key);
+                play_video_grayscale(filename, width, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             case Mode::flood_dot:
-                // Flood dot uses same renderer as grayscale_dot but with different loading
-                // For video playback, grayscale is similar enough
-                play_video_grayscale(filename, width, shell, pause_key, stop_key);
+                play_video_flood(filename, width, shell, pause_key, stop_key, fps, start_time, end_time);
+                break;
+            case Mode::flood_dot_colored:
+                play_video_colored_flood(filename, width, shell, pause_key, stop_key, fps, start_time, end_time);
+                break;
+            case Mode::colored_dithered:
+                play_video_colored_dithered(filename, width, shell, pause_key, stop_key, fps, start_time, end_time);
                 break;
             }
         }
@@ -6117,6 +8230,8 @@ namespace pythonic
             std::string _filename;
             int _width;
             double _fps;
+            double _start_time;
+            double _end_time;
             Render _render_mode;
             std::atomic<bool> _running{false};
             std::atomic<bool> _audio_initialized{false};
@@ -6180,8 +8295,10 @@ namespace pythonic
 
         public:
             AudioVideoPlayer(const std::string &filename, int width = 80,
-                             Render render_mode = Mode::bw_dot, double target_fps = 0)
-                : _filename(filename), _width(width), _fps(target_fps), _render_mode(render_mode)
+                             Render render_mode = Mode::bw_dot, double target_fps = 0,
+                             double start_time = -1.0, double end_time = -1.0)
+                : _filename(filename), _width(width), _fps(target_fps),
+                  _start_time(start_time), _end_time(end_time), _render_mode(render_mode)
             {
                 enable_ansi_support();
             }
@@ -6377,9 +8494,21 @@ namespace pythonic
 
             void audio_decode_thread()
             {
+                // Build time seeking options for audio
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
                 // FFmpeg command to decode audio to raw PCM
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-f s16le -acodec pcm_s16le -ar " +
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -f s16le -acodec pcm_s16le -ar " +
                                   std::to_string(_sample_rate) +
                                   " -ac " + std::to_string(_channels) + " -v quiet - 2>/dev/null";
 
@@ -6415,20 +8544,42 @@ namespace pythonic
                     return;
                 }
 
+                // Determine pixel dimensions based on mode
                 int pixel_w, pixel_h;
-                bool use_color = (_render_mode == Mode::colored || _render_mode == Mode::colored_dot);
+                bool needs_rgb = false; // Whether we need RGB data (vs grayscale)
 
-                if (use_color)
+                switch (_render_mode)
                 {
+                case Mode::colored:
+                    // ColorCanvas: 1 char = 1 pixel width, 2 pixels height (half-blocks)
                     pixel_w = _width;
                     pixel_h = (int)(pixel_w * vid_h / vid_w);
                     pixel_h = ((pixel_h + 1) / 2) * 2;
-                }
-                else
-                {
+                    needs_rgb = true;
+                    break;
+                case Mode::colored_dot:
+                case Mode::flood_dot_colored:
+                case Mode::colored_dithered:
+                    // ColoredBrailleCanvas: 1 char = 2 pixels width, 4 pixels height
                     pixel_w = _width * 2;
                     pixel_h = (int)(pixel_w * vid_h / vid_w);
                     pixel_h = (pixel_h + 3) / 4 * 4;
+                    needs_rgb = true;
+                    break;
+                case Mode::bw:
+                    // BWBlockCanvas: 1 char = 1 pixel width, 2 pixels height (half-blocks with grayscale)
+                    pixel_w = _width;
+                    pixel_h = (int)(pixel_w * vid_h / vid_w);
+                    pixel_h = ((pixel_h + 1) / 2) * 2;
+                    needs_rgb = true; // Need RGB to compute grayscale ourselves
+                    break;
+                default:
+                    // All braille modes: BrailleCanvas - 1 char = 2 pixels width, 4 pixels height
+                    pixel_w = _width * 2;
+                    pixel_h = (int)(pixel_w * vid_h / vid_w);
+                    pixel_h = (pixel_h + 3) / 4 * 4;
+                    needs_rgb = (_render_mode == Mode::grayscale_dot || _render_mode == Mode::flood_dot);
+                    break;
                 }
 
                 double target_fps = (_fps > 0) ? _fps : vid_fps;
@@ -6437,10 +8588,21 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                std::string pix_fmt = use_color ? "rgb24" : "gray";
-                std::string cmd = "ffmpeg -i \"" + _filename + "\" "
-                                                               "-vf scale=" +
-                                  std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
+                // Build time seeking options for video
+                std::string time_opts;
+                if (_start_time >= 0)
+                    time_opts = "-ss " + std::to_string(_start_time) + " ";
+                std::string duration_opt;
+                if (_end_time >= 0)
+                {
+                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
+                    if (dur > 0)
+                        duration_opt = " -t " + std::to_string(dur);
+                }
+
+                std::string pix_fmt = needs_rgb ? "rgb24" : "gray";
+                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
                                   " -pix_fmt " + pix_fmt + " -f rawvideo -v quiet - 2>/dev/null";
 
                 FILE *pipe = popen(cmd.c_str(), "r");
@@ -6450,17 +8612,33 @@ namespace pythonic
                     return;
                 }
 
-                size_t bytes_per_pixel = use_color ? 3 : 1;
+                size_t bytes_per_pixel = needs_rgb ? 3 : 1;
                 size_t frame_size = pixel_w * pixel_h * bytes_per_pixel;
                 std::vector<uint8_t> frame_buffer(frame_size);
 
-                BrailleCanvas bw_canvas;
+                // Create appropriate canvas based on mode
+                BrailleCanvas braille_canvas;
+                BWBlockCanvas bw_block_canvas;
                 ColorCanvas color_canvas;
+                ColoredBrailleCanvas colored_braille_canvas;
 
-                if (use_color)
+                switch (_render_mode)
+                {
+                case Mode::colored:
                     color_canvas = ColorCanvas::from_pixels(pixel_w, pixel_h);
-                else
-                    bw_canvas = BrailleCanvas(_width, pixel_h / 4);
+                    break;
+                case Mode::colored_dot:
+                case Mode::flood_dot_colored:
+                case Mode::colored_dithered:
+                    colored_braille_canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                case Mode::bw:
+                    bw_block_canvas = BWBlockCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                default:
+                    braille_canvas = BrailleCanvas::from_pixels(pixel_w, pixel_h);
+                    break;
+                }
 
                 TerminalStateGuard term_guard;
 
@@ -6474,7 +8652,8 @@ namespace pythonic
 
                 // Pre-allocate output buffer
                 std::string frame_output;
-                frame_output.reserve(pixel_w * (use_color ? (pixel_h / 2) : (pixel_h / 4)) * 40);
+                int char_height = (_render_mode == Mode::colored || _render_mode == Mode::bw) ? (pixel_h / 2) : (pixel_h / 4);
+                frame_output.reserve(_width * char_height * 50);
 
                 while (_running && !term_guard.was_interrupted())
                 {
@@ -6487,15 +8666,189 @@ namespace pythonic
                     // Build complete frame with cursor positioning
                     frame_output = ansi::CURSOR_HOME;
 
-                    if (use_color)
+                    switch (_render_mode)
                     {
+                    case Mode::colored:
                         color_canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h);
                         frame_output += color_canvas.render();
-                    }
-                    else
-                    {
-                        bw_canvas.load_frame_fast(frame_buffer.data(), pixel_w, pixel_h, 128);
-                        frame_output += bw_canvas.render();
+                        break;
+
+                    case Mode::colored_dot:
+                        colored_braille_canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, 128);
+                        frame_output += colored_braille_canvas.render();
+                        break;
+
+                    case Mode::bw:
+                        bw_block_canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, 128);
+                        frame_output += bw_block_canvas.render();
+                        break;
+
+                    case Mode::bw_dot:
+                        braille_canvas.load_frame_fast(frame_buffer.data(), pixel_w, pixel_h, 128);
+                        frame_output += braille_canvas.render();
+                        break;
+
+                    case Mode::bw_dithered:
+                        braille_canvas.load_frame_ordered_dithered(frame_buffer.data(), pixel_w, pixel_h);
+                        frame_output += braille_canvas.render();
+                        break;
+
+                    case Mode::grayscale_dot:
+                        // Load with grayscale values preserved for coloring
+                        {
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                uint8_t r = frame_buffer[idx];
+                                                uint8_t g = frame_buffer[idx + 1];
+                                                uint8_t b = frame_buffer[idx + 2];
+                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                            }
+                                        }
+                                    }
+                                    braille_canvas.set_block_gray_dithered_with_brightness(cx, cy, grays);
+                                }
+                            }
+                        }
+                        frame_output += braille_canvas.render_grayscale();
+                        break;
+
+                    case Mode::flood_dot:
+                        // All dots on, colored by average brightness
+                        {
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                uint8_t r = frame_buffer[idx];
+                                                uint8_t g = frame_buffer[idx + 1];
+                                                uint8_t b = frame_buffer[idx + 2];
+                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                            }
+                                        }
+                                    }
+                                    braille_canvas.set_block_flood_fill(cx, cy, grays);
+                                }
+                            }
+                        }
+                        frame_output += braille_canvas.render_grayscale();
+                        break;
+
+                    case Mode::flood_dot_colored:
+                        // All dots on, colored by average RGB
+                        {
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    int sum_r = 0, sum_g = 0, sum_b = 0;
+                                    int count = 0;
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                sum_r += frame_buffer[idx];
+                                                sum_g += frame_buffer[idx + 1];
+                                                sum_b += frame_buffer[idx + 2];
+                                                count++;
+                                            }
+                                        }
+                                    }
+                                    if (count > 0)
+                                    {
+                                        colored_braille_canvas.set_pattern(cx, cy, 0xFF);
+                                        colored_braille_canvas.set_color(cx, cy, sum_r / count, sum_g / count, sum_b / count);
+                                    }
+                                }
+                            }
+                        }
+                        frame_output += colored_braille_canvas.render();
+                        break;
+
+                    case Mode::colored_dithered:
+                        // Dithered dots, colored by average RGB
+                        {
+                            static const int bayer2x2[2][2] = {{0, 2}, {3, 1}};
+                            static const int dot_map[4][2] = {{0, 3}, {1, 4}, {2, 5}, {6, 7}};
+                            size_t char_w = (pixel_w + 1) / 2;
+                            size_t char_h = (pixel_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t pattern = 0;
+                                    int sum_r = 0, sum_g = 0, sum_b = 0;
+                                    int count = 0;
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < pixel_w && y < pixel_h)
+                                            {
+                                                size_t idx = (y * pixel_w + x) * 3;
+                                                uint8_t r = frame_buffer[idx];
+                                                uint8_t g = frame_buffer[idx + 1];
+                                                uint8_t b = frame_buffer[idx + 2];
+                                                sum_r += r;
+                                                sum_g += g;
+                                                sum_b += b;
+                                                count++;
+
+                                                uint8_t gray = (r * 77 + g * 150 + b * 29) >> 8;
+                                                int bayer_x = col & 1;
+                                                int bayer_y = row & 1;
+                                                int threshold_val = ((bayer2x2[bayer_y][bayer_x] + 1) * 255) / 5;
+                                                if (gray > threshold_val)
+                                                {
+                                                    pattern |= (1 << dot_map[row][col]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (count > 0)
+                                    {
+                                        colored_braille_canvas.set_pattern(cx, cy, pattern);
+                                        colored_braille_canvas.set_color(cx, cy, sum_r / count, sum_g / count, sum_b / count);
+                                    }
+                                }
+                            }
+                        }
+                        frame_output += colored_braille_canvas.render();
+                        break;
                     }
 
                     // Single write for entire frame
@@ -6532,6 +8885,9 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          *
          * Note: Audio playback currently doesn't support pause/stop - video continues
          * while audio may desync. For full pause/stop support, use non-audio playback.
@@ -6540,9 +8896,10 @@ namespace pythonic
                                      Render render_mode = Mode::bw_dot,
                                      [[maybe_unused]] Shell shell = Shell::noninteractive,
                                      [[maybe_unused]] char pause_key = 'p',
-                                     [[maybe_unused]] char stop_key = 's')
+                                     [[maybe_unused]] char stop_key = 's',
+                                     double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            AudioVideoPlayer player(filename, width, render_mode);
+            AudioVideoPlayer player(filename, width, render_mode, fps, start_time, end_time);
             player.play();
         }
 
@@ -6555,16 +8912,15 @@ namespace pythonic
         inline void play_video_audio(const std::string &filename, int width = 80,
                                      Render render_mode = Mode::bw_dot,
                                      Shell shell = Shell::noninteractive,
-                                     char pause_key = 'p', char stop_key = 's')
+                                     char pause_key = 'p', char stop_key = 's',
+                                     double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
             std::cerr << "Warning: Audio playback not available.\n"
                       << "Rebuild with -DPYTHONIC_ENABLE_SDL2_AUDIO=ON or -DPYTHONIC_ENABLE_PORTAUDIO=ON\n"
                       << "Falling back to silent video playback...\n\n";
 
-            if (render_mode == Mode::colored || render_mode == Mode::colored_dot)
-                play_video_colored(filename, width, shell, pause_key, stop_key);
-            else
-                play_video(filename, width, 128, shell, pause_key, stop_key);
+            // Use play_video_with_mode to properly handle all render modes
+            play_video_with_mode(filename, width, render_mode, 128, shell, pause_key, stop_key, fps, start_time, end_time);
         }
 
 #endif // Audio support
@@ -6610,6 +8966,9 @@ namespace pythonic
             int _width;
             int _threshold;
             Mode _mode;
+            double _fps;
+            double _start_time;
+            double _end_time;
             bool _is_webcam;
             std::atomic<bool> _running{false};
             std::atomic<bool> _paused{false};
@@ -6619,8 +8978,10 @@ namespace pythonic
 
         public:
             OpenCVVideoPlayer(const std::string &source, int width = 80,
-                              Mode mode = Mode::bw_dot, int threshold = 128)
+                              Mode mode = Mode::bw_dot, int threshold = 128,
+                              double target_fps = 0.0, double start_time = -1.0, double end_time = -1.0)
                 : _source(source), _width(width), _threshold(threshold), _mode(mode),
+                  _fps(target_fps), _start_time(start_time), _end_time(end_time),
                   _is_webcam(is_webcam_source(source)), _shell(Shell::noninteractive), _pause_key('p'), _stop_key('s')
             {
                 enable_ansi_support();
@@ -6687,20 +9048,42 @@ namespace pythonic
                     }
                 }
 
-                double fps = cap.get(cv::CAP_PROP_FPS);
-                if (fps <= 0)
-                    fps = 30;
+                double video_fps = cap.get(cv::CAP_PROP_FPS);
+                if (video_fps <= 0)
+                    video_fps = 30;
 
-                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / fps));
+                // Use user-specified FPS or video's native FPS
+                double target_fps = (_fps > 0) ? _fps : video_fps;
+                auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                cv::Mat frame, rgb, resized;
+                // Seek to start time if specified (not for webcam)
+                double total_duration = 0;
+                if (!_is_webcam && _start_time >= 0)
+                {
+                    double start_ms = _start_time * 1000.0;
+                    cap.set(cv::CAP_PROP_POS_MSEC, start_ms);
+                    total_duration = cap.get(cv::CAP_PROP_FRAME_COUNT) / video_fps;
+                }
+
+                // Calculate end time in milliseconds for checking
+                double end_ms = -1;
+                if (!_is_webcam && _end_time >= 0)
+                {
+                    end_ms = _end_time * 1000.0;
+                }
+
+                cv::Mat frame, rgb, resized, gray;
 
                 // Calculate output dimensions
                 int cap_width = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_WIDTH));
                 int cap_height = static_cast<int>(cap.get(cv::CAP_PROP_FRAME_HEIGHT));
 
                 double scale;
-                if (_mode == Mode::bw_dot || _mode == Mode::colored_dot)
+                bool uses_braille = (_mode == Mode::bw_dot || _mode == Mode::colored_dot ||
+                                     _mode == Mode::bw_dithered || _mode == Mode::grayscale_dot ||
+                                     _mode == Mode::flood_dot || _mode == Mode::flood_dot_colored ||
+                                     _mode == Mode::colored_dithered);
+                if (uses_braille)
                     scale = static_cast<double>(_width * 2) / cap_width;
                 else
                     scale = static_cast<double>(_width) / cap_width;
@@ -6708,8 +9091,8 @@ namespace pythonic
                 int out_w = static_cast<int>(cap_width * scale);
                 int out_h = static_cast<int>(cap_height * scale);
 
-                // Initialize canvases
-                BrailleCanvas bw_dot_canvas;
+                // Initialize canvases for all modes
+                BrailleCanvas braille_canvas;
                 BWBlockCanvas bw_canvas;
                 ColorCanvas color_canvas;
                 ColoredBrailleCanvas color_dot_canvas;
@@ -6717,7 +9100,10 @@ namespace pythonic
                 switch (_mode)
                 {
                 case Mode::bw_dot:
-                    bw_dot_canvas = BrailleCanvas::from_pixels(out_w, out_h);
+                case Mode::bw_dithered:
+                case Mode::grayscale_dot:
+                case Mode::flood_dot:
+                    braille_canvas = BrailleCanvas::from_pixels(out_w, out_h);
                     break;
                 case Mode::bw:
                     bw_canvas = BWBlockCanvas::from_pixels(out_w, out_h);
@@ -6726,6 +9112,8 @@ namespace pythonic
                     color_canvas = ColorCanvas::from_pixels(out_w, out_h);
                     break;
                 case Mode::colored_dot:
+                case Mode::flood_dot_colored:
+                case Mode::colored_dithered:
                     color_dot_canvas = ColoredBrailleCanvas::from_pixels(out_w, out_h);
                     break;
                 }
@@ -6787,6 +9175,14 @@ namespace pythonic
                         continue;
                     }
 
+                    // Check if we've reached end_time
+                    if (end_ms >= 0)
+                    {
+                        double current_ms = cap.get(cv::CAP_PROP_POS_MSEC);
+                        if (current_ms >= end_ms)
+                            break;
+                    }
+
                     if (!cap.read(frame))
                         break;
 
@@ -6801,8 +9197,8 @@ namespace pythonic
                     switch (_mode)
                     {
                     case Mode::bw_dot:
-                        bw_dot_canvas.load_frame_rgb_fast(rgb.data, out_w, out_h, _threshold);
-                        frame_output += bw_dot_canvas.render();
+                        braille_canvas.load_frame_rgb_fast(rgb.data, out_w, out_h, _threshold);
+                        frame_output += braille_canvas.render();
                         break;
                     case Mode::bw:
                         bw_canvas.load_frame_rgb(rgb.data, out_w, out_h, _threshold);
@@ -6814,6 +9210,152 @@ namespace pythonic
                         break;
                     case Mode::colored_dot:
                         color_dot_canvas.load_frame_rgb(rgb.data, out_w, out_h, _threshold);
+                        frame_output += color_dot_canvas.render();
+                        break;
+                    case Mode::bw_dithered:
+                        // Convert to grayscale and use ordered dithering
+                        cv::cvtColor(resized, gray, cv::COLOR_BGR2GRAY);
+                        braille_canvas.load_frame_ordered_dithered(gray.data, out_w, out_h);
+                        frame_output += braille_canvas.render();
+                        break;
+                    case Mode::grayscale_dot:
+                        // Grayscale with dithering and brightness coloring
+                        cv::cvtColor(resized, gray, cv::COLOR_BGR2GRAY);
+                        {
+                            size_t char_w = (out_w + 1) / 2;
+                            size_t char_h = (out_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < out_w && y < out_h)
+                                                grays[row * 2 + col] = gray.at<uint8_t>(y, x);
+                                        }
+                                    }
+                                    braille_canvas.set_block_gray_dithered_with_brightness(cx, cy, grays);
+                                }
+                            }
+                        }
+                        frame_output += braille_canvas.render_grayscale();
+                        break;
+                    case Mode::flood_dot:
+                        // All dots on, colored by average brightness
+                        cv::cvtColor(resized, gray, cv::COLOR_BGR2GRAY);
+                        {
+                            size_t char_w = (out_w + 1) / 2;
+                            size_t char_h = (out_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t grays[8] = {0, 0, 0, 0, 0, 0, 0, 0};
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < out_w && y < out_h)
+                                                grays[row * 2 + col] = gray.at<uint8_t>(y, x);
+                                        }
+                                    }
+                                    braille_canvas.set_block_flood_fill(cx, cy, grays);
+                                }
+                            }
+                        }
+                        frame_output += braille_canvas.render_grayscale();
+                        break;
+                    case Mode::flood_dot_colored:
+                        // All dots on, colored by average RGB
+                        {
+                            size_t char_w = (out_w + 1) / 2;
+                            size_t char_h = (out_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    int sum_r = 0, sum_g = 0, sum_b = 0;
+                                    int count = 0;
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < out_w && y < out_h)
+                                            {
+                                                cv::Vec3b color = rgb.at<cv::Vec3b>(y, x);
+                                                sum_r += color[0];
+                                                sum_g += color[1];
+                                                sum_b += color[2];
+                                                count++;
+                                            }
+                                        }
+                                    }
+                                    if (count > 0)
+                                    {
+                                        color_dot_canvas.set_pattern(cx, cy, 0xFF);
+                                        color_dot_canvas.set_color(cx, cy, sum_r / count, sum_g / count, sum_b / count);
+                                    }
+                                }
+                            }
+                        }
+                        frame_output += color_dot_canvas.render();
+                        break;
+                    case Mode::colored_dithered:
+                        // Dithered dots, colored by average RGB
+                        {
+                            static const int bayer2x2[2][2] = {{0, 2}, {3, 1}};
+                            static const int dot_map[4][2] = {{0, 3}, {1, 4}, {2, 5}, {6, 7}};
+                            size_t char_w = (out_w + 1) / 2;
+                            size_t char_h = (out_h + 3) / 4;
+                            for (size_t cy = 0; cy < char_h; ++cy)
+                            {
+                                for (size_t cx = 0; cx < char_w; ++cx)
+                                {
+                                    uint8_t pattern = 0;
+                                    int sum_r = 0, sum_g = 0, sum_b = 0;
+                                    int count = 0;
+                                    int px = cx * 2, py = cy * 4;
+                                    for (int row = 0; row < 4; ++row)
+                                    {
+                                        for (int col = 0; col < 2; ++col)
+                                        {
+                                            int x = px + col, y = py + row;
+                                            if (x < out_w && y < out_h)
+                                            {
+                                                cv::Vec3b color = rgb.at<cv::Vec3b>(y, x);
+                                                sum_r += color[0];
+                                                sum_g += color[1];
+                                                sum_b += color[2];
+                                                count++;
+
+                                                uint8_t g = (color[0] * 77 + color[1] * 150 + color[2] * 29) >> 8;
+                                                int bayer_x = col & 1;
+                                                int bayer_y = row & 1;
+                                                int threshold_val = ((bayer2x2[bayer_y][bayer_x] + 1) * 255) / 5;
+                                                if (g > threshold_val)
+                                                {
+                                                    pattern |= (1 << dot_map[row][col]);
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (count > 0)
+                                    {
+                                        color_dot_canvas.set_pattern(cx, cy, pattern);
+                                        color_dot_canvas.set_color(cx, cy, sum_r / count, sum_g / count, sum_b / count);
+                                    }
+                                }
+                            }
+                        }
                         frame_output += color_dot_canvas.render();
                         break;
                     }
@@ -6855,13 +9397,17 @@ namespace pythonic
          * @param shell Shell mode - interactive enables keyboard controls, noninteractive (default) disables them
          * @param pause_key Key to pause/resume playback (default 'p', '\0' to disable)
          * @param stop_key Key to stop playback (default 's', '\0' to disable)
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
          */
         inline void play_video_opencv(const std::string &source, int width = 80,
                                       Mode mode = Mode::bw_dot, int threshold = 128,
                                       Shell shell = Shell::noninteractive,
-                                      char pause_key = 'p', char stop_key = 's')
+                                      char pause_key = 'p', char stop_key = 's',
+                                      double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
-            OpenCVVideoPlayer player(source, width, mode, threshold);
+            OpenCVVideoPlayer player(source, width, mode, threshold, fps, start_time, end_time);
             if (!player.play(shell, pause_key, stop_key))
             {
                 // Webcam failed - throw exception
@@ -6870,12 +9416,9 @@ namespace pythonic
                     throw std::runtime_error("Failed to open webcam. OpenCV required for webcam support.");
                 }
 
-                // Video file failed - fall back to FFmpeg
+                // Video file failed - fall back to FFmpeg with all modes properly supported
                 std::cerr << "Warning: OpenCV failed, falling back to FFmpeg\n";
-                if (mode == Mode::colored || mode == Mode::colored_dot)
-                    play_video_colored(source, width, shell, pause_key, stop_key);
-                else
-                    play_video(source, width, threshold, shell, pause_key, stop_key);
+                play_video_with_mode(source, width, mode, threshold, shell, pause_key, stop_key, fps, start_time, end_time);
             }
         }
 
@@ -6905,12 +9448,60 @@ namespace pythonic
                 throw std::runtime_error("Failed to open webcam. Is OpenCV installed with video capture support?");
             }
         }
+
+#if defined(PYTHONIC_ENABLE_SDL2_AUDIO) || defined(PYTHONIC_ENABLE_PORTAUDIO)
+        /**
+         * @brief Play video using OpenCV with synchronized audio via FFmpeg
+         *
+         * Combines OpenCV's video rendering with FFmpeg audio decoding.
+         * For webcam sources, audio is disabled (no audio source).
+         *
+         * @param source Path to video file or webcam source
+         * @param width Terminal width in characters
+         * @param mode Rendering mode
+         * @param threshold Brightness threshold for BW modes
+         * @param fps Target FPS (0 = use video's native FPS)
+         * @param start_time Start time in seconds (-1 = from beginning)
+         * @param end_time End time in seconds (-1 = to end)
+         */
+        inline void play_video_opencv_audio(const std::string &source, int width = 80,
+                                            Mode mode = Mode::bw_dot, int threshold = 128,
+                                            double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+        {
+            // For webcams, just use regular OpenCV (no audio source)
+            if (is_webcam_source(source))
+            {
+                play_video_opencv(source, width, mode, threshold, Shell::noninteractive, 'p', 's', fps, start_time, end_time);
+                return;
+            }
+
+            // For video files, we use AudioVideoPlayer which combines FFmpeg audio with video
+            // But we want to use OpenCV for video rendering. The AudioVideoPlayer already
+            // uses the same rendering pipeline, so we can use it directly.
+            AudioVideoPlayer player(source, width, mode, fps, start_time, end_time);
+            player.play();
+        }
+#else
+        /**
+         * @brief Fallback when audio not compiled in
+         */
+        inline void play_video_opencv_audio(const std::string &source, int width = 80,
+                                            Mode mode = Mode::bw_dot, int threshold = 128,
+                                            double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
+        {
+            std::cerr << "Warning: Audio playback not available.\n"
+                      << "Rebuild with -DPYTHONIC_ENABLE_SDL2_AUDIO=ON or -DPYTHONIC_ENABLE_PORTAUDIO=ON\n"
+                      << "Falling back to silent video playback...\n\n";
+            play_video_opencv(source, width, mode, threshold, Shell::noninteractive, 'p', 's', fps, start_time, end_time);
+        }
+#endif
 #else
         // Stubs when OpenCV not available
         inline void play_video_opencv(const std::string &source, int width = 80,
                                       Mode mode = Mode::bw_dot, int threshold = 128,
                                       Shell shell = Shell::noninteractive,
-                                      char pause_key = 'p', char stop_key = 's')
+                                      char pause_key = 'p', char stop_key = 's',
+                                      double fps = 0.0, double start_time = -1.0, double end_time = -1.0)
         {
             if (is_webcam_source(source))
             {
@@ -6918,10 +9509,7 @@ namespace pythonic
             }
 
             std::cerr << "Warning: OpenCV not available, using FFmpeg\n";
-            if (mode == Mode::colored || mode == Mode::colored_dot)
-                play_video_colored(source, width, shell, pause_key, stop_key);
-            else
-                play_video(source, width, threshold, shell, pause_key, stop_key);
+            play_video_with_mode(source, width, mode, threshold, shell, pause_key, stop_key, fps, start_time, end_time);
         }
 
         inline void play_webcam(const std::string &source = "0", int width = 80,

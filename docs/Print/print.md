@@ -20,12 +20,12 @@ print("Hello", "World", 42);  // Output: Hello World 42
 var data = dict({{"name", "Alice"}, {"age", 30}});
 pprint(data);  // Formatted output with indentation
 
-// Render media file with Draw tag
-print(Draw, "photo.png");  // Renders image as braille
-print(Draw, "video.mp4");  // Plays video in terminal
+// Render media file with Media tag
+print(Media, "photo.png");  // Renders image as braille
+print(Media, "video.mp4");  // Plays video in terminal
 
 // Render with RenderConfig
-print(Draw, "photo.png", RenderConfig().set_mode(Mode::colored).set_max_width(120));
+print(Media, "photo.png", RenderConfig().set_mode(Mode::colored).set_max_width(120));
 ```
 
 ---
@@ -48,32 +48,94 @@ pprint(nested);                    // Formatted output
 
 ---
 
-## Media Printing (Draw Tag)
+## Media Printing (Media Tag)
 
-Use `Draw` tag to explicitly render media files:
+Use `Media` tag to explicitly render media files:
 
-| Function                        | Description                        |
-| ------------------------------- | ---------------------------------- |
-| `print(Draw, filepath)`         | Render media with default settings |
-| `print(Draw, filepath, config)` | Render media with RenderConfig     |
+| Function                         | Description                        |
+| -------------------------------- | ---------------------------------- |
+| `print(Media, filepath)`         | Render media with default settings |
+| `print(Media, filepath, config)` | Render media with RenderConfig     |
 
 ```cpp
 // Render image
-print(Draw, "photo.png");
+print(Media, "photo.png");
 
 // Render video with audio
-print(Draw, "video.mp4", RenderConfig().with_audio());
+print(Media, "video.mp4", RenderConfig().with_audio());
 
 // Render with colored mode
-print(Draw, "image.jpg", RenderConfig().set_mode(Mode::colored));
+print(Media, "image.jpg", RenderConfig().set_mode(Mode::colored));
 
 // Render with all options
-print(Draw, "video.mp4", RenderConfig()
+print(Media, "video.mp4", RenderConfig()
     .set_mode(Mode::colored_dot)
     .set_max_width(120)
     .with_audio()
     .interactive());
 ```
+
+---
+
+## Text-to-Braille Art (TextArt Tag)
+
+Use `TextArt` tag to render text as braille art:
+
+| Function                       | Description                       |
+| ------------------------------ | --------------------------------- |
+| `print(TextArt, text)`         | Render text with default settings |
+| `print(TextArt, text, config)` | Render text with TextConfig       |
+
+### TextConfig
+
+Configuration for text-to-braille rendering:
+
+| Field       | Type      | Default        | Description              |
+| ----------- | --------- | -------------- | ------------------------ |
+| `mode`      | `Mode`    | `Mode::bw_dot` | Rendering mode           |
+| `fg_r`      | `uint8_t` | `255`          | Foreground red (0-255)   |
+| `fg_g`      | `uint8_t` | `255`          | Foreground green (0-255) |
+| `fg_b`      | `uint8_t` | `255`          | Foreground blue (0-255)  |
+| `max_width` | `int`     | `0`            | Max width (0=auto)       |
+
+### Examples
+
+```cpp
+// Basic text rendering
+print(TextArt, "Hello World!");
+
+// Multi-line text
+print(TextArt, "Line 1\nLine 2\nLine 3");
+
+// Colored text (white)
+print(TextArt, "COLORED!", TextConfig{.mode = Mode::colored});
+
+// Custom color - red
+print(TextArt, "RED TEXT", TextConfig{
+    .mode = Mode::colored,
+    .fg_r = 255,
+    .fg_g = 0,
+    .fg_b = 0
+});
+
+// Cyan text
+print(TextArt, "CYAN!", TextConfig{
+    .mode = Mode::colored,
+    .fg_r = 0,
+    .fg_g = 255,
+    .fg_b = 255
+});
+```
+
+### Supported Characters
+
+The built-in 3×5 pixel font supports:
+
+- Uppercase letters: A-Z
+- Lowercase letters: a-z
+- Numbers: 0-9
+- Symbols: `! " ' ( ) + , - . / : ; < = > ? @`
+- Space character
 
 ---
 
@@ -101,14 +163,17 @@ Configuration class for media rendering with builder pattern.
 
 ## Mode Enum
 
-| Mode                  | Description           | Resolution  | Colors    |
-| --------------------- | --------------------- | ----------- | --------- |
-| `Mode::bw_dot`        | Braille patterns      | 8× terminal | B&W       |
-| `Mode::bw`            | Half-block characters | 2× terminal | B&W       |
-| `Mode::colored`       | Half-block with color | 2× terminal | 24-bit    |
-| `Mode::colored_dot`   | Braille with color    | 8× terminal | 24-bit    |
-| `Mode::grayscale_dot` | Grayscale braille     | 8× terminal | Grayscale |
-| `Mode::flood_dot`     | Flood-filled braille  | 8× terminal | 24-bit    |
+| Mode                      | Description                         | Resolution  | Colors    |
+| ------------------------- | ----------------------------------- | ----------- | --------- |
+| `Mode::bw_dot`            | Braille patterns                    | 8× terminal | B&W       |
+| `Mode::bw`                | Half-block characters               | 2× terminal | B&W       |
+| `Mode::colored`           | Half-block with color               | 2× terminal | 24-bit    |
+| `Mode::colored_dot`       | Braille with color                  | 8× terminal | 24-bit    |
+| `Mode::grayscale_dot`     | Grayscale braille                   | 8× terminal | Grayscale |
+| `Mode::bw_dithered`       | B&W braille with dithering          | 8× terminal | B&W       |
+| `Mode::flood_dot`         | Flood-filled braille (grayscale)    | 8× terminal | Grayscale |
+| `Mode::flood_dot_colored` | Flood-filled braille with color     | 8× terminal | 24-bit    |
+| `Mode::colored_dithered`  | Colored braille with ordered dither | 8× terminal | 24-bit    |
 
 ---
 
@@ -127,11 +192,27 @@ Configuration class for media rendering with builder pattern.
 
 ## Dithering Enum
 
-| Dithering            | Description                     |
-| -------------------- | ------------------------------- |
-| `Dithering::none`    | No dithering (default)          |
-| `Dithering::ordered` | Ordered/Bayer dithering         |
-| `Dithering::floyd`   | Floyd-Steinberg error diffusion |
+Controls dithering algorithm for `Mode::bw_dithered` and `Mode::colored_dithered`:
+
+| Dithering                    | Description                       | Best For           |
+| ---------------------------- | --------------------------------- | ------------------ |
+| `Dithering::none`            | Simple threshold (no dithering)   | Fast binary output |
+| `Dithering::ordered`         | Ordered/Bayer dithering (default) | Video, animation   |
+| `Dithering::floyd_steinberg` | Floyd-Steinberg error diffusion   | Still images       |
+
+**Usage example:**
+
+```cpp
+// Use Floyd-Steinberg for best still image quality
+print(Media, "photo.png", RenderConfig()
+    .set_mode(Mode::bw_dithered)
+    .set_dithering(Dithering::floyd_steinberg));
+
+// Use ordered dithering for video (faster, more stable)
+print(Media, "video.mp4", RenderConfig()
+    .set_mode(Mode::colored_dithered)
+    .set_dithering(Dithering::ordered));
+```
 
 ---
 
@@ -141,13 +222,13 @@ Configuration class for media rendering with builder pattern.
 
 ```cpp
 // Basic image render
-print(Draw, "photo.png");
+print(Media, "photo.png");
 
 // Colored rendering
-print(Draw, "photo.png", RenderConfig().set_mode(Mode::colored));
+print(Media, "photo.png", RenderConfig().set_mode(Mode::colored));
 
 // High-quality with dithering
-print(Draw, "photo.jpg", RenderConfig()
+print(Media, "photo.jpg", RenderConfig()
     .set_mode(Mode::grayscale_dot)
     .set_dithering(Dithering::floyd)
     .set_max_width(160));
@@ -157,13 +238,13 @@ print(Draw, "photo.jpg", RenderConfig()
 
 ```cpp
 // Basic video
-print(Draw, "video.mp4");
+print(Media, "video.mp4");
 
 // Video with audio
-print(Draw, "video.mp4", RenderConfig().with_audio());
+print(Media, "video.mp4", RenderConfig().with_audio());
 
 // Interactive with controls
-print(Draw, "movie.mp4", RenderConfig()
+print(Media, "movie.mp4", RenderConfig()
     .set_mode(Mode::colored)
     .with_audio()
     .interactive()
@@ -171,7 +252,7 @@ print(Draw, "movie.mp4", RenderConfig()
     .set_stop_key('s'));
 
 // Play video segment (1:00 to 2:00)
-print(Draw, "movie.mp4", RenderConfig()
+print(Media, "movie.mp4", RenderConfig()
     .set_start_time(60)
     .set_end_time(120));
 ```
@@ -180,10 +261,10 @@ print(Draw, "movie.mp4", RenderConfig()
 
 ```cpp
 // Default webcam
-print(Draw, "0", RenderConfig().set_type(Type::webcam));
+print(Media, "0", RenderConfig().set_type(Type::webcam));
 
 // Colored webcam
-print(Draw, "0", RenderConfig()
+print(Media, "0", RenderConfig()
     .set_type(Type::webcam)
     .set_mode(Mode::colored)
     .set_max_width(120));

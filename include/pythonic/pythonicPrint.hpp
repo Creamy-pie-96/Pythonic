@@ -6,6 +6,7 @@
 #include <chrono>
 #include <thread>
 #include <atomic>
+#include <sys/stat.h>
 #if __cplusplus >= 201703L && __has_include(<filesystem>)
 #include <filesystem>
 #endif
@@ -132,42 +133,25 @@ namespace pythonic
 
                 if (_indeterminate)
                 {
-                    // Indeterminate progress bar (animated bouncing pulse)
+                    // Indeterminate progress bar (animated spinner with clear message)
                     static const char *spinners[] = {"⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"};
                     auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(now - _start_time).count();
                     int idx = (ms / 100) % 10;
 
                     bar << "\033[93m" << spinners[idx] << "\033[0m ";
 
-                    // Animated bar - bouncing pulse pattern
-                    // The pulse travels from left to right and back
-                    int cycle_length = (_bar_width - 6) * 2; // -6 for pulse width, *2 for bounce
-                    int cycle_pos = (ms / 50) % cycle_length;
-                    int offset;
-                    if (cycle_pos < _bar_width - 6)
-                    {
-                        offset = cycle_pos + 3; // Moving right
-                    }
-                    else
-                    {
-                        offset = _bar_width - 3 - (cycle_pos - (_bar_width - 6)); // Moving left
-                    }
-
-                    bar << "\033[90m[\033[0m";
-                    for (int i = 0; i < _bar_width; i++)
-                    {
-                        int dist = std::abs(i - offset);
-                        if (dist <= 2)
-                            bar << "\033[92m▓\033[0m";
-                        else if (dist <= 4)
-                            bar << "\033[32m▒\033[0m";
-                        else
-                            bar << "\033[90m░\033[0m";
-                    }
+                    // Animated dots for visual feedback (cycling ...)
+                    int dots = (ms / 500) % 4; // 0, 1, 2, 3 dots
+                    bar << "\033[90m[";
+                    bar << "\033[93mprocessing";
+                    for (int i = 0; i < dots; i++)
+                        bar << ".";
+                    for (int i = dots; i < 3; i++)
+                        bar << " ";
                     bar << "\033[90m]\033[0m ";
 
-                    // Time elapsed only (no ETA for indeterminate)
-                    bar << "\033[35m" << format_time(elapsed) << "\033[0m";
+                    // Time elapsed with clearer label
+                    bar << "\033[35melapsed: " << format_time(elapsed) << "\033[0m";
                 }
                 else
                 {
@@ -530,6 +514,36 @@ namespace pythonic
             }
         }
 
+        // ==================== Media Tag Declaration ====================
+
+        // Media tag for printing media files - unique to print namespace (no ambiguity with Draw)
+        struct MediaTag
+        {
+        };
+        constexpr MediaTag Media{};
+
+        // TextArt tag for rendering text as braille art (separate from draw::Draw)
+        struct TextArtTag
+        {
+        };
+        constexpr TextArtTag TextArt{};
+
+        // Text rendering configuration
+        struct TextConfig
+        {
+            Mode mode = Mode::bw_dot;
+            uint8_t fg_r = 255;
+            uint8_t fg_g = 255;
+            uint8_t fg_b = 255;
+            int max_width = 0; // 0 = no limit (auto based on text)
+        };
+
+        // Re-export RenderConfig and other types from draw namespace
+        using RenderConfig = pythonic::draw::RenderConfig;
+        using Dithering = pythonic::draw::Dithering;
+
+        // ==================== Generic Print Functions ====================
+
         // Pretty print helper for var types
         template <typename T>
         inline std::string to_print_str(const T &arg)
@@ -546,9 +560,13 @@ namespace pythonic
             return arg.str(); // Use simple str() instead of format_value
         }
 
-        // Main print function - handles any types
+        // Main print function - handles any types (except MediaTag and TextArtTag)
         template <typename... Args>
-        void print(const Args &...args)
+        typename std::enable_if<
+            !std::is_same<typename std::decay<typename std::tuple_element<0, std::tuple<Args...>>::type>::type, MediaTag>::value &&
+                !std::is_same<typename std::decay<typename std::tuple_element<0, std::tuple<Args...>>::type>::type, TextArtTag>::value,
+            void>::type
+        print(const Args &...args)
         {
             std::ostringstream ss;
             ((ss << to_print_str(args) << ' '), ...);
@@ -583,14 +601,16 @@ namespace pythonic
         /**
          * @brief Internal media print implementation
          *
-         * This function handles actual media rendering. It's called by print(Draw, ...).
-         * Users should use print(Draw, filepath, config) for media rendering.
+         * This function handles actual media rendering. It's called by print(Media, ...).
+         * Users should use print(Media, filepath, config) for media rendering.
          */
         inline void print_media_impl(const std::string &filepath, Type type = Type::auto_detect,
                                      Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
                                      Audio audio = Audio::off, int max_width = 80, int threshold = 128,
                                      Shell shell = Shell::noninteractive,
-                                     char pause_key = 'p', char stop_key = 's')
+                                     char pause_key = 'p', char stop_key = 's',
+                                     double fps = 0.0, double start_time = -1.0, double end_time = -1.0,
+                                     Dithering dithering = Dithering::ordered)
         {
             // Helper to handle Pythonic format files
             auto handle_pythonic_format = [&](const std::string &path) -> std::string
@@ -615,8 +635,8 @@ namespace pythonic
                 }
                 else
                 {
-                    // Use unified mode-aware rendering function
-                    pythonic::draw::print_image_with_mode(actual_path, max_width, threshold, mode);
+                    // Use unified mode-aware rendering function with dithering config
+                    pythonic::draw::print_image_with_mode(actual_path, max_width, threshold, mode, dithering);
                 }
 
                 if (is_temp)
@@ -631,21 +651,31 @@ namespace pythonic
 
                 if (parser == Parser::opencv)
                 {
-                    // OpenCV supports all 4 modes
-                    pythonic::draw::play_video_opencv(actual_path, max_width, mode, threshold,
-                                                      shell, pause_key, stop_key);
+                    if (audio == Audio::on)
+                    {
+                        // OpenCV video with audio playback
+                        // Uses AudioVideoPlayer which supports all modes
+                        pythonic::draw::play_video_opencv_audio(actual_path, max_width, mode, threshold,
+                                                                fps, start_time, end_time);
+                    }
+                    else
+                    {
+                        // OpenCV video without audio
+                        pythonic::draw::play_video_opencv(actual_path, max_width, mode, threshold,
+                                                          shell, pause_key, stop_key, fps, start_time, end_time);
+                    }
                 }
                 else if (audio == Audio::on)
                 {
                     // Audio player supports all modes
                     pythonic::draw::play_video_audio(actual_path, max_width, mode,
-                                                     shell, pause_key, stop_key);
+                                                     shell, pause_key, stop_key, fps, start_time, end_time);
                 }
                 else
                 {
                     // FFmpeg-based players - use unified function for all modes
                     pythonic::draw::play_video_with_mode(actual_path, max_width, mode, threshold,
-                                                         shell, pause_key, stop_key);
+                                                         shell, pause_key, stop_key, fps, start_time, end_time);
                 }
 
                 if (is_temp)
@@ -702,40 +732,61 @@ namespace pythonic
         // Overload for const char* - internal media implementation
         inline void print_media_impl(const char *filepath, Type type = Type::auto_detect,
                                      Mode mode = Mode::bw_dot, Parser parser = Parser::default_parser,
-                                     Audio audio = Audio::off, int max_width = 80, int threshold = 128)
+                                     Audio audio = Audio::off, int max_width = 80, int threshold = 128,
+                                     Dithering dithering = Dithering::ordered)
         {
-            print_media_impl(std::string(filepath), type, mode, parser, audio, max_width, threshold);
+            print_media_impl(std::string(filepath), type, mode, parser, audio, max_width, threshold,
+                             Shell::noninteractive, 'p', 's', 0.0, -1.0, -1.0, dithering);
         }
 
-        // Re-export DrawTag from draw namespace for convenience
-        using DrawTag = pythonic::draw::DrawTag;
-        constexpr DrawTag Draw = pythonic::draw::Draw;
-
-        // Re-export RenderConfig and other types from draw namespace
-        using RenderConfig = pythonic::draw::RenderConfig;
-        using Dithering = pythonic::draw::Dithering;
-
         /**
-         * @brief Print media file with explicit Draw tag
+         * @brief Print media file with explicit Media tag
          *
-         * Use Draw tag to explicitly render a file as media:
-         *   print(Draw, "image.png");              // Renders as image
-         *   print(Draw, "video.mp4");              // Plays video
-         *   print(Draw, "video.mp4", config);      // Plays video with config
+         * Use Media tag to explicitly render a file as media:
+         *   print(Media, "image.png");              // Renders as image
+         *   print(Media, "video.mp4");              // Plays video
+         *   print(Media, "video.mp4", config);      // Plays video with config
          *
-         * Without Draw tag, print() outputs text to stdout (like std::cout):
+         * Without Media tag, print() outputs text to stdout (like std::cout):
          *   print("hello.png");                    // Outputs: hello.png
          *
-         * @param tag Draw tag to indicate media rendering
+         * @param tag Media tag to indicate media rendering
          * @param filepath Path to media file
          * @param config Optional RenderConfig for rendering parameters
          */
-        inline void print(DrawTag, const std::string &filepath,
+        inline void print(MediaTag, const std::string &filepath,
                           const RenderConfig &config = RenderConfig())
         {
             print_media_impl(filepath, config.type, config.mode, config.parser, config.audio,
                              config.max_width, config.threshold, config.shell,
-                             config.pause_key, config.stop_key);
+                             config.pause_key, config.stop_key,
+                             config.fps, config.start_time, config.end_time, config.dithering);
+        }
+
+        /**
+         * @brief Print text as braille art to the terminal
+         *
+         * Renders text using a 3×5 pixel font and displays it using braille characters.
+         * Supports both black-and-white and colored modes.
+         *
+         * Example usage:
+         *   // Basic usage
+         *   print(TextArt, "Hello World!");
+         *
+         *   // With custom mode
+         *   print(TextArt, "Hello!", TextConfig{.mode = Mode::colored});
+         *
+         *   // With custom colors (cyan text)
+         *   print(TextArt, "Cyan!", TextConfig{.mode = Mode::colored, .fg_r = 0, .fg_g = 255, .fg_b = 255});
+         *
+         * @param tag TextArt tag to indicate text-to-braille rendering
+         * @param text The text to render as braille art
+         * @param config Optional TextConfig for rendering parameters
+         */
+        inline void print(TextArtTag, const std::string &text,
+                          const TextConfig &config = TextConfig())
+        {
+            pythonic::draw::print_text_art(text, config.mode, config.fg_r, config.fg_g, config.fg_b);
         }
 
         // ==================== Export Format ====================
@@ -766,7 +817,8 @@ namespace pythonic
          * This is a helper that wraps the various render functions from pythonicDraw
          */
         inline std::string render_image_to_string(const std::string &filepath, Mode mode = Mode::bw_dot,
-                                                  int max_width = 80, int threshold = 128)
+                                                  int max_width = 80, int threshold = 128,
+                                                  Dithering dithering = Dithering::ordered)
         {
             // Handle Pythonic format files
             std::string actual_path = filepath;
@@ -793,7 +845,7 @@ namespace pythonic
                 result = pythonic::draw::render_image_colored_dot(actual_path, max_width, threshold);
                 break;
             case Mode::bw_dithered:
-                result = pythonic::draw::render_image_dithered(actual_path, max_width);
+                result = pythonic::draw::render_image_dithered(actual_path, max_width, dithering);
                 break;
             case Mode::grayscale_dot:
                 // Grayscale-colored dots with dithering for best quality
@@ -802,6 +854,14 @@ namespace pythonic
             case Mode::flood_dot:
                 // All dots lit, colored by average cell brightness - smoothest appearance
                 result = pythonic::draw::render_image_flood(actual_path, max_width);
+                break;
+            case Mode::flood_dot_colored:
+                // All dots lit, colored by average RGB
+                result = pythonic::draw::render_image_flood_colored(actual_path, max_width);
+                break;
+            case Mode::colored_dithered:
+                // Dithered dots, colored by average RGB
+                result = pythonic::draw::render_image_colored_dithered(actual_path, max_width, dithering);
                 break;
             }
 
@@ -896,6 +956,93 @@ namespace pythonic
         }
 
         /**
+         * @brief Export text as braille art - UNIFIED API
+         *
+         * Renders a text string as braille art and exports to a file.
+         * Uses TextArtTag to distinguish from file-based emit().
+         *
+         * Usage:
+         *   emit(TextArt, "Hello World!", "output");              // Defaults: text output
+         *   emit(TextArt, "Hello!", "output", TextConfig{.mode = Mode::colored});
+         *   emit(TextArt, "Red!", "output", TextConfig{.fg_r = 255, .fg_g = 0, .fg_b = 0});
+         *
+         * @param tag      TextArtTag to indicate text-to-braille rendering
+         * @param text     The text string to render as braille art
+         * @param output_name  Output filename (extension auto-added: .txt)
+         * @param config   Optional TextConfig for rendering parameters
+         * @return true on success, false on failure
+         */
+        inline bool emit(TextArtTag, const std::string &text, const std::string &output_name,
+                         const TextConfig &config = TextConfig())
+        {
+            // Check if output directory exists
+            std::string output_dir;
+            size_t last_sep = output_name.rfind('/');
+            if (last_sep == std::string::npos)
+                last_sep = output_name.rfind('\\');
+
+            if (last_sep != std::string::npos)
+            {
+                output_dir = output_name.substr(0, last_sep);
+
+                // Check if directory exists
+                struct stat st;
+                if (stat(output_dir.c_str(), &st) != 0 || !S_ISDIR(st.st_mode))
+                {
+                    // Directory doesn't exist - prompt user
+                    std::cout << "Directory '" << output_dir << "' does not exist.\n";
+                    std::cout << "Create directory? (y/n): ";
+                    std::cout.flush();
+
+                    std::string response;
+                    std::getline(std::cin, response);
+
+                    if (response.empty() || (response[0] != 'y' && response[0] != 'Y'))
+                    {
+                        std::cerr << "Export cancelled.\n";
+                        return false;
+                    }
+
+                    // Create directory recursively
+                    std::string mkdir_cmd = "mkdir -p \"" + output_dir + "\"";
+                    int result = std::system(mkdir_cmd.c_str());
+                    if (result != 0)
+                    {
+                        std::cerr << "Error: Failed to create directory '" << output_dir << "'.\n";
+                        return false;
+                    }
+                    std::cout << "Created directory: " << output_dir << "\n";
+                }
+            }
+
+            // Truncate any extension from output_name
+            std::string basename = truncate_extension(output_name);
+            std::string output_path = basename + ".txt";
+
+            try
+            {
+                // Render text as braille art
+                std::string rendered = pythonic::draw::render_text_art(
+                    text, config.mode, config.max_width, config.fg_r, config.fg_g, config.fg_b);
+
+                // Write to file
+                std::ofstream out(output_path);
+                if (!out)
+                {
+                    std::cerr << "Error: Could not open output file '" << output_path << "'.\n";
+                    return false;
+                }
+                out << rendered;
+                return out.good();
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << "Error rendering text: " << e.what() << "\n";
+                return false;
+            }
+        }
+
+        /**
          * @brief Export media as ASCII/braille art - UNIFIED API
          *
          * This is the single, unified export function that handles all export operations.
@@ -917,6 +1064,46 @@ namespace pythonic
                          const RenderConfig &render_cfg = RenderConfig(),
                          const ExportConfig &export_cfg = ExportConfig())
         {
+            // Check if output directory exists
+            std::string output_dir;
+            size_t last_sep = output_name.rfind('/');
+            if (last_sep == std::string::npos)
+                last_sep = output_name.rfind('\\');
+
+            if (last_sep != std::string::npos)
+            {
+                output_dir = output_name.substr(0, last_sep);
+
+                // Check if directory exists
+                struct stat st;
+                if (stat(output_dir.c_str(), &st) != 0 || !S_ISDIR(st.st_mode))
+                {
+                    // Directory doesn't exist - prompt user
+                    std::cout << "Directory '" << output_dir << "' does not exist.\n";
+                    std::cout << "Create directory? (y/n): ";
+                    std::cout.flush();
+
+                    std::string response;
+                    std::getline(std::cin, response);
+
+                    if (response.empty() || (response[0] != 'y' && response[0] != 'Y'))
+                    {
+                        std::cerr << "Export cancelled.\n";
+                        return false;
+                    }
+
+                    // Create directory recursively
+                    std::string mkdir_cmd = "mkdir -p \"" + output_dir + "\"";
+                    int result = std::system(mkdir_cmd.c_str());
+                    if (result != 0)
+                    {
+                        std::cerr << "Error: Failed to create directory '" << output_dir << "'.\n";
+                        return false;
+                    }
+                    std::cout << "Created directory: " << output_dir << "\n";
+                }
+            }
+
             // Extract values from config
             Type type = render_cfg.type;
             Format format = render_cfg.format;
@@ -1600,7 +1787,7 @@ namespace pythonic
                     // Properly escaped for shell execution
                     std::string scale_filter = "-vf \"scale=trunc(iw/2)*2:trunc(ih/2)*2\"";
 
-                    // Lambda to build and execute FFmpeg command with fallback
+                    // Lambda to build and execute FFmpeg command with progress animation
                     auto run_encode = [&](const std::string &audio_path) -> int
                     {
                         // Use image2 demuxer with sequential frame pattern
@@ -1612,11 +1799,29 @@ namespace pythonic
                         std::string pix_fmt = " -pix_fmt yuv420p";
                         std::string suppress_output = " 2>" + null_device();
 
-                        // Try with hardware encoder first
+                        // Build command
                         std::string video_cmd = "ffmpeg -y -hide_banner -loglevel error " + base_input + audio_input + " " +
                                                 scale_filter + " " + encoder_opts + audio_opts + pix_fmt +
                                                 " \"" + output_path + "\"" + suppress_output;
-                        int res = std::system(video_cmd.c_str());
+
+                        // Run encoding in background thread so we can animate progress
+                        std::atomic<bool> encoding_done{false};
+                        std::atomic<int> encode_result{0};
+
+                        std::thread encode_thread([&]()
+                                                  {
+                            encode_result = std::system(video_cmd.c_str());
+                            encoding_done = true; });
+
+                        // Animate progress while encoding
+                        while (!encoding_done.load())
+                        {
+                            progress.tick();
+                            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                        }
+
+                        encode_thread.join();
+                        int res = encode_result.load();
 
                         // If hardware encoder fails, fallback to CPU encoder
                         if (res != 0 && is_hw_encoder)
@@ -1626,7 +1831,20 @@ namespace pythonic
                             video_cmd = "ffmpeg -y -hide_banner -loglevel error " + base_input + audio_input + " " +
                                         scale_filter + " " + cpu_opts + audio_opts + pix_fmt +
                                         " \"" + output_path + "\"" + suppress_output;
-                            res = std::system(video_cmd.c_str());
+
+                            encoding_done = false;
+                            std::thread retry_thread([&]()
+                                                     {
+                                encode_result = std::system(video_cmd.c_str());
+                                encoding_done = true; });
+
+                            while (!encoding_done.load())
+                            {
+                                progress.tick();
+                                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+                            }
+                            retry_thread.join();
+                            res = encode_result.load();
                         }
 
                         return res;
@@ -1636,8 +1854,10 @@ namespace pythonic
                     if (audio == Audio::on)
                     {
                         // Extract audio from source and combine with ASCII video
+                        // Use same time parameters as video to keep audio/video in sync
                         std::string audio_path = temp_dir + "/audio.aac";
-                        std::string extract_audio_cmd = "ffmpeg -y -i \"" + input_path + "\" -vn -acodec aac \"" + audio_path + "\" 2>/dev/null";
+                        std::string extract_audio_cmd = "ffmpeg -y " + time_opts + "-i \"" + input_path + "\"" + duration_opt +
+                                                        " -vn -acodec aac \"" + audio_path + "\" 2>/dev/null";
                         int audio_result = std::system(extract_audio_cmd.c_str());
 
                         if (audio_result == 0)
