@@ -26,6 +26,7 @@ Recommended reading order:
 - [Plot](Plot/plot.md) — Terminal plotting with matplotlib-style API
 - [Export](Export/export.md) — Export media as ASCII art to files
 - [Media](Media/media.md) — Pythonic format (.pi/.pv) conversion: `convert()`, `revert()`
+- [Terminal Graphics](Graphics/index.md) — engnie for terminal graphics like sfml
 - [Performance](performance.md) — internal storage, hot-path tips
 
 **Examples & Quickstart**

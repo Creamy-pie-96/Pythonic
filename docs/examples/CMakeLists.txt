@@ -103,6 +103,21 @@ if(OpenCV_FOUND)
     target_link_libraries(demoapp PRIVATE ${OpenCV_LIBS})
 endif()
 
+# ============================================================================
+# Optional: Enable evdev for true simultaneous key detection (Linux only)
+# ============================================================================
+option(ENABLE_EVDEV "Enable evdev for true multi-key detection (Linux only)" ON)
+if(ENABLE_EVDEV AND CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    message(STATUS "Evdev enabled - true simultaneous key detection available")
+    message(STATUS "  Note: Requires read access to /dev/input/event* (input group)")
+    target_compile_definitions(demoapp PRIVATE PYTHONIC_USE_EVDEV)
+endif()
+
+# Note: On Windows, true multi-key detection is automatic via GetAsyncKeyState
+if(WIN32)
+    message(STATUS "Windows detected - true multi-key detection via GetAsyncKeyState")
+endif()
+
 # If you installed Pythonic with the optional Graph Viewer enabled
 # (build/install Pythonic with `-DPYTHONIC_ENABLE_GRAPH_VIEWER=ON`),
 # you can link the viewer target to enable `var::show()` GUI support:

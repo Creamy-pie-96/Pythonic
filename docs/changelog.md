@@ -13,6 +13,41 @@ Will use semantic versioning and short incremental notes for each release.
 
 ### Added
 
+#### Terminal Graphics Engine Enhancements
+
+- **View (Camera) System**: SFML-compatible View class for scrolling/zooming games
+  - `View` class with center, size, rotation, viewport
+  - `setView()`, `getView()`, `getDefaultView()` on Canvas
+  - `mapPixelToCoords()` / `mapCoordsToPixel()` for coordinate conversion
+  - Viewport support for split-screen rendering
+- **Transform Class**: 2D transformation matrix
+  - `translate()`, `rotate()`, `scale()` methods
+  - `combine()` for chaining transforms
+  - `getInverse()` for reverse transformations
+  - `transformPoint()` / `transformRect()` for applying transforms
+
+- **BlendMode Enum**: Color blending modes
+  - `Alpha`: Standard alpha blending (default)
+  - `Add`: Additive blending for glows/lights
+  - `Multiply`: Multiplicative for shadows
+  - `None`: Direct overwrite
+
+- **RenderStates Struct**: Bundled rendering state for draw calls
+
+### Fixed
+
+#### Resource Leak Fixes
+
+- **Mouse Terminal State Leak**: Mouse coordinates no longer pollute terminal after game exits
+  - Added mouse escape code cleanup to `Canvas::detail::restoreTerminal()`
+  - Added `atexit()` handler in `Mouse::init()` for terminal mouse mode cleanup
+- **Keyboard Terminal State Leak**: Terminal raw mode now properly restored on exit
+  - Added `atexit()` handler in `Keyboard::setRawMode()` for automatic cleanup
+
+- **Signal Handler Improvements**:
+  - Canvas signal handler now disables mouse tracking
+  - Added cleanup callback registry in `Canvas::detail`
+
 #### Dispatch Table-Based Operator System
 
 - **Refactored operator dispatch** using function pointer tables for O(1) type-based dispatch

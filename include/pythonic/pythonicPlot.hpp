@@ -1640,8 +1640,14 @@ namespace pythonic
                     // Save old signal handler and install ours
                     _old_handler = std::signal(SIGINT, animation_signal_handler);
 
+                    // Enter alternate screen buffer (like vim/nano)
+                    std::cout << "\033[?1049h" << std::flush;
+
                     // Hide cursor
                     std::cout << "\033[?25l" << std::flush;
+
+                    // Clear alternate screen
+                    std::cout << "\033[2J" << std::flush;
                 }
 
                 ~TerminalStateGuard()
@@ -1649,9 +1655,8 @@ namespace pythonic
                     // Restore cursor
                     std::cout << "\033[?25h" << std::flush;
 
-                    // Clear screen back to normal position and add newline
-                    std::cout << "\n"
-                              << std::flush;
+                    // Leave alternate screen buffer (restores previous content)
+                    std::cout << "\033[?1049l" << std::flush;
 
                     // Restore old signal handler
                     if (_old_handler != SIG_ERR)
@@ -1753,19 +1758,27 @@ namespace pythonic
 
                     (plot_one(plots), ...);
 
-                    std::cout << "\033[H" << fig.render_to_string();
+                    // Build complete frame in a string buffer first (double buffering)
+                    std::ostringstream frame;
+                    frame << "\033[H"; // Move cursor home
+                    frame << fig.render_to_string();
 
                     // Show different message depending on loop setting
                     if (cfg.loop_animation)
                     {
-                        std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
-                                  << "s (Press Ctrl+C to stop)" << std::flush;
+                        frame << "\nt = " << std::fixed << std::setprecision(2) << t
+                              << "s (Press Ctrl+C to stop)";
                     }
                     else
                     {
-                        std::cout << "\nt = " << std::fixed << std::setprecision(2) << t
-                                  << "s / " << cfg.duration << "s" << std::flush;
+                        frame << "\nt = " << std::fixed << std::setprecision(2) << t
+                              << "s / " << cfg.duration << "s";
                     }
+
+                    // Write entire frame at once using C I/O for speed
+                    std::string frame_str = frame.str();
+                    std::fwrite(frame_str.data(), 1, frame_str.size(), stdout);
+                    std::fflush(stdout);
 
                     std::this_thread::sleep_for(frame_time);
                 }

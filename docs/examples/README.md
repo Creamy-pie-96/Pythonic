@@ -206,6 +206,62 @@ cmake --build build
 
 > **Note:** OpenCL support is completely optional. Video playback works without it, just with potentially more flickering on high-resolution colored videos.
 
+### Optional: True Simultaneous Key Detection (Linux)
+
+For games and interactive applications that require detecting multiple keys pressed simultaneously, the TerminalGraphics keyboard system provides enhanced input handling.
+
+#### How It Works:
+
+- **Windows**: Automatic via `GetAsyncKeyState()` - no setup required
+- **macOS/Linux (default)**: Uses a 200ms "sticky window" for simulated multi-key detection
+- **Linux (evdev)**: Optional direct hardware access for true simultaneous detection
+
+#### Linux (evdev) Setup:
+
+For true multi-key detection on Linux, you need:
+
+1. Read access to `/dev/input/event*` devices
+2. Define `PYTHONIC_USE_EVDEV` when compiling
+
+```bash
+# Add your user to the input group (log out and back in after)
+sudo usermod -aG input $USER
+
+# Compile with evdev support
+g++ -std=c++20 -DPYTHONIC_USE_EVDEV -Iinclude -o game game.cpp -pthread
+```
+
+#### CMake Configuration:
+
+```bash
+# Enable evdev when configuring (Linux only, auto-detected)
+cmake -B build -DENABLE_EVDEV=ON
+cmake --build build
+```
+
+#### How to Use:
+
+```cpp
+#include <pythonic/TerminalGraphics.hpp>
+using namespace Pythonic::TG;
+
+int main() {
+    Keyboard::init();
+
+    while (true) {
+        // On Windows and Linux with evdev: true simultaneous detection
+        // On other systems: simulated via sticky window
+        if (Keyboard::isKeyPressed(Key::W) && Keyboard::isKeyPressed(Key::D)) {
+            // Move forward-right diagonally
+        }
+    }
+
+    Keyboard::shutdown();
+}
+```
+
+> **Note:** The terminal mode fallback (without evdev) still provides good multi-key simulation using a 200ms sticky window - most games will work fine without evdev.
+
 ---
 
 ## Step 1: Clone the Pythonic Library
