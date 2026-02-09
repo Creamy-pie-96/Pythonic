@@ -7,6 +7,12 @@
 #include <thread>
 #include <atomic>
 #include <sys/stat.h>
+#ifdef _WIN32
+#include <windows.h>
+#else
+#include <sys/ioctl.h>
+#include <unistd.h>
+#endif
 #if __cplusplus >= 201703L && __has_include(<filesystem>)
 #include <filesystem>
 #endif
@@ -35,12 +41,82 @@ namespace pythonic
             size_t _total_frames;
             size_t _current_frame;
             std::chrono::steady_clock::time_point _start_time;
-            int _bar_width;
+            int _bar_width; // user hint (0 = auto-fit to terminal)
             std::string _stage;
             bool _indeterminate; // For stages where total is unknown
 
+            /// @brief Get current terminal column count.
+            static int terminal_cols()
+            {
+#ifdef _WIN32
+                CONSOLE_SCREEN_BUFFER_INFO csbi;
+                if (GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &csbi))
+                    return csbi.srWindow.Right - csbi.srWindow.Left + 1;
+#else
+                struct winsize ws;
+                if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &ws) == 0 && ws.ws_col > 0)
+                    return ws.ws_col;
+#endif
+                return 80; // fallback
+            }
+
+            /// @brief Compute visible character count of a string (strip ANSI escapes).
+            static int visible_len(const std::string &s)
+            {
+                int len = 0;
+                bool in_esc = false;
+                for (size_t i = 0; i < s.size();)
+                {
+                    unsigned char c = s[i];
+                    if (c == '\033')
+                    {
+                        in_esc = true;
+                        ++i;
+                        continue;
+                    }
+                    if (in_esc)
+                    {
+                        if (c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z')
+                            in_esc = false;
+                        ++i;
+                        continue;
+                    }
+                    if (c == '\r')
+                    {
+                        ++i;
+                        continue;
+                    }
+                    // UTF-8 multi-byte: count as 1 visible char per codepoint
+                    if (c < 0x80)
+                    {
+                        ++len;
+                        ++i;
+                    }
+                    else if (c < 0xC0)
+                    {
+                        ++i;
+                    } // continuation (shouldn't start here)
+                    else if (c < 0xE0)
+                    {
+                        ++len;
+                        i += 2;
+                    }
+                    else if (c < 0xF0)
+                    {
+                        ++len;
+                        i += 3;
+                    }
+                    else
+                    {
+                        ++len;
+                        i += 4;
+                    }
+                }
+                return len;
+            }
+
         public:
-            ExportProgress(size_t total_frames = 0, int bar_width = 40)
+            ExportProgress(size_t total_frames = 0, int bar_width = 0)
                 : _total_frames(total_frames), _current_frame(0),
                   _bar_width(bar_width), _stage("Initializing..."), _indeterminate(total_frames == 0)
             {
@@ -168,9 +244,38 @@ namespace pythonic
                         eta = time_per_frame * remaining_frames;
                     }
 
-                    // Build progress bar
-                    int filled = static_cast<int>(progress * _bar_width);
-                    int empty = _bar_width - filled;
+                    // ---- Build the text parts FIRST so we can measure overhead ----
+                    // Percentage string: "100% "
+                    std::string pct_str = std::to_string(percent) + "% ";
+                    while (pct_str.size() < 5)
+                        pct_str = " " + pct_str; // pad to 5 visible chars
+
+                    // Frame counter: "(240/240) "
+                    std::string frame_str = "(" + std::to_string(_current_frame) + "/" + std::to_string(_total_frames) + ") ";
+
+                    // Time info
+                    std::string time_str = format_time(elapsed);
+                    std::string eta_str;
+                    if (eta > 0 && progress < 1.0)
+                        eta_str = " | ETA: " + format_time(eta);
+
+                    // Total visible overhead (excluding the bar itself):
+                    //   <stage> [???] <pct> <frames> <time><eta>
+                    //   The "[] " around the bar adds 3 visible chars
+                    int overhead = static_cast<int>(_stage.size()) + 1 // stage + space
+                                   + 3                                 // "[] "
+                                   + static_cast<int>(pct_str.size()) + static_cast<int>(frame_str.size()) + static_cast<int>(time_str.size()) + static_cast<int>(eta_str.size());
+
+                    // Determine bar width: use user hint if set, else auto-fit
+                    int cols = terminal_cols();
+                    int bar_w = _bar_width > 0 ? _bar_width : (cols - overhead);
+                    if (bar_w < 5)
+                        bar_w = 5; // minimum useful bar
+                    if (bar_w > 200)
+                        bar_w = 200; // sanity cap
+
+                    int filled = static_cast<int>(progress * bar_w);
+                    int empty = bar_w - filled;
 
                     bar << "\033[90m[\033[0m";
                     bar << "\033[92m"; // Green for filled
@@ -182,16 +287,16 @@ namespace pythonic
                     bar << "\033[90m]\033[0m ";
 
                     // Percentage
-                    bar << "\033[93m" << std::setw(3) << percent << "%\033[0m ";
+                    bar << "\033[93m" << pct_str << "\033[0m";
 
                     // Frame counter
-                    bar << "\033[90m(" << _current_frame << "/" << _total_frames << ")\033[0m ";
+                    bar << "\033[90m" << frame_str << "\033[0m";
 
                     // Time info
-                    bar << "\033[35m" << format_time(elapsed) << "\033[0m";
-                    if (eta > 0 && progress < 1.0)
+                    bar << "\033[35m" << time_str << "\033[0m";
+                    if (!eta_str.empty())
                     {
-                        bar << " \033[90m| ETA:\033[0m \033[33m" << format_time(eta) << "\033[0m";
+                        bar << " \033[90m|\033[0m \033[33mETA: " << format_time(eta) << "\033[0m";
                     }
                 }
 
@@ -231,42 +336,20 @@ namespace pythonic
 
         /**
          * @brief Get video duration in seconds using ffprobe
+         * Delegates to centralized accel API.
          */
         inline double get_video_duration(const std::string &filepath)
         {
-            std::string cmd = "ffprobe -v quiet -show_entries format=duration "
-                              "-of csv=p=0 \"" +
-                              filepath + "\" 2>/dev/null";
-
-            FILE *pipe = popen(cmd.c_str(), "r");
-            if (!pipe)
-                return 0;
-
-            char buffer[64];
-            std::string result;
-            if (fgets(buffer, sizeof(buffer), pipe))
-                result = buffer;
-            pclose(pipe);
-
-            try
-            {
-                return std::stod(result);
-            }
-            catch (...)
-            {
-                return 0;
-            }
+            return pythonic::accel::video::get_duration(filepath);
         }
 
         /**
          * @brief Estimate total frames based on duration and fps
+         * Delegates to centralized accel API.
          */
         inline size_t estimate_frame_count(const std::string &filepath, double fps)
         {
-            double duration = get_video_duration(filepath);
-            if (duration <= 0 || fps <= 0)
-                return 0;
-            return static_cast<size_t>(duration * fps);
+            return pythonic::accel::video::estimate_frame_count(filepath, fps);
         }
 
         /**
@@ -929,37 +1012,8 @@ namespace pythonic
          */
         inline double get_video_fps(const std::string &filepath)
         {
-            std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                              "-show_entries stream=r_frame_rate "
-                              "-of csv=p=0 \"" +
-                              filepath + "\" 2>/dev/null";
-
-            FILE *pipe = popen(cmd.c_str(), "r");
-            if (!pipe)
-                return 0;
-
-            char buffer[256];
-            std::string result;
-            while (fgets(buffer, sizeof(buffer), pipe))
-                result += buffer;
-            pclose(pipe);
-
-            // Parse: fps_num/fps_den
-            size_t slash = result.find('/');
-            if (slash != std::string::npos)
-            {
-                try
-                {
-                    double num = std::stod(result.substr(0, slash));
-                    double den = std::stod(result.substr(slash + 1));
-                    if (den > 0)
-                        return num / den;
-                }
-                catch (...)
-                {
-                }
-            }
-            return 0;
+            // Delegate to centralized accel API
+            return pythonic::accel::video::get_fps(filepath);
         }
 
         // Re-export ExportConfig and RenderConfig for convenience
@@ -1235,13 +1289,12 @@ namespace pythonic
 
                         std::string temp_frame = "/tmp/pythonic_export_frame_" +
                                                  std::to_string(std::hash<std::string>{}(input_path)) + ".png";
-                        std::string cmd = "ffmpeg -y -i \"" + actual_path + "\" -vframes 1 \"" + temp_frame + "\" 2>/dev/null";
-                        int result = std::system(cmd.c_str());
+                        bool ok = pythonic::accel::video::extract_single_frame(actual_path, temp_frame);
 
                         if (is_temp)
                             std::remove(actual_path.c_str());
 
-                        if (result != 0)
+                        if (!ok)
                             return false;
 
                         rendered = render_image_to_string(temp_frame, mode, max_width, threshold);
@@ -1291,13 +1344,12 @@ namespace pythonic
 
                         std::string temp_frame = "/tmp/pythonic_export_frame_" +
                                                  std::to_string(std::hash<std::string>{}(input_path)) + ".png";
-                        std::string cmd = "ffmpeg -y -i \"" + actual_path + "\" -vframes 1 \"" + temp_frame + "\" 2>/dev/null";
-                        int result = std::system(cmd.c_str());
+                        bool ok = pythonic::accel::video::extract_single_frame(actual_path, temp_frame);
 
                         if (is_temp)
                             std::remove(actual_path.c_str());
 
-                        if (result != 0)
+                        if (!ok)
                             return false;
 
                         rendered = render_image_to_string(temp_frame, mode, max_width, threshold);
@@ -1420,12 +1472,6 @@ namespace pythonic
                         }
                     }
 
-                    // Extract frames from video at the target fps
-                    // Note: -ss before -i seeks input (fast), duration/time filters after
-                    std::string extract_cmd = "ffmpeg -y " + time_opts + "-i \"" + actual_path + "\"" + duration_opt +
-                                              " -vf \"fps=" + fps_str + "\" \"" +
-                                              temp_dir + "/frame_%05d.png\" 2>/dev/null";
-
                     // Atomic flag to signal extraction done
                     std::atomic<bool> extraction_done{false};
 
@@ -1450,8 +1496,12 @@ namespace pythonic
                             std::this_thread::sleep_for(std::chrono::milliseconds(250));
                         } });
 
-                    // Run ffmpeg extraction (this blocks until done)
-                    int result = std::system(extract_cmd.c_str());
+                    // Extract frames using centralized accel API (blocks until done)
+                    int result = pythonic::accel::video::extract_frames(
+                                     actual_path, temp_dir, static_cast<double>(actual_fps),
+                                     start_time, end_time)
+                                     ? 0
+                                     : 1;
 
                     // Signal update thread to stop and wait for it
                     extraction_done.store(true);
@@ -1528,46 +1578,28 @@ namespace pythonic
                                 char frame_name[128];
                                 snprintf(frame_name, sizeof(frame_name), "%s/frame_%05zu.png", temp_dir.c_str(), frame_num);
 
-                                // Convert PNG to PPM using ImageMagick
+                                // Convert PNG to PPM and load using centralized accel API
                                 std::string temp_ppm = temp_dir + "/temp_" + std::to_string(frame_num) + ".ppm";
-                                std::string cmd = "convert \"" + std::string(frame_name) + "\" -resize " +
-                                                  std::to_string(max_width) + "x -depth 8 \"" + temp_ppm + "\" 2>/dev/null";
-                                if (std::system(cmd.c_str()) != 0)
+                                if (!pythonic::accel::image_io::convert_to_ppm(std::string(frame_name), temp_ppm, max_width))
                                 {
                                     fast_frames_done++;
                                     continue;
                                 }
 
-                                // Read PPM directly
-                                std::ifstream ppm(temp_ppm, std::ios::binary);
-                                if (!ppm)
+                                auto ppm_img = pythonic::accel::image_io::load_ppm_pgm(temp_ppm);
+                                std::remove(temp_ppm.c_str());
+                                if (!ppm_img.valid())
                                 {
-                                    std::remove(temp_ppm.c_str());
                                     fast_frames_done++;
                                     continue;
                                 }
 
-                                std::string magic;
-                                ppm >> magic;
-                                char c;
-                                ppm.get(c);
-                                while (ppm.peek() == '#')
-                                {
-                                    std::string comment;
-                                    std::getline(ppm, comment);
-                                }
-                                int width, height, maxval;
-                                ppm >> width >> height >> maxval;
-                                ppm.get(c);
+                                int width = ppm_img.width;
+                                int height = ppm_img.height;
 
                                 // Load into BWBlockCanvas
                                 pythonic::draw::BWBlockCanvas canvas = pythonic::draw::BWBlockCanvas::from_pixels(width, height);
-                                std::vector<uint8_t> rgb_data(width * height * 3);
-                                ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
-                                ppm.close();
-                                std::remove(temp_ppm.c_str());
-
-                                canvas.load_frame_rgb(rgb_data.data(), width, height, threshold);
+                                canvas.load_frame_rgb(ppm_img.data.data(), width, height, threshold);
 
                                 // Direct export using fast path
                                 auto img = pythonic::ex::render_half_block_direct(

@@ -73,6 +73,7 @@
 #include "pythonicVars.hpp"
 #include "pythonicFunction.hpp"
 #include "pythonicLiveDraw.hpp"
+#include "pythonicAccel.hpp"
 
 namespace pythonic
 {
@@ -1182,7 +1183,7 @@ namespace pythonic
                             }
 
                             // Braille character
-                            char32_t braille = 0x2800 + pattern;
+                            char32_t braille = pythonic::accel::braille::BASE + pattern;
                             // Convert to UTF-8
                             if (braille < 0x800)
                             {

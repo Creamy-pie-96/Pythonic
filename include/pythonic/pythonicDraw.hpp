@@ -119,6 +119,8 @@
 #include <iomanip>
 #include <tuple>
 
+#include "pythonicAccel.hpp"
+
 // Forward declare media functions
 namespace pythonic
 {
@@ -167,12 +169,42 @@ namespace pythonic
                 return flag;
             }
 
+#ifndef _WIN32
+            // Global backup of the original terminal state (before any raw mode)
+            inline struct termios &saved_termios()
+            {
+                static struct termios t;
+                return t;
+            }
+            inline bool &termios_saved()
+            {
+                static bool saved = false;
+                return saved;
+            }
+#endif
+
+            // Save the current terminal state globally (call before entering raw mode)
+            inline void save_terminal_state()
+            {
+#ifndef _WIN32
+                if (!termios_saved())
+                {
+                    if (isatty(STDIN_FILENO) && tcgetattr(STDIN_FILENO, &saved_termios()) == 0)
+                        termios_saved() = true;
+                }
+#endif
+            }
+
             // The cleanup function that restores terminal state
             inline void restore_terminal()
             {
-                // Use raw output to avoid any C++ stream buffering issues in signal context
-                const char *restore = "\033[?25h\033[0m\033[H\033[J";
+#ifndef _WIN32
+                // Restore termios (critical — this is what "un-breaks" the terminal)
+                if (termios_saved())
+                    tcsetattr(STDIN_FILENO, TCSANOW, &saved_termios());
+#endif
                 // Show cursor, reset attributes, go home, clear screen
+                const char *restore = "\033[?25h\033[0m\033[H\033[J";
                 [[maybe_unused]] auto result = write(STDOUT_FILENO, restore, strlen(restore));
             }
 
@@ -192,6 +224,8 @@ namespace pythonic
             {
                 if (!handler_installed().exchange(true))
                 {
+                    // Save terminal state BEFORE any raw mode changes
+                    save_terminal_state();
                     std::signal(SIGINT, signal_handler_func);
                     std::signal(SIGTERM, signal_handler_func);
 #ifndef _WIN32
@@ -214,10 +248,15 @@ namespace pythonic
                 interrupted() = 0;
             }
 
-            // Mark playback as ended
+            // Mark playback as ended — restore terminal state
             inline void end_playback()
             {
                 playback_active() = false;
+#ifndef _WIN32
+                // Always restore termios on end to ensure cooked mode is back
+                if (termios_saved())
+                    tcsetattr(STDIN_FILENO, TCSANOW, &saved_termios());
+#endif
             }
         } // namespace signal_handler
 
@@ -846,16 +885,10 @@ namespace pythonic
 #endif
         }
 
-        /**
-         * Braille dot bit values for each position in a 2×4 cell
-         * Index: [row][col]
-         */
-        constexpr uint8_t BRAILLE_DOTS[4][2] = {
-            {0x01, 0x08}, // Row 0: bit 0, bit 3
-            {0x02, 0x10}, // Row 1: bit 1, bit 4
-            {0x04, 0x20}, // Row 2: bit 2, bit 5
-            {0x40, 0x80}  // Row 3: bit 6, bit 7
-        };
+        // Braille dot bit values — defined in pythonicAccel.hpp
+        using pythonic::accel::braille::DOTS;
+        // Alias for backward compatibility within this file
+        static constexpr auto &BRAILLE_DOTS = DOTS;
 
         /**
          * @brief Precomputed lookup table for all 256 braille patterns
@@ -970,7 +1003,7 @@ namespace pythonic
              */
             uint8_t to_gray() const
             {
-                return static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                return accel::pixel::to_gray(r, g, b);
             }
         };
 
@@ -1342,7 +1375,7 @@ namespace pythonic
                                 uint8_t b = data[idx + 2];
 
                                 // Grayscale for threshold
-                                uint8_t gray = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                uint8_t gray = accel::pixel::to_gray(r, g, b);
 
                                 if (gray >= threshold)
                                 {
@@ -1471,10 +1504,8 @@ namespace pythonic
              */
             void load_frame_rgb_dithered(const uint8_t *data, int width, int height)
             {
-                // Bayer 2x2 dithering matrix (scaled to 0-255)
-                static const int BAYER[2][2] = {
-                    {0, 128},
-                    {192, 64}};
+                // Bayer 2x2 dithering matrix — defined in pythonicAccel.hpp
+                static constexpr auto &BAYER = pythonic::accel::dither::BAYER_2x2;
 
                 // Resize if needed
                 size_t new_cw = (width + 1) / 2;
@@ -1521,7 +1552,7 @@ namespace pythonic
                                 uint8_t b = data[idx + 2];
 
                                 // Grayscale for dithering decision
-                                uint8_t gray = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                uint8_t gray = accel::pixel::to_gray(r, g, b);
 
                                 // Apply dithering threshold
                                 int dither_threshold = BAYER[row % 2][col % 2];
@@ -1564,31 +1595,12 @@ namespace pythonic
              */
             bool load_ppm_flood(const std::string &filename)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid() || !img.is_color)
                     return false;
-
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P6")
-                    return false;
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c);
-
-                if (maxval > 255)
-                    return false;
+                int width = img.width;
+                int height = img.height;
+                const auto &rgbbuf = img.data;
 
                 // Resize canvas
                 _char_width = (width + 1) / 2;
@@ -1597,10 +1609,6 @@ namespace pythonic
                 _pixel_height = _char_height * 4;
                 _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0xFF)); // All dots lit
                 _colors.assign(_char_height, std::vector<RGB>(_char_width));
-
-                // Read entire image into buffer
-                std::vector<uint8_t> rgbbuf(width * height * 3);
-                file.read(reinterpret_cast<char *>(rgbbuf.data()), rgbbuf.size());
 
                 // Process each character cell - compute average RGB
                 for (size_t cy = 0; cy < _char_height; ++cy)
@@ -1650,34 +1658,15 @@ namespace pythonic
              */
             bool load_ppm_dithered(const std::string &filename)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid() || !img.is_color)
                     return false;
+                int width = img.width;
+                int height = img.height;
+                const auto &rgbbuf = img.data;
 
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P6")
-                    return false;
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c);
-
-                if (maxval > 255)
-                    return false;
-
-                // Bayer 2x2 matrix
-                static const int BAYER[2][2] = {{0, 128}, {192, 64}};
+                // Bayer 2x2 matrix — defined in pythonicAccel.hpp
+                static constexpr auto &BAYER = pythonic::accel::dither::BAYER_2x2;
 
                 // Resize canvas
                 _char_width = (width + 1) / 2;
@@ -1686,10 +1675,6 @@ namespace pythonic
                 _pixel_height = _char_height * 4;
                 _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
                 _colors.assign(_char_height, std::vector<RGB>(_char_width));
-
-                // Read entire image into buffer
-                std::vector<uint8_t> rgbbuf(width * height * 3);
-                file.read(reinterpret_cast<char *>(rgbbuf.data()), rgbbuf.size());
 
                 // Process each character cell
                 for (size_t cy = 0; cy < _char_height; ++cy)
@@ -1724,7 +1709,7 @@ namespace pythonic
                                 total_count++;
 
                                 // Grayscale for dithering
-                                uint8_t gray = (299 * r + 587 * g + 114 * b) / 1000;
+                                uint8_t gray = accel::pixel::to_gray(r, g, b);
                                 if (gray >= BAYER[row % 2][col % 2])
                                 {
                                     pattern |= BRAILLE_DOTS[row][col];
@@ -1757,31 +1742,12 @@ namespace pythonic
              */
             bool load_ppm_dithered_floyd(const std::string &filename)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid() || !img.is_color)
                     return false;
-
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P6")
-                    return false;
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c);
-
-                if (maxval > 255)
-                    return false;
+                int width = img.width;
+                int height = img.height;
+                const auto &rgbbuf = img.data;
 
                 // Resize canvas
                 _char_width = (width + 1) / 2;
@@ -1791,10 +1757,6 @@ namespace pythonic
                 _patterns.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
                 _colors.assign(_char_height, std::vector<RGB>(_char_width));
 
-                // Read entire image into buffer
-                std::vector<uint8_t> rgbbuf(width * height * 3);
-                file.read(reinterpret_cast<char *>(rgbbuf.data()), rgbbuf.size());
-
                 // Convert to grayscale float buffer for error diffusion
                 std::vector<std::vector<float>> gray(height, std::vector<float>(width));
                 for (int y = 0; y < height; ++y)
@@ -1802,7 +1764,7 @@ namespace pythonic
                     for (int x = 0; x < width; ++x)
                     {
                         size_t idx = (y * width + x) * 3;
-                        gray[y][x] = static_cast<float>((299 * rgbbuf[idx] + 587 * rgbbuf[idx + 1] + 114 * rgbbuf[idx + 2]) / 1000);
+                        gray[y][x] = static_cast<float>(accel::pixel::to_gray(rgbbuf[idx], rgbbuf[idx + 1], rgbbuf[idx + 2]));
                     }
                 }
 
@@ -2034,14 +1996,14 @@ namespace pythonic
                         if (py_top < static_cast<size_t>(height))
                         {
                             size_t idx = (py_top * width + cx) * 3;
-                            gray_top = static_cast<uint8_t>((299 * data[idx] + 587 * data[idx + 1] + 114 * data[idx + 2]) / 1000);
+                            gray_top = accel::pixel::to_gray(data[idx], data[idx + 1], data[idx + 2]);
                         }
 
                         // Bottom pixel - convert RGB to grayscale
                         if (py_bot < static_cast<size_t>(height))
                         {
                             size_t idx = (py_bot * width + cx) * 3;
-                            gray_bot = static_cast<uint8_t>((299 * data[idx] + 587 * data[idx + 1] + 114 * data[idx + 2]) / 1000);
+                            gray_bot = accel::pixel::to_gray(data[idx], data[idx + 1], data[idx + 2]);
                         }
 
                         _pixels[cy][cx] = {gray_top, gray_bot};
@@ -2331,16 +2293,8 @@ namespace pythonic
                 //
                 // Dots light up progressively: at 10% brightness only the
                 // lowest threshold dot lights; at 90% almost all light.
-                static constexpr uint8_t dither_thresholds[8] = {
-                    16,  // row 0, col 0 - lights at ~6% brightness (first)
-                    144, // row 0, col 1 - lights at ~56% brightness
-                    80,  // row 1, col 0 - lights at ~31% brightness
-                    208, // row 1, col 1 - lights at ~81% brightness
-                    112, // row 2, col 0 - lights at ~44% brightness
-                    240, // row 2, col 1 - lights at ~94% brightness (last)
-                    48,  // row 3, col 0 - lights at ~19% brightness
-                    176  // row 3, col 1 - lights at ~69% brightness
-                };
+                // Ordered dither thresholds — defined in pythonicAccel.hpp
+                static constexpr auto &dither_thresholds = pythonic::accel::dither::BRAILLE_ORDERED;
 
                 // Compute pattern: dot lights if pixel brightness >= threshold
                 uint8_t pattern = 0;
@@ -2421,9 +2375,8 @@ namespace pythonic
                     _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
                 }
 
-                // Use same proper Bayer-style thresholds as set_block_gray_dithered
-                static constexpr uint8_t dither_thresholds[8] = {
-                    16, 144, 80, 208, 112, 240, 48, 176};
+                // Ordered dither thresholds — defined in pythonicAccel.hpp
+                static constexpr auto &dither_thresholds = pythonic::accel::dither::BRAILLE_ORDERED;
 
                 uint8_t pattern = 0;
                 int sum = 0;
@@ -2672,10 +2625,7 @@ namespace pythonic
 
                                 size_t idx = (y * width + x) * 3;
                                 // Convert RGB to grayscale: 0.299R + 0.587G + 0.114B
-                                gray[row * 2 + col] = (uint8_t)((299 * data[idx] +
-                                                                 587 * data[idx + 1] +
-                                                                 114 * data[idx + 2]) /
-                                                                1000);
+                                gray[row * 2 + col] = accel::pixel::to_gray(data[idx], data[idx + 1], data[idx + 2]);
                             }
                         }
 
@@ -2760,7 +2710,7 @@ namespace pythonic
                 for (int i = 0; i < width * height; ++i)
                 {
                     size_t idx = i * 3;
-                    gray[i] = static_cast<uint8_t>((299 * data[idx] + 587 * data[idx + 1] + 114 * data[idx + 2]) / 1000);
+                    gray[i] = accel::pixel::to_gray(data[idx], data[idx + 1], data[idx + 2]);
                 }
                 load_frame_dithered(gray.data(), width, height);
             }
@@ -3192,33 +3142,11 @@ namespace pythonic
              */
             bool load_pgm_ppm(const std::string &filename, int threshold = 128)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid())
                     return false;
-
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P5" && magic != "P6")
-                    return false;
-
-                bool is_color = (magic == "P6");
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c); // Skip single whitespace
-
-                if (maxval > 255)
-                    return false;
+                int width = img.width;
+                int height = img.height;
 
                 // Resize canvas to fit image
                 _char_width = (width + 1) / 2;
@@ -3233,18 +3161,14 @@ namespace pythonic
                     for (int x = 0; x < width; ++x)
                     {
                         int gray;
-                        if (is_color)
+                        if (img.is_color)
                         {
-                            unsigned char rgb[3];
-                            file.read(reinterpret_cast<char *>(rgb), 3);
-                            // Convert to grayscale: 0.299R + 0.587G + 0.114B
-                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
+                            size_t idx = (y * width + x) * 3;
+                            gray = accel::pixel::to_gray(img.data[idx], img.data[idx + 1], img.data[idx + 2]);
                         }
                         else
                         {
-                            unsigned char g;
-                            file.read(reinterpret_cast<char *>(&g), 1);
-                            gray = g;
+                            gray = img.data[y * width + x];
                         }
 
                         if (gray >= threshold)
@@ -3264,33 +3188,11 @@ namespace pythonic
              */
             bool load_pgm_ppm_dithered(const std::string &filename)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid())
                     return false;
-
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P5" && magic != "P6")
-                    return false;
-
-                bool is_color = (magic == "P6");
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c); // Skip single whitespace
-
-                if (maxval > 255)
-                    return false;
+                int width = img.width;
+                int height = img.height;
 
                 // Resize canvas to fit image
                 _char_width = (width + 1) / 2;
@@ -3299,29 +3201,17 @@ namespace pythonic
                 _pixel_height = _char_height * 4;
                 _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
 
-                // Read entire image into buffer first
-                std::vector<uint8_t> grayscale(width * height);
-
-                for (int y = 0; y < height; ++y)
+                // Convert to grayscale buffer
+                std::vector<uint8_t> grayscale;
+                if (img.is_color)
                 {
-                    for (int x = 0; x < width; ++x)
-                    {
-                        int gray;
-                        if (is_color)
-                        {
-                            unsigned char rgb[3];
-                            file.read(reinterpret_cast<char *>(rgb), 3);
-                            // Convert to grayscale: 0.299R + 0.587G + 0.114B
-                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
-                        }
-                        else
-                        {
-                            unsigned char g;
-                            file.read(reinterpret_cast<char *>(&g), 1);
-                            gray = g;
-                        }
-                        grayscale[y * width + x] = static_cast<uint8_t>(gray);
-                    }
+                    grayscale.resize(width * height);
+                    for (int i = 0; i < width * height; ++i)
+                        grayscale[i] = accel::pixel::to_gray(img.data[i * 3], img.data[i * 3 + 1], img.data[i * 3 + 2]);
+                }
+                else
+                {
+                    grayscale = std::move(img.data);
                 }
 
                 // Apply dithered rendering using block operations
@@ -3339,56 +3229,23 @@ namespace pythonic
              */
             bool load_pgm_ppm_floyd_steinberg(const std::string &filename)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid())
                     return false;
+                int width = img.width;
+                int height = img.height;
 
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P5" && magic != "P6")
-                    return false;
-
-                bool is_color = (magic == "P6");
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
+                // Convert to grayscale buffer
+                std::vector<uint8_t> grayscale;
+                if (img.is_color)
                 {
-                    std::string comment;
-                    std::getline(file, comment);
+                    grayscale.resize(width * height);
+                    for (int i = 0; i < width * height; ++i)
+                        grayscale[i] = accel::pixel::to_gray(img.data[i * 3], img.data[i * 3 + 1], img.data[i * 3 + 2]);
                 }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c); // Skip single whitespace
-
-                if (maxval > 255)
-                    return false;
-
-                // Read entire image into grayscale buffer
-                std::vector<uint8_t> grayscale(width * height);
-
-                for (int y = 0; y < height; ++y)
+                else
                 {
-                    for (int x = 0; x < width; ++x)
-                    {
-                        int gray;
-                        if (is_color)
-                        {
-                            unsigned char rgb[3];
-                            file.read(reinterpret_cast<char *>(rgb), 3);
-                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
-                        }
-                        else
-                        {
-                            unsigned char g;
-                            file.read(reinterpret_cast<char *>(&g), 1);
-                            gray = g;
-                        }
-                        grayscale[y * width + x] = static_cast<uint8_t>(gray);
-                    }
+                    grayscale = std::move(img.data);
                 }
 
                 // Use Floyd-Steinberg dithering
@@ -3411,33 +3268,11 @@ namespace pythonic
              */
             bool load_pgm_ppm_grayscale(const std::string &filename, int threshold = 128, bool use_dithering = false)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid())
                     return false;
-
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P5" && magic != "P6")
-                    return false;
-
-                bool is_color = (magic == "P6");
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c);
-
-                if (maxval > 255)
-                    return false;
+                int width = img.width;
+                int height = img.height;
 
                 // Resize canvas and grayscale storage
                 _char_width = (width + 1) / 2;
@@ -3447,28 +3282,17 @@ namespace pythonic
                 _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
                 _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
 
-                // Read entire image into buffer
-                std::vector<uint8_t> graybuf(width * height);
-
-                for (int y = 0; y < height; ++y)
+                // Convert to grayscale buffer
+                std::vector<uint8_t> graybuf;
+                if (img.is_color)
                 {
-                    for (int x = 0; x < width; ++x)
-                    {
-                        int gray;
-                        if (is_color)
-                        {
-                            unsigned char rgb[3];
-                            file.read(reinterpret_cast<char *>(rgb), 3);
-                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
-                        }
-                        else
-                        {
-                            unsigned char g;
-                            file.read(reinterpret_cast<char *>(&g), 1);
-                            gray = g;
-                        }
-                        graybuf[y * width + x] = static_cast<uint8_t>(gray);
-                    }
+                    graybuf.resize(width * height);
+                    for (int i = 0; i < width * height; ++i)
+                        graybuf[i] = accel::pixel::to_gray(img.data[i * 3], img.data[i * 3 + 1], img.data[i * 3 + 2]);
+                }
+                else
+                {
+                    graybuf = std::move(img.data);
                 }
 
                 // Process each character cell
@@ -3520,33 +3344,11 @@ namespace pythonic
              */
             bool load_pgm_ppm_flood(const std::string &filename)
             {
-                std::ifstream file(filename, std::ios::binary);
-                if (!file)
+                auto img = pythonic::accel::image_io::load_ppm_pgm(filename);
+                if (!img.valid())
                     return false;
-
-                std::string magic;
-                file >> magic;
-
-                if (magic != "P5" && magic != "P6")
-                    return false;
-
-                bool is_color = (magic == "P6");
-
-                // Skip comments
-                char c;
-                file.get(c);
-                while (file.peek() == '#')
-                {
-                    std::string comment;
-                    std::getline(file, comment);
-                }
-
-                int width, height, maxval;
-                file >> width >> height >> maxval;
-                file.get(c);
-
-                if (maxval > 255)
-                    return false;
+                int width = img.width;
+                int height = img.height;
 
                 // Resize canvas and grayscale storage
                 _char_width = (width + 1) / 2;
@@ -3556,28 +3358,17 @@ namespace pythonic
                 _canvas.assign(_char_height, std::vector<uint8_t>(_char_width, 0xFF)); // All dots lit
                 _grayscale.assign(_char_height, std::vector<uint8_t>(_char_width, 0));
 
-                // Read entire image into buffer
-                std::vector<uint8_t> graybuf(width * height);
-
-                for (int y = 0; y < height; ++y)
+                // Convert to grayscale buffer
+                std::vector<uint8_t> graybuf;
+                if (img.is_color)
                 {
-                    for (int x = 0; x < width; ++x)
-                    {
-                        int gray;
-                        if (is_color)
-                        {
-                            unsigned char rgb[3];
-                            file.read(reinterpret_cast<char *>(rgb), 3);
-                            gray = (299 * rgb[0] + 587 * rgb[1] + 114 * rgb[2]) / 1000;
-                        }
-                        else
-                        {
-                            unsigned char g;
-                            file.read(reinterpret_cast<char *>(&g), 1);
-                            gray = g;
-                        }
-                        graybuf[y * width + x] = static_cast<uint8_t>(gray);
-                    }
+                    graybuf.resize(width * height);
+                    for (int i = 0; i < width * height; ++i)
+                        graybuf[i] = accel::pixel::to_gray(img.data[i * 3], img.data[i * 3 + 1], img.data[i * 3 + 2]);
+                }
+                else
+                {
+                    graybuf = std::move(img.data);
                 }
 
                 // Process each character cell - compute average grayscale
@@ -3655,7 +3446,7 @@ namespace pythonic
                         size_t idx = (y * width + x) * 3;
                         if (idx + 2 < data.size())
                         {
-                            int gray = (299 * data[idx] + 587 * data[idx + 1] + 114 * data[idx + 2]) / 1000;
+                            int gray = accel::pixel::to_gray(data[idx], data[idx + 1], data[idx + 2]);
                             if (gray >= threshold)
                                 set_pixel(x, y);
                         }
@@ -4334,41 +4125,14 @@ namespace pythonic
             if (result != 0)
                 return "Error: Could not convert image. Install ImageMagick.\n";
 
-            // Read PPM file manually
-            std::ifstream ppm(temp_ppm, std::ios::binary);
-            if (!ppm)
-            {
-                std::remove(temp_ppm.c_str());
-                return "Error: Could not read converted image.\n";
-            }
-
-            std::string magic;
-            ppm >> magic;
-            if (magic != "P6")
-            {
-                ppm.close();
-                std::remove(temp_ppm.c_str());
-                return "Error: Invalid PPM format.\n";
-            }
-
-            // Skip comments
-            char c;
-            ppm.get(c);
-            while (ppm.peek() == '#')
-            {
-                std::string comment;
-                std::getline(ppm, comment);
-            }
-
-            int width, height, maxval;
-            ppm >> width >> height >> maxval;
-            ppm.get(c); // Skip whitespace
-
-            // Read RGB data
-            std::vector<uint8_t> rgb_data(width * height * 3);
-            ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
-            ppm.close();
+            // Load PPM file
+            auto img = pythonic::accel::image_io::load_ppm_pgm(temp_ppm);
             std::remove(temp_ppm.c_str());
+            if (!img.valid() || !img.is_color)
+                return "Error: Invalid PPM format.\n";
+            int width = img.width;
+            int height = img.height;
+            const auto &rgb_data = img.data;
 
             // Create color canvas and render
             ColorCanvas canvas = ColorCanvas::from_pixels(width, height);
@@ -4409,38 +4173,13 @@ namespace pythonic
             if (result != 0)
                 return "Error: Could not convert image. Install ImageMagick.\n";
 
-            std::ifstream ppm(temp_ppm, std::ios::binary);
-            if (!ppm)
-            {
-                std::remove(temp_ppm.c_str());
-                return "Error: Could not read converted image.\n";
-            }
-
-            std::string magic;
-            ppm >> magic;
-            if (magic != "P6")
-            {
-                ppm.close();
-                std::remove(temp_ppm.c_str());
-                return "Error: Invalid PPM format.\n";
-            }
-
-            char c;
-            ppm.get(c);
-            while (ppm.peek() == '#')
-            {
-                std::string comment;
-                std::getline(ppm, comment);
-            }
-
-            int width, height, maxval;
-            ppm >> width >> height >> maxval;
-            ppm.get(c);
-
-            std::vector<uint8_t> rgb_data(width * height * 3);
-            ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
-            ppm.close();
+            auto img = pythonic::accel::image_io::load_ppm_pgm(temp_ppm);
             std::remove(temp_ppm.c_str());
+            if (!img.valid() || !img.is_color)
+                return "Error: Invalid PPM format.\n";
+            int width = img.width;
+            int height = img.height;
+            const auto &rgb_data = img.data;
 
             BWBlockCanvas canvas = BWBlockCanvas::from_pixels(width, height);
             canvas.load_frame_rgb(rgb_data.data(), width, height, threshold);
@@ -4482,38 +4221,13 @@ namespace pythonic
             if (result != 0)
                 return "Error: Could not convert image. Install ImageMagick.\n";
 
-            std::ifstream ppm(temp_ppm, std::ios::binary);
-            if (!ppm)
-            {
-                std::remove(temp_ppm.c_str());
-                return "Error: Could not read converted image.\n";
-            }
-
-            std::string magic;
-            ppm >> magic;
-            if (magic != "P6")
-            {
-                ppm.close();
-                std::remove(temp_ppm.c_str());
-                return "Error: Invalid PPM format.\n";
-            }
-
-            char c;
-            ppm.get(c);
-            while (ppm.peek() == '#')
-            {
-                std::string comment;
-                std::getline(ppm, comment);
-            }
-
-            int width, height, maxval;
-            ppm >> width >> height >> maxval;
-            ppm.get(c);
-
-            std::vector<uint8_t> rgb_data(width * height * 3);
-            ppm.read(reinterpret_cast<char *>(rgb_data.data()), rgb_data.size());
-            ppm.close();
+            auto img = pythonic::accel::image_io::load_ppm_pgm(temp_ppm);
             std::remove(temp_ppm.c_str());
+            if (!img.valid() || !img.is_color)
+                return "Error: Invalid PPM format.\n";
+            int width = img.width;
+            int height = img.height;
+            const auto &rgb_data = img.data;
 
             ColoredBrailleCanvas canvas = ColoredBrailleCanvas::from_pixels(width, height);
             canvas.load_frame_rgb(rgb_data.data(), width, height, threshold);
@@ -5081,7 +4795,9 @@ namespace pythonic
                 if (_active)
                 {
                     _active = false;
-                    // Mark playback as ended
+                    // Restore stdout buffering to default line-buffered mode
+                    setvbuf(stdout, nullptr, _IOLBF, 0);
+                    // Mark playback as ended (also restores termios)
                     signal_handler::end_playback();
                     // Clear screen, show cursor, reset attributes
                     std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME
@@ -5516,62 +5232,8 @@ namespace pythonic
              */
             std::tuple<int, int, double, double> get_info() const
             {
-                // Use ffprobe to get video info
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                // Parse: width,height,fps_num/fps_den,duration
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-
-                size_t pos = 0;
-                size_t comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -5599,24 +5261,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build FFmpeg command to pipe raw grayscale frames
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double duration = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (duration > 0)
-                        duration_opt = " -t " + std::to_string(duration);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "gray", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
@@ -5715,7 +5361,7 @@ namespace pythonic
                     }
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
 
                 // Restore terminal state (guard destructor handles cursor)
                 term_guard.restore();
@@ -5844,60 +5490,8 @@ namespace pythonic
 
             std::tuple<int, int, double, double> get_info() const
             {
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-
-                size_t pos = 0;
-                size_t comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -5921,23 +5515,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "rgb24", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg.\n";
@@ -6034,7 +5613,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
@@ -6187,23 +5766,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "rgb24", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg.\n";
@@ -6295,7 +5859,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
@@ -6449,23 +6013,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "rgb24", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg.\n";
@@ -6557,7 +6106,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
@@ -6663,60 +6212,8 @@ namespace pythonic
 
             std::tuple<int, int, double, double> get_info() const
             {
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-                size_t pos = 0, comma;
-
-                comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -6739,21 +6236,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "gray", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
@@ -6833,7 +6317,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
@@ -6933,60 +6417,8 @@ namespace pythonic
 
             std::tuple<int, int, double, double> get_info() const
             {
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-                size_t pos = 0, comma;
-
-                comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -7010,23 +6442,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "gray", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
@@ -7137,7 +6554,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
@@ -7237,60 +6654,8 @@ namespace pythonic
 
             std::tuple<int, int, double, double> get_info() const
             {
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-                size_t pos = 0, comma;
-
-                comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -7313,23 +6678,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt gray -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "gray", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg. Is it installed?\n";
@@ -7441,7 +6791,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
@@ -7521,60 +6871,8 @@ namespace pythonic
 
             std::tuple<int, int, double, double> get_info() const
             {
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-                size_t pos = 0, comma;
-
-                comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -7601,23 +6899,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "rgb24", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg video decoder.\n";
@@ -7689,7 +6972,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
@@ -7809,60 +7092,8 @@ namespace pythonic
 
             std::tuple<int, int, double, double> get_info() const
             {
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,duration "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return {0, 0, 0, 0};
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                int w = 0, h = 0;
-                double fps = 0, duration = 0;
-                size_t pos = 0, comma;
-
-                comma = result.find(',');
-                if (comma != std::string::npos)
-                {
-                    w = std::stoi(result.substr(0, comma));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    h = std::stoi(result.substr(pos, comma - pos));
-                    pos = comma + 1;
-                }
-                comma = result.find(',', pos);
-                if (comma != std::string::npos)
-                {
-                    std::string fps_str = result.substr(pos, comma - pos);
-                    size_t slash = fps_str.find('/');
-                    if (slash != std::string::npos)
-                    {
-                        double num = std::stod(fps_str.substr(0, slash));
-                        double den = std::stod(fps_str.substr(slash + 1));
-                        if (den > 0)
-                            fps = num / den;
-                    }
-                    pos = comma + 1;
-                }
-                try
-                {
-                    duration = std::stod(result.substr(pos));
-                }
-                catch (...)
-                {
-                }
-
-                return {w, h, fps, duration};
+                auto info = pythonic::accel::video::probe(_filename);
+                return {info.width, info.height, info.fps, info.duration};
             }
 
         private:
@@ -7889,23 +7120,8 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt rgb24 -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = pythonic::accel::video::open_decode_pipe(
+                    _filename, "rgb24", pixel_w, pixel_h, target_fps, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg video decoder.\n";
@@ -7977,7 +7193,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
@@ -8941,6 +8157,10 @@ namespace pythonic
             {
                 stop();
                 cleanup_audio();
+                // Ensure terminal state is fully restored
+                signal_handler::end_playback();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+                setvbuf(stdout, nullptr, _IOLBF, 0);
             }
 
             bool play()
@@ -9011,7 +8231,7 @@ namespace pythonic
                 std::string result;
                 while (fgets(buffer, sizeof(buffer), pipe))
                     result += buffer;
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
 
                 // Parse: sample_rate,channels
                 size_t comma = result.find(',');
@@ -9128,20 +8348,17 @@ namespace pythonic
 
             void audio_decode_thread()
             {
-                // Build time seeking options for audio
-                std::string time_opts;
+                // Build seek / duration options from members
+                std::string time_opts_local;
+                std::string duration_opt_local;
                 if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
                 {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
+                    time_opts_local = "-ss " + std::to_string(_start_time) + " ";
+                    if (_end_time > _start_time)
+                        duration_opt_local = " -t " + std::to_string(_end_time - _start_time);
                 }
-
                 // FFmpeg command to decode audio to raw PCM
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
+                std::string cmd = "ffmpeg " + time_opts_local + "-i \"" + _filename + "\"" + duration_opt_local +
                                   " -f s16le -acodec pcm_s16le -ar " +
                                   std::to_string(_sample_rate) +
                                   " -ac " + std::to_string(_channels) + " -v quiet - 2>/dev/null";
@@ -9166,7 +8383,7 @@ namespace pythonic
                     _audio_buffer.push(std::move(chunk));
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
             }
 
             void video_playback()
@@ -9222,24 +8439,9 @@ namespace pythonic
 
                 auto frame_duration = std::chrono::microseconds((int)(1000000.0 / target_fps));
 
-                // Build time seeking options for video
-                std::string time_opts;
-                if (_start_time >= 0)
-                    time_opts = "-ss " + std::to_string(_start_time) + " ";
-                std::string duration_opt;
-                if (_end_time >= 0)
-                {
-                    double dur = (_start_time >= 0) ? (_end_time - _start_time) : _end_time;
-                    if (dur > 0)
-                        duration_opt = " -t " + std::to_string(dur);
-                }
-
                 std::string pix_fmt = needs_rgb ? "rgb24" : "gray";
-                std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                  " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                  " -pix_fmt " + pix_fmt + " -f rawvideo -v quiet - 2>/dev/null";
-
-                FILE *pipe = popen(cmd.c_str(), "r");
+                FILE *pipe = accel::video::open_decode_pipe(
+                    _filename, pix_fmt, pixel_w, pixel_h, 0.0, _start_time, _end_time);
                 if (!pipe)
                 {
                     std::cerr << "Error: Could not start FFmpeg video decoder.\n";
@@ -9349,7 +8551,7 @@ namespace pythonic
                                                 uint8_t r = frame_buffer[idx];
                                                 uint8_t g = frame_buffer[idx + 1];
                                                 uint8_t b = frame_buffer[idx + 2];
-                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                                grays[row * 2 + col] = accel::pixel::to_gray(r, g, b);
                                             }
                                         }
                                     }
@@ -9382,7 +8584,7 @@ namespace pythonic
                                                 uint8_t r = frame_buffer[idx];
                                                 uint8_t g = frame_buffer[idx + 1];
                                                 uint8_t b = frame_buffer[idx + 2];
-                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                                grays[row * 2 + col] = accel::pixel::to_gray(r, g, b);
                                             }
                                         }
                                     }
@@ -9498,7 +8700,7 @@ namespace pythonic
                         std::this_thread::sleep_for(frame_duration - elapsed);
                 }
 
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
@@ -9625,6 +8827,10 @@ namespace pythonic
             {
                 stop();
                 cleanup_audio();
+                // Ensure terminal state is fully restored
+                signal_handler::end_playback();
+                std::cout << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+                setvbuf(stdout, nullptr, _IOLBF, 0);
             }
 
             bool play()
@@ -9717,101 +8923,15 @@ namespace pythonic
         private:
             bool detect_video_info()
             {
-                // Get video stream info
-                std::string cmd = "ffprobe -v quiet -select_streams v:0 "
-                                  "-show_entries stream=width,height,r_frame_rate,nb_frames "
-                                  "-of csv=p=0 \"" +
-                                  _filename + "\" 2>/dev/null";
+                auto info = pythonic::accel::video::probe(_filename);
+                _vid_width = info.width;
+                _vid_height = info.height;
+                _vid_fps = info.fps;
+                _duration = info.duration;
 
-                FILE *pipe = popen(cmd.c_str(), "r");
-                if (!pipe)
-                    return false;
-
-                char buffer[256];
-                std::string result;
-                while (fgets(buffer, sizeof(buffer), pipe))
-                    result += buffer;
-                pclose(pipe);
-
-                // Parse: width,height,r_frame_rate
-                std::istringstream iss(result);
-                std::string line;
-                while (std::getline(iss, line))
-                {
-                    if (line.empty())
-                        continue;
-
-                    std::istringstream linestream(line);
-                    std::string token;
-                    std::vector<std::string> tokens;
-                    while (std::getline(linestream, token, ','))
-                    {
-                        tokens.push_back(token);
-                    }
-
-                    if (tokens.size() >= 3)
-                    {
-                        try
-                        {
-                            _vid_width = std::stoi(tokens[0]);
-                            _vid_height = std::stoi(tokens[1]);
-
-                            // Parse frame rate (may be in format "30/1" or "29.97")
-                            std::string fps_str = tokens[2];
-                            size_t slash = fps_str.find('/');
-                            if (slash != std::string::npos)
-                            {
-                                double num = std::stod(fps_str.substr(0, slash));
-                                double den = std::stod(fps_str.substr(slash + 1));
-                                if (den > 0)
-                                    _vid_fps = num / den;
-                            }
-                            else
-                            {
-                                _vid_fps = std::stod(fps_str);
-                            }
-
-                            if (tokens.size() >= 4 && !tokens[3].empty() && tokens[3] != "N/A")
-                            {
-                                _total_frames = std::stoll(tokens[3]);
-                            }
-
-                            break;
-                        }
-                        catch (...)
-                        {
-                            continue;
-                        }
-                    }
-                }
-
-                // Get duration separately
-                std::string dur_cmd = "ffprobe -v quiet -show_entries format=duration "
-                                      "-of csv=p=0 \"" +
-                                      _filename + "\" 2>/dev/null";
-                FILE *dur_pipe = popen(dur_cmd.c_str(), "r");
-                if (dur_pipe)
-                {
-                    char dur_buf[64];
-                    if (fgets(dur_buf, sizeof(dur_buf), dur_pipe))
-                    {
-                        try
-                        {
-                            _duration = std::stod(dur_buf);
-                        }
-                        catch (...)
-                        {
-                            _duration = 0.0;
-                        }
-                    }
-                    pclose(dur_pipe);
-                }
-
-                // Calculate total frames from duration and fps if not available
-                if (_total_frames == 0 && _duration > 0 && _vid_fps > 0)
-                {
+                // Calculate total frames from duration and fps
+                if (_duration > 0 && _vid_fps > 0)
                     _total_frames = static_cast<int64_t>(_duration * _vid_fps);
-                }
 
                 return _vid_width > 0 && _vid_height > 0;
             }
@@ -9831,7 +8951,7 @@ namespace pythonic
                 std::string result;
                 while (fgets(buffer, sizeof(buffer), pipe))
                     result += buffer;
-                pclose(pipe);
+                pythonic::accel::video::close_decode_pipe(pipe);
 
                 size_t comma = result.find(',');
                 if (comma != std::string::npos)
@@ -9990,24 +9110,12 @@ namespace pythonic
                 {
                     if (pipe)
                     {
-                        pclose(pipe);
+                        pythonic::accel::video::close_decode_pipe(pipe);
                         pipe = nullptr;
                     }
 
-                    std::string time_opts = "-ss " + std::to_string(seek_time) + " ";
-                    std::string duration_opt;
-                    if (_end_time >= 0)
-                    {
-                        double dur = _end_time - seek_time;
-                        if (dur > 0)
-                            duration_opt = " -t " + std::to_string(dur);
-                    }
-
-                    std::string cmd = "ffmpeg " + time_opts + "-i \"" + _filename + "\"" + duration_opt +
-                                      " -vf scale=" + std::to_string(pixel_w) + ":" + std::to_string(pixel_h) +
-                                      " -pix_fmt " + pix_fmt + " -f rawvideo -v quiet - 2>/dev/null";
-
-                    pipe = popen(cmd.c_str(), "r");
+                    pipe = accel::video::open_decode_pipe(
+                        _filename, pix_fmt, pixel_w, pixel_h, 0.0, seek_time, _end_time);
                     return pipe != nullptr;
                 };
 
@@ -10053,7 +9161,7 @@ namespace pythonic
                 }
 
                 if (pipe)
-                    pclose(pipe);
+                    pythonic::accel::video::close_decode_pipe(pipe);
                 _video_buffer.finish();
             }
 
@@ -10070,7 +9178,7 @@ namespace pythonic
                 {
                     if (pipe)
                     {
-                        pclose(pipe);
+                        pythonic::accel::video::close_decode_pipe(pipe);
                         pipe = nullptr;
                     }
 
@@ -10129,7 +9237,7 @@ namespace pythonic
                 }
 
                 if (pipe)
-                    pclose(pipe);
+                    pythonic::accel::video::close_decode_pipe(pipe);
                 _audio_buffer.finish();
             }
 
@@ -10383,7 +9491,7 @@ namespace pythonic
                                                 uint8_t r = frame.data[idx];
                                                 uint8_t g = frame.data[idx + 1];
                                                 uint8_t b = frame.data[idx + 2];
-                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                                grays[row * 2 + col] = accel::pixel::to_gray(r, g, b);
                                             }
                                         }
                                     }
@@ -10415,7 +9523,7 @@ namespace pythonic
                                                 uint8_t r = frame.data[idx];
                                                 uint8_t g = frame.data[idx + 1];
                                                 uint8_t b = frame.data[idx + 2];
-                                                grays[row * 2 + col] = static_cast<uint8_t>((299 * r + 587 * g + 114 * b) / 1000);
+                                                grays[row * 2 + col] = accel::pixel::to_gray(r, g, b);
                                             }
                                         }
                                     }

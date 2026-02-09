@@ -30,6 +30,7 @@
 #include <algorithm>
 #include <thread>
 #include <chrono>
+#include "pythonicAccel.hpp"
 
 namespace pythonic
 {
@@ -37,8 +38,8 @@ namespace pythonic
     {
         // ==================== Constants ====================
 
-        // Braille Unicode range starts at 0x2800
-        constexpr char32_t BRAILLE_BASE = 0x2800;
+        // Braille Unicode range — reference to canonical definition in accel module
+        constexpr char32_t BRAILLE_BASE = pythonic::accel::braille::BASE;
 
         // Braille dot bit positions (for a 2×4 grid in Unicode encoding)
         // Dot positions in the 2×4 grid:
@@ -1057,25 +1058,12 @@ namespace pythonic
                 frame_num++;
             }
 
-            // Combine into video using FFmpeg
-            std::string video_cmd;
-            if (!audio_path.empty())
-            {
-                video_cmd = "ffmpeg -y -framerate " + std::to_string(fps) +
-                            " -i \"" + temp_dir + "/frame_%05d.ppm\" " +
-                            "-i \"" + audio_path + "\" " +
-                            "-c:v libx264 -c:a aac -pix_fmt yuv420p -shortest \"" +
-                            output_path + "\" 2>/dev/null";
-            }
-            else
-            {
-                video_cmd = "ffmpeg -y -framerate " + std::to_string(fps) +
-                            " -i \"" + temp_dir + "/frame_%05d.ppm\" " +
-                            "-c:v libx264 -pix_fmt yuv420p \"" +
-                            output_path + "\" 2>/dev/null";
-            }
+            // Combine into video using centralized accel API
+            bool result_ok = pythonic::accel::video::encode_video(
+                temp_dir, output_path, static_cast<double>(fps),
+                "libx264", audio_path, "frame_%05d.ppm");
 
-            int result = std::system(video_cmd.c_str());
+            int result = result_ok ? 0 : 1;
 
             // Cleanup
             std::string rm_cmd = "rm -rf \"" + temp_dir + "\"";
