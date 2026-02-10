@@ -773,6 +773,9 @@ namespace pythonic
                                     std::to_string(std::hash<std::string>{}(filepath)) +
                                     original_ext;
 
+            // Register for auto-cleanup
+            pythonic::accel::temp_manager().register_temp(temp_path);
+
             std::ofstream outfile(temp_path, std::ios::binary);
             if (!outfile)
             {

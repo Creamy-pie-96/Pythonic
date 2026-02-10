@@ -203,8 +203,9 @@ namespace pythonic
                 if (termios_saved())
                     tcsetattr(STDIN_FILENO, TCSANOW, &saved_termios());
 #endif
-                // Show cursor, reset attributes, go home, clear screen
-                const char *restore = "\033[?25h\033[0m\033[H\033[J";
+                // Show cursor, reset attributes, leave alternate screen buffer
+                // (leaving alt screen restores original terminal content)
+                const char *restore = "\033[?25h\033[0m\033[?1049l";
                 [[maybe_unused]] auto result = write(STDOUT_FILENO, restore, strlen(restore));
             }
 
@@ -937,8 +938,9 @@ namespace pythonic
 
         /**
          * @brief Convert a braille bit pattern to UTF-8 string
+         * Returns a const reference to avoid heap allocation (LUT-backed)
          */
-        inline std::string braille_to_utf8(uint8_t bits)
+        inline const std::string &braille_to_utf8(uint8_t bits)
         {
             return braille_lut().get(bits);
         }
@@ -948,11 +950,13 @@ namespace pythonic
          */
         namespace ansi
         {
-            constexpr const char *CURSOR_HOME = "\033[H";    // Move cursor to top-left
-            constexpr const char *CLEAR_SCREEN = "\033[2J";  // Clear entire screen
-            constexpr const char *HIDE_CURSOR = "\033[?25l"; // Hide cursor
-            constexpr const char *SHOW_CURSOR = "\033[?25h"; // Show cursor
-            constexpr const char *RESET = "\033[0m";         // Reset all attributes
+            constexpr const char *CURSOR_HOME = "\033[H";         // Move cursor to top-left
+            constexpr const char *CLEAR_SCREEN = "\033[2J";       // Clear entire screen
+            constexpr const char *HIDE_CURSOR = "\033[?25l";      // Hide cursor
+            constexpr const char *SHOW_CURSOR = "\033[?25h";      // Show cursor
+            constexpr const char *RESET = "\033[0m";              // Reset all attributes
+            constexpr const char *ALT_SCREEN_ON = "\033[?1049h";  // Enter alternate screen buffer
+            constexpr const char *ALT_SCREEN_OFF = "\033[?1049l"; // Leave alternate screen buffer (restores)
 
             inline std::string cursor_to(int row, int col)
             {
@@ -961,18 +965,44 @@ namespace pythonic
 
             /**
              * @brief Generate ANSI true color foreground escape code
+             * Optimized: uses snprintf into stack buffer to avoid heap allocations
              */
             inline std::string fg_color(uint8_t r, uint8_t g, uint8_t b)
             {
-                return "\033[38;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m";
+                char buf[24];
+                int n = snprintf(buf, sizeof(buf), "\033[38;2;%u;%u;%um", (unsigned)r, (unsigned)g, (unsigned)b);
+                return std::string(buf, n);
+            }
+
+            /**
+             * @brief Append ANSI true color foreground escape code to a string (zero-alloc)
+             */
+            inline void fg_color_append(std::string &out, uint8_t r, uint8_t g, uint8_t b)
+            {
+                char buf[24];
+                int n = snprintf(buf, sizeof(buf), "\033[38;2;%u;%u;%um", (unsigned)r, (unsigned)g, (unsigned)b);
+                out.append(buf, n);
             }
 
             /**
              * @brief Generate ANSI true color background escape code
+             * Optimized: uses snprintf into stack buffer to avoid heap allocations
              */
             inline std::string bg_color(uint8_t r, uint8_t g, uint8_t b)
             {
-                return "\033[48;2;" + std::to_string(r) + ";" + std::to_string(g) + ";" + std::to_string(b) + "m";
+                char buf[24];
+                int n = snprintf(buf, sizeof(buf), "\033[48;2;%u;%u;%um", (unsigned)r, (unsigned)g, (unsigned)b);
+                return std::string(buf, n);
+            }
+
+            /**
+             * @brief Append ANSI true color background escape code to a string (zero-alloc)
+             */
+            inline void bg_color_append(std::string &out, uint8_t r, uint8_t g, uint8_t b)
+            {
+                char buf[24];
+                int n = snprintf(buf, sizeof(buf), "\033[48;2;%u;%u;%um", (unsigned)r, (unsigned)g, (unsigned)b);
+                out.append(buf, n);
             }
         } // namespace ansi
 
@@ -1115,7 +1145,7 @@ namespace pythonic
                 enable_ansi_support();
 
                 // Upper half block (▀) - UTF-8 encoding
-                const char *UPPER_HALF = "\xe2\x96\x80";
+                const char UPPER_HALF[] = "\xe2\x96\x80";
 
                 // Pre-allocate estimated buffer size to avoid reallocations
                 // Each cell needs ~30 bytes for colors + 3 for char
@@ -1135,20 +1165,21 @@ namespace pythonic
                         RGB bot = (py_bot < _pixel_height) ? _pixels[py_bot][cx] : RGB(0, 0, 0);
 
                         // Optimize: only emit color codes when they change
+                        // Use zero-alloc append versions
                         if (top != prev_fg)
                         {
-                            out += ansi::fg_color(top.r, top.g, top.b);
+                            ansi::fg_color_append(out, top.r, top.g, top.b);
                             prev_fg = top;
                         }
                         if (bot != prev_bg)
                         {
-                            out += ansi::bg_color(bot.r, bot.g, bot.b);
+                            ansi::bg_color_append(out, bot.r, bot.g, bot.b);
                             prev_bg = bot;
                         }
-                        out += UPPER_HALF;
+                        out.append(UPPER_HALF, 3);
                     }
                     // Reset at end of line and newline
-                    out += ansi::RESET;
+                    out.append(ansi::RESET);
                     out += '\n';
                     prev_fg = RGB(-1, -1, -1);
                     prev_bg = RGB(-1, -1, -1);
@@ -1843,6 +1874,7 @@ namespace pythonic
 
             /**
              * @brief Render to ANSI string with colored Braille characters
+             * Optimized: uses zero-alloc fg_color_append
              */
             std::string render() const
             {
@@ -1863,11 +1895,12 @@ namespace pythonic
                         // Only output color code if it changed and pattern is non-empty
                         if (pattern != 0 && color != prev_color)
                         {
-                            out += ansi::fg_color(color.r, color.g, color.b);
+                            ansi::fg_color_append(out, color.r, color.g, color.b);
                             prev_color = color;
                         }
 
-                        out += braille_to_utf8(pattern);
+                        const std::string &ch = braille_to_utf8(pattern);
+                        out.append(ch);
                     }
 
                     out += ansi::RESET;
@@ -3458,22 +3491,26 @@ namespace pythonic
 
             /**
              * @brief Render canvas to string
+             * Optimized: uses pre-allocated string with direct append
              */
             std::string render() const
             {
-                std::ostringstream out;
+                // Each braille char is 3 bytes UTF-8 + 1 byte newline per row
+                std::string out;
+                out.reserve(_char_height * (_char_width * 3 + 1));
 
                 for (size_t y = 0; y < _char_height; ++y)
                 {
                     for (size_t x = 0; x < _char_width; ++x)
                     {
-                        out << braille_to_utf8(_canvas[y][x]);
+                        const std::string &ch = braille_to_utf8(_canvas[y][x]);
+                        out.append(ch);
                     }
                     if (y < _char_height - 1)
-                        out << "\n";
+                        out += '\n';
                 }
 
-                return out.str();
+                return out;
             }
 
             /**
@@ -3512,13 +3549,15 @@ namespace pythonic
                             gray = 255 - gray;
 
                         // Only emit color code when gray changes
+                        // Use zero-alloc append version
                         if (gray != prev_gray)
                         {
-                            out += ansi::fg_color(gray, gray, gray);
+                            ansi::fg_color_append(out, gray, gray, gray);
                             prev_gray = gray;
                         }
 
-                        out += braille_to_utf8(pattern);
+                        const std::string &ch = braille_to_utf8(pattern);
+                        out.append(ch);
                     }
                     out += ansi::RESET;
                     out += '\n';
@@ -3750,6 +3789,9 @@ namespace pythonic
             // Create temp file path
             std::string temp_ppm = "/tmp/pythonic_img_" + std::to_string(std::hash<std::string>{}(input_file)) + ".ppm";
 
+            // Register for auto-cleanup
+            pythonic::accel::temp_manager().register_temp(temp_ppm);
+
             // Use ImageMagick convert: resize and convert to PPM
             std::string cmd = "convert \"" + input_file + "\" -resize " +
                               std::to_string(max_width) + "x -depth 8 \"" + temp_ppm + "\" 2>/dev/null";
@@ -3771,6 +3813,10 @@ namespace pythonic
             std::string hash = std::to_string(std::hash<std::string>{}(dot_content));
             std::string temp_dot = "/tmp/pythonic_graph_" + hash + ".dot";
             std::string temp_ppm = "/tmp/pythonic_graph_" + hash + ".ppm";
+
+            // Register for auto-cleanup
+            pythonic::accel::temp_manager().register_temp(temp_dot);
+            pythonic::accel::temp_manager().register_temp(temp_ppm);
 
             // Write DOT content
             std::ofstream dot_file(temp_dot);
@@ -4781,8 +4827,9 @@ namespace pythonic
             {
                 // Register with signal handler for cleanup on Ctrl+C
                 signal_handler::start_playback();
-                // Save terminal state and hide cursor
-                std::cout << ansi::HIDE_CURSOR << std::flush;
+                // Enter alternate screen buffer (preserves user's terminal content)
+                // and hide cursor
+                std::cout << ansi::ALT_SCREEN_ON << ansi::HIDE_CURSOR << std::flush;
             }
 
             ~TerminalStateGuard()
@@ -4799,9 +4846,10 @@ namespace pythonic
                     setvbuf(stdout, nullptr, _IOLBF, 0);
                     // Mark playback as ended (also restores termios)
                     signal_handler::end_playback();
-                    // Clear screen, show cursor, reset attributes
-                    std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME
-                              << ansi::SHOW_CURSOR << ansi::RESET << std::flush;
+                    // Show cursor, reset attributes, leave alternate screen
+                    // (leaving alt screen automatically restores original terminal content)
+                    std::cout << ansi::SHOW_CURSOR << ansi::RESET
+                              << ansi::ALT_SCREEN_OFF << std::flush;
                 }
             }
 
@@ -5092,6 +5140,137 @@ namespace pythonic
         }
 
         /**
+         * @brief Multi-frame read-ahead buffer for smooth video playback.
+         *
+         * Decouples FFmpeg decode from rendering using a circular buffer of
+         * pre-decoded frames. A background thread continuously reads frames
+         * from the FFmpeg pipe, staying up to `capacity` frames ahead of the
+         * renderer. This absorbs decode latency spikes and ensures the render
+         * thread almost never has to wait for I/O.
+         *
+         * Usage:
+         *   FrameReadAhead reader(pipe, frame_size, 8); // 8-frame buffer
+         *   reader.start();
+         *   while (auto* data = reader.next_frame()) {
+         *       // process and display *data (frame_size bytes)
+         *   }
+         *   reader.stop();
+         */
+        class FrameReadAhead
+        {
+        private:
+            FILE *_pipe;
+            size_t _frame_size;
+            size_t _capacity;                        // Max frames to buffer ahead
+            std::vector<std::vector<uint8_t>> _ring; // Circular frame buffer
+            std::vector<uint8_t> _display_buf;       // Dedicated display buffer (never touched by decode thread)
+            size_t _write_pos = 0;                   // Next slot for decode thread to write
+            size_t _read_pos = 0;                    // Next slot for render thread to read
+            size_t _count = 0;                       // Number of frames currently buffered
+            std::mutex _mtx;
+            std::condition_variable _cv_not_full;  // Decode thread waits when buffer is full
+            std::condition_variable _cv_not_empty; // Render thread waits when buffer is empty
+            std::thread _thread;
+            std::atomic<bool> _eof{false};
+            std::atomic<bool> _running{false};
+
+            void _read_loop()
+            {
+                while (_running)
+                {
+                    // Wait if buffer is full
+                    {
+                        std::unique_lock<std::mutex> lk(_mtx);
+                        _cv_not_full.wait(lk, [this]
+                                          { return _count < _capacity || !_running; });
+                        if (!_running)
+                            break;
+                    }
+
+                    // Read next frame from FFmpeg pipe (blocking I/O, outside lock)
+                    size_t n = fread(_ring[_write_pos].data(), 1, _frame_size, _pipe);
+                    if (n < _frame_size)
+                    {
+                        _eof = true;
+                        _cv_not_empty.notify_one();
+                        break;
+                    }
+
+                    // Advance write position
+                    {
+                        std::lock_guard<std::mutex> lk(_mtx);
+                        _write_pos = (_write_pos + 1) % _capacity;
+                        ++_count;
+                    }
+                    _cv_not_empty.notify_one();
+                }
+            }
+
+        public:
+            /**
+             * @param pipe    FFmpeg decode pipe opened with open_decode_pipe()
+             * @param frame_size  Size in bytes of one raw frame
+             * @param capacity    Number of frames to buffer ahead (default 8)
+             */
+            FrameReadAhead(FILE *pipe, size_t frame_size, size_t capacity = 8)
+                : _pipe(pipe), _frame_size(frame_size), _capacity(capacity),
+                  _ring(capacity), _display_buf(frame_size)
+            {
+                for (auto &buf : _ring)
+                    buf.resize(frame_size);
+            }
+
+            ~FrameReadAhead() { stop(); }
+
+            /// Start the background decode/read thread
+            void start()
+            {
+                _running = true;
+                _eof = false;
+                _write_pos = 0;
+                _read_pos = 0;
+                _count = 0;
+                _thread = std::thread(&FrameReadAhead::_read_loop, this);
+            }
+
+            /// Stop the background thread and join
+            void stop()
+            {
+                _running = false;
+                _cv_not_full.notify_all();
+                _cv_not_empty.notify_all();
+                if (_thread.joinable())
+                    _thread.join();
+            }
+
+            /**
+             * @brief Get the next decoded frame. Blocks until available.
+             * @return Pointer to frame data (frame_size bytes), or nullptr on EOF.
+             *
+             * The returned pointer is stable — it points to an internal display
+             * buffer that the decode thread never touches. Valid until the next
+             * call to next_frame().
+             */
+            const uint8_t *next_frame()
+            {
+                std::unique_lock<std::mutex> lk(_mtx);
+                _cv_not_empty.wait(lk, [this]
+                                   { return _count > 0 || _eof || !_running; });
+
+                if (_count == 0)
+                    return nullptr; // EOF or stopped
+
+                // Copy to display buffer (safe from decode thread overwrites)
+                std::memcpy(_display_buf.data(), _ring[_read_pos].data(), _frame_size);
+                _read_pos = (_read_pos + 1) % _capacity;
+                --_count;
+                lk.unlock();
+                _cv_not_full.notify_one();
+                return _display_buf.data();
+            }
+        };
+
+        /**
          * @brief Video player for terminal using braille graphics
          *
          * Uses FFmpeg to decode video frames and renders them in real-time
@@ -5269,9 +5448,10 @@ namespace pythonic
                     return false;
                 }
 
-                // Allocate frame buffer
+                // Frame read-ahead for smooth playback (decouples decode from render)
                 size_t frame_size = pixel_w * pixel_h;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 // Initialize canvas
                 int char_height = pixel_h / 4;
@@ -5288,13 +5468,21 @@ namespace pythonic
                 }
                 bool user_stopped = false;
 
+                // Disable stdout buffering for smoother video output
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
+
                 // Clear screen and position cursor at top
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
+
+                // Pre-allocate output buffer for frame rendering
+                std::string frame_output;
+                frame_output.reserve(pixel_w * (pixel_h / 4) * 10);
 
                 while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
@@ -5323,6 +5511,8 @@ namespace pythonic
                                     // Track time spent paused
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -5335,40 +5525,47 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    // Read one frame
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    // Get pre-read frame from background thread
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break; // End of video
 
                     // Convert frame to braille using optimized block operations
-                    _canvas.load_frame_fast(frame_buffer.data(), pixel_w, pixel_h, _threshold);
+                    _canvas.load_frame_fast(frame_data, pixel_w, pixel_h, _threshold);
 
-                    // Render with double-buffering (move cursor to top-left without clearing)
-                    std::cout << ansi::CURSOR_HOME;
-                    std::cout << _canvas.render() << std::flush;
+                    // Build complete frame string and write atomically with fwrite
+                    frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render();
+
+                    // Single atomic write prevents tearing/fragmentation
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
 
                     ++frame_num;
 
-                    // Frame rate limiting
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
                     {
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
                     }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
 
-                // Restore terminal state (guard destructor handles cursor)
+                // Restore terminal state (alt screen buffer restores original content)
                 term_guard.restore();
 
-                // Clear screen and show statistics
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
-
+                // Show statistics on the restored terminal
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
 
@@ -5524,7 +5721,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h * 3;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 _canvas = ColorCanvas::from_pixels(pixel_w, pixel_h);
 
@@ -5539,12 +5737,13 @@ namespace pythonic
                 bool user_stopped = false;
 
                 // Disable stdout buffering for smoother video
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
 
@@ -5577,6 +5776,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -5588,13 +5789,11 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
-                    _canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h);
+                    _canvas.load_frame_rgb(frame_data, pixel_w, pixel_h);
 
                     // Build complete frame with cursor positioning
                     frame_output = ansi::CURSOR_HOME;
@@ -5606,17 +5805,25 @@ namespace pythonic
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -5775,7 +5982,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h * 3;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 _canvas = BWBlockCanvas::from_pixels(pixel_w, pixel_h);
 
@@ -5789,11 +5997,12 @@ namespace pythonic
                 }
                 bool user_stopped = false;
 
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
 
@@ -5825,6 +6034,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -5836,13 +6047,11 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
-                    _canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, _threshold);
+                    _canvas.load_frame_rgb(frame_data, pixel_w, pixel_h, _threshold);
 
                     frame_output = ansi::CURSOR_HOME;
                     frame_output += _canvas.render();
@@ -5852,17 +6061,25 @@ namespace pythonic
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -6022,7 +6239,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h * 3;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 _canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
 
@@ -6036,11 +6254,12 @@ namespace pythonic
                 }
                 bool user_stopped = false;
 
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
 
@@ -6072,6 +6291,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -6083,13 +6304,11 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
-                    _canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, _threshold);
+                    _canvas.load_frame_rgb(frame_data, pixel_w, pixel_h, _threshold);
 
                     frame_output = ansi::CURSOR_HOME;
                     frame_output += _canvas.render();
@@ -6099,17 +6318,25 @@ namespace pythonic
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -6245,7 +6472,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
                 int char_height = pixel_h / 4;
                 _canvas = BrailleCanvas(_width, char_height);
 
@@ -6255,12 +6483,20 @@ namespace pythonic
                     keyboard = std::make_unique<KeyboardInput>();
                 bool user_stopped = false;
 
+                // Disable stdout buffering for smoother video output
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
+
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
+
+                // Pre-allocate output buffer
+                std::string frame_output;
+                frame_output.reserve(pixel_w * (pixel_h / 4) * 10);
 
                 while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
@@ -6286,6 +6522,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -6297,29 +6535,41 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
                     // Use ordered dithering instead of threshold
-                    _canvas.load_frame_ordered_dithered(frame_buffer.data(), pixel_w, pixel_h);
+                    _canvas.load_frame_ordered_dithered(frame_data, pixel_w, pixel_h);
 
-                    std::cout << ansi::CURSOR_HOME;
-                    std::cout << _canvas.render() << std::flush;
+                    // Build complete frame and write atomically
+                    frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -6451,7 +6701,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
                 int char_height = pixel_h / 4;
                 _canvas = BrailleCanvas(_width, char_height);
 
@@ -6461,12 +6712,20 @@ namespace pythonic
                     keyboard = std::make_unique<KeyboardInput>();
                 bool user_stopped = false;
 
+                // Disable stdout buffering for smoother video output
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
+
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
+
+                // Pre-allocate output buffer for atomic frame writes
+                std::string frame_output;
+                frame_output.reserve(pixel_w * (pixel_h / 4) * 40);
 
                 while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
@@ -6492,6 +6751,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -6503,10 +6764,8 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
                     // Load with dithering and grayscale storage
@@ -6535,7 +6794,7 @@ namespace pythonic
                                     int y = py + row;
                                     if (x < pixel_w && y < pixel_h)
                                     {
-                                        grays[row * 2 + col] = frame_buffer[y * pixel_w + x];
+                                        grays[row * 2 + col] = frame_data[y * pixel_w + x];
                                     }
                                 }
                             }
@@ -6543,20 +6802,34 @@ namespace pythonic
                         }
                     }
 
-                    std::cout << ansi::CURSOR_HOME;
-                    std::cout << _canvas.render_grayscale() << std::flush;
+                    // Build complete frame and write atomically
+                    frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render_grayscale();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -6687,7 +6960,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
                 int char_height = pixel_h / 4;
                 _canvas = BrailleCanvas(_width, char_height);
 
@@ -6697,12 +6971,20 @@ namespace pythonic
                     keyboard = std::make_unique<KeyboardInput>();
                 bool user_stopped = false;
 
+                // Disable stdout buffering for smoother video output
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
+
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
+
+                // Pre-allocate output buffer for atomic frame writes
+                std::string frame_output;
+                frame_output.reserve(pixel_w * (pixel_h / 4) * 40);
 
                 while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
@@ -6728,6 +7010,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -6739,10 +7023,8 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
                     // Load with flood fill (all dots on, colored by average brightness)
@@ -6771,7 +7053,7 @@ namespace pythonic
                                     int y = py + row;
                                     if (x < pixel_w && y < pixel_h)
                                     {
-                                        grays[row * 2 + col] = frame_buffer[y * pixel_w + x];
+                                        grays[row * 2 + col] = frame_data[y * pixel_w + x];
                                     }
                                 }
                             }
@@ -6780,20 +7062,34 @@ namespace pythonic
                         }
                     }
 
-                    std::cout << ansi::CURSOR_HOME;
-                    std::cout << _canvas.render_grayscale() << std::flush;
+                    // Build complete frame and write atomically
+                    frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render_grayscale();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -6908,7 +7204,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h * 3;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 _canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
 
@@ -6921,11 +7218,12 @@ namespace pythonic
                 }
                 bool user_stopped = false;
 
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
 
                 while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
@@ -6952,30 +7250,41 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
                     // Load with flood fill (all dots on, RGB colored)
-                    _load_frame_flood(frame_buffer.data(), pixel_w, pixel_h);
+                    _load_frame_flood(frame_data, pixel_w, pixel_h);
 
-                    std::cout << ansi::CURSOR_HOME << _canvas.render() << std::flush;
+                    // Build complete frame and write atomically
+                    std::string frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -7129,7 +7438,8 @@ namespace pythonic
                 }
 
                 size_t frame_size = pixel_w * pixel_h * 3;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 _canvas = ColoredBrailleCanvas::from_pixels(pixel_w, pixel_h);
 
@@ -7142,11 +7452,12 @@ namespace pythonic
                 }
                 bool user_stopped = false;
 
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
 
                 while (_running && !term_guard.was_interrupted() && !user_stopped)
                 {
@@ -7173,30 +7484,41 @@ namespace pythonic
                         continue;
                     }
 
-                    auto frame_start = std::chrono::steady_clock::now();
-
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
                     // Load with dithering
-                    _load_frame_dithered(frame_buffer.data(), pixel_w, pixel_h);
+                    _load_frame_dithered(frame_data, pixel_w, pixel_h);
 
-                    std::cout << ansi::CURSOR_HOME << _canvas.render() << std::flush;
+                    // Build complete frame and write atomically
+                    std::string frame_output = ansi::CURSOR_HOME;
+                    frame_output += _canvas.render();
+
+                    fwrite(frame_output.c_str(), 1, frame_output.size(), stdout);
+                    fflush(stdout);
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -8450,7 +8772,8 @@ namespace pythonic
 
                 size_t bytes_per_pixel = needs_rgb ? 3 : 1;
                 size_t frame_size = pixel_w * pixel_h * bytes_per_pixel;
-                std::vector<uint8_t> frame_buffer(frame_size);
+                FrameReadAhead reader(pipe, frame_size);
+                reader.start();
 
                 // Create appropriate canvas based on mode
                 BrailleCanvas braille_canvas;
@@ -8479,12 +8802,13 @@ namespace pythonic
                 TerminalStateGuard term_guard;
 
                 // Disable stdout buffering for smoother video
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
 
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
 
                 // Pre-allocate output buffer
                 std::string frame_output;
@@ -8493,10 +8817,9 @@ namespace pythonic
 
                 while (_running && !term_guard.was_interrupted())
                 {
-                    auto frame_start = std::chrono::steady_clock::now();
 
-                    size_t bytes_read = fread(frame_buffer.data(), 1, frame_size, pipe);
-                    if (bytes_read < frame_size)
+                    const uint8_t *frame_data = reader.next_frame();
+                    if (!frame_data)
                         break;
 
                     // Build complete frame with cursor positioning
@@ -8505,27 +8828,27 @@ namespace pythonic
                     switch (_render_mode)
                     {
                     case Mode::colored:
-                        color_canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h);
+                        color_canvas.load_frame_rgb(frame_data, pixel_w, pixel_h);
                         frame_output += color_canvas.render();
                         break;
 
                     case Mode::colored_dot:
-                        colored_braille_canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, 128);
+                        colored_braille_canvas.load_frame_rgb(frame_data, pixel_w, pixel_h, 128);
                         frame_output += colored_braille_canvas.render();
                         break;
 
                     case Mode::bw:
-                        bw_block_canvas.load_frame_rgb(frame_buffer.data(), pixel_w, pixel_h, 128);
+                        bw_block_canvas.load_frame_rgb(frame_data, pixel_w, pixel_h, 128);
                         frame_output += bw_block_canvas.render();
                         break;
 
                     case Mode::bw_dot:
-                        braille_canvas.load_frame_fast(frame_buffer.data(), pixel_w, pixel_h, 128);
+                        braille_canvas.load_frame_fast(frame_data, pixel_w, pixel_h, 128);
                         frame_output += braille_canvas.render();
                         break;
 
                     case Mode::bw_dithered:
-                        braille_canvas.load_frame_ordered_dithered(frame_buffer.data(), pixel_w, pixel_h);
+                        braille_canvas.load_frame_ordered_dithered(frame_data, pixel_w, pixel_h);
                         frame_output += braille_canvas.render();
                         break;
 
@@ -8548,9 +8871,9 @@ namespace pythonic
                                             if (x < pixel_w && y < pixel_h)
                                             {
                                                 size_t idx = (y * pixel_w + x) * 3;
-                                                uint8_t r = frame_buffer[idx];
-                                                uint8_t g = frame_buffer[idx + 1];
-                                                uint8_t b = frame_buffer[idx + 2];
+                                                uint8_t r = frame_data[idx];
+                                                uint8_t g = frame_data[idx + 1];
+                                                uint8_t b = frame_data[idx + 2];
                                                 grays[row * 2 + col] = accel::pixel::to_gray(r, g, b);
                                             }
                                         }
@@ -8581,9 +8904,9 @@ namespace pythonic
                                             if (x < pixel_w && y < pixel_h)
                                             {
                                                 size_t idx = (y * pixel_w + x) * 3;
-                                                uint8_t r = frame_buffer[idx];
-                                                uint8_t g = frame_buffer[idx + 1];
-                                                uint8_t b = frame_buffer[idx + 2];
+                                                uint8_t r = frame_data[idx];
+                                                uint8_t g = frame_data[idx + 1];
+                                                uint8_t b = frame_data[idx + 2];
                                                 grays[row * 2 + col] = accel::pixel::to_gray(r, g, b);
                                             }
                                         }
@@ -8615,9 +8938,9 @@ namespace pythonic
                                             if (x < pixel_w && y < pixel_h)
                                             {
                                                 size_t idx = (y * pixel_w + x) * 3;
-                                                sum_r += frame_buffer[idx];
-                                                sum_g += frame_buffer[idx + 1];
-                                                sum_b += frame_buffer[idx + 2];
+                                                sum_r += frame_data[idx];
+                                                sum_g += frame_data[idx + 1];
+                                                sum_b += frame_data[idx + 2];
                                                 count++;
                                             }
                                         }
@@ -8656,9 +8979,9 @@ namespace pythonic
                                             if (x < pixel_w && y < pixel_h)
                                             {
                                                 size_t idx = (y * pixel_w + x) * 3;
-                                                uint8_t r = frame_buffer[idx];
-                                                uint8_t g = frame_buffer[idx + 1];
-                                                uint8_t b = frame_buffer[idx + 2];
+                                                uint8_t r = frame_data[idx];
+                                                uint8_t g = frame_data[idx + 1];
+                                                uint8_t b = frame_data[idx + 2];
                                                 sum_r += r;
                                                 sum_g += g;
                                                 sum_b += b;
@@ -8693,17 +9016,25 @@ namespace pythonic
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
+                reader.stop();
                 pythonic::accel::video::close_decode_pipe(pipe);
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());
@@ -9309,11 +9640,12 @@ namespace pythonic
 
                 TerminalStateGuard term_guard;
 
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_count = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::microseconds total_pause_time{0};
                 std::chrono::steady_clock::time_point pause_start;
                 bool user_stopped = false;
@@ -9346,6 +9678,8 @@ namespace pythonic
                             {
                                 total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                     std::chrono::steady_clock::now() - pause_start);
+                                // Reset absolute deadline after pause to prevent catch-up burst
+                                next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                             }
                             break;
                         case PlayerCommand::VolumeUp:
@@ -9442,8 +9776,6 @@ namespace pythonic
                         std::this_thread::sleep_for(std::chrono::milliseconds(1));
                         continue;
                     }
-
-                    auto frame_start = std::chrono::steady_clock::now();
 
                     frame_output = ansi::CURSOR_HOME;
 
@@ -9748,16 +10080,23 @@ namespace pythonic
 
                     ++frame_count;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_count / (std::chrono::duration<double>(total_time).count());
@@ -10019,11 +10358,12 @@ namespace pythonic
                 }
                 bool user_stopped = false;
 
-                std::setvbuf(stdout, nullptr, _IONBF, 0);
+                std::setvbuf(stdout, nullptr, _IOFBF, 1 << 19); // 512KB fully-buffered for atomic frame output
                 std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME << std::flush;
 
                 size_t frame_num = 0;
                 auto start_time = std::chrono::steady_clock::now();
+                auto next_frame_deadline = start_time + frame_duration; // Absolute deadline for next frame
                 std::chrono::steady_clock::time_point pause_start;
                 std::chrono::microseconds total_pause_time{0};
 
@@ -10055,6 +10395,8 @@ namespace pythonic
                                 {
                                     total_pause_time += std::chrono::duration_cast<std::chrono::microseconds>(
                                         std::chrono::steady_clock::now() - pause_start);
+                                    // Reset absolute deadline after pause to prevent catch-up burst
+                                    next_frame_deadline = std::chrono::steady_clock::now() + frame_duration;
                                 }
                             }
                         }
@@ -10076,8 +10418,6 @@ namespace pythonic
 
                     if (!cap.read(frame))
                         break;
-
-                    auto frame_start = std::chrono::steady_clock::now();
 
                     // Resize and convert
                     cv::resize(frame, resized, cv::Size(out_w, out_h), 0, 0, cv::INTER_AREA);
@@ -10256,17 +10596,24 @@ namespace pythonic
 
                     ++frame_num;
 
-                    auto frame_end = std::chrono::steady_clock::now();
-                    auto elapsed = frame_end - frame_start;
-
-                    if (elapsed < frame_duration)
-                        std::this_thread::sleep_for(frame_duration - elapsed);
+                    // Absolute deadline frame pacing (no drift, no jitter)
+                    std::this_thread::sleep_until(next_frame_deadline);
+                    next_frame_deadline += frame_duration;
+                    // If we fell behind (render took longer than frame_duration),
+                    // snap the deadline forward to prevent a burst of catch-up frames
+                    {
+                        auto now_tp = std::chrono::steady_clock::now();
+                        if (next_frame_deadline < now_tp)
+                        {
+                            auto behind = now_tp - next_frame_deadline;
+                            auto frames_behind = behind / frame_duration;
+                            next_frame_deadline += frame_duration * (frames_behind + 1);
+                        }
+                    }
                 }
 
                 cap.release();
                 term_guard.restore();
-
-                std::cout << ansi::CLEAR_SCREEN << ansi::CURSOR_HOME;
 
                 auto total_time = std::chrono::steady_clock::now() - start_time - total_pause_time;
                 double actual_fps = frame_num / (std::chrono::duration<double>(total_time).count());

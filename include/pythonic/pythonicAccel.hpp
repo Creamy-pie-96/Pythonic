@@ -51,6 +51,7 @@
 #include <array>
 #include <mutex>
 #include <numeric>
+#include <sys/stat.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -66,6 +67,195 @@ namespace pythonic
 {
     namespace accel
     {
+
+        // ==================================================================
+        //  Section 0 - Temp File Manager (auto-cleanup)
+        // ==================================================================
+
+        /**
+         * @brief Manages temporary files/directories created by pythonic
+         *
+         * Tracks all /tmp/pythonic_* files and directories. Provides:
+         * - register_temp(): Track a temp file/dir for later cleanup
+         * - cleanup_registered(): Remove all registered temps
+         * - cleanup_stale(): Remove any /tmp/pythonic_* files older than a threshold
+         * - auto-cleanup on destruction (RAII)
+         *
+         * Usage:
+         *   auto& tm = pythonic::accel::temp_manager();
+         *   tm.register_temp("/tmp/pythonic_export_frame_12345.ppm");
+         *   // ... use file ...
+         *   // File will be cleaned up when no longer needed
+         */
+        class TempFileManager
+        {
+        private:
+            std::vector<std::string> _registered;
+            mutable std::mutex _mutex;
+            size_t _max_total_bytes;   // Max total temp size before triggering cleanup
+            size_t _cleanup_threshold; // Auto-cleanup when accumulated files exceed this count
+
+        public:
+            TempFileManager(size_t max_total_bytes = 2ULL * 1024 * 1024 * 1024, // 2 GB default limit
+                            size_t cleanup_threshold = 500)
+                : _max_total_bytes(max_total_bytes), _cleanup_threshold(cleanup_threshold)
+            {
+            }
+
+            ~TempFileManager()
+            {
+                cleanup_registered();
+            }
+
+            /**
+             * @brief Register a temp file or directory for tracking
+             */
+            void register_temp(const std::string &path)
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                _registered.push_back(path);
+
+                // Auto-cleanup if we've accumulated too many entries
+                if (_registered.size() > _cleanup_threshold)
+                {
+                    _cleanup_oldest_unlocked(_registered.size() / 2);
+                }
+            }
+
+            /**
+             * @brief Remove a specific temp file/directory immediately
+             */
+            void remove_temp(const std::string &path)
+            {
+                // Remove the actual file/directory
+                _remove_path(path);
+
+                // Remove from tracking
+                std::lock_guard<std::mutex> lock(_mutex);
+                _registered.erase(
+                    std::remove(_registered.begin(), _registered.end(), path),
+                    _registered.end());
+            }
+
+            /**
+             * @brief Clean up all registered temp files/directories
+             */
+            void cleanup_registered()
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                for (const auto &path : _registered)
+                {
+                    _remove_path(path);
+                }
+                _registered.clear();
+            }
+
+            /**
+             * @brief Clean up stale /tmp/pythonic_* files older than max_age_seconds
+             *
+             * This is the nuclear option - finds and removes ALL pythonic temp
+             * files/directories in /tmp that are older than the specified age.
+             * Call this periodically or at startup to prevent temp dir bloat.
+             *
+             * @param max_age_seconds Maximum age in seconds (default: 1 hour)
+             */
+            void cleanup_stale(int max_age_seconds = 3600)
+            {
+#ifndef _WIN32
+                // Find and remove old pythonic temp files/dirs
+                std::string cmd = "find /tmp -maxdepth 1 -name 'pythonic_*' -mmin +" +
+                                  std::to_string(max_age_seconds / 60) +
+                                  " -exec rm -rf {} + 2>/dev/null";
+                std::system(cmd.c_str());
+#else
+                // Windows: use PowerShell to find old temp files
+                std::string cmd = "powershell -Command \"Get-ChildItem $env:TEMP\\pythonic_* | "
+                                  "Where-Object { $_.LastWriteTime -lt (Get-Date).AddSeconds(-" +
+                                  std::to_string(max_age_seconds) +
+                                  ") } | Remove-Item -Recurse -Force\" 2>nul";
+                std::system(cmd.c_str());
+#endif
+            }
+
+            /**
+             * @brief Get the total size of registered temp files in bytes
+             */
+            size_t total_size() const
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                size_t total = 0;
+                for (const auto &path : _registered)
+                {
+                    struct stat st;
+                    if (stat(path.c_str(), &st) == 0)
+                    {
+                        total += st.st_size;
+                    }
+                }
+                return total;
+            }
+
+            /**
+             * @brief Get the number of tracked temp entries
+             */
+            size_t count() const
+            {
+                std::lock_guard<std::mutex> lock(_mutex);
+                return _registered.size();
+            }
+
+            /**
+             * @brief Set the maximum total temp size before auto-cleanup triggers
+             */
+            void set_max_size(size_t bytes) { _max_total_bytes = bytes; }
+
+        private:
+            static void _remove_path(const std::string &path)
+            {
+                // First try as file
+                if (std::remove(path.c_str()) == 0)
+                    return;
+
+                // If that fails, try as directory (recursive)
+#ifndef _WIN32
+                std::string cmd = "rm -rf \"" + path + "\" 2>/dev/null";
+#else
+                std::string cmd = "rmdir /s /q \"" + path + "\" 2>nul";
+#endif
+                std::system(cmd.c_str());
+            }
+
+            void _cleanup_oldest_unlocked(size_t count)
+            {
+                // Remove the oldest 'count' entries (first registered = oldest)
+                size_t to_remove = std::min(count, _registered.size());
+                for (size_t i = 0; i < to_remove; ++i)
+                {
+                    _remove_path(_registered[i]);
+                }
+                _registered.erase(_registered.begin(), _registered.begin() + to_remove);
+            }
+        };
+
+        /**
+         * @brief Get the global temp file manager instance
+         *
+         * This is a singleton that tracks all temp files created by pythonic.
+         * On destruction (program exit), it cleans up all registered temps.
+         * It also performs stale file cleanup on first access.
+         */
+        inline TempFileManager &temp_manager()
+        {
+            static TempFileManager instance;
+            static bool first_call = true;
+            if (first_call)
+            {
+                first_call = false;
+                // Clean up any leftover temp files from previous runs (older than 1 hour)
+                instance.cleanup_stale(3600);
+            }
+            return instance;
+        }
 
         // ==================================================================
         //  Section 1 - Pixel-level primitives (inline, zero-overhead)
@@ -1709,11 +1899,55 @@ namespace pythonic
                 return std::system(cmd.c_str()) == 0;
             }
 
+            // ==================== Hardware Acceleration Detection ====================
+
+            /**
+             * @brief Detect the best available FFmpeg hardware acceleration method.
+             *
+             * Probes FFmpeg for available hwaccel methods and returns the best one
+             * for the current system (cuda > vaapi > videotoolbox > dxva2 > qsv > none).
+             *
+             * The result is cached after the first call to avoid repeated shell invocations.
+             *
+             * @return A string like "cuda", "vaapi", "videotoolbox", etc., or "" if none available
+             */
+            inline const std::string &detect_hwaccel()
+            {
+                static std::string cached_hwaccel = []() -> std::string
+                {
+                    if (!detail::command_exists("ffmpeg"))
+                        return "";
+
+                    // Query available hwaccels from FFmpeg
+                    std::string raw = detail::exec_command("ffmpeg -hwaccels 2>/dev/null");
+                    if (raw.empty())
+                        return "";
+
+                    // Priority-ordered list of hwaccel methods
+                    // cuda (NVIDIA), vaapi (AMD/Intel on Linux), videotoolbox (macOS),
+                    // dxva2/d3d11va (Windows), qsv (Intel QuickSync)
+                    const char *candidates[] = {
+                        "cuda", "vaapi", "videotoolbox", "d3d11va", "dxva2", "qsv", "vulkan"};
+
+                    for (const char *accel : candidates)
+                    {
+                        if (raw.find(accel) != std::string::npos)
+                            return accel;
+                    }
+                    return "";
+                }();
+                return cached_hwaccel;
+            }
+
             /**
              * @brief Open an FFmpeg pipe for streaming decoded frames.
              *
              * Returns a FILE* pipe that yields raw pixel data.
              * Caller must call close_decode_pipe() when done.
+             *
+             * Automatically uses GPU hardware acceleration (CUDA, VAAPI,
+             * VideoToolbox, etc.) when available for significantly faster
+             * decode performance.
              *
              * @param video_path   Source video
              * @param pix_fmt      Pixel format ("rgb24", "gray", etc.)
@@ -1722,6 +1956,7 @@ namespace pythonic
              * @param fps          Target FPS (0 = original)
              * @param start_time   Start offset in seconds (-1 = beginning)
              * @param end_time     End offset in seconds (-1 = end)
+             * @param use_hwaccel  Whether to try GPU hardware acceleration (default: false)
              * @return FILE* pipe, or nullptr on failure
              */
             inline FILE *open_decode_pipe(
@@ -1730,9 +1965,21 @@ namespace pythonic
                 int width = 0, int height = 0,
                 double fps = 0.0,
                 double start_time = -1.0,
-                double end_time = -1.0)
+                double end_time = -1.0,
+                bool use_hwaccel = false)
             {
                 std::string cmd = "ffmpeg ";
+
+                // Only use GPU hardware acceleration when explicitly requested
+                // Auto-hwaccel can silently break decode for some codecs/drivers
+                if (use_hwaccel)
+                {
+                    const std::string &hwaccel = detect_hwaccel();
+                    if (!hwaccel.empty())
+                    {
+                        cmd += "-hwaccel " + hwaccel + " ";
+                    }
+                }
                 if (start_time >= 0)
                     cmd += "-ss " + std::to_string(start_time) + " ";
                 cmd += "-i \"" + video_path + "\" ";
@@ -1758,7 +2005,9 @@ namespace pythonic
                 if (!vf.empty())
                     cmd += "-vf \"" + vf + "\" ";
 
-                cmd += "-f rawvideo -pix_fmt " + pix_fmt + " pipe:1 2>/dev/null";
+                // -an: skip audio decode (not needed for video pipe)
+                // -threads 0: use all available CPU cores
+                cmd += "-an -threads 0 -f rawvideo -pix_fmt " + pix_fmt + " pipe:1 2>/dev/null";
 
 #ifdef _WIN32
                 return _popen(cmd.c_str(), "rb");

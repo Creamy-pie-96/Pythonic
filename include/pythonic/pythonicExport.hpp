@@ -1042,6 +1042,9 @@ namespace pythonic
             std::string mkdir_cmd = "mkdir -p \"" + temp_dir + "\"";
             std::system(mkdir_cmd.c_str());
 
+            // Register with temp manager for auto-cleanup
+            pythonic::accel::temp_manager().register_temp(temp_dir);
+
             // Render each frame
             int frame_num = 1;
             for (const auto &frame : frames)

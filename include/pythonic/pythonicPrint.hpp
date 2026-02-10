@@ -1289,6 +1289,7 @@ namespace pythonic
 
                         std::string temp_frame = "/tmp/pythonic_export_frame_" +
                                                  std::to_string(std::hash<std::string>{}(input_path)) + ".png";
+                        pythonic::accel::temp_manager().register_temp(temp_frame);
                         bool ok = pythonic::accel::video::extract_single_frame(actual_path, temp_frame);
 
                         if (is_temp)
@@ -1344,6 +1345,7 @@ namespace pythonic
 
                         std::string temp_frame = "/tmp/pythonic_export_frame_" +
                                                  std::to_string(std::hash<std::string>{}(input_path)) + ".png";
+                        pythonic::accel::temp_manager().register_temp(temp_frame);
                         bool ok = pythonic::accel::video::extract_single_frame(actual_path, temp_frame);
 
                         if (is_temp)
