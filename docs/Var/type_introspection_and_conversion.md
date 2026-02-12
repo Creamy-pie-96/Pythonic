@@ -150,6 +150,7 @@ This distinction applies to all similar conversions (Long, Double, etc.).
 | `Double(v)`       | Convert to double               | `Double(v)`       |
 | `Float(v)`        | Convert to float                | `Float(v)`        |
 | `LongDouble(v)`   | Convert to long double          | `LongDouble(v)`   |
+| `AutoNumeric(v)`  | Convert to the most suitable numeric type (int, long long, double, or long double) automatically. | `AutoNumeric(var("123.45")) // var(double)` |
 | `list(v)`         | Convert to List                 | `list(v)`         |
 | `dict(v)`         | Convert to Dict                 | `dict(v)`         |
 | `set(v)`          | Convert to Set                  | `set(v)`          |

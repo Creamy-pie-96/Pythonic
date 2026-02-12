@@ -6300,6 +6300,77 @@ namespace pythonic
             }
         }
 
+        // AutoNumeric: Try to convert to the most suitable numeric type (int, long long, double, long double)
+        // If already numeric, returns as-is. If string, tries each type in order, only accepting if the whole string is consumed.
+        // Throws PythonicTypeError if conversion is not possible.
+        inline var AutoNumeric(const var &v)
+        {
+            using namespace std;
+            // If already numeric, return as-is
+            switch (v.type_tag())
+            {
+            case TypeTag::INT:
+            case TypeTag::LONG:
+            case TypeTag::LONG_LONG:
+            case TypeTag::DOUBLE:
+            case TypeTag::FLOAT:
+            case TypeTag::LONG_DOUBLE:
+            case TypeTag::UINT:
+            case TypeTag::ULONG:
+            case TypeTag::ULONG_LONG:
+                return v;
+            case TypeTag::BOOL:
+                return var(v.get<bool>() ? 1 : 0);
+            case TypeTag::STRING:
+            {
+                const std::string &s = v.get<std::string>();
+                size_t pos = 0;
+                try
+                {
+                    int i = std::stoi(s, &pos);
+                    if (pos == s.size())
+                        return var(i);
+                }
+                catch (...)
+                {
+                }
+                pos = 0;
+                try
+                {
+                    long long ll = std::stoll(s, &pos);
+                    if (pos == s.size())
+                        return var(ll);
+                }
+                catch (...)
+                {
+                }
+                pos = 0;
+                try
+                {
+                    double d = std::stod(s, &pos);
+                    if (pos == s.size())
+                        return var(d);
+                }
+                catch (...)
+                {
+                }
+                pos = 0;
+                try
+                {
+                    long double ld = std::stold(s, &pos);
+                    if (pos == s.size())
+                        return var(ld);
+                }
+                catch (...)
+                {
+                }
+                throw pythonic::PythonicTypeError("AutoNumeric: cannot convert string to numeric type: '" + s + "'");
+            }
+            default:
+                throw pythonic::PythonicTypeError("AutoNumeric: cannot convert type '" + v.type() + "' to numeric");
+            }
+        }
+
         // converts to string
         inline var String(const var &v)
         {
