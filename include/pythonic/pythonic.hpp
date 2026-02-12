@@ -14,6 +14,8 @@
 #include "pythonicPlot.hpp"
 #include "graph_viewer.hpp" // Always include - has internal #ifdef guards
 
+#include "REPL/pythonicCalculator.hpp" // REPL Calculator
+
 namespace Pythonic
 {
     using namespace pythonic::vars;
@@ -31,6 +33,8 @@ namespace Pythonic
     using namespace pythonic::media;
     using namespace pythonic::plot;
     using namespace pythonic::viewer; // Graph viewer (enabled via PYTHONIC_ENABLE_GRAPH_VIEWER)
+
+    using namespace pythonic::calculator; // REPL Calculator
 
 }
 
