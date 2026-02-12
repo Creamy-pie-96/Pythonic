@@ -136,28 +136,28 @@ This distinction applies to all similar conversions (Long, Double, etc.).
 
 ## Built-in Conversion Helpers (Free Functions)
 
-| API               | Description                     | Example           |
-| ----------------- | ------------------------------- | ----------------- |
-| `Bool(v)`         | Convert to bool                 | `Bool(v)`         |
-| `Str(v)`          | Convert to string               | `Str(v)`          |
-| `String(v)`       | Convert to string               | `String(v)`       |
-| `Int(v)`          | Convert to int                  | `Int(v)`          |
-| `Long(v)`         | Convert to long                 | `Long(v)`         |
-| `LongLong(v)`     | Convert to long long            | `LongLong(v)`     |
-| `UInt(v)`         | Convert to unsigned int         | `UInt(v)`         |
-| `ULong(v)`        | Convert to unsigned long        | `ULong(v)`        |
-| `ULongLong(v)`    | Convert to unsigned long long   | `ULongLong(v)`    |
-| `Double(v)`       | Convert to double               | `Double(v)`       |
-| `Float(v)`        | Convert to float                | `Float(v)`        |
-| `LongDouble(v)`   | Convert to long double          | `LongDouble(v)`   |
+| API               | Description                                                                                       | Example                                     |
+| ----------------- | ------------------------------------------------------------------------------------------------- | ------------------------------------------- |
+| `Bool(v)`         | Convert to bool                                                                                   | `Bool(v)`                                   |
+| `Str(v)`          | Convert to string                                                                                 | `Str(v)`                                    |
+| `String(v)`       | Convert to string                                                                                 | `String(v)`                                 |
+| `Int(v)`          | Convert to int                                                                                    | `Int(v)`                                    |
+| `Long(v)`         | Convert to long                                                                                   | `Long(v)`                                   |
+| `LongLong(v)`     | Convert to long long                                                                              | `LongLong(v)`                               |
+| `UInt(v)`         | Convert to unsigned int                                                                           | `UInt(v)`                                   |
+| `ULong(v)`        | Convert to unsigned long                                                                          | `ULong(v)`                                  |
+| `ULongLong(v)`    | Convert to unsigned long long                                                                     | `ULongLong(v)`                              |
+| `Double(v)`       | Convert to double                                                                                 | `Double(v)`                                 |
+| `Float(v)`        | Convert to float                                                                                  | `Float(v)`                                  |
+| `LongDouble(v)`   | Convert to long double                                                                            | `LongDouble(v)`                             |
 | `AutoNumeric(v)`  | Convert to the most suitable numeric type (int, long long, double, or long double) automatically. | `AutoNumeric(var("123.45")) // var(double)` |
-| `list(v)`         | Convert to List                 | `list(v)`         |
-| `dict(v)`         | Convert to Dict                 | `dict(v)`         |
-| `set(v)`          | Convert to Set                  | `set(v)`          |
-| `ordered_set(v)`  | Convert to OrderedSet           | `ordered_set(v)`  |
-| `ordered_dict(v)` | Convert to OrderedDict          | `ordered_dict(v)` |
-| `graph(v)`        | Convert to Graph                | `graph(v)`        |
-| `load_graph(v)`   | Load/convert to Graph from file | `load_graph(v)`   |
+| `list(v)`         | Convert to List                                                                                   | `list(v)`                                   |
+| `dict(v)`         | Convert to Dict                                                                                   | `dict(v)`                                   |
+| `set(v)`          | Convert to Set                                                                                    | `set(v)`                                    |
+| `ordered_set(v)`  | Convert to OrderedSet                                                                             | `ordered_set(v)`                            |
+| `ordered_dict(v)` | Convert to OrderedDict                                                                            | `ordered_dict(v)`                           |
+| `graph(v)`        | Convert to Graph                                                                                  | `graph(v)`                                  |
+| `load_graph(v)`   | Load/convert to Graph from file                                                                   | `load_graph(v)`                             |
 
 ---
 
