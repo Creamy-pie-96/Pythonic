@@ -12,12 +12,12 @@ This page documents all user-facing math functions in Pythonic, using a clear ta
 
 Many arithmetic and aggregation functions accept an optional `policy` parameter of type `Overflow`, which controls how overflows are handled:
 
-| Policy                   | Enum Value | Description                                                                     |
-| ------------------------ | ---------- | ------------------------------------------------------------------------------- |
-| `Overflow::Throw`        | 0          | **Default for functions and operators.** Throw an exception on overflow (safe, Python-like).  |
-| `Overflow::Promote`      | 1          | Promote to a larger type on overflow (never throws, but may use bigger type).   |
-| `Overflow::Wrap`         | 2          | Wrap around on overflow (C++-like, may lose data, never throws).                |
-| `Overflow::None_of_them` | 3          | Raw C++ arithmetic (no checks, maximum performance). |
+| Policy                   | Enum Value | Description                                                                                  |
+| ------------------------ | ---------- | -------------------------------------------------------------------------------------------- |
+| `Overflow::Throw`        | 0          | **Default for functions and operators.** Throw an exception on overflow (safe, Python-like). |
+| `Overflow::Promote`      | 1          | Promote to a larger type on overflow (never throws, but may use bigger type).                |
+| `Overflow::Wrap`         | 2          | Wrap around on overflow (C++-like, may lose data, never throws).                             |
+| `Overflow::None_of_them` | 3          | Raw C++ arithmetic (no checks, maximum performance).                                         |
 
 **Policy Selection Guide:**
 
@@ -230,6 +230,14 @@ var result = div(x, y, Overflow::Promote);  // Returns float (2.5)
 | `fill_random_set(count, min, max)`      | Set of random ints           | `fill_random_set(5, 1, 10)`     |
 | `fill_randomf_set(count, min, max)`     | Set of random floats         | `fill_randomf_set(5, 0, 1)`     |
 | `fill_randomn_set(count, mean, stddev)` | Set of normal floats         | `fill_randomn_set(5, 0, 1)`     |
+
+## Calculator API
+
+| Function        | Description                            | Example                                  |
+| --------------- | -------------------------------------- | ---------------------------------------- |
+| `calculator()`  | Starts interactive CLI calculator      | `pythonic::calculator::calculator();`    |
+| `Calculator`    | Calculator class for programmatic use  | `pythonic::calculator::Calculator calc;` |
+| `process(line)` | Process a line (expression/assignment) | `calc.process("var a=10. a+5");`         |
 
 ---
 
