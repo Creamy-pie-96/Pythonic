@@ -724,7 +724,7 @@ namespace pythonic
         };
 
 
-        void calculator()
+        inline void calculator()
         {
             Calculator calc;
             std::string line;
