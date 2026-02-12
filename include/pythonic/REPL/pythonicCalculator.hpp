@@ -57,7 +57,7 @@ namespace pythonic
         // 4: Unary Minus (~)
         // 5: Functions
 
-        int get_operator_precedence(const std::string &op)
+        inline int get_operator_precedence(const std::string &op)
         {
             if (op == "+" || op == "-")
                 return 1;
@@ -70,12 +70,12 @@ namespace pythonic
             return 0;
         }
 
-        bool is_right_associative(const std::string &op)
+        inline bool is_right_associative(const std::string &op)
         {
             return op == "^" || op == "~";
         }
 
-        bool is_math_function(const std::string &str)
+        inline bool is_math_function(const std::string &str)
         {
             static const std::vector<std::string> funcs = {
                 "sin", "cos", "tan", "cot", "sec", "csc",
