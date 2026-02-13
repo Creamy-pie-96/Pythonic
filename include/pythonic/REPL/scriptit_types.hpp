@@ -343,4 +343,9 @@ struct Scope
         values.clear();
         functions.clear();
     }
+
+    const std::map<std::string, var> &getAll() const
+    {
+        return values;
+    }
 };
