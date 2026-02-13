@@ -77,50 +77,114 @@ class KernelManager:
                     self.process.stdin.write(json.dumps({"action": "shutdown"}) + "\n")
                     self.process.stdin.flush()
                     self.process.wait(timeout=3)
-                except:
-                    self.process.kill()
-                    self.process.wait(timeout=2)
+                except Exception as e:
+                    print(f"[Kernel] Shutdown error during restart: {e}")
+                    try:
+                        self.process.kill()
+                        self.process.wait(timeout=2)
+                    except:
+                        pass
                 print("[Kernel] Stopped for restart")
+            elif self.process:
+                print(f"[Kernel] Process already dead (returncode={self.process.returncode})")
             self.process = None
             self.execution_count = 0
 
             # Start a new process directly (without re-acquiring lock)
-            self.process = subprocess.Popen(
-                [SCRIPTIT_BINARY, "--kernel"],
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                bufsize=1
-            )
-            ready = self.process.stdout.readline().strip()
-            info = json.loads(ready)
-            if info.get("status") != "kernel_ready":
-                raise RuntimeError(f"Kernel failed to start: {ready}")
-            print(f"[Kernel] Restarted (PID {self.process.pid})")
+            try:
+                self.process = subprocess.Popen(
+                    [SCRIPTIT_BINARY, "--kernel"],
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE,
+                    text=True,
+                    bufsize=1
+                )
+                ready = self.process.stdout.readline().strip()
+                if not ready:
+                    raise RuntimeError("Kernel produced no output on startup")
+                info = json.loads(ready)
+                if info.get("status") != "kernel_ready":
+                    raise RuntimeError(f"Kernel failed to start: {ready}")
+                print(f"[Kernel] Restarted (PID {self.process.pid})")
+            except Exception as e:
+                print(f"[Kernel] Failed to restart: {e}")
+                self.process = None
+                raise
 
     def execute(self, cell_id, code):
         """Execute code in the kernel and return the result."""
         with self.lock:
             if not self.process or self.process.poll() is not None:
+                print("[Kernel] Dead before execute — restarting")
+                self.process = None
                 self.start()
-            cmd = json.dumps({"action": "execute", "cell_id": cell_id, "code": code})
-            self.process.stdin.write(cmd + "\n")
-            self.process.stdin.flush()
-            response = self.process.stdout.readline().strip()
-            return json.loads(response)
+            try:
+                cmd = json.dumps({"action": "execute", "cell_id": cell_id, "code": code})
+                self.process.stdin.write(cmd + "\n")
+                self.process.stdin.flush()
+                response = self.process.stdout.readline().strip()
+                if not response:
+                    raise RuntimeError("No response from kernel (process may have crashed)")
+                return json.loads(response)
+            except Exception as e:
+                print(f"[Kernel] Execute error: {e}")
+                # Try to restart kernel and return error
+                try:
+                    self.process = None
+                    self.start()
+                except:
+                    pass
+                return {
+                    "cell_id": cell_id,
+                    "status": "error",
+                    "stdout": "",
+                    "stderr": f"Kernel error: {e}",
+                    "result": "",
+                    "execution_count": 0
+                }
 
     def reset(self):
         """Reset the kernel state."""
         with self.lock:
             if not self.process or self.process.poll() is not None:
-                self.start()
+                # Kernel is dead — restart it instead of just resetting
+                print("[Kernel] Dead during reset — restarting")
+                self.process = None
+                self.execution_count = 0
+                try:
+                    self.process = subprocess.Popen(
+                        [SCRIPTIT_BINARY, "--kernel"],
+                        stdin=subprocess.PIPE,
+                        stdout=subprocess.PIPE,
+                        stderr=subprocess.PIPE,
+                        text=True,
+                        bufsize=1
+                    )
+                    ready = self.process.stdout.readline().strip()
+                    if not ready:
+                        raise RuntimeError("Kernel produced no output on startup")
+                    info = json.loads(ready)
+                    if info.get("status") != "kernel_ready":
+                        raise RuntimeError(f"Kernel failed to start: {ready}")
+                    print(f"[Kernel] Restarted during reset (PID {self.process.pid})")
+                except Exception as e:
+                    print(f"[Kernel] Failed to restart during reset: {e}")
+                    self.process = None
+                    return {"status": "error", "message": str(e)}
                 return {"status": "reset_ok"}
-            cmd = json.dumps({"action": "reset"})
-            self.process.stdin.write(cmd + "\n")
-            self.process.stdin.flush()
-            response = self.process.stdout.readline().strip()
-            return json.loads(response)
+            try:
+                cmd = json.dumps({"action": "reset"})
+                self.process.stdin.write(cmd + "\n")
+                self.process.stdin.flush()
+                response = self.process.stdout.readline().strip()
+                if not response:
+                    raise RuntimeError("No response from kernel")
+                self.execution_count = 0
+                return json.loads(response)
+            except Exception as e:
+                print(f"[Kernel] Reset failed: {e}")
+                return {"status": "error", "message": str(e)}
 
     def is_alive(self):
         return self.process is not None and self.process.poll() is None
@@ -222,14 +286,55 @@ class NotebookHandler(http.server.BaseHTTPRequestHandler):
             return
 
         if self.path == "/api/notebook/list":
-            # List all .nsit files in the notebook directory
+            # List all .nsit files in the notebook directory and subdirectories
             files = []
-            for root, dirs, filenames in os.walk(NOTEBOOK_DIR):
-                for fn in sorted(filenames):
-                    if fn.endswith(".nsit"):
-                        full = os.path.join(root, fn)
-                        files.append(full)
+            search_dirs = [NOTEBOOK_DIR]
+            # Also search home directory for .nsit files
+            home = os.path.expanduser("~")
+            if home != NOTEBOOK_DIR:
+                search_dirs.append(home)
+            for search_dir in search_dirs:
+                for root, dirs, filenames in os.walk(search_dir):
+                    # Skip hidden directories and common unrelated dirs
+                    dirs[:] = [d for d in dirs if not d.startswith('.') and d not in
+                              ('node_modules', '__pycache__', 'venv', '.git', 'build')]
+                    for fn in sorted(filenames):
+                        if fn.endswith(".nsit"):
+                            full = os.path.join(root, fn)
+                            if full not in files:
+                                files.append(full)
+                    # Limit depth to avoid scanning too deep
+                    if root.count(os.sep) - search_dir.count(os.sep) >= 3:
+                        dirs.clear()
             self.send_json({"cwd": NOTEBOOK_DIR, "files": files})
+            return
+
+        if self.path.startswith("/api/browse"):
+            # Browse a directory on the server filesystem
+            parsed = urllib.parse.urlparse(self.path)
+            params = urllib.parse.parse_qs(parsed.query)
+            browse_path = params.get("path", [NOTEBOOK_DIR])[0]
+            if not os.path.isdir(browse_path):
+                browse_path = os.path.dirname(browse_path)
+            if not os.path.isdir(browse_path):
+                browse_path = NOTEBOOK_DIR
+            try:
+                entries = []
+                # Add parent directory entry
+                parent = os.path.dirname(browse_path)
+                if parent and parent != browse_path:
+                    entries.append({"name": "..", "path": parent, "type": "dir"})
+                for entry in sorted(os.listdir(browse_path)):
+                    if entry.startswith('.'):
+                        continue
+                    full = os.path.join(browse_path, entry)
+                    if os.path.isdir(full):
+                        entries.append({"name": entry, "path": full, "type": "dir"})
+                    elif entry.endswith(".nsit"):
+                        entries.append({"name": entry, "path": full, "type": "file"})
+                self.send_json({"current": browse_path, "entries": entries})
+            except PermissionError:
+                self.send_json({"current": browse_path, "entries": [], "error": "Permission denied"})
             return
 
         self.send_response(404)
@@ -245,7 +350,10 @@ class NotebookHandler(http.server.BaseHTTPRequestHandler):
         if self.path == "/api/execute":
             cell_id = data.get("cell_id", "")
             code = data.get("code", "")
+            start_time = time.time()
             result = kernel.execute(cell_id, code)
+            elapsed = time.time() - start_time
+            result["exec_time"] = round(elapsed, 4)
 
             # Update notebook cell outputs
             if current_notebook:

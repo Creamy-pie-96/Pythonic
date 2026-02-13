@@ -1,2630 +1,1631 @@
+"""
+ScriptIt Interpreter — Comprehensive Test Suite
+================================================
+Tests every language feature, edge case, and error path.
+Binary: ./scriptit --script  (reads code from stdin)
+
+Run:   python3 -m unittest test_interpreter -v
+"""
+
 import subprocess
 import unittest
+import tempfile
+import os
+
 
 class TestInterpreter(unittest.TestCase):
+    """Base test harness for the ScriptIt interpreter."""
+
+    BINARY = './scriptit'
+    CWD = '/home/DATA/CODE/code/test'
+
     def run_code(self, code):
-        """Runs the scriptit interpreter with the given code."""
-        formatted_code = code.strip()
-        process = subprocess.Popen(
-            ['scriptit', '--script'],
+        """Run ScriptIt code via --script mode, return (stdout, stderr)."""
+        formatted = code.strip()
+        proc = subprocess.Popen(
+            [self.BINARY, '--script'],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
-            cwd='/home/DATA/CODE/code/test',
-            text=True
+            cwd=self.CWD,
+            text=True,
         )
-        stdout, stderr = process.communicate(input=formatted_code)
+        stdout, stderr = proc.communicate(input=formatted, timeout=10)
         return stdout, stderr
 
-    def get_clean_output_lines(self, stdout):
-        """Extracts non-empty lines from stdout, ignoring debug prints if any remain."""
-        lines = [line.strip() for line in stdout.splitlines() if line.strip()]
-        return lines
+    # ── Assertion helpers ──────────────────────────────
 
-    def assertOutputSequence(self, stdout, expected_sequence):
-        """Asserts that the expected sequence of strings appears in the output in order."""
-        lines = self.get_clean_output_lines(stdout)
-        # Filter out potential debug lines if they start with 'Debug:' or '---'
-        lines = [l for l in lines if not l.startswith("Debug:") and not l.startswith("---")]
-        
-        # Check if expected_sequence is a subsequence of lines
-        seq_idx = 0
-        line_idx = 0
-        while seq_idx < len(expected_sequence) and line_idx < len(lines):
-            if expected_sequence[seq_idx] in lines[line_idx]:
-                seq_idx += 1
-            line_idx += 1
-        
-        if seq_idx < len(expected_sequence):
-            self.fail(f"Sequence not found. Expected {expected_sequence}, got {lines}")
+    def lines(self, stdout):
+        """Clean output lines (strip, skip blanks/debug)."""
+        return [
+            l.strip() for l in stdout.splitlines()
+            if l.strip() and not l.strip().startswith("Debug:")
+            and not l.strip().startswith("---")
+        ]
 
-    def test_math_basics(self):
-        code = """
-        1 + 1.
-        10 * 2.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2", "20"])
+    def assertOutputSequence(self, stdout, expected):
+        """Assert expected strings appear *in order* (substring match)."""
+        got = self.lines(stdout)
+        si = 0
+        for li in range(len(got)):
+            if si < len(expected) and expected[si] in got[li]:
+                si += 1
+        self.assertEqual(si, len(expected),
+                         f"Expected sequence {expected!r} but got lines: {got!r}")
 
-    def test_scope_shadowing_order(self):
-        code = """
-        var a = 10.
-        fn f @():
-            var a = 20.
-            give(a).
-        ;
-        f().
-        a.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["20", "10"])
+    def assertOutputExact(self, stdout, expected_lines):
+        """Assert output lines match exactly."""
+        got = self.lines(stdout)
+        self.assertEqual(got, expected_lines,
+                         f"Expected {expected_lines!r} but got {got!r}")
 
-    def test_syntax_error_missing_comma(self):
-        code = """
-        fn add @(x y): give(x+y). ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        # Specific error might vary but should be an error
+    def assertOutputContains(self, stdout, substring):
+        """Assert substring appears anywhere in stdout."""
+        self.assertIn(substring, stdout, f"Expected '{substring}' in output: {stdout!r}")
 
-    def test_syntax_error_missing_in(self):
-        code = """
-        for i range(from 1 to 5): i. ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Expected in", out)
+    def assertError(self, stderr, substring=""):
+        """Assert stderr contains an error, optionally matching substring."""
+        self.assertTrue(len(stderr.strip()) > 0 or "Error" in stderr,
+                        f"Expected an error but got no stderr")
+        if substring:
+            self.assertIn(substring, stderr,
+                          f"Expected '{substring}' in error: {stderr!r}")
 
-    def test_scope_leak(self):
-        code = """
-        fn f @():
-            var leaked = 99.
-        ;
-        f().
-        leaked.
-        """
-        out, _ = self.run_code(code)
-        # v2: undefined vars return None (no error)
-        self.assertNotIn("99", out)
+    def assertOutputHasError(self, stdout, substring=""):
+        """Assert stdout contains 'Error:' (since errors go to stdout in --script mode)."""
+        self.assertIn("Error:", stdout, f"Expected error in output: {stdout!r}")
+        if substring:
+            self.assertIn(substring, stdout,
+                          f"Expected '{substring}' in output: {stdout!r}")
 
-    def test_loop_reverse_range(self):
-        code = """
-        var sum = 0.
-        for i in range(from 5 to 1):
-             sum = sum + 1.
-        ;
-        sum.
-        """
-        # Range is inclusive and bidirectional: 5, 4, 3, 2, 1 (5 items)
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
+    def assertFirstLine(self, stdout, expected):
+        """Assert the first output line matches."""
+        got = self.lines(stdout)
+        self.assertTrue(len(got) > 0, "No output")
+        self.assertEqual(got[0], expected, f"First line: expected {expected!r}, got {got[0]!r}")
+
+
+# ═════════════════════════════════════════════════════════════
+#  ARITHMETIC & NUMBERS
+# ═════════════════════════════════════════════════════════════
+
+class TestArithmetic(TestInterpreter):
+    """Basic arithmetic, number types, overflow promotion."""
+
+    def test_integer_addition(self):
+        out, _ = self.run_code('print(1 + 2).')
+        self.assertFirstLine(out, '3')
+
+    def test_integer_subtraction(self):
+        out, _ = self.run_code('print(10 - 3).')
+        self.assertFirstLine(out, '7')
+
+    def test_integer_multiplication(self):
+        out, _ = self.run_code('print(6 * 7).')
+        self.assertFirstLine(out, '42')
+
+    def test_integer_division(self):
+        out, _ = self.run_code('print(10 / 3).')
+        got = self.lines(out)
+        self.assertTrue(got[0].startswith('3.333'))
+
+    def test_integer_modulo(self):
+        out, _ = self.run_code('print(17 % 5).')
+        self.assertFirstLine(out, '2')
+
+    def test_exponentiation(self):
+        out, _ = self.run_code('print(2 ^ 10).')
+        self.assertFirstLine(out, '1024')
+
+    def test_negative_numbers(self):
+        out, _ = self.run_code('print(-5 + 3).')
+        self.assertFirstLine(out, '-2')
+
+    def test_decimal_numbers(self):
+        out, _ = self.run_code('print(3.14 + 0.01).')
+        self.assertFirstLine(out, '3.15')
+
+    def test_leading_dot_decimal(self):
+        out, _ = self.run_code('print(.5 + .5).')
+        self.assertFirstLine(out, '1')
 
     def test_division_by_zero(self):
-        code = """
-        10 / 0.
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Div by 0", out)
+        out, _ = self.run_code('print(1 / 0).')
+        self.assertOutputHasError(out, 'Division by zero')
 
-    def test_return_without_give(self):
-        code = """
-        fn noGive @():
-            var a = 1.
-        ;
-        noGive().
-        """
-        # Should return 0 by default
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_logical_operators(self):
-        code = """
-        1 < 2.
-        1 > 2.
-        1 == 1.
-        1 != 1.
-        1 <= 1.
-        1 >= 2.
-        (1 == 1) && (2 == 2).
-        (1 == 2) || (1 == 1).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "0", "1", "0", "1", "0", "1", "1"])
-
-    def test_multi_statement_line(self):
-        code = """
-        var x = 1. var y = 2.
-        x + y.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    def test_nested_if(self):
-        code = """
-        if 1 < 2:
-            if 2 < 3:
-                give(100).
-            ;
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["100"])
-
-    def test_recursion_base_case(self):
-        code = """
-        fn fact @(n):
-            if n <= 0: give(1). ;
-            give(n * fact(n-1)).
-        ;
-        fact(0).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_param_shadowing(self):
-        code = """
-        fn f @(x):
-            var x = 10.
-            give(x).
-        ;
-        f(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["10"])
-
-    def test_short_circuit(self):
-        """Short-circuit ||: LHS is true, RHS (div by 0) should NOT be evaluated."""
-        code = """
-        (1 == 1) || (10 / 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Div by 0", out)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_short_circuit_and(self):
-        """Short-circuit &&: LHS is false, RHS (div by 0) should NOT be evaluated."""
-        code = """
-        (1 == 0) && (10 / 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Div by 0", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_implicit_assignment(self):
-        code = """
-        x = 99.
-        x.
-        """
-        out, _ = self.run_code(code)
-        # Should error in strict mode
-        self.assertIn("Error", out) 
-
-    def test_function_arity(self):
-        code = """
-        fn add @(a, b): give(a+b). ;
-        add(1, 2, 3).
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("mismatch", out)
-
-    def test_undefined_function(self):
-        code = """
-        foo().
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_function_scope_isolation(self):
-        code = """
-        var g = 10.
-        fn change @():
-             g = 20. 
-        ;
-        change().
-        """
-        # Strict scope: cannot mutate outer 'g' without declaration (which would be local).
-        out, _ = self.run_code(code)
-        # We check for "Undefined variable" or "Error"
-        self.assertIn("Error", out)
-
-    def test_chained_comparison(self):
-        # 1 < 2 < 3. 
-        # C-style: (1 < 2) < 3 -> 1 < 3 -> 1 (True).
-        code = "3 > 2 > 1."
-        out, _ = self.run_code(code)
-        # We implemented C-style binary operators.
-        self.assertOutputSequence(out, ["0"]) # Expect False (C-style)
+    def test_modulo_by_zero(self):
+        out, _ = self.run_code('print(5 % 0).')
+        self.assertOutputHasError(out, 'Modulo by zero')
 
     def test_operator_precedence(self):
-        # 1 + 2 * 3 = 7
-        code = "1 + 2 * 3."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["7"])
-        
-        code2 = "(1 + 2) * 3."
-        out2, _ = self.run_code(code2)
-        self.assertOutputSequence(out2, ["9"])
-
-    def test_unary_operators(self):
-        code = """
-        -5.
-        --5.
-        !(1 == 1).
-        !(1 == 0).
-        """
-        out, _ = self.run_code(code)
-        # -5 -> -5
-        # --5 -> 5
-        # !T -> 0
-        # !F -> 1
-        self.assertOutputSequence(out, ["-5", "5", "0", "1"])
-        
-    def test_unary_keywords(self):
-        code = """
-        not (1 == 1).
-        not (1 == 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0", "1"])
-
-    def test_logical_keywords(self):
-        code = """
-        (1 == 1) and (2 == 2).
-        (1 == 2) or (1 == 1).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "1"])
-
-    def test_nested_functions(self):
-        code = """
-        fn outer @():
-            fn inner @(): give(100). ;
-            give(inner()).
-        ;
-        outer().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["100"])
-
-    def test_empty_function_error(self):
-        code = """
-        fn f @(): ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Empty", out) # "Empty function body"
-
-    def test_pass_keyword(self):
-        code = """
-        fn f @(): pass. ;
-        f().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"]) # Void return
-
-    def test_while_loop(self):
-        code = """
-        var i = 0.
-        while i < 3:
-            i = i + 1.
-        ;
-        i.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    def test_variable_redefinition_allowed(self):
-        code = """
-        var x = 1.
-        var x = 2.
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2"])
-
-    def test_loop_scope_leak_check(self):
-        code = """
-        for i in range(from 1 to 2): pass. ;
-        i.
-        """
-        out, _ = self.run_code(code)
-        # v2: undefined vars return None (no error)
-        self.assertNotIn("Error", out)
-    # ===== NEW COMPREHENSIVE TESTS =====
-
-    # 1. Function return without give after multiple statements
-    def test_function_no_give_after_stmts(self):
-        """A function with statements but no give should return 0 (void)."""
-        code = """
-        fn work @():
-            var x = 10.
-            var y = 20.
-        ;
-        work().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])  # Implicit void return
-
-    def test_function_give_after_stmts(self):
-        """Contrast: function WITH give should return value."""
-        code = """
-        fn work @():
-            var x = 10.
-            var y = 20.
-            give(x + y).
-        ;
-        work().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["30"])
-
-    # 2. Nested loops with empty body (pass)
-    def test_nested_for_loops_pass(self):
-        code = """
-        for i in range(from 1 to 3):
-            for j in range(from 1 to 2):
-                pass.
-            ;
-        ;
-        0.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])  # No crash, runs clean
-
-    def test_while_with_pass(self):
-        code = """
-        var n = 3.
-        while n > 0:
-            n = n - 1.
-        ;
-        n.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    # 3. Edge-case ranges
-    def test_range_start_equals_end(self):
-        """for i in range(from 5 to 5) should execute once (inclusive)."""
-        code = """
-        var sum = 0.
-        for i in range(from 5 to 5):
-            sum = sum + i.
-        ;
-        sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    def test_range_single_element(self):
-        """from 1 to 1 should give exactly [1]."""
-        code = """
-        var count = 0.
-        for i in range(from 1 to 1):
-            count = count + 1.
-        ;
-        count.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_range_negative_step(self):
-        """from 5 to 1 should iterate 5,4,3,2,1."""
-        code = """
-        var sum = 0.
-        for i in range(from 5 to 1):
-            sum = sum + i.
-        ;
-        sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["15"])  # 5+4+3+2+1
-
-    # 4. Deep shadowing of parameters and outer variables
-    def test_deep_param_shadowing(self):
-        """Param shadows outer, inner fn param shadows again."""
-        code = """
-        var x = 100.
-        fn outer @(x):
-            fn inner @(x):
-                give(x).
-            ;
-            give(inner(x + 1)).
-        ;
-        outer(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["6"])  # inner gets 5+1=6
-
-    def test_outer_var_visible_in_func(self):
-        """Function can READ outer scope vars (but not mutate them)."""
-        code = """
-        var g = 42.
-        fn readG @():
-            give(g).
-        ;
-        readG().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    # 5. Consistency of error messages
-    def test_error_syntax_missing_dot(self):
-        # v2: Missing dot at EOF is now forgiven (feature).
-        # Instead test missing dot in the MIDDLE of a multi-statement script.
-        code = "var x = 5\nvar y = 10."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_error_runtime_div_zero(self):
-        code = "1 / 0."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Div by 0", out)
-
-    def test_error_undefined_var(self):
-        code = "noSuchVar."
-        out, _ = self.run_code(code)
-        # v2: undefined vars return None (no error)
-        self.assertNotIn("Error", out)
-
-    def test_error_undefined_func(self):
-        code = "ghostFunc()."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_error_arity_too_few(self):
-        code = """
-        fn add @(a, b): give(a+b). ;
-        add(1).
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("mismatch", out)
-
-    def test_error_arity_too_many(self):
-        code = """
-        fn id @(a): give(a). ;
-        id(1, 2).
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("mismatch", out)
-
-    # 6. Complex chained arithmetic operations
-    def test_chained_arithmetic(self):
-        code = "2 + 3 * 4 - 1."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["13"])  # 2 + 12 - 1
-
-    def test_chained_arithmetic_parens(self):
-        code = "(2 + 3) * (4 - 1)."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["15"])  # 5 * 3
-
-    def test_nested_parens(self):
-        code = "((1 + 2) * (3 + 4)) + 1."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["22"])  # 3*7 + 1
-
-    def test_modulo_and_power(self):
-        code = """
-        10 % 3.
-        2 ^ 10.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "1024"])
-
-    # 7. Boolean expressions mixing and/or/not with parentheses
-    def test_bool_and_or_not_mixed(self):
-        code = """
-        (1 == 1) and not (2 == 3).
-        not (1 == 1) or (2 == 2).
-        not ((1 == 1) and (2 == 3)).
-        """
-        out, _ = self.run_code(code)
-        # T and not F = T and T = 1
-        # not T or T   = F or T = 1
-        # not (T and F) = not F = 1
-        self.assertOutputSequence(out, ["1", "1", "1"])
-
-    def test_bool_short_circuit_note(self):
-        """Verifying basic logical behavior (short-circuit not guaranteed)."""
-        code = """
-        (0 == 1) and (1 == 1).
-        (1 == 1) or (0 == 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0", "1"])
-
-    def test_bool_complex_chain(self):
-        code = """
-        var a = 1.
-        var b = 0.
-        var c = 1.
-        (a == 1) and (b == 0) and (c == 1).
-        (a == 0) or (b == 0) or (c == 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "1"])
-
-    # 8. Functions returning functions and calling them
-    # NOTE: Our language doesn't support first-class function return yet.
-    # But we CAN test nested func calls (inner called from outer body).
-    def test_nested_func_call_chain(self):
-        code = """
-        fn double @(x): give(x * 2). ;
-        fn quad @(x): give(double(double(x))). ;
-        quad(3).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["12"])  # 3*2=6, 6*2=12
-
-    def test_nested_func_inner_uses_outer_param(self):
-        code = """
-        fn make @(base):
-            fn add @(x): give(base + x). ;
-            give(add(10)).
-        ;
-        make(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["15"])  # base=5, x=10
-
-    # 9. Assignment to reserved keywords (should error)
-    def test_assign_to_keyword_var(self):
-        code = "var var = 5."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_assign_to_keyword_fn(self):
-        code = "var fn = 10."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_assign_to_keyword_if(self):
-        code = "var if = 1."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_assign_to_keyword_while(self):
-        code = "var while = 1."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_assign_to_keyword_pass(self):
-        code = "var pass = 0."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    # 10. Outer-scope variable mutation enforcement
-    def test_outer_scope_mutation_blocked(self):
-        """Function cannot mutate outer scope variable."""
-        code = """
-        var x = 10.
-        fn mutate @():
-            x = 99.
-        ;
-        mutate().
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_outer_scope_preserved_after_func(self):
-        """Outer variable unchanged even if func defines same-named local."""
-        code = """
-        var x = 10.
-        fn shadow @():
-            var x = 99.
-            give(x).
-        ;
-        shadow().
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["99", "10"])
-
-    def test_if_block_can_mutate_outer(self):
-        """If-block scope is permeable — CAN mutate parent variables."""
-        code = """
-        var x = 1.
-        if 1 == 1:
-            x = 42.
-        ;
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    def test_for_loop_cannot_leak_var(self):
-        """Loop-local var should not leak."""
-        code = """
-        for i in range(from 1 to 3):
-            var temp = i.
-        ;
-        temp.
-        """
-        out, _ = self.run_code(code)
-        # v2: undefined vars return None (no error)
-        self.assertNotIn("Error", out)
-
-    # ===== HARDENING TESTS: AIRTIGHT COVERAGE =====
-
-    # --- Recursion ---
-    def test_deep_recursion(self):
-        """Factorial via recursion."""
-        code = """
-        fn fact @(n):
-            if n <= 1:
-                give(1).
-            ;
-            give(n * fact(n - 1)).
-        ;
-        fact(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["120"])
-
-    def test_recursive_fibonacci(self):
-        code = """
-        fn fib @(n):
-            if n <= 0:
-                give(0).
-            ;
-            if n == 1:
-                give(1).
-            ;
-            give(fib(n - 1) + fib(n - 2)).
-        ;
-        fib(6).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["8"])
-
-    def test_mutual_function_calls(self):
-        """Two functions calling each other (not recursive, sequential)."""
-        code = """
-        fn double @(x): give(x * 2). ;
-        fn addThenDouble @(a, b): give(double(a + b)). ;
-        addThenDouble(3, 4).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["14"])
-
-    # --- Comments ---
-    def test_comment_at_start(self):
-        code = """
-        --> This is a comment <--
-        1 + 1.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2"])
-
-    def test_comment_between_stmts(self):
-        code = """
-        1 + 1.
-        --> middle comment <--
-        2 + 2.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2", "4"])
-
-    def test_comment_after_stmts(self):
-        code = """
-        3 + 3.
-        --> trailing comment <--
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["6"])
-
-    def test_multiline_comment(self):
-        code = """
-        --> this is
-        a multiline
-        comment <--
-        42.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    def test_comment_inside_function(self):
-        code = """
-        fn f @():
-            --> skip this <--
-            give(99).
-        ;
-        f().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["99"])
-
-    # --- Pass in all block types ---
-    def test_pass_in_if(self):
-        code = """
-        if 1 == 1:
-            pass.
-        ;
-        0.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_pass_in_elif(self):
-        code = """
-        if 0 == 1:
-            pass.
-        elif 1 == 1:
-            pass.
-        ;
-        0.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_pass_in_else(self):
-        code = """
-        if 0 == 1:
-            pass.
-        else:
-            pass.
-        ;
-        0.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_pass_in_while(self):
-        """While with only pass (must have exit condition to avoid infinite loop)."""
-        code = """
-        var x = 1.
-        while x > 0:
-            x = x - 1.
-            pass.
-        ;
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_pass_in_for(self):
-        code = """
-        for i in range(from 1 to 5):
-            pass.
-        ;
-        0.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    # --- Give in branches ---
-    def test_give_in_if_branch(self):
-        code = """
-        fn abs @(x):
-            if x < 0:
-                give(0 - x).
-            ;
-            give(x).
-        ;
-        abs(-10).
-        abs(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["10", "5"])
-
-    def test_give_in_else(self):
-        code = """
-        fn sign @(x):
-            if x > 0:
-                give(1).
-            elif x < 0:
-                give(-1).
-            else:
-                give(0).
-            ;
-            give(0).
-        ;
-        sign(42).
-        sign(-7).
-        sign(0).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "-1", "0"])
-
-    def test_give_in_loop(self):
-        """Give inside a loop should exit function immediately."""
-        code = """
-        fn findFirst @():
-            for i in range(from 1 to 100):
-                if i == 5:
-                    give(i).
-                ;
-            ;
-            give(-1).
-        ;
-        findFirst().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    # --- Deeply nested blocks ---
-    def test_triple_nested_if(self):
-        code = """
-        var x = 10.
-        if x > 5:
-            if x > 8:
-                if x == 10:
-                    x.
-                ;
-            ;
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["10"])
-
-    def test_nested_for_in_while(self):
-        code = """
-        var total = 0.
-        var rounds = 2.
-        while rounds > 0:
-            for i in range(from 1 to 3):
-                total = total + i.
-            ;
-            rounds = rounds - 1.
-        ;
-        total.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["12"])  # (1+2+3)*2
-
-    def test_while_in_for(self):
-        code = """
-        var sum = 0.
-        for i in range(from 1 to 3):
-            var j = i.
-            while j > 0:
-                sum = sum + 1.
-                j = j - 1.
-            ;
-        ;
-        sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["6"])  # 1+2+3
-
-    # --- Float/Decimal output ---
-    def test_integer_output_format(self):
-        """Integers should print without trailing decimals ideally."""
-        code = "5 + 5."
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(any("10" in l for l in lines))
-
-    def test_decimal_arithmetic(self):
-        code = "1.5 + 2.5."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["4"])
-
-    def test_decimal_division(self):
-        code = "7 / 2."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3.5"])
-
-    # --- Large numbers ---
-    def test_large_number(self):
-        code = "1000000 * 1000000."
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(len(lines) > 0)
-        self.assertNotIn("Error", out)
-
-    def test_power_large(self):
-        code = "2 ^ 10."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1024"])
-
-    # --- Negation chains ---
-    def test_triple_negation(self):
-        code = "---5."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["-5"])
-
-    def test_not_not(self):
-        code = "not not (1 == 1)."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_not_not_not(self):
-        code = "not not not (1 == 1)."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_neg_in_expression(self):
-        code = "3 + -2."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    # --- Variable naming ---
-    def test_single_char_var(self):
-        code = """
-        var a = 1.
-        var b = 2.
-        a + b.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    def test_underscore_var(self):
-        code = """
-        var _x = 10.
-        var my_var = 20.
-        _x + my_var.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["30"])
-
-    def test_long_var_name(self):
-        code = """
-        var thisIsAVeryLongVariableName = 42.
-        thisIsAVeryLongVariableName.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    def test_var_name_with_digits(self):
-        code = """
-        var x1 = 1.
-        var x2 = 2.
-        x1 + x2.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    # --- Function redefinition ---
-    def test_function_redefine(self):
-        """Redefining a function should use the latest definition."""
-        code = """
-        fn greet @(): give(1). ;
-        greet().
-        fn greet @(): give(2). ;
-        greet().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "2"])
-
-    # --- Empty/minimal programs ---
-    def test_empty_program(self):
-        code = ""
-        out, _ = self.run_code(code)
-        # Should not crash
-        self.assertNotIn("Error", out)
-
-    def test_only_comment(self):
-        code = "--> nothing here <--"
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-
-    def test_single_number(self):
-        code = "42."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    def test_single_zero(self):
-        code = "0."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    # --- Multiple gives (first one wins) ---
-    def test_multiple_gives(self):
-        """Only the first give encountered should fire (via exception)."""
-        code = """
-        fn f @():
-            give(1).
-            give(2).
-        ;
-        f().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    # --- Operator edge cases ---
-    def test_modulo_negative(self):
-        code = "-7 % 3."
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(len(lines) > 0)
-        self.assertNotIn("Error", out)
-
-    def test_mod_by_zero(self):
-        code = "5 % 0."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_comparison_all_operators(self):
-        code = """
-        (1 < 2).
-        (2 > 1).
-        (1 <= 1).
-        (1 >= 1).
-        (1 == 1).
-        (1 != 2).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "1", "1", "1", "1", "1"])
-
-    def test_comparison_false_cases(self):
-        code = """
-        (2 < 1).
-        (1 > 2).
-        (2 <= 1).
-        (1 >= 2).
-        (1 == 2).
-        (1 != 1).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0", "0", "0", "0", "0", "0"])
-
-    # --- Whitespace / formatting ---
-    def test_extra_whitespace(self):
-        code = "   1   +   1   .   "
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2"])
-
-    def test_no_whitespace(self):
-        code = "1+1."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2"])
-
-    def test_newlines_everywhere(self):
-        code = """
-
-
-        1 + 1.
-
-
-        2 + 2.
-
-
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2", "4"])
-
-    # --- Scope stress ---
-    def test_many_variables(self):
-        code = """
-        var a = 1.
-        var b = 2.
-        var c = 3.
-        var d = 4.
-        var e = 5.
-        a + b + c + d + e.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["15"])
-
-    def test_reassignment_chain(self):
-        code = """
-        var x = 0.
-        x = 1.
-        x = x + 1.
-        x = x * 3.
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["6"])  # 0->1->2->6
-
-    def test_for_accumulate(self):
-        """For loop accumulating: sum 1..10 = 55."""
-        code = """
-        var sum = 0.
-        for i in range(from 1 to 10):
-            sum = sum + i.
-        ;
-        sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["55"])
-
-    # --- Error edge cases ---
-    def test_error_missing_paren_func(self):
-        code = """
-        fn f @(: give(1). ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_error_missing_colon_if(self):
-        code = """
-        if 1 == 1
-            pass.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_error_missing_semicolon_if(self):
-        """Missing ; at end of if block."""
-        code = """
-        if 1 == 1:
-            1.
-        """
-        out, _ = self.run_code(code)
-        # Should error or behave unexpectedly
-        # (depends on parser — at minimum shouldn't crash silently)
-
-    def test_error_double_equals_assignment(self):
-        """Using == instead of = for assignment should fail."""
-        code = "var x == 5."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_error_unclosed_parens(self):
-        code = "(1 + 2."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_error_extra_right_paren(self):
-        code = "1 + 2)."
-        out, _ = self.run_code(code)
-        # Either error or ignores — should not crash
-        # This may or may not be an error in our parser
-
-    def test_error_assign_without_var_undeclared(self):
-        """Assigning to undeclared variable should error."""
-        code = "z = 5."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    # --- Function with complex body ---
-    def test_function_with_loop(self):
-        code = """
-        fn sumRange @(n):
-            var s = 0.
-            for i in range(from 1 to n):
-                s = s + i.
-            ;
-            give(s).
-        ;
-        sumRange(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["15"])
-
-    def test_function_with_while(self):
-        code = """
-        fn countdown @(n):
-            var result = 0.
-            while n > 0:
-                result = result + n.
-                n = n - 1.
-            ;
-            give(result).
-        ;
-        countdown(4).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["10"])  # 4+3+2+1
-
-    def test_function_with_nested_if(self):
-        code = """
-        fn classify @(x):
-            if x > 0:
-                if x > 100:
-                    give(2).
-                ;
-                give(1).
-            ;
-            give(0).
-        ;
-        classify(50).
-        classify(200).
-        classify(-1).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "2", "0"])
-
-    # --- Mixed expression complexity ---
-    def test_expression_with_func_in_arith(self):
-        """Function calls inside arithmetic expressions."""
-        code = """
-        fn sq @(x): give(x * x). ;
-        sq(3) + sq(4).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["25"])  # 9 + 16
-
-    def test_expression_nested_func_calls(self):
-        code = """
-        fn add @(a, b): give(a + b). ;
-        fn mul @(a, b): give(a * b). ;
-        add(mul(2, 3), mul(4, 5)).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["26"])  # 6 + 20
-
-    def test_bool_in_variable(self):
-        code = """
-        var t = (1 == 1).
-        var f = (1 == 0).
-        t.
-        f.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "0"])
-
-    def test_conditional_on_var(self):
-        code = """
-        var flag = 1.
-        if flag:
-            42.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    def test_conditional_on_zero(self):
-        code = """
-        var flag = 0.
-        if flag:
-            99.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    # ===== COMPLEX CHAINED CONDITION STRESS TESTS =====
-
-    def test_if_mixed_and_or(self):
-        """if (a == b and c == d or e == f)"""
-        code = """
-        var a = 1. var b = 1. var c = 2. var d = 3. var e = 5. var f = 5.
-        if (a == b and c == d or e == f):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        # a==b is T, c==d is F, e==f is T → T and F or T → F or T → 1
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_and_or_precedence(self):
-        """and binds tighter than or: F or T and T = F or T = T"""
-        code = """
-        if (1 == 0 or 1 == 1 and 2 == 2):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_or_and_precedence_reverse(self):
-        """T or F and F = T or F = T (and binds first)"""
-        code = """
-        if (1 == 1 or 1 == 0 and 0 == 1):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_nested_parens_override(self):
-        """Parens override precedence: (T or F) and F = T and F = F"""
-        code = """
-        if ((1 == 1 or 1 == 0) and 0 == 1):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_if_and_or_not_combo(self):
-        """a == b and not (c == d) or e == f"""
-        code = """
-        var a = 1. var b = 1. var c = 2. var d = 2. var e = 3. var f = 4.
-        if (a == b and not (c == d) or e == f):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        # a==b=T, not(c==d)=not T=F, e==f=F → T and F or F → F or F → 0
-        self.assertOutputSequence(out, ["0"])
-
-    def test_if_triple_and(self):
-        code = """
-        if (1 == 1 and 2 == 2 and 3 == 3):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_triple_and_one_false(self):
-        code = """
-        if (1 == 1 and 2 == 3 and 3 == 3):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_if_triple_or(self):
-        code = """
-        if (1 == 0 or 2 == 0 or 3 == 3):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_triple_or_all_false(self):
-        code = """
-        if (1 == 0 or 2 == 0 or 3 == 0):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_if_symbolic_and_or(self):
-        """Using && and || symbols instead of keywords."""
-        code = """
-        if (1 == 1 && 2 == 2):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_symbolic_or(self):
-        code = """
-        if (1 == 0 || 2 == 2):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_mixed_keyword_and_symbol(self):
-        """Mix and/&& and or/|| in same expression."""
-        code = """
-        if (1 == 1 and 2 == 2 || 3 == 0):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_if_not_with_symbol(self):
-        """!expr form."""
-        code = """
-        if (!(1 == 0)):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_deeply_nested_bool(self):
-        """((a and b) or (c and d)) and (e or f)"""
-        code = """
-        var a = 1. var b = 1. var c = 0. var d = 1. var e = 0. var f = 1.
-        if (((a == 1 and b == 1) or (c == 1 and d == 1)) and (e == 1 or f == 1)):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        # (T and T) or (F and T) = T or F = T
-        # (F or T) = T
-        # T and T = 1
-        self.assertOutputSequence(out, ["1"])
-
-    def test_deeply_nested_bool_false(self):
-        """Same structure but evaluates to false."""
-        code = """
-        var a = 1. var b = 0. var c = 0. var d = 1. var e = 0. var f = 0.
-        if (((a == 1 and b == 1) or (c == 1 and d == 1)) and (e == 1 or f == 1)):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        # (T and F) or (F and T) = F or F = F
-        # F and anything = F → 0
-        self.assertOutputSequence(out, ["0"])
-
-    def test_condition_with_arithmetic(self):
-        """Conditions that involve arithmetic comparisons."""
-        code = """
-        var x = 10. var y = 20.
-        if (x + y == 30 and x * 2 == y):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_condition_with_func_calls(self):
-        """Conditions using function return values."""
-        code = """
-        fn isPositive @(x):
-            if x > 0: give(1). ;
-            give(0).
-        ;
-        fn isEven @(x):
-            if x % 2 == 0: give(1). ;
-            give(0).
-        ;
-        if (isPositive(5) and isEven(4)):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_condition_func_calls_false(self):
-        code = """
-        fn isPositive @(x):
-            if x > 0: give(1). ;
-            give(0).
-        ;
-        fn isEven @(x):
-            if x % 2 == 0: give(1). ;
-            give(0).
-        ;
-        if (isPositive(-5) and isEven(4)):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_while_complex_condition(self):
-        """While loop with compound condition."""
-        code = """
-        var x = 10.
-        var y = 10.
-        var count = 0.
-        while (x > 0 and y > 0):
-            x = x - 2.
-            y = y - 3.
-            count = count + 1.
-        ;
-        count.
-        """
-        out, _ = self.run_code(code)
-        # x: 10,8,6,4,2,0  y: 10,7,4,1,-2  → y <= 0 after 4 iterations
-        self.assertOutputSequence(out, ["4"])
-
-    def test_while_or_condition(self):
-        """While loop exits only when BOTH conditions are false."""
-        code = """
-        var a = 3.
-        var b = 5.
-        var steps = 0.
-        while (a > 0 or b > 0):
-            a = a - 1.
-            b = b - 1.
-            steps = steps + 1.
-        ;
-        steps.
-        """
-        out, _ = self.run_code(code)
-        # a: 3,2,1,0,-1  b: 5,4,3,2,1,0,-1 → both <=0 after iter where a=-1, b=0? 
-        # iter1: a=2,b=4  iter2: a=1,b=3  iter3: a=0,b=2  iter4: a=-1,b=1  iter5: a=-2,b=0
-        # After iter5: a=-2<=0, b=0<=0 → both false → exit. steps=5
-        self.assertOutputSequence(out, ["5"])
-
-    def test_elif_complex_conditions(self):
-        code = """
-        var x = 15.
-        if (x > 20 or x < 10):
-            1.
-        elif (x >= 10 and x <= 20):
-            2.
-        else:
-            3.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["2"])
-
-    def test_not_in_condition_chain(self):
-        """not applied to a sub-expression in a chain."""
-        code = """
-        var debug = 0.
-        var verbose = 1.
-        if (not debug and verbose):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_comparison_chain_in_var(self):
-        """Store a complex boolean in a variable then use it."""
-        code = """
-        var a = 5. var b = 10. var c = 15.
-        var result = (a < b and b < c).
-        result.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_comparison_not_equal_chain(self):
-        code = """
-        var x = 1. var y = 2. var z = 3.
-        if (x != y and y != z and x != z):
-            1.
-        else:
-            0.
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    # ===== SUBTLE BUG-HUNTING TESTS =====
-
-    # --- Number / dot ambiguity ---
-    def test_decimal_number_with_dot_terminator(self):
-        """3.14 followed by . terminator — parser must not confuse decimal with terminator."""
-        code = "3.14."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3.14"])
-
-    def test_integer_dot_as_terminator(self):
-        """10. — the dot is a terminator, not a decimal point."""
-        code = "10."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["10"])
-
-    def test_decimal_in_assignment(self):
-        code = """
-        var pi = 3.14159.
-        pi.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3.14159"])
-
-    def test_decimal_in_arithmetic(self):
-        code = "0.1 + 0.2."
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(len(lines) > 0)
-        # Floating point: 0.3 approximately
-        val = float(lines[0])
-        self.assertAlmostEqual(val, 0.3, places=5)
-
-    # --- Short-circuit with side effects (function calls) ---
-    def test_short_circuit_or_no_side_effect(self):
-        """|| short-circuit: if LHS true, function on RHS should not be called."""
-        code = """
-        fn bomb @():
-            give(1 / 0).
-        ;
-        (1 == 1) || bomb().
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_short_circuit_and_no_side_effect(self):
-        """&& short-circuit: if LHS false, function on RHS should not be called."""
-        code = """
-        fn bomb @():
-            give(1 / 0).
-        ;
-        (1 == 0) && bomb().
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_short_circuit_rhs_evaluated_when_needed(self):
-        """|| should evaluate RHS when LHS is false."""
-        code = """
-        (1 == 0) || (2 == 2).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_short_circuit_and_rhs_evaluated_when_needed(self):
-        """&& should evaluate RHS when LHS is true."""
-        code = """
-        (1 == 1) && (2 == 2).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
-
-    # --- Operator associativity ---
-    def test_subtraction_left_associative(self):
-        """10 - 3 - 2 should be (10-3)-2=5, not 10-(3-2)=9."""
-        code = "10 - 3 - 2."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    def test_division_left_associative(self):
-        """100 / 10 / 2 should be (100/10)/2=5, not 100/(10/2)=20."""
-        code = "100 / 10 / 2."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    def test_power_right_associative_or_left(self):
-        """2^3^2: if right-assoc = 2^9=512, if left-assoc = 8^2=64."""
-        code = "2 ^ 3 ^ 2."
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        # Our implementation uses left-assoc for all (standard Shunting-Yard)
-        # Either result is acceptable as long as it's consistent
-        self.assertTrue(len(lines) > 0)
-
-    # --- Scope chain across nested calls ---
-    def test_scope_three_level_nesting(self):
-        """Three levels of function nesting, each reading from enclosing scope."""
-        code = """
-        var g = 100.
-        fn level1 @():
-            var a = 10.
-            fn level2 @():
-                var b = 20.
-                fn level3 @():
-                    give(g + a + b).
-                ;
-                give(level3()).
-            ;
-            give(level2()).
-        ;
-        level1().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["130"])
-
-    # --- Give interacting with while ---
-    def test_give_exits_while_in_func(self):
-        """Give from inside a while loop exits the function immediately."""
-        code = """
-        fn firstMultipleOf3 @():
-            var i = 1.
-            while i < 100:
-                if i % 3 == 0:
-                    give(i).
-                ;
-                i = i + 1.
-            ;
-            give(-1).
-        ;
-        firstMultipleOf3().
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    # --- For loop counter: does modifying i inside body affect iteration? ---
-    def test_for_counter_modification(self):
-        """Modifying the loop variable inside body should not affect iteration count."""
-        code = """
-        var sum = 0.
-        for i in range(from 1 to 5):
-            sum = sum + i.
-            --> modifying i should not affect loop <--
-        ;
-        sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["15"])  # 1+2+3+4+5
-
-    # --- Chained function calls in expression ---
-    def test_chained_func_in_expression(self):
-        code = """
-        fn add1 @(x): give(x + 1). ;
-        fn mul2 @(x): give(x * 2). ;
-        add1(mul2(add1(0))).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])  # add1(0)=1, mul2(1)=2, add1(2)=3
-
-    # --- Unary not on function return ---
-    def test_not_on_func_return(self):
-        code = """
-        fn isZero @(x):
-            if x == 0: give(1). ;
-            give(0).
-        ;
-        not isZero(5).
-        not isZero(0).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "0"])
-
-    # --- Comparison with expressions on both sides ---
-    def test_comparison_with_complex_expr(self):
-        code = """
-        (2 + 3 == 4 + 1).
-        (10 / 2 > 3 * 2).
-        (1 + 1 <= 3 - 1).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1", "0", "1"])
-
-    # --- Recursive function: copies parameter, doesn't mutate caller ---
-    def test_recursion_doesnt_mutate_caller(self):
-        """Recursive calls get copy of argument, not reference."""
-        code = """
-        fn countDown @(n):
-            if n == 0:
-                give(0).
-            ;
-            give(n + countDown(n - 1)).
-        ;
-        countDown(4).
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["10"])  # 4+3+2+1+0
-
-    # --- Multiple statements on same line ---
-    def test_many_stmts_one_line(self):
-        code = "var a = 1. var b = 2. var c = 3. a + b + c."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["6"])
-
-    # --- Short-circuit chain ---
-    def test_short_circuit_chain(self):
-        """a || b || c with first true — should skip rest."""
-        code = """
-        (1 == 1) || (1 / 0) || (1 / 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_short_circuit_and_chain(self):
-        """a && b && c with first false — should skip rest."""
-        code = """
-        (1 == 0) && (1 / 0) && (1 / 0).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    # --- Edge: expression is just a variable ---
-    def test_expr_just_var(self):
-        code = """
-        var x = 42.
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
-
-    # --- Edge: negative number literal ---
-    def test_negative_number_literal(self):
-        code = "-1."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["-1"])
-
-    # --- Edge: zero division in func, caught as error ---
-    def test_div_zero_in_func(self):
-        code = """
-        fn bad @(): give(1 / 0). ;
-        bad().
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Div by 0", out)
-
-    # --- Deeply nested parentheses ---
-    def test_deeply_nested_parens(self):
-        code = "((((1 + 2))))."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    # --- Function calling itself with modified arg multiple times ---
-    def test_recursive_sum_of_digits(self):
-        """Sum digits of 123: 1+2+3=6 (simplified via divide/modulo)."""
-        code = """
-        fn sumDigits @(n):
-            if n < 10:
-                give(n).
-            ;
-            give(n % 10 + sumDigits(n / 10)).
-        ;
-        sumDigits(123).
-        """
-        out, _ = self.run_code(code)
-        # 123%10=3, 123/10=12.3, 12.3%10=2.3, 12.3/10=1.23, 1.23<10→1.23
-        # Floating point: 3 + 2.3 + 1.23 = 6.53 (not exact integer arithmetic)
-        # This test is about stability, not exact output
-        self.assertNotIn("Error", out)
-
-    # ===== BUG FIX TESTS =====
-
-    # --- Issue 1: Math builtin functions should work when called ---
-    def test_sin_basic(self):
-        """sin(0) should return 0."""
-        code = "sin(0)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_cos_basic(self):
-        """cos(0) should return 1."""
-        code = "cos(0)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_sqrt_basic(self):
-        """sqrt(9) should return 3."""
-        code = "sqrt(9)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["3"])
-
-    def test_abs_basic(self):
-        """abs(-5) should return 5."""
-        code = "abs(-5)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["5"])
-
-    def test_floor_basic(self):
-        """floor(3.7) should return 3."""
-        code = "floor(3.7)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["3"])
-
-    def test_ceil_basic(self):
-        """ceil(3.2) should return 4."""
-        code = "ceil(3.2)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["4"])
-
-    def test_log_basic(self):
-        """log(1) should return 0 (natural log)."""
-        code = "log(1)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_min_max_basic(self):
-        """min and max with two args."""
-        code = """
-        min(3, 7).
-        max(3, 7).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["3", "7"])
-
-    def test_round_basic(self):
-        """round(3.6) should return 4."""
-        code = "round(3.6)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["4"])
-
-    def test_sin_with_variable(self):
-        """sin() should work with variables."""
-        code = """
-        var x = 0.
-        sin(x).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_math_func_in_expression(self):
-        """Math functions should work inside arithmetic expressions."""
-        code = "1 + sin(0)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["1"])
-
-    def test_nested_math_func(self):
-        """Nested math function calls: abs(sin(0))."""
-        code = "abs(sin(0))."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    # --- Issue 1b: Implicit multiplication ---
-    def test_implicit_mul_number_func(self):
-        """10sin(0) should be 10*sin(0) = 0."""
-        code = "10sin(0)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_implicit_mul_number_paren(self):
-        """2(3+4) should be 2*7 = 14."""
-        code = "2(3 + 4)."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["14"])
-
-    def test_implicit_mul_number_var(self):
-        """3x where x=5 should be 15."""
-        code = """
-        var x = 5.
-        3x.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["15"])
-
-    def test_implicit_mul_complex(self):
-        """2sin(0) + 3 should be 0 + 3 = 3."""
-        code = "2sin(0) + 3."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["3"])
-
-    # --- Issue 2: Global scope persistence in --script mode ---
-    def test_var_persists_across_lines(self):
-        """Variables defined on one line should be usable on the next."""
-        code = """
-        var x = 10.
-        var y = 20.
-        x + y.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["30"])
-
-    def test_var_used_in_math_func(self):
-        """Variable should be visible to math function calls."""
-        code = """
-        var x = 0.
-        sin(x).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["0"])
-
-    def test_func_defined_then_called(self):
-        """Function defined in one statement should be callable later."""
-        code = """
-        fn double @(n): give(n * 2). ;
-        double(5).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["10"])
-
-    def test_var_persists_across_many_stmts(self):
-        """Multiple vars and their interactions."""
-        code = """
-        var a = 1.
-        var b = 2.
-        var c = 3.
-        var d = a + b + c.
-        d.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["6"])
-
-    # --- Issue 3: Multi-variable declaration ---
-    def test_multi_var_basic(self):
-        """var x = 10, y = 20. should declare both variables."""
-        code = """
-        var x = 10, y = 20.
-        x + y.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["30"])
-
-    def test_multi_var_three(self):
-        """Three variables in one statement."""
-        code = """
-        var a = 1, b = 2, c = 3.
-        a + b + c.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["6"])
-
-    def test_multi_var_with_expressions(self):
-        """Multi-var with expressions, not just literals."""
-        code = """
-        var x = 2 + 3, y = 10 * 2.
-        x + y.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["25"])
-
-    def test_multi_var_followed_by_stmt(self):
-        """Multi-var declaration followed by another statement on next line."""
-        code = """
-        var x = 10, y = 20.
-        sin(x * y).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        # Just verify no error, the exact sin value isn't critical
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(len(lines) > 0)
-
-    def test_multi_var_single_still_works(self):
-        """Single var declaration should still work fine."""
-        code = """
-        var x = 42.
-        x.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["42"])
-
-    # --- Combined: all three fixes working together ---
-    def test_all_fixes_combined(self):
-        """Multi-var, then implicit multiplication with math function."""
-        code = """
-        var x = 10, y = 20.
-        2sin(x + y).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        # 2*sin(30 radians) — just check no error
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(len(lines) > 0)
-
-    # ==================== V2 FEATURE TESTS ====================
-
-    # --- String Literals ---
-    def test_string_literal_double_quotes(self):
-        code = '"hello world".'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["hello world"])
-
-    def test_string_literal_single_quotes(self):
-        code = "'hello world'."
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["hello world"])
-
-    def test_string_escape_newline(self):
-        code = 'print("a\\nb").'
-        out, _ = self.run_code(code)
-        self.assertIn("a\nb", out)
-
-    def test_string_escape_tab(self):
-        code = 'print("a\\tb").'
-        out, _ = self.run_code(code)
-        self.assertIn("a\tb", out)
-
-    def test_string_escape_backslash(self):
-        code = 'print("a\\\\b").'
-        out, _ = self.run_code(code)
-        self.assertIn("a\\b", out)
-
-    def test_string_concatenation(self):
-        code = '"hello" + " " + "world".'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["hello world"])
-
-    def test_string_repeat(self):
-        code = '"ab" * 3.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["ababab"])
-
-    def test_string_repeat_reverse(self):
-        code = '3 * "xy".'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["xyxyxy"])
-
-    def test_string_var(self):
-        code = 'var name = "Alice". name.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["Alice"])
-
-    def test_string_num_concat(self):
-        code = '"val=" + 42.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["val=42"])
+        out, _ = self.run_code('print(2 + 3 * 4).')
+        self.assertFirstLine(out, '14')
+
+    def test_parentheses_override_precedence(self):
+        out, _ = self.run_code('print((2 + 3) * 4).')
+        self.assertFirstLine(out, '20')
+
+    def test_nested_parentheses(self):
+        out, _ = self.run_code('print(((2 + 3) * (4 - 1))).')
+        self.assertFirstLine(out, '15')
+
+    def test_unary_negation(self):
+        out, _ = self.run_code('print(-(-5)).')
+        self.assertFirstLine(out, '5')
+
+    def test_complex_expression(self):
+        out, _ = self.run_code('print(2 ^ 3 + 4 * 2 - 1).')
+        self.assertFirstLine(out, '15')
+
+    def test_large_integer(self):
+        out, _ = self.run_code('print(1000000 * 1000000).')
+        got = self.lines(out)
+        self.assertIn('1000000000000', got[0])
+
+    def test_auto_print_expression(self):
+        """Expression statements auto-print non-None results."""
+        out, _ = self.run_code('42.')
+        self.assertFirstLine(out, '42')
+
+
+# ═════════════════════════════════════════════════════════════
+#  VARIABLES
+# ═════════════════════════════════════════════════════════════
+
+class TestVariables(TestInterpreter):
+    """Variable declaration, assignment, multi-var, compound ops."""
+
+    def test_var_declaration(self):
+        out, _ = self.run_code('var x = 10.\nprint(x).')
+        self.assertFirstLine(out, '10')
+
+    def test_var_default_none(self):
+        out, _ = self.run_code('var x.\nprint(x).')
+        self.assertFirstLine(out, 'None')
+
+    def test_var_string(self):
+        out, _ = self.run_code('var s = "hello".\nprint(s).')
+        self.assertFirstLine(out, 'hello')
+
+    def test_var_reassignment(self):
+        out, _ = self.run_code('var x = 10.\nx = 20.\nprint(x).')
+        self.assertFirstLine(out, '20')
+
+    def test_multi_var(self):
+        out, _ = self.run_code('var a = 1 b = 2 c = 3.\nprint(a + b + c).')
+        self.assertFirstLine(out, '6')
+
+    def test_let_be(self):
+        out, _ = self.run_code('let x be 42.\nprint(x).')
+        self.assertFirstLine(out, '42')
+
+    def test_compound_plus_equals(self):
+        out, _ = self.run_code('var x = 10.\nx += 5.\nprint(x).')
+        self.assertFirstLine(out, '15')
+
+    def test_compound_minus_equals(self):
+        out, _ = self.run_code('var x = 10.\nx -= 3.\nprint(x).')
+        self.assertFirstLine(out, '7')
+
+    def test_compound_star_equals(self):
+        out, _ = self.run_code('var x = 4.\nx *= 3.\nprint(x).')
+        self.assertFirstLine(out, '12')
+
+    def test_compound_slash_equals(self):
+        out, _ = self.run_code('var x = 20.\nx /= 4.\nprint(x).')
+        self.assertFirstLine(out, '5')
+
+    def test_compound_percent_equals(self):
+        out, _ = self.run_code('var x = 17.\nx %= 5.\nprint(x).')
+        self.assertFirstLine(out, '2')
+
+    def test_post_increment(self):
+        out, _ = self.run_code('var x = 5.\nx++.\nprint(x).')
+        self.assertFirstLine(out, '6')
+
+    def test_post_decrement(self):
+        out, _ = self.run_code('var x = 5.\nx--.\nprint(x).')
+        self.assertFirstLine(out, '4')
+
+    def test_pre_increment(self):
+        out, _ = self.run_code('var x = 5.\n++x.\nprint(x).')
+        self.assertFirstLine(out, '6')
+
+    def test_pre_decrement(self):
+        out, _ = self.run_code('var x = 5.\n--x.\nprint(x).')
+        self.assertFirstLine(out, '4')
+
+    def test_pi_constant(self):
+        out, _ = self.run_code('print(PI).')
+        self.assertOutputContains(out, '3.14159')
+
+    def test_e_constant(self):
+        out, _ = self.run_code('print(e).')
+        self.assertOutputContains(out, '2.71828')
+
+
+# ═════════════════════════════════════════════════════════════
+#  BOOLEANS & COMPARISON
+# ═════════════════════════════════════════════════════════════
+
+class TestBooleans(TestInterpreter):
+    """Boolean values, comparison operators, logical operators."""
+
+    def test_true_false(self):
+        out, _ = self.run_code('print(True).\nprint(False).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_equality(self):
+        out, _ = self.run_code('print(1 == 1).\nprint(1 == 2).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_inequality(self):
+        out, _ = self.run_code('print(1 != 2).\nprint(1 != 1).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_less_than(self):
+        out, _ = self.run_code('print(1 < 2).\nprint(2 < 1).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_greater_than(self):
+        out, _ = self.run_code('print(2 > 1).\nprint(1 > 2).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_less_equal(self):
+        out, _ = self.run_code('print(1 <= 1).\nprint(1 <= 2).\nprint(2 <= 1).')
+        self.assertOutputExact(out, ['True', 'True', 'False'])
+
+    def test_greater_equal(self):
+        out, _ = self.run_code('print(2 >= 2).\nprint(2 >= 1).\nprint(1 >= 2).')
+        self.assertOutputExact(out, ['True', 'True', 'False'])
+
+    def test_logical_and(self):
+        out, _ = self.run_code('print(True and True).\nprint(True and False).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_logical_or(self):
+        out, _ = self.run_code('print(False or True).\nprint(False or False).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_logical_not(self):
+        out, _ = self.run_code('print(not True).\nprint(not False).')
+        self.assertOutputExact(out, ['False', 'True'])
+
+    def test_and_or_symbols(self):
+        out, _ = self.run_code('print(True && False).\nprint(False || True).')
+        self.assertOutputExact(out, ['False', 'True'])
+
+    def test_is_operator(self):
+        out, _ = self.run_code('print(10 is 10).\nprint(10 is 20).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_is_not_operator(self):
+        out, _ = self.run_code('print(10 is not 20).\nprint(10 is not 10).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_points_operator(self):
+        out, _ = self.run_code('print(10 points 10).\nprint(10 points 20).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_not_points_operator(self):
+        out, _ = self.run_code('print(10 not points 20).\nprint(10 not points 10).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_points_type_strict(self):
+        """'points' requires same type — int vs double should differ."""
+        out, _ = self.run_code('print(10 points 10.0).')
+        # int and double are different types, so 'points' should return False
+        self.assertFirstLine(out, 'False')
 
     def test_string_equality(self):
-        code = '"abc" == "abc".'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
+        out, _ = self.run_code('print("hello" == "hello").\nprint("hello" == "world").')
+        self.assertOutputExact(out, ['True', 'False'])
 
-    def test_string_inequality(self):
-        code = '"abc" != "xyz".'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
+    def test_none_comparison(self):
+        out, _ = self.run_code('var x.\nprint(x == None).\nprint(x is None).')
+        self.assertOutputExact(out, ['True', 'True'])
 
-    def test_string_equality_false(self):
-        code = '"abc" == "xyz".'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
+    def test_bool_type(self):
+        out, _ = self.run_code('print(type(True)).\nprint(type(False)).')
+        self.assertOutputExact(out, ['bool', 'bool'])
+
+    def test_and_both_true(self):
+        """Both true → True."""
+        out, _ = self.run_code('print(True and True).')
+        self.assertFirstLine(out, 'True')
+
+    def test_or_both_false(self):
+        """Both false → False."""
+        out, _ = self.run_code('print(False or False).')
+        self.assertFirstLine(out, 'False')
+
+
+# ═════════════════════════════════════════════════════════════
+#  STRINGS
+# ═════════════════════════════════════════════════════════════
+
+class TestStrings(TestInterpreter):
+    """String literals, escape sequences, concatenation, methods."""
+
+    def test_double_quoted(self):
+        out, _ = self.run_code('print("hello").')
+        self.assertFirstLine(out, 'hello')
+
+    def test_single_quoted(self):
+        out, _ = self.run_code("print('world').")
+        self.assertFirstLine(out, 'world')
+
+    def test_escape_newline(self):
+        out, _ = self.run_code('print("a\\nb").')
+        self.assertOutputExact(out, ['a', 'b'])
+
+    def test_escape_tab(self):
+        out, _ = self.run_code('print("a\\tb").')
+        self.assertOutputContains(out, 'a\tb')
+
+    def test_escape_backslash(self):
+        out, _ = self.run_code('print("a\\\\b").')
+        self.assertOutputContains(out, 'a\\b')
+
+    def test_string_concatenation(self):
+        out, _ = self.run_code('print("hello" + " " + "world").')
+        self.assertFirstLine(out, 'hello world')
+
+    def test_string_repetition(self):
+        out, _ = self.run_code('print("ha" * 3).')
+        self.assertFirstLine(out, 'hahaha')
+
+    def test_string_upper(self):
+        out, _ = self.run_code('print("hello".upper()).')
+        self.assertFirstLine(out, 'HELLO')
+
+    def test_string_lower(self):
+        out, _ = self.run_code('print("HELLO".lower()).')
+        self.assertFirstLine(out, 'hello')
+
+    def test_string_strip(self):
+        out, _ = self.run_code('print("  hi  ".strip()).')
+        self.assertFirstLine(out, 'hi')
+
+    def test_string_split(self):
+        out, _ = self.run_code('print("a,b,c".split(",")).')
+        self.assertOutputContains(out, 'a')
+        self.assertOutputContains(out, 'b')
+        self.assertOutputContains(out, 'c')
+
+    def test_string_find(self):
+        out, _ = self.run_code('print("hello world".find("world")).')
+        self.assertFirstLine(out, '6')
+
+    def test_string_replace(self):
+        out, _ = self.run_code('print("hello world".replace("world", "earth")).')
+        self.assertFirstLine(out, 'hello earth')
+
+    def test_string_contains(self):
+        out, _ = self.run_code('print("hello".contains("ell")).\nprint("hello".contains("xyz")).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_string_startswith(self):
+        out, _ = self.run_code('print("hello".startswith("hel")).\nprint("hello".startswith("xyz")).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_string_endswith(self):
+        out, _ = self.run_code('print("hello".endswith("llo")).\nprint("hello".endswith("xyz")).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_string_count(self):
+        out, _ = self.run_code('print("banana".count("a")).')
+        self.assertFirstLine(out, '3')
+
+    def test_string_reverse(self):
+        out, _ = self.run_code('print("hello".reverse()).')
+        self.assertFirstLine(out, 'olleh')
+
+    def test_string_len(self):
+        out, _ = self.run_code('print(len("hello")).')
+        self.assertFirstLine(out, '5')
+
+    def test_string_title(self):
+        out, _ = self.run_code('print("hello world".title()).')
+        self.assertFirstLine(out, 'Hello World')
+
+    def test_string_capitalize(self):
+        out, _ = self.run_code('print("hello".capitalize()).')
+        self.assertFirstLine(out, 'Hello')
+
+    def test_string_isdigit(self):
+        out, _ = self.run_code('print("123".isdigit()).\nprint("12a".isdigit()).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_string_isalpha(self):
+        out, _ = self.run_code('print("abc".isalpha()).\nprint("ab1".isalpha()).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_string_type(self):
+        out, _ = self.run_code('print(type("hello")).')
+        self.assertFirstLine(out, 'str')
+
+    def test_string_number_concat(self):
+        out, _ = self.run_code('print("value: " + str(42)).')
+        self.assertFirstLine(out, 'value: 42')
 
     def test_empty_string(self):
-        code = 'var s = "". s.'
-        out, _ = self.run_code(code)
-        # empty string → no visible output from format_output (empty string)
-        self.assertNotIn("Error", out)
+        out, _ = self.run_code('print(len("")).')
+        self.assertFirstLine(out, '0')
 
-    # --- List Literals ---
-    def test_list_literal_basic(self):
-        code = '[1, 2, 3].'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["[1, 2, 3]"])
+    def test_string_slice(self):
+        out, _ = self.run_code('print("hello world".slice(0, 5)).')
+        self.assertFirstLine(out, 'hello')
 
-    def test_list_literal_empty(self):
-        code = 'var x = list(). print(x).'
-        out, _ = self.run_code(code)
-        self.assertIn("[]", out)
 
-    def test_list_literal_mixed(self):
-        code = 'var x = [1, "hello", 3]. print(x).'
-        out, _ = self.run_code(code)
-        self.assertIn("[1, hello, 3]", out)
+# ═════════════════════════════════════════════════════════════
+#  LISTS
+# ═════════════════════════════════════════════════════════════
 
-    def test_list_in_var(self):
-        code = 'var nums = [10, 20, 30]. print(nums).'
-        out, _ = self.run_code(code)
-        self.assertIn("[10, 20, 30]", out)
+class TestLists(TestInterpreter):
+    """List literals, methods, operations."""
 
-    def test_list_len(self):
-        code = 'len([1, 2, 3, 4, 5]).'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
+    def test_list_literal(self):
+        out, _ = self.run_code('var l = [1, 2, 3].\nprint(l).')
+        self.assertOutputContains(out, '1')
+        self.assertOutputContains(out, '2')
+        self.assertOutputContains(out, '3')
+
+    def test_empty_list(self):
+        out, _ = self.run_code('var l = [].\nprint(len(l)).')
+        self.assertFirstLine(out, '0')
 
     def test_list_append(self):
-        code = 'var x = [1, 2]. var y = append(x, 3). print(y).'
-        out, _ = self.run_code(code)
-        self.assertIn("[1, 2, 3]", out)
+        out, _ = self.run_code('var l = [1, 2].\nl.append(3).\nprint(l).')
+        self.assertOutputContains(out, '3')
 
-    def test_list_nested(self):
-        code = 'var x = [1, [2, 3], 4]. print(x).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
+    def test_list_pop(self):
+        out, _ = self.run_code('var l = [1, 2, 3].\nprint(l.pop()).')
+        self.assertFirstLine(out, '3')
 
-    # --- Set Literals ---
+    def test_list_len(self):
+        out, _ = self.run_code('print(len([10, 20, 30])).')
+        self.assertFirstLine(out, '3')
+
+    def test_list_concat(self):
+        out, _ = self.run_code('print([1, 2] + [3, 4]).')
+        self.assertOutputContains(out, '1')
+        self.assertOutputContains(out, '4')
+
+    def test_list_repetition(self):
+        out, _ = self.run_code('print([0] * 3).')
+        self.assertOutputContains(out, '0')
+
+    def test_list_contains(self):
+        out, _ = self.run_code('print([1, 2, 3].contains(2)).\nprint([1, 2, 3].contains(5)).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_list_index(self):
+        out, _ = self.run_code('print([10, 20, 30].index(20)).')
+        self.assertFirstLine(out, '1')
+
+    def test_list_count(self):
+        out, _ = self.run_code('print([1, 2, 2, 3, 2].count(2)).')
+        self.assertFirstLine(out, '3')
+
+    def test_list_reverse(self):
+        out, _ = self.run_code('print([1, 2, 3].reverse()).')
+        got = self.lines(out)
+        self.assertIn('3', got[0])
+
+    def test_list_sort(self):
+        out, _ = self.run_code('print([3, 1, 2].sort()).')
+        got = self.lines(out)
+        self.assertIn('1', got[0])
+
+    def test_list_mixed_types(self):
+        out, _ = self.run_code('var l = [1, "hello", True, 3.14].\nprint(len(l)).')
+        self.assertFirstLine(out, '4')
+
+    def test_nested_list(self):
+        out, _ = self.run_code('var l = [[1, 2], [3, 4]].\nprint(len(l)).')
+        self.assertFirstLine(out, '2')
+
+    def test_list_index_access(self):
+        out, _ = self.run_code('var a = [10, 20, 30].\nprint(a.index(20)).')
+        self.assertFirstLine(out, '1')
+
+    def test_sorted_builtin(self):
+        out, _ = self.run_code('print(sorted([3, 1, 2])).')
+        got = self.lines(out)
+        self.assertIn('1', got[0])
+
+    def test_reversed_builtin(self):
+        out, _ = self.run_code('print(reversed([1, 2, 3])).')
+        got = self.lines(out)
+        self.assertIn('3', got[0])
+
+    def test_sum_builtin(self):
+        out, _ = self.run_code('print(sum([1, 2, 3, 4])).')
+        self.assertFirstLine(out, '10')
+
+
+# ═════════════════════════════════════════════════════════════
+#  SETS
+# ═════════════════════════════════════════════════════════════
+
+class TestSets(TestInterpreter):
+    """Set literals and methods."""
+
     def test_set_literal(self):
-        code = 'var s = {1, 2, 3}. print(s).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        # Sets may have different order, just check it looks like a set
+        out, _ = self.run_code('var s = {1, 2, 3}.\nprint(len(s)).')
+        self.assertFirstLine(out, '3')
 
-    def test_set_empty(self):
-        code = 'var s = set(). print(s).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
+    def test_set_deduplication(self):
+        out, _ = self.run_code('var s = {1, 1, 2, 2, 3}.\nprint(len(s)).')
+        self.assertFirstLine(out, '3')
 
-    # --- None / True / False ---
-    def test_none_literal(self):
-        code = 'var x. print(type(x)).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
+    def test_set_add(self):
+        out, _ = self.run_code('var s = {1, 2}.\nvar s2 = s.add(3).\nprint(len(s2)).')
+        self.assertFirstLine(out, '3')
 
-    def test_true_literal(self):
-        code = 'True.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["1"])
+    def test_set_contains(self):
+        out, _ = self.run_code('print({1, 2, 3}.contains(2)).\nprint({1, 2, 3}.contains(5)).')
+        self.assertOutputExact(out, ['True', 'False'])
 
-    def test_false_literal(self):
-        code = 'False.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["0"])
+    def test_set_remove(self):
+        out, _ = self.run_code('var s = {1, 2, 3}.\nvar s2 = s.remove(2).\nprint(len(s2)).')
+        self.assertFirstLine(out, '2')
 
-    def test_none_output_suppressed(self):
-        """None values should not produce output from ExprStmt."""
-        code = 'var x. x.'
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertEqual(len(lines), 0)
 
-    # --- var with no initializer → None ---
-    def test_var_no_init_is_none(self):
-        code = 'var x. print(type(x)).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
+# ═════════════════════════════════════════════════════════════
+#  FUNCTIONS
+# ═════════════════════════════════════════════════════════════
 
-    def test_var_multi_none(self):
-        code = 'var a, b, c.'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
+class TestFunctions(TestInterpreter):
+    """Function definition, calling, give, overloading, pass-by-ref."""
 
-    # --- let / be syntax ---
-    def test_let_be_basic(self):
-        code = 'let x be 42. x.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["42"])
+    def test_basic_function(self):
+        out, _ = self.run_code('fn greet(): print("hi") ;\ngreet().')
+        self.assertFirstLine(out, 'hi')
 
-    def test_let_be_expression(self):
-        code = 'let y be 3 + 4 * 2. y.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["11"])
+    def test_function_with_params(self):
+        out, _ = self.run_code('fn add(a, b): give a + b ;\nprint(add(3, 4)).')
+        self.assertFirstLine(out, '7')
 
-    def test_let_be_string(self):
-        code = 'let name be "Bob". name.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["Bob"])
+    def test_give_no_parens(self):
+        out, _ = self.run_code('fn dbl(x): give x * 2 ;\nprint(dbl(5)).')
+        self.assertFirstLine(out, '10')
 
-    def test_let_be_list(self):
-        code = 'let items be [1, 2, 3]. print(items).'
-        out, _ = self.run_code(code)
-        self.assertIn("[1, 2, 3]", out)
+    def test_give_with_parens(self):
+        out, _ = self.run_code('fn dbl(x): give(x * 2) ;\nprint(dbl(5)).')
+        self.assertFirstLine(out, '10')
 
-    # --- Forgive missing dot ---
-    def test_forgive_dot_at_eof(self):
-        """Missing dot at EOF should be forgiven."""
-        code = 'var x = 42. x'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["42"])
+    def test_give_complex_expression(self):
+        out, _ = self.run_code('fn calc(a, b): give a * 2 + b * 3 ;\nprint(calc(5, 10)).')
+        self.assertFirstLine(out, '40')
 
-    def test_forgive_dot_before_semicolon(self):
-        """Missing dot before ; in block terminator should be forgiven."""
-        code = 'if 1 == 1: 42 ;'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["42"])
+    def test_function_returns_none(self):
+        out, _ = self.run_code('fn noop(): pass ;\nprint(noop()).')
+        self.assertFirstLine(out, 'None')
 
-    def test_forgive_dot_before_elif(self):
-        code = 'if 0: 1 elif 1: 42. ;'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["42"])
+    def test_function_no_give_returns_none(self):
+        out, _ = self.run_code('fn side_effect(): var x = 42 ;\nprint(side_effect()).')
+        self.assertFirstLine(out, 'None')
 
-    def test_forgive_dot_before_else(self):
-        code = 'if 0: 1 else: 42. ;'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["42"])
+    def test_overloading_by_arity(self):
+        out, _ = self.run_code("""
+fn add(a, b): give a + b ;
+fn add(a, b, c): give a + b + c ;
+print(add(1, 2)).
+print(add(1, 2, 3)).
+""")
+        self.assertOutputExact(out, ['3', '6'])
 
-    def test_dot_still_required_mid_script(self):
-        """Missing dot in middle of script (not at boundary) should still error."""
-        code = "var x = 5\nvar y = 10."
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
+    def test_forward_declaration(self):
+        out, _ = self.run_code("""
+fn myFunc(a, b).
+fn myFunc(a, b): give a + b ;
+print(myFunc(10, 20)).
+""")
+        self.assertFirstLine(out, '30')
 
-    # --- for-in list loop ---
+    def test_define_before_use(self):
+        """Functions must be defined before use in --script mode."""
+        out, _ = self.run_code("""
+fn myFunc(x): give x * 10 ;
+print(myFunc(5)).
+""")
+        self.assertFirstLine(out, '50')
+
+    def test_function_redefinition(self):
+        out, _ = self.run_code("""
+fn f(a, b): give a ;
+fn f(a, b): give b ;
+print(f(1, 2)).
+""")
+        self.assertFirstLine(out, '2')
+
+    def test_pass_by_reference(self):
+        out, _ = self.run_code("""
+fn increment(@x):
+    x = x + 1.
+;
+var val = 10.
+increment(val).
+print(val).
+""")
+        self.assertFirstLine(out, '11')
+
+    def test_pass_by_reference_swap(self):
+        out, _ = self.run_code("""
+fn swap(@a, @b):
+    var temp = a.
+    a = b.
+    b = temp.
+;
+var x = 10.
+var y = 20.
+swap(x, y).
+print(x).
+print(y).
+""")
+        self.assertOutputExact(out, ['20', '10'])
+
+    def test_pass_by_value_default(self):
+        """Without @, params are by value — caller's variable unchanged."""
+        out, _ = self.run_code("""
+fn tryChange(x):
+    x = 999.
+;
+var val = 10.
+tryChange(val).
+print(val).
+""")
+        self.assertFirstLine(out, '10')
+
+    def test_recursive_function(self):
+        out, _ = self.run_code("""
+fn factorial(n):
+    if n <= 1:
+        give 1
+    ;
+    give n * factorial(n - 1)
+;
+print(factorial(5)).
+""")
+        self.assertFirstLine(out, '120')
+
+    def test_recursive_fibonacci(self):
+        out, _ = self.run_code("""
+fn fib(n):
+    if n <= 0: give 0 ;
+    if n == 1: give 1 ;
+    give fib(n - 1) + fib(n - 2)
+;
+print(fib(10)).
+""")
+        self.assertFirstLine(out, '55')
+
+    def test_duplicate_param_error(self):
+        out, _ = self.run_code('fn f(a, a): give a ;')
+        self.assertOutputHasError(out, 'Duplicate parameter')
+
+    def test_function_scope_isolation(self):
+        """Variables inside functions don't leak to outer scope."""
+        out, _ = self.run_code("""
+fn f():
+    var inner_var = 42.
+;
+f().
+print(inner_var).
+""")
+        # inner_var should be undefined → None (auto-create as None)
+        self.assertFirstLine(out, 'None')
+
+    def test_function_accesses_outer_scope(self):
+        """Functions can read variables from outer scope."""
+        out, _ = self.run_code("""
+var outer = 100.
+fn getOuter(): give outer ;
+print(getOuter()).
+""")
+        self.assertFirstLine(out, '100')
+
+    def test_unknown_function_error(self):
+        out, _ = self.run_code('nonexistent().')
+        self.assertOutputHasError(out, 'Unknown function')
+
+
+# ═════════════════════════════════════════════════════════════
+#  CONTROL FLOW — IF / ELIF / ELSE
+# ═════════════════════════════════════════════════════════════
+
+class TestConditionals(TestInterpreter):
+    """If/elif/else statements."""
+
+    def test_simple_if(self):
+        out, _ = self.run_code("""
+if True:
+    print("yes")
+;
+""")
+        self.assertFirstLine(out, 'yes')
+
+    def test_if_false(self):
+        out, _ = self.run_code("""
+if False:
+    print("no")
+;
+print("after").
+""")
+        self.assertFirstLine(out, 'after')
+
+    def test_if_else(self):
+        out, _ = self.run_code("""
+if False:
+    print("if")
+else:
+    print("else")
+;
+""")
+        self.assertFirstLine(out, 'else')
+
+    def test_if_elif_else(self):
+        out, _ = self.run_code("""
+var x = 2.
+if x == 1:
+    print("one")
+elif x == 2:
+    print("two")
+else:
+    print("other")
+;
+""")
+        self.assertFirstLine(out, 'two')
+
+    def test_multiple_elif(self):
+        out, _ = self.run_code("""
+var x = 3.
+if x == 1:
+    print("one")
+elif x == 2:
+    print("two")
+elif x == 3:
+    print("three")
+else:
+    print("other")
+;
+""")
+        self.assertFirstLine(out, 'three')
+
+    def test_nested_if(self):
+        out, _ = self.run_code("""
+var x = 5.
+if x > 0:
+    if x > 3:
+        print("big")
+    else:
+        print("small")
+    ;
+;
+""")
+        self.assertFirstLine(out, 'big')
+
+    def test_comparison_in_if(self):
+        out, _ = self.run_code("""
+var score = 85.
+if score >= 90:
+    print("A")
+elif score >= 80:
+    print("B")
+elif score >= 70:
+    print("C")
+else:
+    print("F")
+;
+""")
+        self.assertFirstLine(out, 'B')
+
+
+# ═════════════════════════════════════════════════════════════
+#  CONTROL FLOW — FOR LOOPS
+# ═════════════════════════════════════════════════════════════
+
+class TestForLoops(TestInterpreter):
+    """For loop: range(N), range(from..to), range(from..to step), for-in."""
+
+    def test_range_simple(self):
+        """range(N) → 0 to N (inclusive)."""
+        out, _ = self.run_code("""
+var s = 0.
+for i in range(3):
+    s += i.
+;
+print(s).
+""")
+        # 0 + 1 + 2 + 3 = 6
+        self.assertFirstLine(out, '6')
+
+    def test_range_from_to(self):
+        out, _ = self.run_code("""
+var s = 0.
+for i in range(from 1 to 5):
+    s += i.
+;
+print(s).
+""")
+        # 1 + 2 + 3 + 4 + 5 = 15
+        self.assertFirstLine(out, '15')
+
+    def test_range_step(self):
+        out, _ = self.run_code("""
+var items = [].
+for i in range(from 0 to 10 step 2):
+    items.append(i).
+;
+print(items).
+""")
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '2')
+        self.assertOutputContains(out, '10')
+
+    def test_range_reverse(self):
+        out, _ = self.run_code("""
+var items = [].
+for i in range(from 5 to 1 step -1):
+    items.append(i).
+;
+print(items).
+""")
+        self.assertOutputContains(out, '5')
+        self.assertOutputContains(out, '1')
+
     def test_for_in_list(self):
-        code = """
-        var total = 0.
-        for x in [10, 20, 30]:
-            total = total + x.
-        ;
-        total.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["60"])
-
-    def test_for_in_list_strings(self):
-        code = """
-        for word in ["hello", "world"]:
-            print(word).
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("hello", out)
-        self.assertIn("world", out)
-
-    def test_for_in_variable(self):
-        code = """
-        var nums = [5, 10, 15].
-        var sum = 0.
-        for n in nums:
-            sum = sum + n.
-        ;
-        sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["30"])
-
-    # --- print() built-in ---
-    def test_print_single(self):
-        code = 'print(42).'
-        out, _ = self.run_code(code)
-        self.assertIn("42", out)
-
-    def test_print_multi_args(self):
-        code = 'print("x", "=", 10).'
-        out, _ = self.run_code(code)
-        self.assertIn("x = 10", out)
-
-    def test_print_string(self):
-        code = 'print("hello world").'
-        out, _ = self.run_code(code)
-        self.assertIn("hello world", out)
-
-    def test_print_list(self):
-        code = 'print([1, 2, 3]).'
-        out, _ = self.run_code(code)
-        self.assertIn("[1, 2, 3]", out)
-
-    def test_print_returns_none(self):
-        """print() should not produce extra output (returns None, which is suppressed)."""
-        code = 'print("ok").'
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertEqual(len(lines), 1)
-        self.assertEqual(lines[0], "ok")
-
-    # --- type() built-in ---
-    def test_type_int(self):
-        code = 'type(42).'
-        out, _ = self.run_code(code)
-        self.assertIn("int", out.lower())
-
-    def test_type_string(self):
-        code = 'type("hello").'
-        out, _ = self.run_code(code)
-        self.assertIn("str", out.lower())
-
-    def test_type_list(self):
-        code = 'type([1, 2]).'
-        out, _ = self.run_code(code)
-        self.assertIn("list", out.lower())
-
-    # --- len() built-in ---
-    def test_len_string(self):
-        code = 'len("hello").'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    def test_len_list(self):
-        code = 'len([10, 20, 30]).'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    # --- str() / int() / float() conversions ---
-    def test_str_builtin(self):
-        code = 'var s = str(42). print(s).'
-        out, _ = self.run_code(code)
-        self.assertIn("42", out)
-
-    def test_int_builtin(self):
-        code = 'int(3.7).'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["3"])
-
-    def test_float_builtin(self):
-        code = 'float(5).'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    # --- File I/O ---
-    def test_file_write_and_read(self):
-        code = """
-        write("/tmp/scriptit_test.txt", "hello from scriptit").
-        var content = read("/tmp/scriptit_test.txt").
-        print(content).
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("hello from scriptit", out)
-
-    def test_file_readLine(self):
-        code = """
-        write("/tmp/scriptit_lines.txt", "line1\\nline2\\nline3").
-        var lines = readLine("/tmp/scriptit_lines.txt").
-        print(len(lines)).
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("3", out)
-
-    # --- Edge cases ---
-    def test_large_number_mul_promote(self):
-        """Large integer multiplication should auto-promote, not overflow."""
-        code = "1000000 * 1000000."
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        lines = self.get_clean_output_lines(out)
-        self.assertTrue(len(lines) > 0)
-
-    def test_string_in_if(self):
-        code = """
-        var s = "hello".
-        if s == "hello":
-            print("match").
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("match", out)
-
-    def test_string_inequality_in_if(self):
-        code = """
-        var s = "a".
-        if s != "b":
-            print("different").
-        ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("different", out)
-
-    def test_none_equality(self):
-        """Two None vars should be equal conceptually (both produce no output)."""
-        code = 'var a. var b.'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-
-    def test_mixed_arithmetic_string_error(self):
-        """Subtracting a string should error."""
-        code = '"hello" - 1.'
-        out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-
-    def test_pprint_list(self):
-        code = 'pprint([1, 2, 3]).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-
-    def test_pop_from_list(self):
-        code = 'var x = [1, 2, 3]. var last = pop(x). last.'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-
-    def test_list_in_for_with_function(self):
-        """Define a function that uses a list via for-in."""
-        code = """
-        fn sum_list @(items):
-            var total = 0.
-            for x in items:
-                total = total + x.
-            ;
-            give(total).
-        ;
-        sum_list([1, 2, 3, 4]).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["10"])
-
-    def test_let_be_in_function(self):
-        code = """
-        fn greet @(name):
-            let msg be "Hello " + name.
-            give(msg).
-        ;
-        greet("World").
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["Hello World"])
-
-    def test_nested_list_access_via_for(self):
-        code = """
-        var outer = [[1, 2], [3, 4]].
-        var flat_sum = 0.
-        for sub in outer:
-            for item in sub:
-                flat_sum = flat_sum + item.
-            ;
-        ;
-        flat_sum.
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        self.assertOutputSequence(out, ["10"])
-
-    def test_string_len_in_expression(self):
-        code = 'var x = len("test") + 1. x.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["5"])
-
-    def test_type_none(self):
-        code = 'var x. type(x).'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-
-    def test_division_returns_float(self):
-        """Division should always return a float/double type."""
-        code = '10 / 3.'
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        val = float(lines[0])
-        self.assertAlmostEqual(val, 3.33333, places=3)
-
-    def test_string_with_spaces(self):
-        code = 'var s = "  spaced  ". print(s).'
-        out, _ = self.run_code(code)
-        self.assertIn("  spaced  ", out)
-
-    def test_list_of_strings(self):
-        code = 'var names = ["Alice", "Bob", "Charlie"]. print(names).'
-        out, _ = self.run_code(code)
-        self.assertIn("Alice", out)
-        self.assertIn("Bob", out)
-        self.assertIn("Charlie", out)
-
-    def test_multiple_prints(self):
-        code = 'print(1). print(2). print(3).'
-        out, _ = self.run_code(code)
-        lines = self.get_clean_output_lines(out)
-        self.assertEqual(lines, ["1", "2", "3"])
+        out, _ = self.run_code("""
+for x in [10, 20, 30]:
+    print(x).
+;
+""")
+        self.assertOutputExact(out, ['10', '20', '30'])
 
     def test_for_in_string(self):
-        """Iterate over characters of a string."""
-        code = """
-        for ch in "abc":
-            print(ch).
+        out, _ = self.run_code("""
+var s = "".
+for ch in "abc":
+    s = s + ch + "-".
+;
+print(s).
+""")
+        self.assertOutputContains(out, 'a-b-c-')
+
+    def test_nested_loops(self):
+        out, _ = self.run_code("""
+var count = 0.
+for i in range(from 1 to 3):
+    for j in range(from 1 to 3):
+        count++.
+    ;
+;
+print(count).
+""")
+        # 3 * 3 = 9
+        self.assertFirstLine(out, '9')
+
+    def test_loop_variable_accumulation(self):
+        out, _ = self.run_code("""
+var result = "".
+for i in range(from 1 to 5):
+    result = result + str(i).
+;
+print(result).
+""")
+        self.assertFirstLine(out, '12345')
+
+
+# ═════════════════════════════════════════════════════════════
+#  CONTROL FLOW — WHILE LOOPS
+# ═════════════════════════════════════════════════════════════
+
+class TestWhileLoops(TestInterpreter):
+    """While loops."""
+
+    def test_basic_while(self):
+        out, _ = self.run_code("""
+var i = 0.
+var s = 0.
+while i < 5:
+    s += i.
+    i++.
+;
+print(s).
+""")
+        # 0 + 1 + 2 + 3 + 4 = 10
+        self.assertFirstLine(out, '10')
+
+    def test_while_false(self):
+        """While with initially false condition doesn't execute."""
+        out, _ = self.run_code("""
+while False:
+    print("never").
+;
+print("done").
+""")
+        self.assertFirstLine(out, 'done')
+
+    def test_while_countdown(self):
+        out, _ = self.run_code("""
+var i = 5.
+while i > 0:
+    print(i).
+    i--.
+;
+""")
+        self.assertOutputExact(out, ['5', '4', '3', '2', '1'])
+
+    def test_while_with_compound_condition(self):
+        out, _ = self.run_code("""
+var i = 0.
+var found = False.
+while i < 100 and not found:
+    if i == 42:
+        found = True.
+    ;
+    i++.
+;
+print(i).
+""")
+        self.assertFirstLine(out, '43')
+
+
+# ═════════════════════════════════════════════════════════════
+#  IMPLICIT MULTIPLICATION
+# ═════════════════════════════════════════════════════════════
+
+class TestImplicitMultiplication(TestInterpreter):
+    """Implicit multiplication: 3x, 2(expr), etc."""
+
+    def test_number_times_variable(self):
+        out, _ = self.run_code('var x = 5.\nprint(2x).')
+        self.assertFirstLine(out, '10')
+
+    def test_number_times_paren(self):
+        out, _ = self.run_code('print(2(3 + 4)).')
+        self.assertFirstLine(out, '14')
+
+    def test_paren_times_paren(self):
+        out, _ = self.run_code('print((2 + 1)(3 + 1)).')
+        self.assertFirstLine(out, '12')
+
+
+# ═════════════════════════════════════════════════════════════
+#  OF KEYWORD
+# ═════════════════════════════════════════════════════════════
+
+class TestOfKeyword(TestInterpreter):
+    """The 'of' keyword for reversed method call syntax."""
+
+    def test_of_with_method(self):
+        out, _ = self.run_code('var name = "hello".\nprint(upper() of name).')
+        self.assertFirstLine(out, 'HELLO')
+
+    def test_of_with_method_args(self):
+        out, _ = self.run_code('var s = "hello world".\nprint(replace("world", "earth") of s).')
+        self.assertFirstLine(out, 'hello earth')
+
+    def test_of_with_string_literal(self):
+        out, _ = self.run_code('print(upper() of "hi").')
+        self.assertFirstLine(out, 'HI')
+
+
+# ═════════════════════════════════════════════════════════════
+#  COMMENTS & SYNTAX
+# ═════════════════════════════════════════════════════════════
+
+class TestSyntax(TestInterpreter):
+    """Comments, line continuation, newlines, dot terminator."""
+
+    def test_comments(self):
+        out, _ = self.run_code('--> This is a comment <--\nprint("visible").')
+        self.assertFirstLine(out, 'visible')
+
+    def test_multiline_comment(self):
+        out, _ = self.run_code("""--> This is a
+multiline
+comment <--
+print("after comment").
+""")
+        self.assertFirstLine(out, 'after comment')
+
+    def test_line_continuation(self):
+        out, _ = self.run_code('print(1 + `\n2 + `\n3).')
+        self.assertFirstLine(out, '6')
+
+    def test_newline_as_terminator(self):
+        """Newlines can act as statement terminators."""
+        out, _ = self.run_code('var x = 10\nprint(x)\n')
+        self.assertFirstLine(out, '10')
+
+    def test_dot_terminator(self):
+        out, _ = self.run_code('var x = 10. print(x).')
+        self.assertFirstLine(out, '10')
+
+    def test_pass_statement(self):
+        out, _ = self.run_code('pass.\nprint("after pass").')
+        self.assertFirstLine(out, 'after pass')
+
+    def test_empty_function_body_error(self):
+        """Empty function bodies should require 'pass'."""
+        out, _ = self.run_code('fn f(): ;')
+        self.assertOutputHasError(out, 'Empty function body')
+
+
+# ═════════════════════════════════════════════════════════════
+#  TYPE CONVERSIONS
+# ═════════════════════════════════════════════════════════════
+
+class TestTypeConversions(TestInterpreter):
+    """Builtin type conversion functions."""
+
+    def test_int_from_float(self):
+        out, _ = self.run_code('print(int(3.7)).')
+        self.assertFirstLine(out, '3')
+
+    def test_int_from_double(self):
+        out, _ = self.run_code('print(int(42.9)).')
+        self.assertFirstLine(out, '42')
+
+    def test_float_from_int(self):
+        out, _ = self.run_code('print(float(42)).')
+        self.assertOutputContains(out, '42')
+
+    def test_str_from_int(self):
+        out, _ = self.run_code('print(str(42)).')
+        self.assertFirstLine(out, '42')
+
+    def test_bool_from_int(self):
+        out, _ = self.run_code('print(bool(0)).\nprint(bool(1)).')
+        self.assertOutputExact(out, ['False', 'True'])
+
+    def test_type_function(self):
+        out, _ = self.run_code('print(type(42)).\nprint(type("hello")).\nprint(type([1, 2])).')
+        self.assertOutputExact(out, ['int', 'str', 'list'])
+
+
+# ═════════════════════════════════════════════════════════════
+#  MATH FUNCTIONS
+# ═════════════════════════════════════════════════════════════
+
+class TestMathFunctions(TestInterpreter):
+    """Builtin math functions."""
+
+    def test_abs(self):
+        out, _ = self.run_code('print(abs(-5)).')
+        self.assertFirstLine(out, '5')
+
+    def test_sqrt(self):
+        out, _ = self.run_code('print(sqrt(16)).')
+        self.assertFirstLine(out, '4')
+
+    def test_min_max(self):
+        out, _ = self.run_code('print(min(3, 7)).\nprint(max(3, 7)).')
+        self.assertOutputExact(out, ['3', '7'])
+
+    def test_ceil_floor(self):
+        out, _ = self.run_code('print(ceil(3.2)).\nprint(floor(3.8)).')
+        self.assertOutputExact(out, ['4', '3'])
+
+    def test_round(self):
+        out, _ = self.run_code('print(round(3.7)).')
+        self.assertFirstLine(out, '4')
+
+    def test_sin_cos(self):
+        out, _ = self.run_code('print(sin(0)).\nprint(cos(0)).')
+        got = self.lines(out)
+        self.assertIn('0', got[0])
+        self.assertIn('1', got[1])
+
+    def test_log(self):
+        out, _ = self.run_code('print(log(1)).')
+        self.assertFirstLine(out, '0')
+
+
+# ═════════════════════════════════════════════════════════════
+#  BUILTIN FUNCTIONS
+# ═════════════════════════════════════════════════════════════
+
+class TestBuiltins(TestInterpreter):
+    """Various builtin functions."""
+
+    def test_print(self):
+        out, _ = self.run_code('print("hello world").')
+        self.assertFirstLine(out, 'hello world')
+
+    def test_len_list(self):
+        out, _ = self.run_code('print(len([1, 2, 3])).')
+        self.assertFirstLine(out, '3')
+
+    def test_len_string(self):
+        out, _ = self.run_code('print(len("hello")).')
+        self.assertFirstLine(out, '5')
+
+    def test_isinstance(self):
+        out, _ = self.run_code('print(isinstance(42, "int")).\nprint(isinstance("hi", "str")).')
+        self.assertOutputExact(out, ['True', 'True'])
+
+    def test_range_list(self):
+        out, _ = self.run_code('print(range_list(0, 5)).')
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '5')
+
+    def test_all_any(self):
+        out, _ = self.run_code('print(all([True, True, True])).\nprint(any([False, False, True])).')
+        self.assertOutputExact(out, ['True', 'True'])
+
+    def test_all_false(self):
+        out, _ = self.run_code('print(all([True, False, True])).\nprint(any([False, False, False])).')
+        self.assertOutputExact(out, ['False', 'False'])
+
+    def test_sum(self):
+        out, _ = self.run_code('print(sum([1, 2, 3, 4, 5])).')
+        self.assertFirstLine(out, '15')
+
+    def test_sorted(self):
+        out, _ = self.run_code('print(sorted([5, 3, 1, 4, 2])).')
+        got = self.lines(out)
+        self.assertTrue('1' in got[0] and '5' in got[0])
+
+    def test_reversed(self):
+        out, _ = self.run_code('print(reversed([1, 2, 3])).')
+        got = self.lines(out)
+        self.assertIn('3', got[0])
+
+    def test_repr(self):
+        out, _ = self.run_code('print(repr("hello")).')
+        self.assertOutputContains(out, 'hello')
+
+    def test_input_function_not_crash(self):
+        """input() should exist but we can't test interactively."""
+        # Just verify it doesn't crash during parsing
+        out, _ = self.run_code('fn f(): var x = input("prompt: ") ;')
+        # Should parse fine (no execution since we don't call f)
+        self.assertEqual(self.lines(out), [])
+
+
+# ═════════════════════════════════════════════════════════════
+#  DOT METHODS ON TYPES
+# ═════════════════════════════════════════════════════════════
+
+class TestDotMethods(TestInterpreter):
+    """Dot-method dispatch on various types."""
+
+    def test_type_method(self):
+        out, _ = self.run_code('var x = 42.\nprint(x.type()).')
+        self.assertFirstLine(out, 'int')
+
+    def test_str_method(self):
+        out, _ = self.run_code('var x = 42.\nprint(x.str()).')
+        self.assertFirstLine(out, '42')
+
+    def test_is_int_method(self):
+        out, _ = self.run_code('var x = 42.\nprint(x.is_int()).')
+        self.assertFirstLine(out, 'True')
+
+    def test_is_string_method(self):
+        out, _ = self.run_code('var x = "hi".\nprint(x.is_string()).')
+        self.assertFirstLine(out, 'True')
+
+    def test_is_none_method(self):
+        out, _ = self.run_code('var x.\nprint(x.is_none()).')
+        self.assertFirstLine(out, 'True')
+
+    def test_is_list_method(self):
+        out, _ = self.run_code('var x = [1, 2].\nprint(x.is_list()).')
+        self.assertFirstLine(out, 'True')
+
+    def test_to_double_method(self):
+        out, _ = self.run_code('var x = 42.\nprint(x.toDouble()).')
+        self.assertOutputContains(out, '42')
+
+
+# ═════════════════════════════════════════════════════════════
+#  NONE TYPE
+# ═════════════════════════════════════════════════════════════
+
+class TestNoneType(TestInterpreter):
+    """None type behavior."""
+
+    def test_none_literal(self):
+        out, _ = self.run_code('print(None).')
+        self.assertFirstLine(out, 'None')
+
+    def test_var_default_is_none(self):
+        out, _ = self.run_code('var x.\nprint(x).\nprint(x == None).')
+        self.assertOutputExact(out, ['None', 'True'])
+
+    def test_none_is_falsy(self):
+        out, _ = self.run_code("""
+var x.
+if x:
+    print("truthy")
+else:
+    print("falsy")
+;
+""")
+        self.assertFirstLine(out, 'falsy')
+
+    def test_function_no_give_is_none(self):
+        out, _ = self.run_code("""
+fn noop():
+    var x = 1.
+;
+var result = noop().
+print(result).
+print(result == None).
+""")
+        self.assertOutputExact(out, ['None', 'True'])
+
+
+# ═════════════════════════════════════════════════════════════
+#  EDGE CASES & STRESS TESTS
+# ═════════════════════════════════════════════════════════════
+
+class TestEdgeCases(TestInterpreter):
+    """Edge cases, weird syntax, and potential parser-breakers."""
+
+    def test_deeply_nested_expression(self):
+        out, _ = self.run_code('print(((((1 + 2) * 3) - 4) / 5) + 6).')
+        got = self.lines(out)
+        # ((((3)*3) - 4) / 5) + 6 = (9 - 4) / 5 + 6 = 1 + 6 = 7
+        self.assertIn('7', got[0])
+
+    def test_chained_string_methods(self):
+        out, _ = self.run_code('print("  Hello World  ".strip().lower()).')
+        self.assertFirstLine(out, 'hello world')
+
+    def test_chained_list_operations(self):
+        out, _ = self.run_code('print([3, 1, 2].sort().reverse()).')
+        got = self.lines(out)
+        # sort returns [1,2,3], reverse returns [3,2,1]
+        self.assertIn('3', got[0])
+
+    def test_empty_string_operations(self):
+        out, _ = self.run_code('print(len("")).')
+        self.assertFirstLine(out, '0')
+
+    def test_string_with_numbers(self):
+        out, _ = self.run_code('print("abc" + str(123) + "def").')
+        self.assertFirstLine(out, 'abc123def')
+
+    def test_boolean_in_arithmetic(self):
+        out, _ = self.run_code('print(True + True).\nprint(False + 1).')
+        self.assertOutputExact(out, ['2', '1'])
+
+    def test_many_variables(self):
+        code = ''
+        for i in range(50):
+            code += f'var v{i} = {i}.\n'
+        code += 'var total = 0.\n'
+        for i in range(50):
+            code += f'total += v{i}.\n'
+        code += 'print(total).\n'
+        out, _ = self.run_code(code)
+        # sum 0..49 = 1225
+        self.assertFirstLine(out, '1225')
+
+    def test_long_string(self):
+        out, _ = self.run_code('print("a" * 100).')
+        got = self.lines(out)
+        self.assertEqual(len(got[0]), 100)
+
+    def test_mixed_quotes_in_string(self):
+        out, _ = self.run_code("print(\"it's\").")
+        self.assertFirstLine(out, "it's")
+
+    def test_single_quotes_with_double_inside(self):
+        out, _ = self.run_code("print('he said \"hi\"').")
+        self.assertFirstLine(out, 'he said "hi"')
+
+    def test_expression_auto_print_none_suppressed(self):
+        """None results should NOT be auto-printed by ExprStmt."""
+        out, _ = self.run_code("""
+fn noop(): pass ;
+noop().
+print("done").
+""")
+        self.assertOutputExact(out, ['done'])
+
+    def test_multiple_statements_one_line(self):
+        out, _ = self.run_code('var x = 1. var y = 2. print(x + y).')
+        self.assertFirstLine(out, '3')
+
+    def test_print_multiple_types(self):
+        out, _ = self.run_code("""
+print(42).
+print(3.14).
+print("hello").
+print(True).
+print(None).
+print([1, 2]).
+print({3, 4}).
+""")
+        got = self.lines(out)
+        self.assertEqual(got[0], '42')
+        self.assertIn('3.14', got[1])
+        self.assertEqual(got[2], 'hello')
+        self.assertEqual(got[3], 'True')
+        self.assertEqual(got[4], 'None')
+
+    def test_operator_chaining(self):
+        out, _ = self.run_code('print(1 + 2 + 3 + 4 + 5).')
+        self.assertFirstLine(out, '15')
+
+    def test_multiplication_chain(self):
+        out, _ = self.run_code('print(2 * 3 * 4).')
+        self.assertFirstLine(out, '24')
+
+    def test_mixed_operators(self):
+        out, _ = self.run_code('print(10 + 5 * 2 - 3).')
+        self.assertFirstLine(out, '17')
+
+    def test_negative_loop_range(self):
+        out, _ = self.run_code("""
+var items = [].
+for i in range(from 3 to 1 step -1):
+    items.append(i).
+;
+print(items).
+""")
+        self.assertOutputContains(out, '3')
+        self.assertOutputContains(out, '1')
+
+
+# ═════════════════════════════════════════════════════════════
+#  ERROR HANDLING
+# ═════════════════════════════════════════════════════════════
+
+class TestErrors(TestInterpreter):
+    """Error messages and error paths."""
+
+    def test_division_by_zero_error(self):
+        out, _ = self.run_code('print(1 / 0).')
+        self.assertOutputHasError(out, 'Division by zero')
+
+    def test_unknown_function_error(self):
+        out, _ = self.run_code('noSuchFunction().')
+        self.assertOutputHasError(out, 'Unknown function')
+
+    def test_wrong_arity_error(self):
+        out, _ = self.run_code("""
+fn f(a, b): give a + b ;
+f(1).
+""")
+        self.assertOutputHasError(out, 'Unknown function')
+
+    def test_unterminated_string_error(self):
+        out, _ = self.run_code('print("unterminated).')
+        self.assertOutputHasError(out, 'Unterminated string')
+
+    def test_duplicate_param(self):
+        out, _ = self.run_code('fn f(x, x): pass ;')
+        self.assertOutputHasError(out, 'Duplicate parameter')
+
+    def test_empty_function_body(self):
+        out, _ = self.run_code('fn f(): ;')
+        self.assertOutputHasError(out, 'Empty function body')
+
+    def test_zero_step_error(self):
+        out, _ = self.run_code("""
+for i in range(from 1 to 10 step 0):
+    print(i).
+;
+""")
+        self.assertOutputHasError(out, 'Step cannot be zero')
+
+
+# ═════════════════════════════════════════════════════════════
+#  COMPLEX PROGRAMS
+# ═════════════════════════════════════════════════════════════
+
+class TestComplexPrograms(TestInterpreter):
+    """Full programs combining multiple features."""
+
+    def test_fizzbuzz(self):
+        out, _ = self.run_code("""
+for i in range(from 1 to 15):
+    if i % 15 == 0:
+        print("FizzBuzz")
+    elif i % 3 == 0:
+        print("Fizz")
+    elif i % 5 == 0:
+        print("Buzz")
+    else:
+        print(i)
+    ;
+;
+""")
+        got = self.lines(out)
+        self.assertEqual(got[0], '1')
+        self.assertEqual(got[1], '2')
+        self.assertEqual(got[2], 'Fizz')
+        self.assertEqual(got[3], '4')
+        self.assertEqual(got[4], 'Buzz')
+        self.assertEqual(got[14], 'FizzBuzz')
+
+    def test_sum_of_squares(self):
+        out, _ = self.run_code("""
+fn sumOfSquares(n):
+    var total = 0.
+    for i in range(from 1 to n):
+        total += i * i.
+    ;
+    give total
+;
+print(sumOfSquares(5)).
+""")
+        # 1 + 4 + 9 + 16 + 25 = 55
+        self.assertFirstLine(out, '55')
+
+    def test_string_processing(self):
+        out, _ = self.run_code("""
+var words = "hello world foo bar".split(" ").
+for word in words:
+    print(word.upper()).
+;
+""")
+        self.assertOutputExact(out, ['HELLO', 'WORLD', 'FOO', 'BAR'])
+
+    def test_function_composition(self):
+        out, _ = self.run_code("""
+fn dbl(x): give x * 2 ;
+fn inc(x): give x + 1 ;
+fn apply(x):
+    give inc(dbl(x))
+;
+print(apply(5)).
+""")
+        # dbl(5) = 10, inc(10) = 11
+        self.assertFirstLine(out, '11')
+
+    def test_accumulator_pattern(self):
+        out, _ = self.run_code("""
+var total = 0.
+var items = [10, 20, 30, 40, 50].
+for item in items:
+    total += item.
+;
+print(total).
+""")
+        self.assertFirstLine(out, '150')
+
+    def test_grade_calculator(self):
+        out, _ = self.run_code("""
+fn grade(score):
+    if score >= 90: give "A" ;
+    if score >= 80: give "B" ;
+    if score >= 70: give "C" ;
+    if score >= 60: give "D" ;
+    give "F"
+;
+print(grade(95)).
+print(grade(85)).
+print(grade(75)).
+print(grade(65)).
+print(grade(50)).
+""")
+        self.assertOutputExact(out, ['A', 'B', 'C', 'D', 'F'])
+
+    def test_counter_with_while(self):
+        out, _ = self.run_code("""
+var count = 0.
+var i = 1.
+while i <= 100:
+    if i % 7 == 0:
+        count++.
+    ;
+    i++.
+;
+print(count).
+""")
+        # Numbers 1-100 divisible by 7: 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98 = 14
+        self.assertFirstLine(out, '14')
+
+    def test_pass_by_ref_accumulate(self):
+        out, _ = self.run_code("""
+fn addTo(@total, val):
+    total = total + val.
+;
+var sum = 0.
+addTo(sum, 10).
+addTo(sum, 20).
+addTo(sum, 30).
+print(sum).
+""")
+        self.assertFirstLine(out, '60')
+
+    def test_list_building_with_functions(self):
+        out, _ = self.run_code("""
+fn sumRange(n):
+    var total = 0.
+    for i in range(from 1 to n):
+        total += i.
+    ;
+    give total
+;
+print(sumRange(5)).
+""")
+        # 1+2+3+4+5 = 15
+        self.assertFirstLine(out, '15')
+
+    def test_recursive_power(self):
+        out, _ = self.run_code("""
+fn power(base, exp):
+    if exp == 0: give 1 ;
+    give base * power(base, exp - 1)
+;
+print(power(2, 10)).
+""")
+        self.assertFirstLine(out, '1024')
+
+    def test_overloaded_functions_program(self):
+        out, _ = self.run_code("""
+fn describe(x):
+    give "one arg: " + str(x)
+;
+fn describe(x, y):
+    give "two args: " + str(x) + ", " + str(y)
+;
+fn describe(x, y, z):
+    give "three args: " + str(x) + ", " + str(y) + ", " + str(z)
+;
+print(describe(1)).
+print(describe(1, 2)).
+print(describe(1, 2, 3)).
+""")
+        self.assertOutputExact(out, [
+            'one arg: 1',
+            'two args: 1, 2',
+            'three args: 1, 2, 3'
+        ])
+
+
+# ═════════════════════════════════════════════════════════════
+#  MULTI-LINE & FORMATTING
+# ═════════════════════════════════════════════════════════════
+
+class TestMultiLine(TestInterpreter):
+    """Multi-line code, indentation, block structure."""
+
+    def test_multiline_function(self):
+        out, _ = self.run_code("""
+fn calculate(a, b, c):
+    var sum = a + b + c.
+    var avg = sum / 3.
+    give avg
+;
+print(calculate(10, 20, 30)).
+""")
+        self.assertFirstLine(out, '20')
+
+    def test_deeply_nested_blocks(self):
+        out, _ = self.run_code("""
+var result = 0.
+for i in range(from 1 to 3):
+    for j in range(from 1 to 3):
+        if i == j:
+            result += i * j.
         ;
-        """
-        out, _ = self.run_code(code)
-        self.assertIn("a", out)
-        self.assertIn("b", out)
-        self.assertIn("c", out)
+    ;
+;
+print(result).
+""")
+        # i==j: (1,1)=1, (2,2)=4, (3,3)=9 → 14
+        self.assertFirstLine(out, '14')
 
-    def test_let_be_reassign_error(self):
-        """let/be creates a new variable, reassignment should work via = syntax."""
-        code = 'let x be 10. x = 20. x.'
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["20"])
+    def test_function_calling_function(self):
+        out, _ = self.run_code("""
+fn square(x): give x * x ;
+fn sumSquares(a, b): give square(a) + square(b) ;
+print(sumSquares(3, 4)).
+""")
+        # 9 + 16 = 25
+        self.assertFirstLine(out, '25')
 
-    def test_power_with_promote(self):
-        """Power with large result should auto-promote."""
-        code = '2 ^ 20.'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-        lines = self.get_clean_output_lines(out)
-        val = float(lines[0])
-        self.assertAlmostEqual(val, 1048576, places=0)
-
-    def test_modulo_with_promote(self):
-        code = '17 % 5.'
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
-
-    def test_string_in_function_param(self):
-        code = """
-        fn echo @(msg):
-            give(msg).
-        ;
-        echo("hello").
-        """
-        out, _ = self.run_code(code)
-        self.assertOutputSequence(out, ["hello"])
-
-    def test_list_in_function_param(self):
-        code = """
-        fn first @(items):
-            give(items).
-        ;
-        print(first([99, 88])).
-        """
-        out, _ = self.run_code(code)
-        self.assertNotIn("Error", out)
 
 if __name__ == '__main__':
     unittest.main()

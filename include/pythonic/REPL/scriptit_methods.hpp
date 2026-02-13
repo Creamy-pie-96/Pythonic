@@ -41,53 +41,53 @@ inline MethodTable make_universal_methods()
 
     // Type checks
     t.m0["is_none"] = [](var &s) -> var
-    { return var(s.is_none() ? 1 : 0); };
+    { return var(s.is_none()); };
     t.m0["is_bool"] = [](var &s) -> var
-    { return var(s.is_bool() ? 1 : 0); };
+    { return var(s.is_bool()); };
     t.m0["is_int"] = [](var &s) -> var
-    { return var(s.is_int() ? 1 : 0); };
+    { return var(s.is_int()); };
     t.m0["is_uint"] = [](var &s) -> var
-    { return var(s.is_uint() ? 1 : 0); };
+    { return var(s.is_uint()); };
     t.m0["is_long"] = [](var &s) -> var
-    { return var(s.is_long() ? 1 : 0); };
+    { return var(s.is_long()); };
     t.m0["is_ulong"] = [](var &s) -> var
-    { return var(s.is_ulong() ? 1 : 0); };
+    { return var(s.is_ulong()); };
     t.m0["is_long_long"] = [](var &s) -> var
-    { return var(s.is_long_long() ? 1 : 0); };
+    { return var(s.is_long_long()); };
     t.m0["is_ulong_long"] = [](var &s) -> var
-    { return var(s.is_ulong_long() ? 1 : 0); };
+    { return var(s.is_ulong_long()); };
     t.m0["is_float"] = [](var &s) -> var
-    { return var(s.is_float() ? 1 : 0); };
+    { return var(s.is_float()); };
     t.m0["is_double"] = [](var &s) -> var
-    { return var(s.is_double() ? 1 : 0); };
+    { return var(s.is_double()); };
     t.m0["is_long_double"] = [](var &s) -> var
-    { return var(s.is_long_double() ? 1 : 0); };
+    { return var(s.is_long_double()); };
     t.m0["is_string"] = [](var &s) -> var
-    { return var(s.is_string() ? 1 : 0); };
+    { return var(s.is_string()); };
     t.m0["is_list"] = [](var &s) -> var
-    { return var(s.is_list() ? 1 : 0); };
+    { return var(s.is_list()); };
     t.m0["is_dict"] = [](var &s) -> var
-    { return var(s.is_dict() ? 1 : 0); };
+    { return var(s.is_dict()); };
     t.m0["is_set"] = [](var &s) -> var
-    { return var(s.is_set() ? 1 : 0); };
+    { return var(s.is_set()); };
     t.m0["is_ordered_set"] = [](var &s) -> var
-    { return var(s.is_ordered_set() ? 1 : 0); };
+    { return var(s.is_ordered_set()); };
     t.m0["is_ordered_dict"] = [](var &s) -> var
-    { return var(s.is_ordered_dict() ? 1 : 0); };
+    { return var(s.is_ordered_dict()); };
     t.m0["is_graph"] = [](var &s) -> var
-    { return var(s.is_graph() ? 1 : 0); };
+    { return var(s.is_graph()); };
     t.m0["is_any_integral"] = [](var &s) -> var
-    { return var(s.is_any_integral() ? 1 : 0); };
+    { return var(s.is_any_integral()); };
     t.m0["is_any_floating"] = [](var &s) -> var
-    { return var(s.is_any_floating() ? 1 : 0); };
+    { return var(s.is_any_floating()); };
     t.m0["is_any_numeric"] = [](var &s) -> var
-    { return var(s.is_any_numeric() ? 1 : 0); };
+    { return var(s.is_any_numeric()); };
     t.m0["isNone"] = [](var &s) -> var
-    { return var(s.isNone() ? 1 : 0); };
+    { return var(s.isNone()); };
     t.m0["isNumeric"] = [](var &s) -> var
-    { return var(s.isNumeric() ? 1 : 0); };
+    { return var(s.isNumeric()); };
     t.m0["isIntegral"] = [](var &s) -> var
-    { return var(s.isIntegral() ? 1 : 0); };
+    { return var(s.isIntegral()); };
 
     // Conversion — works on numeric+string
     t.m0["toInt"] = [](var &s) -> var
@@ -103,7 +103,7 @@ inline MethodTable make_universal_methods()
     t.m0["toLongDouble"] = [](var &s) -> var
     { return var(s.toLongDouble()); };
     t.m0["toBool"] = [](var &s) -> var
-    { return var(static_cast<bool>(s) ? 1 : 0); };
+    { return var(static_cast<bool>(s)); };
     t.m0["toString"] = [](var &s) -> var
     { return var(s.toString()); };
 
@@ -136,15 +136,15 @@ inline MethodTable make_string_methods()
     t.m0["reverse"] = [](var &s) -> var
     { return s.reverse(); };
     t.m0["isdigit"] = [](var &s) -> var
-    { return var(s.isdigit() ? 1 : 0); };
+    { return var(s.isdigit()); };
     t.m0["isalpha"] = [](var &s) -> var
-    { return var(s.isalpha() ? 1 : 0); };
+    { return var(s.isalpha()); };
     t.m0["isalnum"] = [](var &s) -> var
-    { return var(s.isalnum() ? 1 : 0); };
+    { return var(s.isalnum()); };
     t.m0["isspace"] = [](var &s) -> var
-    { return var(s.isspace() ? 1 : 0); };
+    { return var(s.isspace()); };
     t.m0["empty"] = [](var &s) -> var
-    { return var(s.empty() ? 1 : 0); };
+    { return var(s.empty()); };
     t.m0["size"] = [](var &s) -> var
     { return s.len(); };
     // split() with no args → split on whitespace
@@ -204,7 +204,7 @@ inline MethodTable make_list_methods()
     t.m0["clear"] = [](var &s) -> var
     { s.clear(); return var(NoneType{}); };
     t.m0["empty"] = [](var &s) -> var
-    { return var(s.empty() ? 1 : 0); };
+    { return var(s.empty()); };
     t.m0["size"] = [](var &s) -> var
     { return s.len(); };
     t.m0["sort"] = [](var &s) -> var
@@ -287,7 +287,7 @@ inline MethodTable make_set_methods()
     t.m0["clear"] = [](var &s) -> var
     { s.clear(); return var(NoneType{}); };
     t.m0["empty"] = [](var &s) -> var
-    { return var(s.empty() ? 1 : 0); };
+    { return var(s.empty()); };
     t.m0["size"] = [](var &s) -> var
     { return s.len(); };
 
@@ -324,7 +324,7 @@ inline MethodTable make_dict_methods()
     t.m0["clear"] = [](var &s) -> var
     { s.clear(); return var(NoneType{}); };
     t.m0["empty"] = [](var &s) -> var
-    { return var(s.empty() ? 1 : 0); };
+    { return var(s.empty()); };
     t.m0["size"] = [](var &s) -> var
     { return s.len(); };
 
@@ -527,7 +527,7 @@ inline std::pair<bool, var> dispatch_file_method(var &self, const std::string &m
     }
     if (method == "is_open" && argc == 0)
     {
-        return {true, var(fs.is_open() ? 1 : 0)};
+        return {true, var(fs.is_open())};
     }
     if (method == "flush" && argc == 0)
     {

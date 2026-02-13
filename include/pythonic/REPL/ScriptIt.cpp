@@ -5,6 +5,7 @@
 #include "scriptit_methods.hpp"
 #include "scriptit_builtins.hpp"
 #include "perser.hpp"
+#include "json_and_kernel.hpp"
 // ═══════════════════════════════════════════════════════════
 // ──── Execute Script Helper ────────────────────────────────
 // ═══════════════════════════════════════════════════════════
@@ -34,8 +35,6 @@ void executeScript(const std::string &content)
         std::cout << "Error: " << e.what() << std::endl;
     }
 }
-
-
 
 // ═══════════════════════════════════════════════════════════
 // ──── Main ─────────────────────────────────────────────────

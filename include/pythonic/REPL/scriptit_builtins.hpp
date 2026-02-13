@@ -384,7 +384,79 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
                  throw std::runtime_error("float() takes exactly 1 argument");
              var a = s.top();
              s.pop();
+             s.push(var(a.toFloat()));
+         }},
+
+        {"double", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("double() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
              s.push(var(a.toDouble()));
+         }},
+
+        {"long", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("long() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(var(a.toLong()));
+         }},
+
+        {"long_long", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("long_long() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(var(a.toLongLong()));
+         }},
+
+        {"long_double", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("long_double() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(var(a.toLongDouble()));
+         }},
+
+        {"uint", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("uint() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(var(a.toUInt()));
+         }},
+
+        {"ulong", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("ulong() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(var(a.toULong()));
+         }},
+
+        {"ulong_long", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("ulong_long() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(var(a.toULongLong()));
+         }},
+
+        {"auto_numeric", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("auto_numeric() takes exactly 1 argument");
+             var a = s.top();
+             s.pop();
+             s.push(pythonic::vars::AutoNumeric(a));
          }},
 
         {"bool", [](std::stack<var> &s, int argc)
@@ -393,7 +465,7 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
                  throw std::runtime_error("bool() takes exactly 1 argument");
              var a = s.top();
              s.pop();
-             s.push(var(static_cast<bool>(a) ? 1 : 0));
+             s.push(var(static_cast<bool>(a)));
          }},
 
         {"repr", [](std::stack<var> &s, int argc)
@@ -414,7 +486,7 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
              var obj = s.top();
              s.pop();
              std::string tn = typeName.is_string() ? typeName.as_string_unchecked() : typeName.str();
-             s.push(var(obj.type() == tn ? 1 : 0));
+             s.push(var(obj.type() == tn));
          }},
 
         // ── Container Constructors ───────────────────
@@ -566,10 +638,10 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
              for (const auto &item : lst)
                  if (!static_cast<bool>(item))
                  {
-                     s.push(var(0));
+                     s.push(var(false));
                      return;
                  }
-             s.push(var(1));
+             s.push(var(true));
          }},
 
         {"any", [](std::stack<var> &s, int argc)
@@ -583,10 +655,10 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
              for (const auto &item : lst)
                  if (static_cast<bool>(item))
                  {
-                     s.push(var(1));
+                     s.push(var(true));
                      return;
                  }
-             s.push(var(0));
+             s.push(var(false));
          }},
 
         {"enumerate", [](std::stack<var> &s, int argc)

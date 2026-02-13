@@ -1,5 +1,9 @@
 #pragma once
 
+#include "scriptit_types.hpp"
+#include "scriptit_methods.hpp"
+#include "scriptit_builtins.hpp"
+
 // ═══════════════════════════════════════════════════════════
 // ──── Tokenizer ────────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════
@@ -13,7 +17,7 @@ public:
         int line = 1;
 
         static const std::unordered_map<std::string, TokenType> keywords = {
-            {"var", TokenType::KeywordVar}, {"fn", TokenType::KeywordFn}, {"give", TokenType::KeywordGive}, {"if", TokenType::KeywordIf}, {"elif", TokenType::KeywordElif}, {"else", TokenType::KeywordElse}, {"for", TokenType::KeywordFor}, {"in", TokenType::KeywordIn}, {"range", TokenType::KeywordRange}, {"from", TokenType::KeywordFrom}, {"to", TokenType::KeywordTo}, {"pass", TokenType::KeywordPass}, {"while", TokenType::KeywordWhile}, {"are", TokenType::KeywordAre}, {"new", TokenType::KeywordNew}, {"let", TokenType::KeywordLet}, {"be", TokenType::KeywordBe}, {"of", TokenType::KeywordOf}};
+            {"var", TokenType::KeywordVar}, {"fn", TokenType::KeywordFn}, {"give", TokenType::KeywordGive}, {"if", TokenType::KeywordIf}, {"elif", TokenType::KeywordElif}, {"else", TokenType::KeywordElse}, {"for", TokenType::KeywordFor}, {"in", TokenType::KeywordIn}, {"range", TokenType::KeywordRange}, {"from", TokenType::KeywordFrom}, {"to", TokenType::KeywordTo}, {"step", TokenType::KeywordStep}, {"pass", TokenType::KeywordPass}, {"while", TokenType::KeywordWhile}, {"are", TokenType::KeywordAre}, {"new", TokenType::KeywordNew}, {"let", TokenType::KeywordLet}, {"be", TokenType::KeywordBe}, {"of", TokenType::KeywordOf}, {"is", TokenType::KeywordIs}, {"points", TokenType::KeywordPoints}};
 
         static const std::unordered_map<char, TokenType> simpleSymbols = {
             {'+', TokenType::Operator}, {'*', TokenType::Operator}, {'/', TokenType::Operator}, {'^', TokenType::Operator}, {'%', TokenType::Operator}, {',', TokenType::Comma}, {'.', TokenType::Dot}, {':', TokenType::Colon}, {';', TokenType::Semicolon}, {'@', TokenType::At}, {'(', TokenType::LeftParen}, {')', TokenType::RightParen}, {'{', TokenType::LeftBrace}, {'}', TokenType::RightBrace}, {'[', TokenType::LeftBracket}, {']', TokenType::RightBracket}};
@@ -135,6 +139,65 @@ public:
                 while (i < source.length() && (std::isalnum(source[i]) || source[i] == '_'))
                     value += source[i++];
                 i--;
+
+                // Multi-word type names: "long double", "long long", "unsigned int", "unsigned long", "unsigned long long"
+                if (value == "long" || value == "unsigned")
+                {
+                    // Peek ahead past whitespace for the next word
+                    size_t j = i + 1;
+                    while (j < source.length() && source[j] == ' ')
+                        j++;
+                    if (j < source.length() && (std::isalpha(source[j]) || source[j] == '_'))
+                    {
+                        std::string nextWord;
+                        size_t k = j;
+                        while (k < source.length() && (std::isalnum(source[k]) || source[k] == '_'))
+                            nextWord += source[k++];
+
+                        if (value == "long" && nextWord == "double")
+                        {
+                            i = k - 1;
+                            tokens.emplace_back(TokenType::Identifier, "long_double", startPos, line);
+                            continue;
+                        }
+                        else if (value == "long" && nextWord == "long")
+                        {
+                            i = k - 1;
+                            tokens.emplace_back(TokenType::Identifier, "long_long", startPos, line);
+                            continue;
+                        }
+                        else if (value == "unsigned" && nextWord == "int")
+                        {
+                            i = k - 1;
+                            tokens.emplace_back(TokenType::Identifier, "uint", startPos, line);
+                            continue;
+                        }
+                        else if (value == "unsigned" && nextWord == "long")
+                        {
+                            // Check for "unsigned long long"
+                            size_t j2 = k;
+                            while (j2 < source.length() && source[j2] == ' ')
+                                j2++;
+                            if (j2 < source.length() && std::isalpha(source[j2]))
+                            {
+                                std::string thirdWord;
+                                size_t k2 = j2;
+                                while (k2 < source.length() && (std::isalnum(source[k2]) || source[k2] == '_'))
+                                    thirdWord += source[k2++];
+                                if (thirdWord == "long")
+                                {
+                                    i = k2 - 1;
+                                    tokens.emplace_back(TokenType::Identifier, "ulong_long", startPos, line);
+                                    continue;
+                                }
+                            }
+                            i = k - 1;
+                            tokens.emplace_back(TokenType::Identifier, "ulong", startPos, line);
+                            continue;
+                        }
+                    }
+                }
+
                 if (keywords.count(value))
                     tokens.emplace_back(keywords.at(value), value, startPos, line);
                 else if (value == "and")
@@ -153,7 +216,53 @@ public:
             { /* fall through to operator */
             }
 
-            // Multi-char operators
+            // Multi-char operators (check BEFORE single-char to catch +=, ++, etc.)
+            if (c == '+' && i + 1 < source.length() && source[i + 1] == '=')
+            {
+                tokens.emplace_back(TokenType::PlusEquals, "+=", i, line);
+                i++;
+                continue;
+            }
+            if (c == '+' && i + 1 < source.length() && source[i + 1] == '+')
+            {
+                tokens.emplace_back(TokenType::PlusPlus, "++", i, line);
+                i++;
+                continue;
+            }
+            if (c == '-' && i + 1 < source.length() && source[i + 1] == '-')
+            {
+                // But NOT if it's --> (comment start)
+                if (!(i + 2 < source.length() && source[i + 2] == '>'))
+                {
+                    tokens.emplace_back(TokenType::MinusMinus, "--", i, line);
+                    i++;
+                    continue;
+                }
+            }
+            if (c == '-' && i + 1 < source.length() && source[i + 1] == '=')
+            {
+                tokens.emplace_back(TokenType::MinusEquals, "-=", i, line);
+                i++;
+                continue;
+            }
+            if (c == '*' && i + 1 < source.length() && source[i + 1] == '=')
+            {
+                tokens.emplace_back(TokenType::StarEquals, "*=", i, line);
+                i++;
+                continue;
+            }
+            if (c == '/' && i + 1 < source.length() && source[i + 1] == '=')
+            {
+                tokens.emplace_back(TokenType::SlashEquals, "/=", i, line);
+                i++;
+                continue;
+            }
+            if (c == '%' && i + 1 < source.length() && source[i + 1] == '=')
+            {
+                tokens.emplace_back(TokenType::PercentEquals, "%=", i, line);
+                i++;
+                continue;
+            }
             if (c == '=' && i + 1 < source.length() && source[i + 1] == '=')
             {
                 tokens.emplace_back(TokenType::Operator, "==", i, line);
@@ -245,81 +354,96 @@ var Expression::evaluate(Scope &scope)
         if (logicalOp == "&&")
         {
             if (!static_cast<bool>(leftVal))
-                return var(0);
-            return var(static_cast<bool>(rhs->evaluate(scope)) ? 1 : 0);
+                return var(false);
+            return var(static_cast<bool>(rhs->evaluate(scope)));
         }
         else
         {
             if (static_cast<bool>(leftVal))
-                return var(1);
-            return var(static_cast<bool>(rhs->evaluate(scope)) ? 1 : 0);
+                return var(true);
+            return var(static_cast<bool>(rhs->evaluate(scope)));
         }
     }
 
     std::stack<var> stk;
+    std::stack<std::string> nameStk; // tracks source variable name for pass-by-ref
+
+    auto pushVal = [&](const var &v, const std::string &name = "")
+    {
+        stk.push(v);
+        nameStk.push(name);
+    };
+    auto popVal = [&]() -> var
+    {
+        var v = stk.top();
+        stk.pop();
+        if (!nameStk.empty())
+            nameStk.pop();
+        return v;
+    };
+    auto topName = [&]() -> std::string
+    {
+        return nameStk.empty() ? "" : nameStk.top();
+    };
 
     for (const auto &token : rpn)
     {
         if (token.type == TokenType::Number)
         {
             if (token.value.find('.') != std::string::npos)
-                stk.push(var(std::stod(token.value)));
+                pushVal(var(std::stod(token.value)));
             else
             {
                 try
                 {
-                    stk.push(var(std::stoi(token.value)));
+                    pushVal(var(std::stoi(token.value)));
                 }
                 catch (...)
                 {
-                    stk.push(var((long long)std::stoll(token.value)));
+                    pushVal(var((long long)std::stoll(token.value)));
                 }
             }
         }
         else if (token.type == TokenType::String)
         {
-            stk.push(var(token.value));
+            pushVal(var(token.value));
         }
         else if (token.type == TokenType::Identifier)
         {
             if (token.value == "True")
-                stk.push(var(1));
+                pushVal(var(true));
             else if (token.value == "False")
-                stk.push(var(0));
+                pushVal(var(false));
             else if (token.value == "None")
-                stk.push(var(NoneType{}));
+                pushVal(var(NoneType{}));
             else
-                stk.push(scope.get(token.value));
+                pushVal(scope.get(token.value), token.value);
         }
         else if (token.type == TokenType::Operator)
         {
             if (token.value == "~")
             {
                 if (stk.empty())
-                    throw std::runtime_error("Stack underflow for unary '~'");
-                var a = stk.top();
-                stk.pop();
+                    throw std::runtime_error("Stack underflow for unary '~' at line " + std::to_string(token.line));
+                var a = popVal();
                 if (a.is_int())
-                    stk.push(var(-a.as_int_unchecked()));
+                    pushVal(var(-a.as_int_unchecked()));
                 else
-                    stk.push(var(-var_to_double(a)));
+                    pushVal(var(-var_to_double(a)));
             }
             else if (token.value == "!")
             {
                 if (stk.empty())
-                    throw std::runtime_error("Stack underflow for unary '!'");
-                var a = stk.top();
-                stk.pop();
-                stk.push(var(static_cast<bool>(a) ? 0 : 1));
+                    throw std::runtime_error("Stack underflow for unary '!' at line " + std::to_string(token.line));
+                var a = popVal();
+                pushVal(var(!static_cast<bool>(a)));
             }
             else
             {
                 if (stk.size() < 2)
-                    throw std::runtime_error("Stack underflow for binary operator '" + token.value + "'");
-                var b = stk.top();
-                stk.pop();
-                var a = stk.top();
-                stk.pop();
+                    throw std::runtime_error("Stack underflow for binary operator '" + token.value + "' at line " + std::to_string(token.line));
+                var b = popVal();
+                var a = popVal();
 
                 using BinOp = std::function<var(const var &, const var &)>;
                 static const std::unordered_map<std::string, BinOp> binaryOps = {
@@ -351,14 +475,14 @@ var Expression::evaluate(Scope &scope)
                      {
                          double bd = var_to_double(b);
                          if (std::abs(bd) < 1e-15)
-                             throw std::runtime_error("Div by 0");
+                             throw std::runtime_error("Division by zero");
                          return pythonic::math::div(a, b, Overflow::Promote);
                      }},
                     {"%", [](const var &a, const var &b) -> var
                      {
                          double bd = var_to_double(b);
                          if (std::abs(bd) < 1e-15)
-                             throw std::runtime_error("Mod by 0");
+                             throw std::runtime_error("Modulo by zero");
                          return pythonic::math::mod(a, b, Overflow::Promote);
                      }},
                     {"^", [](const var &a, const var &b) -> var
@@ -366,46 +490,113 @@ var Expression::evaluate(Scope &scope)
                     {"==", [](const var &a, const var &b) -> var
                      {
                          if (a.is_string() && b.is_string())
-                             return var(a.as_string_unchecked() == b.as_string_unchecked() ? 1 : 0);
+                             return var(a.as_string_unchecked() == b.as_string_unchecked());
                          if (a.is_none() || b.is_none())
-                             return var((a.is_none() && b.is_none()) ? 1 : 0);
+                             return var(a.is_none() && b.is_none());
                          if (a.is_list() || b.is_list() || a.is_set() || b.is_set() ||
                              a.is_dict() || b.is_dict())
-                             return var((a == b) ? 1 : 0);
+                             return var(a == b);
                          double ad = var_to_double(a), bd = var_to_double(b);
-                         return var(std::abs(ad - bd) < 1e-9 ? 1 : 0);
+                         return var(std::abs(ad - bd) < 1e-9);
                      }},
                     {"!=", [](const var &a, const var &b) -> var
                      {
                          if (a.is_string() && b.is_string())
-                             return var(a.as_string_unchecked() != b.as_string_unchecked() ? 1 : 0);
+                             return var(a.as_string_unchecked() != b.as_string_unchecked());
                          if (a.is_none() || b.is_none())
-                             return var((a.is_none() && b.is_none()) ? 0 : 1);
+                             return var(!(a.is_none() && b.is_none()));
                          if (a.is_list() || b.is_list() || a.is_set() || b.is_set() ||
                              a.is_dict() || b.is_dict())
-                             return var((a != b) ? 1 : 0);
+                             return var(a != b);
                          double ad = var_to_double(a), bd = var_to_double(b);
-                         return var(std::abs(ad - bd) > 1e-9 ? 1 : 0);
+                         return var(std::abs(ad - bd) > 1e-9);
                      }},
                     {"<", [](const var &a, const var &b) -> var
-                     { return var(var_to_double(a) < var_to_double(b) ? 1 : 0); }},
+                     { return var(var_to_double(a) < var_to_double(b)); }},
                     {">", [](const var &a, const var &b) -> var
-                     { return var(var_to_double(a) > var_to_double(b) ? 1 : 0); }},
+                     { return var(var_to_double(a) > var_to_double(b)); }},
                     {"<=", [](const var &a, const var &b) -> var
-                     { return var(var_to_double(a) <= var_to_double(b) ? 1 : 0); }},
+                     { return var(var_to_double(a) <= var_to_double(b)); }},
                     {">=", [](const var &a, const var &b) -> var
-                     { return var(var_to_double(a) >= var_to_double(b) ? 1 : 0); }},
+                     { return var(var_to_double(a) >= var_to_double(b)); }},
+                    {"is", [](const var &a, const var &b) -> var
+                     {
+                         // Value-based equality (like ==)
+                         if (a.is_string() && b.is_string())
+                             return var(a.as_string_unchecked() == b.as_string_unchecked());
+                         if (a.is_none() || b.is_none())
+                             return var(a.is_none() && b.is_none());
+                         if (a.is_list() || b.is_list() || a.is_set() || b.is_set() ||
+                             a.is_dict() || b.is_dict())
+                             return var(a == b);
+                         double ad = var_to_double(a), bd = var_to_double(b);
+                         return var(std::abs(ad - bd) < 1e-9);
+                     }},
+                    {"is not", [](const var &a, const var &b) -> var
+                     {
+                         // Value-based inequality (like !=)
+                         if (a.is_string() && b.is_string())
+                             return var(a.as_string_unchecked() != b.as_string_unchecked());
+                         if (a.is_none() || b.is_none())
+                             return var(!(a.is_none() && b.is_none()));
+                         if (a.is_list() || b.is_list() || a.is_set() || b.is_set() ||
+                             a.is_dict() || b.is_dict())
+                             return var(a != b);
+                         double ad = var_to_double(a), bd = var_to_double(b);
+                         return var(std::abs(ad - bd) > 1e-9);
+                     }},
+                    {"points", [](const var &a, const var &b) -> var
+                     {
+                         // Identity/reference check — in a value-semantics language,
+                         // containers are always copies, so this checks if two vars
+                         // hold the exact same type + value (stricter than ==, no tolerance).
+                         if (a.type() != b.type())
+                             return var(false);
+                         if (a.is_none() && b.is_none())
+                             return var(true);
+                         if (a.is_bool() && b.is_bool())
+                             return var(a.as_bool_unchecked() == b.as_bool_unchecked());
+                         if (a.is_int() && b.is_int())
+                             return var(a.as_int_unchecked() == b.as_int_unchecked());
+                         if (a.is_string() && b.is_string())
+                             return var(a.as_string_unchecked() == b.as_string_unchecked());
+                         // For containers: value compare (since all vars are value types)
+                         return var(a == b);
+                     }},
+                    {"not points", [](const var &a, const var &b) -> var
+                     {
+                         if (a.type() != b.type())
+                             return var(true);
+                         if (a.is_none() && b.is_none())
+                             return var(false);
+                         if (a.is_bool() && b.is_bool())
+                             return var(a.as_bool_unchecked() != b.as_bool_unchecked());
+                         if (a.is_int() && b.is_int())
+                             return var(a.as_int_unchecked() != b.as_int_unchecked());
+                         if (a.is_string() && b.is_string())
+                             return var(a.as_string_unchecked() != b.as_string_unchecked());
+                         return var(a != b);
+                     }},
                     {"&&", [](const var &a, const var &b) -> var
-                     { return var((static_cast<bool>(a) && static_cast<bool>(b)) ? 1 : 0); }},
+                     { return var(static_cast<bool>(a) && static_cast<bool>(b)); }},
                     {"||", [](const var &a, const var &b) -> var
-                     { return var((static_cast<bool>(a) || static_cast<bool>(b)) ? 1 : 0); }},
+                     { return var(static_cast<bool>(a) || static_cast<bool>(b)); }},
                 };
 
                 auto opIt = binaryOps.find(token.value);
                 if (opIt != binaryOps.end())
-                    stk.push(opIt->second(a, b));
+                {
+                    try
+                    {
+                        pushVal(opIt->second(a, b));
+                    }
+                    catch (const std::runtime_error &e)
+                    {
+                        throw std::runtime_error(std::string(e.what()) + " at line " + std::to_string(token.line));
+                    }
+                }
                 else
-                    throw std::runtime_error("Unknown binary operator: " + token.value);
+                    throw std::runtime_error("Unknown binary operator: " + token.value + " at line " + std::to_string(token.line));
             }
         }
         // List literal
@@ -416,13 +607,14 @@ var Expression::evaluate(Scope &scope)
             for (int i = 0; i < count; ++i)
             {
                 if (stk.empty())
-                    throw std::runtime_error("Stack underflow for list literal");
+                    throw std::runtime_error("Stack underflow for list literal at line " + std::to_string(token.line));
                 temp.push_back(stk.top());
+                nameStk.pop();
                 stk.pop();
             }
             std::reverse(temp.begin(), temp.end());
             List items(temp.begin(), temp.end());
-            stk.push(var(std::move(items)));
+            pushVal(var(std::move(items)));
         }
         // Set literal
         else if (token.type == TokenType::LeftBrace && token.value == "SET")
@@ -432,11 +624,12 @@ var Expression::evaluate(Scope &scope)
             for (int i = 0; i < count; ++i)
             {
                 if (stk.empty())
-                    throw std::runtime_error("Stack underflow for set literal");
+                    throw std::runtime_error("Stack underflow for set literal at line " + std::to_string(token.line));
                 items.insert(stk.top());
+                nameStk.pop();
                 stk.pop();
             }
-            stk.push(var(std::move(items)));
+            pushVal(var(std::move(items)));
         }
         // ── Method call via dtype dispatch ──
         else if (token.type == TokenType::At)
@@ -448,28 +641,42 @@ var Expression::evaluate(Scope &scope)
             for (int i = 0; i < argc; ++i)
             {
                 if (stk.empty())
-                    throw std::runtime_error("Stack underflow for method args");
-                args.push_back(stk.top());
-                stk.pop();
+                    throw std::runtime_error("Stack underflow for method args at line " + std::to_string(token.line));
+                args.push_back(popVal());
             }
             std::reverse(args.begin(), args.end());
 
             if (stk.empty())
-                throw std::runtime_error("Stack underflow for method call (no object)");
-            var self = stk.top();
-            stk.pop();
+                throw std::runtime_error("Stack underflow for method call (no object) at line " + std::to_string(token.line));
+            var self = popVal();
 
-            stk.push(dispatch_method(self, method, args));
+            pushVal(dispatch_method(self, method, args));
         }
         // ── Function calls ──
         else if (token.type == TokenType::KeywordFn)
         {
             std::string fname = token.value;
             int argc = token.position;
+            int callLine = token.line;
 
             if (is_math_function(fname))
             {
-                stk.push(dispatch_math(fname, stk));
+                try
+                {
+                    stk.push(dispatch_math(fname, stk));
+                    // Sync nameStk: math functions may pop args; push empty name for result
+                    while (nameStk.size() > stk.size())
+                        nameStk.pop();
+                    while (nameStk.size() < stk.size())
+                        nameStk.push("");
+                }
+                catch (const std::runtime_error &e)
+                {
+                    std::string msg = e.what();
+                    if (msg.find("at line") == std::string::npos)
+                        throw std::runtime_error(msg + " at line " + std::to_string(callLine));
+                    throw;
+                }
                 continue;
             }
 
@@ -477,27 +684,43 @@ var Expression::evaluate(Scope &scope)
             auto builtinIt = builtins.find(fname);
             if (builtinIt != builtins.end())
             {
-                builtinIt->second(stk, argc);
+                try
+                {
+                    builtinIt->second(stk, argc);
+                    // Sync nameStk
+                    while (nameStk.size() > stk.size())
+                        nameStk.pop();
+                    while (nameStk.size() < stk.size())
+                        nameStk.push("");
+                }
+                catch (const std::runtime_error &e)
+                {
+                    std::string msg = e.what();
+                    if (msg.find("at line") == std::string::npos)
+                        throw std::runtime_error(msg + " at line " + std::to_string(callLine));
+                    throw;
+                }
                 continue;
             }
 
             // User-defined function call
             try
             {
-                FunctionDef def = scope.getFunction(fname);
-                if ((int)def.params.size() != argc)
-                    throw std::runtime_error("Function argument mismatch: expected " +
-                                             std::to_string(def.params.size()) + " but got " + std::to_string(argc));
+                FunctionDef def = scope.getFunction(fname, argc);
+                if (!def.body)
+                    throw std::runtime_error("Function '" + fname + "' was forward-declared but never defined at line " + std::to_string(token.line));
                 if ((int)stk.size() < argc)
-                    throw std::runtime_error("Stack underflow for args");
+                    throw std::runtime_error("Stack underflow for function args at line " + std::to_string(token.line));
                 Scope funcScope(&scope, true);
                 std::vector<var> args;
+                std::vector<std::string> argNames; // caller variable names for ref params
                 for (int i = 0; i < argc; ++i)
                 {
-                    args.push_back(stk.top());
-                    stk.pop();
+                    argNames.push_back(topName());
+                    args.push_back(popVal());
                 }
                 std::reverse(args.begin(), args.end());
+                std::reverse(argNames.begin(), argNames.end());
                 for (size_t i = 0; i < def.params.size(); ++i)
                     funcScope.define(def.params[i], args[i]);
                 try
@@ -506,15 +729,28 @@ var Expression::evaluate(Scope &scope)
                 }
                 catch (ReturnException &ret)
                 {
-                    stk.push(ret.value);
+                    // Write back ref params to caller's scope
+                    for (size_t i = 0; i < def.params.size(); ++i)
+                    {
+                        if (i < def.isRefParam.size() && def.isRefParam[i] && !argNames[i].empty())
+                            scope.set(argNames[i], funcScope.get(def.params[i]));
+                    }
+                    pushVal(ret.value);
                     continue;
                 }
-                stk.push(var(0));
+                // Write back ref params to caller's scope (even if no give)
+                for (size_t i = 0; i < def.params.size(); ++i)
+                {
+                    if (i < def.isRefParam.size() && def.isRefParam[i] && !argNames[i].empty())
+                        scope.set(argNames[i], funcScope.get(def.params[i]));
+                }
+                // Function returned without give() → return None
+                pushVal(var(NoneType{}));
             }
             catch (const std::runtime_error &e)
             {
                 if (std::string(e.what()).find("Unknown function") != std::string::npos)
-                    throw std::runtime_error("Unknown function call: " + fname);
+                    throw std::runtime_error("Unknown function call: " + fname + " at line " + std::to_string(token.line));
                 throw;
             }
         }
@@ -532,6 +768,20 @@ var Expression::evaluate(Scope &scope)
 void BlockStmt::execute(Scope &scope)
 {
     Scope blockScope(&scope, false);
+    // Two-pass execution: first register all function definitions,
+    // then execute everything (enables forward references)
+    for (auto &stmt : statements)
+    {
+        auto funcDef = std::dynamic_pointer_cast<FunctionDefStmt>(stmt);
+        if (funcDef && funcDef->body)
+        {
+            FunctionDef def;
+            def.name = funcDef->name;
+            def.params = funcDef->params;
+            def.body = funcDef->body;
+            blockScope.defineFunction(funcDef->name, def);
+        }
+    }
     for (auto &stmt : statements)
         stmt->execute(blockScope);
 }
@@ -554,15 +804,37 @@ void ForStmt::execute(Scope &scope)
 {
     double start = var_to_double(startExpr->evaluate(scope));
     double end = var_to_double(endExpr->evaluate(scope));
+    double step;
+    if (stepExpr)
+    {
+        step = var_to_double(stepExpr->evaluate(scope));
+        if (std::abs(step) < 1e-15)
+            throw std::runtime_error("Step cannot be zero in range");
+    }
+    else
+    {
+        step = (end >= start) ? 1.0 : -1.0;
+    }
     Scope loopScope(&scope);
     loopScope.define(iteratorName, var(start));
-    double step = (end >= start) ? 1.0 : -1.0;
     double current = start;
-    while ((step > 0 && current <= end) || (step < 0 && current >= end))
+    if (step > 0)
     {
-        loopScope.set(iteratorName, var(current));
-        body->execute(loopScope);
-        current += step;
+        while (current <= end + 1e-9)
+        {
+            loopScope.set(iteratorName, var(current));
+            body->execute(loopScope);
+            current += step;
+        }
+    }
+    else
+    {
+        while (current >= end - 1e-9)
+        {
+            loopScope.set(iteratorName, var(current));
+            body->execute(loopScope);
+            current += step;
+        }
     }
 }
 
@@ -591,9 +863,22 @@ void WhileStmt::execute(Scope &scope)
 
 void FunctionDefStmt::execute(Scope &scope)
 {
+    if (!body)
+    {
+        // Forward declaration only — record that this function exists
+        // Don't error if already defined; just update the declaration
+        std::string key = Scope::funcKey(name, (int)params.size());
+        if (!scope.functions.count(key))
+        {
+            scope.declareFunction(name, params);
+        }
+        return;
+    }
+    // Full definition — always allowed (supports redefinition, like Python)
     FunctionDef def;
     def.name = name;
     def.params = params;
+    def.isRefParam = isRefParam;
     def.body = body;
     scope.defineFunction(name, def);
 }
@@ -794,6 +1079,65 @@ public:
             return multi;
         }
 
+        // Compound assignment:  x += expr.  x -= expr.  x *= expr.  x /= expr.  x %= expr.
+        if (check(TokenType::Identifier))
+        {
+            TokenType nextT = peekNext().type;
+            if (nextT == TokenType::PlusEquals || nextT == TokenType::MinusEquals ||
+                nextT == TokenType::StarEquals || nextT == TokenType::SlashEquals ||
+                nextT == TokenType::PercentEquals)
+            {
+                Token name = advance();
+                Token op = advance(); // consume the compound op
+                auto rhs = parseExpression();
+
+                // Determine the arithmetic operator string
+                std::string arithOp;
+                if (op.type == TokenType::PlusEquals)
+                    arithOp = "+";
+                else if (op.type == TokenType::MinusEquals)
+                    arithOp = "-";
+                else if (op.type == TokenType::StarEquals)
+                    arithOp = "*";
+                else if (op.type == TokenType::SlashEquals)
+                    arithOp = "/";
+                else
+                    arithOp = "%";
+
+                // Build expression: name op rhs  →  [name] [rhs_rpn...] [op]
+                auto combined = std::make_shared<Expression>();
+                combined->rpn.push_back(Token(TokenType::Identifier, name.value, name.position, name.line));
+                for (auto &t : rhs->rpn)
+                    combined->rpn.push_back(t);
+                combined->rpn.push_back(Token(TokenType::Operator, arithOp, op.position, op.line));
+
+                consumeDotOrForgive();
+                auto assign = std::make_shared<AssignStmt>();
+                assign->name = name.value;
+                assign->expr = combined;
+                return assign;
+            }
+        }
+
+        // Pre-increment/decrement:  ++i.  --i.
+        if (check(TokenType::PlusPlus) || check(TokenType::MinusMinus))
+        {
+            Token op = advance(); // ++ or --
+            Token name = consume(TokenType::Identifier, "Expected identifier after " + op.value);
+            std::string arithOp = (op.type == TokenType::PlusPlus) ? "+" : "-";
+
+            auto combined = std::make_shared<Expression>();
+            combined->rpn.push_back(Token(TokenType::Identifier, name.value, name.position, name.line));
+            combined->rpn.push_back(Token(TokenType::Number, "1", -1, name.line));
+            combined->rpn.push_back(Token(TokenType::Operator, arithOp, -1, name.line));
+
+            consumeDotOrForgive();
+            auto assign = std::make_shared<AssignStmt>();
+            assign->name = name.value;
+            assign->expr = combined;
+            return assign;
+        }
+
         // Identifier = expr. (assignment)
         if (check(TokenType::Identifier) && peekNext().type == TokenType::Equals)
         {
@@ -804,6 +1148,26 @@ public:
             auto assign = std::make_shared<AssignStmt>();
             assign->name = name.value;
             assign->expr = expr;
+            return assign;
+        }
+
+        // Post-increment/decrement:  i++.  i--.  (as a statement)
+        if (check(TokenType::Identifier) &&
+            (peekNext().type == TokenType::PlusPlus || peekNext().type == TokenType::MinusMinus))
+        {
+            Token name = advance();
+            Token op = advance(); // ++ or --
+            std::string arithOp = (op.type == TokenType::PlusPlus) ? "+" : "-";
+
+            auto combined = std::make_shared<Expression>();
+            combined->rpn.push_back(Token(TokenType::Identifier, name.value, name.position, name.line));
+            combined->rpn.push_back(Token(TokenType::Number, "1", -1, name.line));
+            combined->rpn.push_back(Token(TokenType::Operator, arithOp, -1, name.line));
+
+            consumeDotOrForgive();
+            auto assign = std::make_shared<AssignStmt>();
+            assign->name = name.value;
+            assign->expr = combined;
             return assign;
         }
 
@@ -847,10 +1211,34 @@ public:
         {
             consume(TokenType::KeywordRange, "Expected range");
             consume(TokenType::LeftParen, "Expected (");
-            consume(TokenType::KeywordFrom, "Expected from");
-            auto start = parseExpression();
-            consume(TokenType::KeywordTo, "Expected to");
-            auto end = parseExpression();
+
+            // Three forms:
+            //   range(N)               → 0 to N, step 1
+            //   range(from A to B)     → A to B, auto step
+            //   range(from A to B step S) → A to B, step S
+            std::shared_ptr<Expression> start, end;
+            std::shared_ptr<Expression> stepExpr = nullptr;
+
+            if (check(TokenType::KeywordFrom))
+            {
+                consume(TokenType::KeywordFrom, "Expected from");
+                start = parseExpression();
+                consume(TokenType::KeywordTo, "Expected to");
+                end = parseExpression();
+                if (match(TokenType::KeywordStep))
+                {
+                    stepExpr = parseExpression();
+                }
+            }
+            else
+            {
+                // Simple range(N) — from 0 to N
+                end = parseExpression();
+                // Create a literal 0 for start
+                start = std::make_shared<Expression>();
+                start->rpn.push_back(Token(TokenType::Number, "0", -1, peek().line));
+            }
+
             consume(TokenType::RightParen, "Expected )");
             consume(TokenType::Colon, "Expected :");
             auto body = parseBlock({TokenType::Semicolon});
@@ -859,6 +1247,7 @@ public:
             stmt->iteratorName = iter.value;
             stmt->startExpr = start;
             stmt->endExpr = end;
+            stmt->stepExpr = stepExpr;
             stmt->body = body;
             return stmt;
         }
@@ -894,16 +1283,31 @@ public:
     {
         auto stmt = std::make_shared<FunctionDefStmt>();
         stmt->name = consume(TokenType::Identifier, "Expected function name").value;
-        consume(TokenType::At, "Expected @ after function name");
-        consume(TokenType::LeftParen, "Expected ( for params");
+        consume(TokenType::LeftParen, "Expected ( after function name");
         if (!check(TokenType::RightParen))
         {
+            std::unordered_set<std::string> seenParams;
             do
             {
-                stmt->params.push_back(consume(TokenType::Identifier, "Expected param name").value);
+                bool isRef = match(TokenType::At); // @ prefix for pass-by-reference
+                std::string pname = consume(TokenType::Identifier, "Expected param name").value;
+                if (seenParams.count(pname))
+                    throw std::runtime_error("Duplicate parameter name '" + pname + "' in function '" + stmt->name + "'");
+                seenParams.insert(pname);
+                stmt->params.push_back(pname);
+                stmt->isRefParam.push_back(isRef);
             } while (match(TokenType::Comma));
         }
         consume(TokenType::RightParen, "Expected ) after params");
+
+        // Forward declaration: fn name(params).  (no body)
+        if (check(TokenType::Dot) || check(TokenType::Newline) || isAtEnd())
+        {
+            consumeDotOrForgive();
+            stmt->body = nullptr; // marker for forward declaration
+            return stmt;
+        }
+
         consume(TokenType::Colon, "Expected : start of function body");
         stmt->body = parseBlock({TokenType::Semicolon});
         consume(TokenType::Semicolon, "Expected ; after function body");
@@ -914,12 +1318,23 @@ public:
 
     std::shared_ptr<ReturnStmt> parseReturn()
     {
-        consume(TokenType::LeftParen, "Expected ( after give");
-        auto expr = parseExpression();
-        consume(TokenType::RightParen, "Expected ) after give expr");
-        consumeDotOrForgive();
+        // give expr.       → return expr (no parens)
+        // give(expr).      → return expr (optional parens for grouping)
+        // give().           → return None
         auto stmt = std::make_shared<ReturnStmt>();
-        stmt->expr = expr;
+        auto expr = parseExpression();
+        // If the expression is empty (nothing parsed), return None
+        if (expr->rpn.empty() && expr->logicalOp.empty())
+        {
+            auto noneExpr = std::make_shared<Expression>();
+            noneExpr->rpn.push_back(Token(TokenType::Identifier, "None", -1, -1));
+            stmt->expr = noneExpr;
+        }
+        else
+        {
+            stmt->expr = expr;
+        }
+        consumeDotOrForgive();
         return stmt;
     }
 
@@ -1071,10 +1486,54 @@ public:
             }
             if (t.type == TokenType::Colon || t.type == TokenType::Semicolon ||
                 t.type == TokenType::KeywordIn || t.type == TokenType::KeywordTo ||
+                t.type == TokenType::KeywordStep ||
                 t.type == TokenType::KeywordElif || t.type == TokenType::KeywordElse ||
                 t.type == TokenType::KeywordBe || t.type == TokenType::Equals ||
-                t.type == TokenType::Newline || t.type == TokenType::KeywordOf)
+                t.type == TokenType::Newline || t.type == TokenType::KeywordOf ||
+                t.type == TokenType::PlusEquals || t.type == TokenType::MinusEquals ||
+                t.type == TokenType::StarEquals || t.type == TokenType::SlashEquals ||
+                t.type == TokenType::PercentEquals || t.type == TokenType::PlusPlus ||
+                t.type == TokenType::MinusMinus)
                 break;
+
+            // Handle 'is', 'is not', 'points', 'not points' as binary operators
+            if (t.type == TokenType::KeywordIs)
+            {
+                advance(); // consume 'is'
+                std::string opStr = "is";
+                // Check for compound 'is not'
+                if (!isAtEnd() && peek().type == TokenType::Operator && peek().value == "!")
+                {
+                    advance(); // consume 'not'
+                    opStr = "is not";
+                }
+                Token opToken(TokenType::Operator, opStr, t.position, t.line);
+                int currPrec = get_operator_precedence(opStr);
+                while (!opStack.empty() && opStack.top().type == TokenType::Operator &&
+                       get_operator_precedence(opStack.top().value) >= currPrec)
+                {
+                    out.push(opStack.top());
+                    opStack.pop();
+                }
+                opStack.push(opToken);
+                lastTokenType = TokenType::Operator;
+                continue;
+            }
+            if (t.type == TokenType::KeywordPoints)
+            {
+                advance(); // consume 'points'
+                Token opToken(TokenType::Operator, "points", t.position, t.line);
+                int currPrec = get_operator_precedence("points");
+                while (!opStack.empty() && opStack.top().type == TokenType::Operator &&
+                       get_operator_precedence(opStack.top().value) >= currPrec)
+                {
+                    out.push(opStack.top());
+                    opStack.pop();
+                }
+                opStack.push(opToken);
+                lastTokenType = TokenType::Operator;
+                continue;
+            }
 
             if (t.type == TokenType::Operator && (t.value == "&&" || t.value == "||"))
             {
@@ -1225,6 +1684,23 @@ public:
             }
             else if (token.type == TokenType::Operator)
             {
+                // Check for 'not points' compound operator (tokenized as ! followed by KeywordPoints)
+                if (token.value == "!" && !isAtEnd() && peek().type == TokenType::KeywordPoints)
+                {
+                    advance(); // consume 'points'
+                    Token opToken(TokenType::Operator, "not points", token.position, token.line);
+                    int currPrec = get_operator_precedence("not points");
+                    while (!opStack.empty() && opStack.top().type == TokenType::Operator &&
+                           get_operator_precedence(opStack.top().value) >= currPrec)
+                    {
+                        out.push(opStack.top());
+                        opStack.pop();
+                    }
+                    opStack.push(opToken);
+                    lastTokenType = TokenType::Operator;
+                    continue;
+                }
+
                 bool isUnary = false;
                 if (token.value == "-" || token.value == "!")
                 {

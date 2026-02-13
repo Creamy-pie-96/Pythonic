@@ -26,7 +26,7 @@ This page documents all user-facing string methods available on `var` objects ho
 | `isalnum()`                     | Is alphanumeric                     | `var("a1b2").isalnum() // true`           |
 | `isspace()`                     | Is all whitespace                   | `var("   ").isspace() // true`            |
 | `capitalize()`                  | Capitalize first letter             | `var("abc").capitalize() // "Abc"`        |
-| `sentence_case()`               | Capitalize first letter, rest lower | `var("hELLO").sentence_case() // "Hello"` |
+| `sentence_case()`               | Capitalize first letter, rest lower | `var("hELLO.worLd").sentence_case() // "Hello.World"` |
 | `title()`                       | Title case                          | `var("hi there").title() // "Hi There"`   |
 | `count(substr)`                 | Count substring occurrences         | `var("aaba").count("a") // 3`             |
 | `reverse()`                     | Reverse string                      | `var("abc").reverse() // "cba"`           |

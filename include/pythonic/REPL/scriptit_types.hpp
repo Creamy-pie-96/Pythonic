@@ -62,7 +62,17 @@ enum class TokenType
     KeywordLet,
     KeywordBe,
     KeywordOf,
+    KeywordStep,
+    KeywordIs,
+    KeywordPoints,
     Equals,
+    PlusEquals,    // +=
+    MinusEquals,   // -=
+    StarEquals,    // *=
+    SlashEquals,   // /=
+    PercentEquals, // %=
+    PlusPlus,      // ++
+    MinusMinus,    // --
     Comma,
     Dot,
     Colon,
@@ -102,7 +112,8 @@ inline bool is_builtin_function(const std::string &str)
         // I/O
         "print", "pprint", "read", "write", "readLine", "input",
         // type / conversion
-        "len", "type", "str", "int", "float", "bool", "repr", "isinstance",
+        "len", "type", "str", "int", "float", "double", "bool", "repr", "isinstance",
+        "long", "long_long", "long_double", "uint", "ulong", "ulong_long", "auto_numeric",
         // containers
         "append", "pop", "list", "set", "dict", "range_list",
         // functional / iteration
@@ -118,7 +129,7 @@ inline bool is_builtin_function(const std::string &str)
 inline int get_operator_precedence(const std::string &op)
 {
     static const std::unordered_map<std::string, int> precedence = {
-        {"||", 1}, {"&&", 2}, {"==", 3}, {"!=", 3}, {"<", 4}, {"<=", 4}, {">", 4}, {">=", 4}, {"+", 5}, {"-", 5}, {"*", 6}, {"/", 6}, {"%", 6}, {"^", 7}, {"~", 8}, {"!", 8}};
+        {"||", 1}, {"&&", 2}, {"is", 3}, {"is not", 3}, {"points", 3}, {"not points", 3}, {"==", 3}, {"!=", 3}, {"<", 4}, {"<=", 4}, {">", 4}, {">=", 4}, {"+", 5}, {"-", 5}, {"*", 6}, {"/", 6}, {"%", 6}, {"^", 7}, {"~", 8}, {"!", 8}};
     auto it = precedence.find(op);
     return it != precedence.end() ? it->second : 0;
 }
@@ -213,6 +224,7 @@ struct ForStmt : Statement
     std::string iteratorName;
     std::shared_ptr<Expression> startExpr;
     std::shared_ptr<Expression> endExpr;
+    std::shared_ptr<Expression> stepExpr; // optional step
     std::shared_ptr<BlockStmt> body;
     void execute(Scope &scope) override;
 };
@@ -229,6 +241,7 @@ struct FunctionDefStmt : Statement
 {
     std::string name;
     std::vector<std::string> params;
+    std::vector<bool> isRefParam; // true if param is pass-by-reference (@param)
     std::shared_ptr<BlockStmt> body;
     void execute(Scope &scope) override;
 };
@@ -295,20 +308,54 @@ struct FunctionDef
 {
     std::string name;
     std::vector<std::string> params;
+    std::vector<bool> isRefParam; // true if param is pass-by-reference (@param)
     std::shared_ptr<BlockStmt> body;
 };
 
 struct Scope
 {
     std::map<std::string, var> values;
-    std::map<std::string, FunctionDef> functions;
+    std::map<std::string, FunctionDef> functions;      // key = "name/arity"
+    std::unordered_set<std::string> declaredFunctions; // forward-declared keys ("name/arity")
     Scope *parent;
     bool barrier;
 
     Scope(Scope *p = nullptr, bool b = false) : parent(p), barrier(b) {}
 
+    static std::string funcKey(const std::string &name, int arity) { return name + "/" + std::to_string(arity); }
+
     void define(const std::string &name, const var &val) { values[name] = val; }
-    void defineFunction(const std::string &name, const FunctionDef &def) { functions[name] = def; }
+
+    void defineFunction(const std::string &name, const FunctionDef &def)
+    {
+        std::string key = funcKey(name, (int)def.params.size());
+        functions[key] = def;
+        declaredFunctions.erase(key);
+    }
+
+    void declareFunction(const std::string &name, const std::vector<std::string> &params)
+    {
+        std::string key = funcKey(name, (int)params.size());
+        if (functions.count(key) && !declaredFunctions.count(key))
+            throw std::runtime_error("Function '" + name + "' with " + std::to_string(params.size()) + " params is already defined (cannot re-declare)");
+        declaredFunctions.insert(key);
+        // Store a stub so getFunction doesn't crash
+        FunctionDef stub;
+        stub.name = name;
+        stub.params = params;
+        stub.body = nullptr; // no body yet
+        functions[key] = stub;
+    }
+
+    bool isFunctionDeclaredOnly(const std::string &name, int arity)
+    {
+        std::string key = funcKey(name, arity);
+        if (declaredFunctions.count(key))
+            return true;
+        if (parent)
+            return parent->isFunctionDeclaredOnly(name, arity);
+        return false;
+    }
 
     void set(const std::string &name, const var &val)
     {
@@ -341,19 +388,31 @@ struct Scope
         return var(NoneType{});
     }
 
-    FunctionDef getFunction(const std::string &name)
+    FunctionDef getFunction(const std::string &name, int arity)
     {
-        if (functions.count(name))
-            return functions[name];
+        std::string key = funcKey(name, arity);
+        if (functions.count(key))
+            return functions[key];
         if (parent)
-            return parent->getFunction(name);
-        throw std::runtime_error("Unknown function: " + name);
+            return parent->getFunction(name, arity);
+        throw std::runtime_error("Unknown function: " + name + " with " + std::to_string(arity) + " arg(s)");
+    }
+
+    bool hasFunction(const std::string &name, int arity)
+    {
+        std::string key = funcKey(name, arity);
+        if (functions.count(key))
+            return true;
+        if (parent)
+            return parent->hasFunction(name, arity);
+        return false;
     }
 
     void clear()
     {
         values.clear();
         functions.clear();
+        declaredFunctions.clear();
     }
 
     const std::map<std::string, var> &getAll() const

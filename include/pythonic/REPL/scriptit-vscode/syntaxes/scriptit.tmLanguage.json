@@ -1,0 +1,374 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ScriptIt",
+  "scopeName": "source.scriptit",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#function-definition" },
+    { "include": "#forward-declaration" },
+    { "include": "#var-declaration" },
+    { "include": "#let-declaration" },
+    { "include": "#new-declaration" },
+    { "include": "#for-loop" },
+    { "include": "#for-in-loop" },
+    { "include": "#with-as" },
+    { "include": "#keywords-control" },
+    { "include": "#keywords-declaration" },
+    { "include": "#constants" },
+    { "include": "#builtin-functions" },
+    { "include": "#math-functions" },
+    { "include": "#type-conversion-functions" },
+    { "include": "#operators" },
+    { "include": "#numbers" },
+    { "include": "#method-call" },
+    { "include": "#function-call" },
+    { "include": "#ref-parameter" },
+    { "include": "#semicolon-terminator" },
+    { "include": "#dot-terminator" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.number-sign.scriptit",
+          "match": "#.*$"
+        }
+      ]
+    },
+
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.scriptit",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            { "name": "constant.character.escape.scriptit", "match": "\\\\." }
+          ]
+        },
+        {
+          "name": "string.quoted.single.scriptit",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            { "name": "constant.character.escape.scriptit", "match": "\\\\." }
+          ]
+        }
+      ]
+    },
+
+    "function-definition": {
+      "comment": "fn name(param1, @param2, param3):  — captures fn, name, and each parameter",
+      "patterns": [
+        {
+          "name": "meta.function.definition.scriptit",
+          "begin": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
+          "beginCaptures": {
+            "1": { "name": "keyword.declaration.function.scriptit" },
+            "2": { "name": "entity.name.function.definition.scriptit" }
+          },
+          "end": "\\)\\s*(:|\\.)",
+          "endCaptures": {
+            "1": { "name": "punctuation.definition.function.scriptit" }
+          },
+          "patterns": [
+            {
+              "comment": "Reference parameter with @",
+              "match": "(@)([a-zA-Z_][a-zA-Z0-9_]*)",
+              "captures": {
+                "1": { "name": "storage.modifier.reference.scriptit" },
+                "2": { "name": "variable.parameter.reference.scriptit" }
+              }
+            },
+            {
+              "comment": "Regular parameter",
+              "name": "variable.parameter.scriptit",
+              "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b"
+            },
+            {
+              "name": "punctuation.separator.parameter.scriptit",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+
+    "forward-declaration": {
+      "comment": "fn name(params). — forward declaration ending with dot",
+      "patterns": [
+        {
+          "name": "meta.forward-declaration.scriptit",
+          "match": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\([^)]*\\)\\s*\\.",
+          "captures": {
+            "1": { "name": "keyword.declaration.function.scriptit" },
+            "2": { "name": "entity.name.function.forward.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "var-declaration": {
+      "comment": "var x = ... OR var x, y, z = ... — highlights var keyword and each variable name",
+      "patterns": [
+        {
+          "comment": "var followed by comma-separated identifiers up to = or end-of-statement",
+          "name": "meta.var.declaration.scriptit",
+          "begin": "\\b(var)\\s+",
+          "beginCaptures": {
+            "1": { "name": "keyword.declaration.variable.scriptit" }
+          },
+          "end": "(?==)|(?=\\.\\s*$)|(?=\\.\\s*#)|$",
+          "patterns": [
+            {
+              "name": "variable.other.declaration.scriptit",
+              "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\b"
+            },
+            {
+              "name": "punctuation.separator.comma.scriptit",
+              "match": ","
+            }
+          ]
+        }
+      ]
+    },
+
+    "let-declaration": {
+      "comment": "let x be ... — English-style variable assignment",
+      "patterns": [
+        {
+          "match": "\\b(let)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s+(be)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.let.scriptit" },
+            "2": { "name": "variable.other.declaration.scriptit" },
+            "3": { "name": "keyword.other.be.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "new-declaration": {
+      "comment": "new x are [...] — English-style list creation",
+      "patterns": [
+        {
+          "match": "\\b(new)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s+(are)\\b",
+          "captures": {
+            "1": { "name": "keyword.other.new.scriptit" },
+            "2": { "name": "variable.other.declaration.scriptit" },
+            "3": { "name": "keyword.other.are.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "for-loop": {
+      "comment": "for i in range(...) — captures the loop variable i",
+      "patterns": [
+        {
+          "match": "\\b(for)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s+(in)\\s+(range)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.flow.scriptit" },
+            "2": { "name": "variable.other.loop.scriptit" },
+            "3": { "name": "keyword.control.loop.scriptit" },
+            "4": { "name": "keyword.control.loop.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "for-in-loop": {
+      "comment": "for item in collection — captures the loop variable",
+      "patterns": [
+        {
+          "match": "\\b(for)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s+(in)\\b",
+          "captures": {
+            "1": { "name": "keyword.control.flow.scriptit" },
+            "2": { "name": "variable.other.loop.scriptit" },
+            "3": { "name": "keyword.control.loop.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "with-as": {
+      "comment": "with open(...) as handle: — context manager with variable capture",
+      "patterns": [
+        {
+          "match": "\\b(with)\\b(.+?)\\b(as)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*:",
+          "captures": {
+            "1": { "name": "keyword.control.context.scriptit" },
+            "3": { "name": "keyword.control.context.scriptit" },
+            "4": { "name": "variable.other.declaration.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "keywords-control": {
+      "patterns": [
+        {
+          "name": "keyword.control.flow.scriptit",
+          "match": "\\b(if|elif|else|for|while|give|pass)\\b"
+        },
+        {
+          "name": "keyword.control.loop.scriptit",
+          "match": "\\b(in|range|from|to|step)\\b"
+        },
+        {
+          "name": "keyword.operator.logical.scriptit",
+          "match": "\\b(and|or|not|is|points)\\b"
+        },
+        {
+          "name": "keyword.control.context.scriptit",
+          "match": "\\b(with|as)\\b"
+        },
+        {
+          "name": "keyword.other.scriptit",
+          "match": "\\b(of|new|let|be|are)\\b"
+        }
+      ]
+    },
+
+    "keywords-declaration": {
+      "patterns": [
+        {
+          "name": "keyword.declaration.variable.scriptit",
+          "match": "\\b(var)\\b"
+        },
+        {
+          "name": "keyword.declaration.function.scriptit",
+          "match": "\\b(fn)\\b"
+        }
+      ]
+    },
+
+    "constants": {
+      "patterns": [
+        { "name": "constant.language.boolean.true.scriptit", "match": "\\bTrue\\b" },
+        { "name": "constant.language.boolean.false.scriptit", "match": "\\bFalse\\b" },
+        { "name": "constant.language.none.scriptit", "match": "\\bNone\\b" }
+      ]
+    },
+
+    "builtin-functions": {
+      "patterns": [
+        {
+          "name": "support.function.builtin.scriptit",
+          "match": "\\b(print|pprint|input|len|type|isinstance|repr|read|readLine|write)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.container.scriptit",
+          "match": "\\b(list|set|dict|range_list|append|pop|sum|sorted|reversed|all|any|enumerate|zip|map)\\b(?=\\s*\\()"
+        },
+        {
+          "name": "support.function.io.scriptit",
+          "match": "\\b(open|close)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+
+    "math-functions": {
+      "patterns": [
+        {
+          "name": "support.function.math.scriptit",
+          "match": "\\b(sin|cos|tan|asin|acos|atan|log|log2|log10|sqrt|abs|ceil|floor|round|cot|sec|csc|min|max|pow)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+
+    "type-conversion-functions": {
+      "patterns": [
+        {
+          "name": "support.function.type.scriptit",
+          "match": "\\b(str|int|float|double|long|long_long|long_double|uint|ulong|ulong_long|auto_numeric|bool)\\b(?=\\s*\\()"
+        }
+      ]
+    },
+
+    "operators": {
+      "patterns": [
+        { "name": "keyword.operator.comparison.scriptit", "match": "==|!=|<=|>=|<|>" },
+        { "name": "keyword.operator.assignment.compound.scriptit", "match": "\\+=|-=|\\*=|/=|%=" },
+        { "name": "keyword.operator.increment.scriptit", "match": "\\+\\+|--" },
+        { "name": "keyword.operator.assignment.scriptit", "match": "=" },
+        { "name": "keyword.operator.arithmetic.scriptit", "match": "\\+|-|\\*|/|%|\\^" },
+        { "name": "keyword.operator.logical.symbol.scriptit", "match": "&&|\\|\\|" }
+      ]
+    },
+
+    "numbers": {
+      "patterns": [
+        { "name": "constant.numeric.float.scriptit", "match": "\\b\\d+\\.\\d+\\b" },
+        { "name": "constant.numeric.integer.scriptit", "match": "\\b\\d+\\b" }
+      ]
+    },
+
+    "method-call": {
+      "comment": ".name( — method call on an object (must be before function-call)",
+      "patterns": [
+        {
+          "match": "\\.([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": { "name": "entity.name.function.method.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "function-call": {
+      "comment": "name( — any user or builtin function call",
+      "patterns": [
+        {
+          "match": "\\b([a-zA-Z_][a-zA-Z0-9_]*)\\s*(?=\\()",
+          "captures": {
+            "1": { "name": "entity.name.function.call.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "ref-parameter": {
+      "comment": "@variable — pass-by-reference marker in function calls",
+      "patterns": [
+        {
+          "match": "(@)([a-zA-Z_][a-zA-Z0-9_]*)",
+          "captures": {
+            "1": { "name": "storage.modifier.reference.scriptit" },
+            "2": { "name": "variable.other.reference.scriptit" }
+          }
+        }
+      ]
+    },
+
+    "semicolon-terminator": {
+      "patterns": [
+        {
+          "name": "punctuation.terminator.block.scriptit",
+          "match": "^\\s*;\\s*$"
+        }
+      ]
+    },
+
+    "dot-terminator": {
+      "patterns": [
+        {
+          "name": "punctuation.terminator.statement.scriptit",
+          "match": "\\.(?=\\s*$|\\s*#)"
+        }
+      ]
+    },
+
+    "identifiers": {
+      "comment": "Catch-all: any remaining identifier gets generic variable color",
+      "patterns": [
+        {
+          "name": "variable.other.scriptit",
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b"
+        }
+      ]
+    }
+  }
+}

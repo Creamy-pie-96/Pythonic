@@ -217,6 +217,39 @@ body {
 .cell-run-btn:hover { background: var(--accent); color: white; }
 .cell-run-btn svg { width: 14px; height: 14px; fill: currentColor; }
 
+/* Spinning animation for run button while cell is running */
+.cell.running .cell-run-btn { opacity: 1; color: var(--warning); pointer-events: none; }
+.cell.running .cell-run-btn svg {
+    animation: spinRun 0.8s linear infinite;
+    transform-origin: center;
+}
+@keyframes spinRun {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Markdown edit button */
+.markdown-edit-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 28px; height: 28px;
+    border: none;
+    border-radius: 6px;
+    background: var(--bg-secondary);
+    color: var(--text-dim);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+    font-size: 14px;
+    opacity: 0;
+    z-index: 2;
+}
+.cell:hover .markdown-edit-btn { opacity: 1; }
+.markdown-edit-btn:hover { background: var(--accent); color: white; }
+
 /* Cell body */
 .cell-body { margin-left: 52px; }
 
@@ -511,6 +544,20 @@ body {
 ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--text-dim); }
 
+/* ─── Execution Time ───────────────────────────────────── */
+.exec-time {
+    display: inline-block;
+    font-size: 11px;
+    color: var(--text-dim);
+    padding: 2px 8px;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    opacity: 0.7;
+}
+.exec-time::before {
+    content: '⏱ ';
+}
+
 /* ─── Empty state ──────────────────────────────────────── */
 .empty-state {
     text-align: center;
@@ -585,15 +632,19 @@ body {
 <!-- ─── Notebook Cells ───────────────────────────────── -->
 <div class="content" id="cellsContainer"></div>
 
+<!-- Hidden file input for native file browser -->
+<input type="file" id="nativeFileInput" accept=".nsit,.json" style="display:none;" />
+<input type="file" id="nativeFileInputAny" style="display:none;" />
+
 <!-- ─── Load Modal ───────────────────────────────────── -->
 <div class="modal-overlay" id="loadModal">
     <div class="modal" style="max-width:540px;">
         <h2>📂 Open Notebook</h2>
-        <p class="modal-info">Enter a path or choose from recent <code>.nsit</code> files.</p>
+        <p class="modal-info">Browse directories, enter a path, or upload a <code>.nsit</code> file.</p>
         <label for="loadFilePath">File Path</label>
         <input class="modal-input" id="loadFilePath" placeholder="/path/to/notebook.nsit"
                onkeydown="if(event.key==='Enter'){loadNotebook();}" />
-        <div id="loadFileList" style="max-height:200px;overflow-y:auto;margin:10px 0 0;"></div>
+        <div id="loadFileList" style="max-height:260px;overflow-y:auto;margin:10px 0 0;"></div>
         <div class="modal-actions">
             <button class="modal-btn" onclick="hideModal('loadModal')">Cancel</button>
             <button class="modal-btn primary" onclick="loadNotebook()">Open</button>
@@ -603,15 +654,21 @@ body {
 
 <!-- ─── Save-As Modal ────────────────────────────────── -->
 <div class="modal-overlay" id="saveAsModal">
-    <div class="modal">
+    <div class="modal" style="max-width:540px;">
         <h2>💾 Save Notebook As</h2>
-        <p class="modal-info">Choose a file path to save the notebook.</p>
-        <label for="saveAsPath">File Path</label>
+        <p class="modal-info">Save to server path, browse your device, or download.</p>
+        <div style="display:flex;gap:8px;margin-bottom:12px;">
+            <button type="button" class="modal-btn primary" onclick="browseForSaveLocation()" style="flex:none;white-space:nowrap;">📁 Browse…</button>
+            <button type="button" class="modal-btn" onclick="downloadNotebook()" title="Download .nsit file to your device" style="flex:none;white-space:nowrap;">⬇ Download</button>
+            <span style="color:var(--text-dim);align-self:center;font-size:12px;">or enter path below</span>
+        </div>
+        <label for="saveAsPath">Server File Path</label>
         <input class="modal-input" id="saveAsPath" placeholder="/path/to/notebook.nsit"
                onkeydown="if(event.key==='Enter'){doSaveAs();}" />
+        <div id="saveDirList" style="max-height:200px;overflow-y:auto;margin:10px 0 0;"></div>
         <div class="modal-actions">
-            <button class="modal-btn" onclick="hideModal('saveAsModal')">Cancel</button>
-            <button class="modal-btn primary" onclick="doSaveAs()">Save</button>
+            <button type="button" class="modal-btn" onclick="hideModal('saveAsModal')">Cancel</button>
+            <button type="button" class="modal-btn primary" onclick="doSaveAs()">Save to Server</button>
         </div>
     </div>
 </div>
@@ -783,6 +840,9 @@ function buildCellDOM(cell, idx) {
         if (editingMarkdownId === cell.id || !cell.source.trim()) {
             body.appendChild(buildEditor(cell));
         } else {
+            var mdWrap = document.createElement("div");
+            mdWrap.style.position = "relative";
+
             var rendered = document.createElement("div");
             rendered.className = "markdown-rendered";
             rendered.innerHTML = renderMarkdown(cell.source);
@@ -793,7 +853,23 @@ function buildCellDOM(cell, idx) {
                     focusEditor(cid);
                 });
             })(cell.id);
-            body.appendChild(rendered);
+
+            // Edit button for markdown cells
+            var editBtn = document.createElement("button");
+            editBtn.className = "markdown-edit-btn";
+            editBtn.title = "Edit markdown (or double-click)";
+            editBtn.textContent = "✏️";
+            (function(cid) {
+                editBtn.addEventListener("click", function() {
+                    editingMarkdownId = cid;
+                    render();
+                    focusEditor(cid);
+                });
+            })(cell.id);
+
+            mdWrap.appendChild(editBtn);
+            mdWrap.appendChild(rendered);
+            body.appendChild(mdWrap);
         }
     }
 
@@ -879,8 +955,8 @@ function buildEditor(cell) {
 function buildOutput(cell) {
     var div = document.createElement("div");
     div.className = "cell-output";
-    if (!cell.outputs || cell.outputs.length === 0) return div;
-    for (var i = 0; i < cell.outputs.length; i++) {
+    if ((!cell.outputs || cell.outputs.length === 0) && !cell._execTime) return div;
+    for (var i = 0; i < (cell.outputs || []).length; i++) {
         var out = cell.outputs[i];
         var pre = document.createElement("pre");
         pre.className = out.type === "stderr" ? "output-stderr"
@@ -888,6 +964,13 @@ function buildOutput(cell) {
                       : "output-stdout";
         pre.textContent = out.text;
         div.appendChild(pre);
+    }
+    // Show execution time
+    if (cell._execTime) {
+        var timeSpan = document.createElement("span");
+        timeSpan.className = "exec-time";
+        timeSpan.textContent = cell._execTime + "s";
+        div.appendChild(timeSpan);
     }
     return div;
 }
@@ -922,9 +1005,14 @@ async function runCell(cellId) {
     if (!cell.source.trim()) return;
 
     cell._running = true;
+    // Clear old outputs immediately when re-running the same cell
+    cell.outputs = [];
+    cell.execution_count = null;
+    delete cell._execTime;
     setKernelStatus("busy");
     render();
 
+    var startTime = performance.now();
     try {
         var result = await api("/execute", { cell_id: cellId, code: cell.source });
         cell.execution_count = result.execution_count;
@@ -936,6 +1024,7 @@ async function runCell(cellId) {
         cell.outputs = [{ type: "stderr", text: "Connection error: " + e.message }];
     }
 
+    cell._execTime = ((performance.now() - startTime) / 1000).toFixed(3);
     cell._running = false;
     setKernelStatus("idle");
 
@@ -965,6 +1054,7 @@ async function runAllCells() {
         activeCellId = cell.id;
         render();
 
+        var cellStart = performance.now();
         try {
             var result = await api("/execute", { cell_id: cell.id, code: cell.source });
             cell.execution_count = result.execution_count;
@@ -978,6 +1068,7 @@ async function runAllCells() {
             hasError = true;
         }
 
+        cell._execTime = ((performance.now() - cellStart) / 1000).toFixed(3);
         cell._running = false;
         render();
     }
@@ -1102,7 +1193,12 @@ function showSaveAsModal() {
     var input = document.getElementById("saveAsPath");
     var title = (notebook && notebook.metadata && notebook.metadata.title) || "Untitled";
     input.value = savedFilePath || (title + ".nsit");
+    // Clear any previous browse results
+    var listDiv = document.getElementById("saveDirList");
+    if (listDiv) listDiv.innerHTML = "";
     setTimeout(function() { input.focus(); input.select(); }, 100);
+    // Auto-load directory browser (like load modal does)
+    showServerBrowser("save");
 }
 
 async function doSaveAs() {
@@ -1134,43 +1230,163 @@ async function doSaveAs() {
     }
 }
 
+function browseForFile() {
+    // Use server-side directory browser for loading
+    showServerBrowser("load");
+}
+
+async function showServerBrowser(mode) {
+    // mode: "load" or "save"
+    var targetModal = mode === "load" ? "loadModal" : "saveAsModal";
+    var targetInput = mode === "load" ? "loadFilePath" : "saveAsPath";
+    var listDiv = mode === "load" ? document.getElementById("loadFileList") : document.getElementById("saveDirList");
+
+    async function browseTo(dirPath) {
+        // Only show "Loading…" if div is empty (don't flash away existing results)
+        if (!listDiv.hasChildNodes() || listDiv.children.length === 0) {
+            listDiv.innerHTML = '<span style="color:#888;font-size:12px;">Loading…</span>';
+        }
+        try {
+            var result = await api("/browse?path=" + encodeURIComponent(dirPath));
+            listDiv.innerHTML = "";
+
+            // Show current path
+            var pathLabel = document.createElement("div");
+            pathLabel.style.cssText = "color:#58a6ff;font-size:12px;margin-bottom:8px;padding:4px 8px;background:rgba(88,166,255,0.08);border-radius:4px;font-family:var(--font-mono);word-break:break-all;";
+            pathLabel.textContent = "📁 " + result.current;
+            listDiv.appendChild(pathLabel);
+
+            if (result.error) {
+                var errDiv = document.createElement("div");
+                errDiv.style.cssText = "color:#f85149;font-size:12px;padding:4px 8px;";
+                errDiv.textContent = result.error;
+                listDiv.appendChild(errDiv);
+            }
+
+            // If in save mode, show "Save Here" button
+            if (mode === "save") {
+                var saveHereBtn = document.createElement("button");
+                saveHereBtn.className = "add-btn";
+                saveHereBtn.style.cssText = "margin:4px 0 8px;padding:4px 16px;font-size:12px;";
+                saveHereBtn.textContent = "💾 Save in this folder";
+                saveHereBtn.addEventListener("click", function() {
+                    var title = (notebook && notebook.metadata && notebook.metadata.title) || "Untitled";
+                    document.getElementById(targetInput).value = result.current + "/" + title + ".nsit";
+                });
+                listDiv.appendChild(saveHereBtn);
+            }
+
+            // Also add upload from device option for load mode
+            if (mode === "load") {
+                var uploadBtn = document.createElement("button");
+                uploadBtn.className = "add-btn";
+                uploadBtn.style.cssText = "margin:0 0 8px;padding:4px 16px;font-size:12px;";
+                uploadBtn.textContent = "💻 Upload from this device instead…";
+                uploadBtn.addEventListener("click", function() {
+                    var fileInput = document.getElementById("nativeFileInput");
+                    fileInput.value = "";
+                    fileInput.onchange = function(e) {
+                        var file = e.target.files[0];
+                        if (!file) return;
+                        var reader = new FileReader();
+                        reader.onload = function(ev) {
+                            try {
+                                var data = JSON.parse(ev.target.result);
+                                if (!data.cells || !data.metadata) {
+                                    toast("Invalid notebook file — missing cells or metadata", "error");
+                                    return;
+                                }
+                                notebook = data;
+                                savedFilePath = null;
+                                activeCellId = (notebook.cells && notebook.cells[0]) ? notebook.cells[0].id : null;
+                                editingMarkdownId = null;
+                                if (notebook.metadata && notebook.metadata.title) {
+                                    document.getElementById("notebookTitle").value = notebook.metadata.title;
+                                    document.title = notebook.metadata.title + " — ScriptIt Notebook";
+                                }
+                                hideModal("loadModal");
+                                render();
+                                toast("Loaded from device: " + file.name, "success");
+                            } catch (err) {
+                                toast("Failed to parse file: " + err.message, "error");
+                            }
+                        };
+                        reader.readAsText(file);
+                    };
+                    fileInput.click();
+                });
+                listDiv.appendChild(uploadBtn);
+            }
+
+            for (var i = 0; i < (result.entries || []).length; i++) {
+                (function(entry) {
+                    var item = document.createElement("div");
+                    item.style.cssText = "padding:5px 10px;cursor:pointer;border-radius:4px;font-size:13px;color:#ccc;display:flex;align-items:center;gap:6px;";
+                    var icon = entry.type === "dir" ? "📁" : "📄";
+                    item.innerHTML = '<span style="opacity:0.7;">' + icon + '</span><span>' + escapeHtml(entry.name) + '</span>';
+                    item.addEventListener("mouseenter", function() { item.style.background = "rgba(255,255,255,0.06)"; });
+                    item.addEventListener("mouseleave", function() { item.style.background = "none"; });
+                    item.addEventListener("click", function() {
+                        if (entry.type === "dir") {
+                            browseTo(entry.path);
+                        } else {
+                            document.getElementById(targetInput).value = entry.path;
+                            if (mode === "load") {
+                                loadNotebook();
+                            }
+                        }
+                    });
+                    listDiv.appendChild(item);
+                })(result.entries[i]);
+            }
+        } catch (e) {
+            listDiv.innerHTML = '<span style="color:#666;font-size:12px;">Could not browse: ' + escapeHtml(e.message) + '</span>';
+        }
+    }
+
+    // Start browsing from NOTEBOOK_DIR
+    browseTo("");
+}
+
+function browseForSaveLocation() {
+    // Only reload browse results if the list is empty or shows an error
+    var listDiv = document.getElementById("saveDirList");
+    if (listDiv && listDiv.children.length > 1) {
+        // Results already loaded — scroll into view
+        listDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        return;
+    }
+    showServerBrowser("save");
+}
+
+function downloadNotebook() {
+    if (!notebook) { toast("No notebook to download", "error"); return; }
+    syncAllSources();
+    notebook.metadata.title = document.getElementById("notebookTitle").value.trim() || "Untitled";
+    notebook.metadata.modified = new Date().toISOString();
+
+    var json = JSON.stringify(notebook, null, 2);
+    var blob = new Blob([json], { type: "application/json" });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement("a");
+    a.href = url;
+    a.download = (notebook.metadata.title || "Untitled") + ".nsit";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    hideModal("saveAsModal");
+    toast("Downloaded: " + a.download, "success");
+}
+
 async function showLoadModal() {
     document.getElementById("loadModal").classList.add("visible");
     var input = document.getElementById("loadFilePath");
     input.value = "";
     setTimeout(function() { input.focus(); }, 100);
 
-    // Fetch .nsit file listing from server
-    var listDiv = document.getElementById("loadFileList");
-    listDiv.innerHTML = '<span style="color:#888;font-size:12px;">Scanning for notebooks…</span>';
-    try {
-        var result = await api("/notebook/list");
-        listDiv.innerHTML = "";
-        if (result.files && result.files.length > 0) {
-            var label = document.createElement("div");
-            label.style.cssText = "color:#888;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;";
-            label.textContent = "Available notebooks in " + result.cwd;
-            listDiv.appendChild(label);
-            for (var i = 0; i < result.files.length; i++) {
-                (function(filepath) {
-                    var item = document.createElement("div");
-                    item.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;color:#ccc;display:flex;align-items:center;gap:6px;";
-                    item.innerHTML = '<span style="opacity:0.6;">📄</span>' + escapeHtml(filepath);
-                    item.addEventListener("mouseenter", function() { item.style.background = "rgba(255,255,255,0.06)"; });
-                    item.addEventListener("mouseleave", function() { item.style.background = "none"; });
-                    item.addEventListener("click", function() {
-                        input.value = filepath;
-                        loadNotebook();
-                    });
-                    listDiv.appendChild(item);
-                })(result.files[i]);
-            }
-        } else {
-            listDiv.innerHTML = '<span style="color:#666;font-size:12px;">No .nsit files found in ' + escapeHtml(result.cwd || "") + '</span>';
-        }
-    } catch (e) {
-        listDiv.innerHTML = '<span style="color:#666;font-size:12px;">Could not list files</span>';
-    }
+    // Use server-side browser to show directory listing
+    showServerBrowser("load");
 }
 
 function showNewModal() {
@@ -1239,20 +1455,34 @@ function onTitleChange() {
 async function restartKernel() {
     setKernelStatus("busy");
     try {
-        await api("/kernel/restart");
+        var result = await api("/kernel/restart", {});
         // Clear all cell outputs on restart
         if (notebook && notebook.cells) {
             for (var i = 0; i < notebook.cells.length; i++) {
                 notebook.cells[i].outputs = [];
                 notebook.cells[i].execution_count = null;
+                delete notebook.cells[i]._execTime;
             }
         }
         setKernelStatus("idle");
         render();
         toast("Kernel restarted — all state and outputs cleared", "success");
     } catch (e) {
-        setKernelStatus("dead");
-        toast("Restart failed: " + e.message, "error");
+        // If restart failed, try to recover by checking status
+        try {
+            var s = await api("/kernel/status");
+            if (s.alive) {
+                setKernelStatus("idle");
+                toast("Restart had issues but kernel is alive", "info");
+            } else {
+                setKernelStatus("dead");
+                toast("Restart failed — kernel is dead. Try restarting the server.", "error");
+            }
+        } catch (e2) {
+            setKernelStatus("dead");
+            toast("Restart failed: " + e.message, "error");
+        }
+        render();
     }
 }
 
@@ -1263,17 +1493,50 @@ function clearAllOutputs() {
         if (notebook.cells[i].outputs && notebook.cells[i].outputs.length > 0) cleared++;
         notebook.cells[i].outputs = [];
         notebook.cells[i].execution_count = null;
+        delete notebook.cells[i]._execTime;
     }
     render();
     toast("Cleared outputs from " + cleared + " cell" + (cleared !== 1 ? "s" : ""), "success");
 }
 
 async function resetKernel() {
+    setKernelStatus("busy");
     try {
-        await api("/kernel/reset");
-        toast("Variables cleared", "success");
+        var result = await api("/kernel/reset", {});
+        if (result.status === "reset_ok") {
+            // Clear all cell outputs and execution state
+            if (notebook && notebook.cells) {
+                for (var i = 0; i < notebook.cells.length; i++) {
+                    notebook.cells[i].outputs = [];
+                    notebook.cells[i].execution_count = null;
+                    delete notebook.cells[i]._execTime;
+                }
+            }
+            setKernelStatus("idle");
+            render();
+            toast("Kernel reset — all variables and outputs cleared", "success");
+        } else {
+            setKernelStatus("idle");
+            toast("Reset response: " + (result.status || "unknown"), "info");
+        }
     } catch (e) {
-        toast("Reset failed: " + e.message, "error");
+        // If reset fails, the kernel might be dead — try to restart
+        try {
+            await api("/kernel/restart", {});
+            if (notebook && notebook.cells) {
+                for (var i = 0; i < notebook.cells.length; i++) {
+                    notebook.cells[i].outputs = [];
+                    notebook.cells[i].execution_count = null;
+                    delete notebook.cells[i]._execTime;
+                }
+            }
+            setKernelStatus("idle");
+            render();
+            toast("Reset failed — kernel restarted instead", "info");
+        } catch (e2) {
+            setKernelStatus("dead");
+            toast("Reset failed: " + e.message, "error");
+        }
     }
 }
 
@@ -1327,6 +1590,7 @@ function handleEditorKeydown(e, cell) {
             if (!cell.source.trim()) return;
             cell._running = true;
             setKernelStatus("busy");
+            var ctrlStart = performance.now();
             render();
             api("/execute", { cell_id: cellId, code: cell.source })
                 .then(function(result) {
@@ -1335,6 +1599,7 @@ function handleEditorKeydown(e, cell) {
                     if (result.stdout) cell.outputs.push({ type: "stdout", text: result.stdout });
                     if (result.stderr) cell.outputs.push({ type: "stderr", text: result.stderr });
                     if (result.result) cell.outputs.push({ type: "result", text: result.result });
+                    cell._execTime = ((performance.now() - ctrlStart) / 1000).toFixed(3);
                 })
                 .catch(function(err) {
                     cell.outputs = [{ type: "stderr", text: "Error: " + err.message }];
