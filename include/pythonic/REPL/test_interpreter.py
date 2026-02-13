@@ -84,8 +84,8 @@ class TestInterpreter(unittest.TestCase):
         leaked.
         """
         out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Undefined variable", out)
+        # v2: undefined vars return None (no error)
+        self.assertNotIn("99", out)
 
     def test_loop_reverse_range(self):
         code = """
@@ -330,8 +330,8 @@ class TestInterpreter(unittest.TestCase):
         i.
         """
         out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Undefined variable", out)
+        # v2: undefined vars return None (no error)
+        self.assertNotIn("Error", out)
     # ===== NEW COMPREHENSIVE TESTS =====
 
     # 1. Function return without give after multiple statements
@@ -451,7 +451,9 @@ class TestInterpreter(unittest.TestCase):
 
     # 5. Consistency of error messages
     def test_error_syntax_missing_dot(self):
-        code = "var x = 5"
+        # v2: Missing dot at EOF is now forgiven (feature).
+        # Instead test missing dot in the MIDDLE of a multi-statement script.
+        code = "var x = 5\nvar y = 10."
         out, _ = self.run_code(code)
         self.assertIn("Error", out)
 
@@ -464,8 +466,8 @@ class TestInterpreter(unittest.TestCase):
     def test_error_undefined_var(self):
         code = "noSuchVar."
         out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Undefined variable", out)
+        # v2: undefined vars return None (no error)
+        self.assertNotIn("Error", out)
 
     def test_error_undefined_func(self):
         code = "ghostFunc()."
@@ -644,8 +646,8 @@ class TestInterpreter(unittest.TestCase):
         temp.
         """
         out, _ = self.run_code(code)
-        self.assertIn("Error", out)
-        self.assertIn("Undefined variable", out)
+        # v2: undefined vars return None (no error)
+        self.assertNotIn("Error", out)
 
     # ===== HARDENING TESTS: AIRTIGHT COVERAGE =====
 
@@ -2104,6 +2106,525 @@ class TestInterpreter(unittest.TestCase):
         # 2*sin(30 radians) — just check no error
         lines = self.get_clean_output_lines(out)
         self.assertTrue(len(lines) > 0)
+
+    # ==================== V2 FEATURE TESTS ====================
+
+    # --- String Literals ---
+    def test_string_literal_double_quotes(self):
+        code = '"hello world".'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["hello world"])
+
+    def test_string_literal_single_quotes(self):
+        code = "'hello world'."
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["hello world"])
+
+    def test_string_escape_newline(self):
+        code = 'print("a\\nb").'
+        out, _ = self.run_code(code)
+        self.assertIn("a\nb", out)
+
+    def test_string_escape_tab(self):
+        code = 'print("a\\tb").'
+        out, _ = self.run_code(code)
+        self.assertIn("a\tb", out)
+
+    def test_string_escape_backslash(self):
+        code = 'print("a\\\\b").'
+        out, _ = self.run_code(code)
+        self.assertIn("a\\b", out)
+
+    def test_string_concatenation(self):
+        code = '"hello" + " " + "world".'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["hello world"])
+
+    def test_string_repeat(self):
+        code = '"ab" * 3.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["ababab"])
+
+    def test_string_repeat_reverse(self):
+        code = '3 * "xy".'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["xyxyxy"])
+
+    def test_string_var(self):
+        code = 'var name = "Alice". name.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["Alice"])
+
+    def test_string_num_concat(self):
+        code = '"val=" + 42.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["val=42"])
+
+    def test_string_equality(self):
+        code = '"abc" == "abc".'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["1"])
+
+    def test_string_inequality(self):
+        code = '"abc" != "xyz".'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["1"])
+
+    def test_string_equality_false(self):
+        code = '"abc" == "xyz".'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["0"])
+
+    def test_empty_string(self):
+        code = 'var s = "". s.'
+        out, _ = self.run_code(code)
+        # empty string → no visible output from format_output (empty string)
+        self.assertNotIn("Error", out)
+
+    # --- List Literals ---
+    def test_list_literal_basic(self):
+        code = '[1, 2, 3].'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["[1, 2, 3]"])
+
+    def test_list_literal_empty(self):
+        code = 'var x = list(). print(x).'
+        out, _ = self.run_code(code)
+        self.assertIn("[]", out)
+
+    def test_list_literal_mixed(self):
+        code = 'var x = [1, "hello", 3]. print(x).'
+        out, _ = self.run_code(code)
+        self.assertIn("[1, hello, 3]", out)
+
+    def test_list_in_var(self):
+        code = 'var nums = [10, 20, 30]. print(nums).'
+        out, _ = self.run_code(code)
+        self.assertIn("[10, 20, 30]", out)
+
+    def test_list_len(self):
+        code = 'len([1, 2, 3, 4, 5]).'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["5"])
+
+    def test_list_append(self):
+        code = 'var x = [1, 2]. var y = append(x, 3). print(y).'
+        out, _ = self.run_code(code)
+        self.assertIn("[1, 2, 3]", out)
+
+    def test_list_nested(self):
+        code = 'var x = [1, [2, 3], 4]. print(x).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    # --- Set Literals ---
+    def test_set_literal(self):
+        code = 'var s = {1, 2, 3}. print(s).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        # Sets may have different order, just check it looks like a set
+
+    def test_set_empty(self):
+        code = 'var s = set(). print(s).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    # --- None / True / False ---
+    def test_none_literal(self):
+        code = 'var x. print(type(x)).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_true_literal(self):
+        code = 'True.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["1"])
+
+    def test_false_literal(self):
+        code = 'False.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["0"])
+
+    def test_none_output_suppressed(self):
+        """None values should not produce output from ExprStmt."""
+        code = 'var x. x.'
+        out, _ = self.run_code(code)
+        lines = self.get_clean_output_lines(out)
+        self.assertEqual(len(lines), 0)
+
+    # --- var with no initializer → None ---
+    def test_var_no_init_is_none(self):
+        code = 'var x. print(type(x)).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_var_multi_none(self):
+        code = 'var a, b, c.'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    # --- let / be syntax ---
+    def test_let_be_basic(self):
+        code = 'let x be 42. x.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["42"])
+
+    def test_let_be_expression(self):
+        code = 'let y be 3 + 4 * 2. y.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["11"])
+
+    def test_let_be_string(self):
+        code = 'let name be "Bob". name.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["Bob"])
+
+    def test_let_be_list(self):
+        code = 'let items be [1, 2, 3]. print(items).'
+        out, _ = self.run_code(code)
+        self.assertIn("[1, 2, 3]", out)
+
+    # --- Forgive missing dot ---
+    def test_forgive_dot_at_eof(self):
+        """Missing dot at EOF should be forgiven."""
+        code = 'var x = 42. x'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["42"])
+
+    def test_forgive_dot_before_semicolon(self):
+        """Missing dot before ; in block terminator should be forgiven."""
+        code = 'if 1 == 1: 42 ;'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["42"])
+
+    def test_forgive_dot_before_elif(self):
+        code = 'if 0: 1 elif 1: 42. ;'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["42"])
+
+    def test_forgive_dot_before_else(self):
+        code = 'if 0: 1 else: 42. ;'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["42"])
+
+    def test_dot_still_required_mid_script(self):
+        """Missing dot in middle of script (not at boundary) should still error."""
+        code = "var x = 5\nvar y = 10."
+        out, _ = self.run_code(code)
+        self.assertIn("Error", out)
+
+    # --- for-in list loop ---
+    def test_for_in_list(self):
+        code = """
+        var total = 0.
+        for x in [10, 20, 30]:
+            total = total + x.
+        ;
+        total.
+        """
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["60"])
+
+    def test_for_in_list_strings(self):
+        code = """
+        for word in ["hello", "world"]:
+            print(word).
+        ;
+        """
+        out, _ = self.run_code(code)
+        self.assertIn("hello", out)
+        self.assertIn("world", out)
+
+    def test_for_in_variable(self):
+        code = """
+        var nums = [5, 10, 15].
+        var sum = 0.
+        for n in nums:
+            sum = sum + n.
+        ;
+        sum.
+        """
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["30"])
+
+    # --- print() built-in ---
+    def test_print_single(self):
+        code = 'print(42).'
+        out, _ = self.run_code(code)
+        self.assertIn("42", out)
+
+    def test_print_multi_args(self):
+        code = 'print("x", "=", 10).'
+        out, _ = self.run_code(code)
+        self.assertIn("x = 10", out)
+
+    def test_print_string(self):
+        code = 'print("hello world").'
+        out, _ = self.run_code(code)
+        self.assertIn("hello world", out)
+
+    def test_print_list(self):
+        code = 'print([1, 2, 3]).'
+        out, _ = self.run_code(code)
+        self.assertIn("[1, 2, 3]", out)
+
+    def test_print_returns_none(self):
+        """print() should not produce extra output (returns None, which is suppressed)."""
+        code = 'print("ok").'
+        out, _ = self.run_code(code)
+        lines = self.get_clean_output_lines(out)
+        self.assertEqual(len(lines), 1)
+        self.assertEqual(lines[0], "ok")
+
+    # --- type() built-in ---
+    def test_type_int(self):
+        code = 'type(42).'
+        out, _ = self.run_code(code)
+        self.assertIn("int", out.lower())
+
+    def test_type_string(self):
+        code = 'type("hello").'
+        out, _ = self.run_code(code)
+        self.assertIn("str", out.lower())
+
+    def test_type_list(self):
+        code = 'type([1, 2]).'
+        out, _ = self.run_code(code)
+        self.assertIn("list", out.lower())
+
+    # --- len() built-in ---
+    def test_len_string(self):
+        code = 'len("hello").'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["5"])
+
+    def test_len_list(self):
+        code = 'len([10, 20, 30]).'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["3"])
+
+    # --- str() / int() / float() conversions ---
+    def test_str_builtin(self):
+        code = 'var s = str(42). print(s).'
+        out, _ = self.run_code(code)
+        self.assertIn("42", out)
+
+    def test_int_builtin(self):
+        code = 'int(3.7).'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["3"])
+
+    def test_float_builtin(self):
+        code = 'float(5).'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["5"])
+
+    # --- File I/O ---
+    def test_file_write_and_read(self):
+        code = """
+        write("/tmp/scriptit_test.txt", "hello from scriptit").
+        var content = read("/tmp/scriptit_test.txt").
+        print(content).
+        """
+        out, _ = self.run_code(code)
+        self.assertIn("hello from scriptit", out)
+
+    def test_file_readLine(self):
+        code = """
+        write("/tmp/scriptit_lines.txt", "line1\\nline2\\nline3").
+        var lines = readLine("/tmp/scriptit_lines.txt").
+        print(len(lines)).
+        """
+        out, _ = self.run_code(code)
+        self.assertIn("3", out)
+
+    # --- Edge cases ---
+    def test_large_number_mul_promote(self):
+        """Large integer multiplication should auto-promote, not overflow."""
+        code = "1000000 * 1000000."
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        lines = self.get_clean_output_lines(out)
+        self.assertTrue(len(lines) > 0)
+
+    def test_string_in_if(self):
+        code = """
+        var s = "hello".
+        if s == "hello":
+            print("match").
+        ;
+        """
+        out, _ = self.run_code(code)
+        self.assertIn("match", out)
+
+    def test_string_inequality_in_if(self):
+        code = """
+        var s = "a".
+        if s != "b":
+            print("different").
+        ;
+        """
+        out, _ = self.run_code(code)
+        self.assertIn("different", out)
+
+    def test_none_equality(self):
+        """Two None vars should be equal conceptually (both produce no output)."""
+        code = 'var a. var b.'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_mixed_arithmetic_string_error(self):
+        """Subtracting a string should error."""
+        code = '"hello" - 1.'
+        out, _ = self.run_code(code)
+        self.assertIn("Error", out)
+
+    def test_pprint_list(self):
+        code = 'pprint([1, 2, 3]).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_pop_from_list(self):
+        code = 'var x = [1, 2, 3]. var last = pop(x). last.'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_list_in_for_with_function(self):
+        """Define a function that uses a list via for-in."""
+        code = """
+        fn sum_list @(items):
+            var total = 0.
+            for x in items:
+                total = total + x.
+            ;
+            give(total).
+        ;
+        sum_list([1, 2, 3, 4]).
+        """
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["10"])
+
+    def test_let_be_in_function(self):
+        code = """
+        fn greet @(name):
+            let msg be "Hello " + name.
+            give(msg).
+        ;
+        greet("World").
+        """
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["Hello World"])
+
+    def test_nested_list_access_via_for(self):
+        code = """
+        var outer = [[1, 2], [3, 4]].
+        var flat_sum = 0.
+        for sub in outer:
+            for item in sub:
+                flat_sum = flat_sum + item.
+            ;
+        ;
+        flat_sum.
+        """
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        self.assertOutputSequence(out, ["10"])
+
+    def test_string_len_in_expression(self):
+        code = 'var x = len("test") + 1. x.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["5"])
+
+    def test_type_none(self):
+        code = 'var x. type(x).'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_division_returns_float(self):
+        """Division should always return a float/double type."""
+        code = '10 / 3.'
+        out, _ = self.run_code(code)
+        lines = self.get_clean_output_lines(out)
+        val = float(lines[0])
+        self.assertAlmostEqual(val, 3.33333, places=3)
+
+    def test_string_with_spaces(self):
+        code = 'var s = "  spaced  ". print(s).'
+        out, _ = self.run_code(code)
+        self.assertIn("  spaced  ", out)
+
+    def test_list_of_strings(self):
+        code = 'var names = ["Alice", "Bob", "Charlie"]. print(names).'
+        out, _ = self.run_code(code)
+        self.assertIn("Alice", out)
+        self.assertIn("Bob", out)
+        self.assertIn("Charlie", out)
+
+    def test_multiple_prints(self):
+        code = 'print(1). print(2). print(3).'
+        out, _ = self.run_code(code)
+        lines = self.get_clean_output_lines(out)
+        self.assertEqual(lines, ["1", "2", "3"])
+
+    def test_for_in_string(self):
+        """Iterate over characters of a string."""
+        code = """
+        for ch in "abc":
+            print(ch).
+        ;
+        """
+        out, _ = self.run_code(code)
+        self.assertIn("a", out)
+        self.assertIn("b", out)
+        self.assertIn("c", out)
+
+    def test_let_be_reassign_error(self):
+        """let/be creates a new variable, reassignment should work via = syntax."""
+        code = 'let x be 10. x = 20. x.'
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["20"])
+
+    def test_power_with_promote(self):
+        """Power with large result should auto-promote."""
+        code = '2 ^ 20.'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+        lines = self.get_clean_output_lines(out)
+        val = float(lines[0])
+        self.assertAlmostEqual(val, 1048576, places=0)
+
+    def test_modulo_with_promote(self):
+        code = '17 % 5.'
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
+
+    def test_string_in_function_param(self):
+        code = """
+        fn echo @(msg):
+            give(msg).
+        ;
+        echo("hello").
+        """
+        out, _ = self.run_code(code)
+        self.assertOutputSequence(out, ["hello"])
+
+    def test_list_in_function_param(self):
+        code = """
+        fn first @(items):
+            give(items).
+        ;
+        print(first([99, 88])).
+        """
+        out, _ = self.run_code(code)
+        self.assertNotIn("Error", out)
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,387 +1,493 @@
-# 🔬 How MyLang Works — Interpreter Internals
+# 🔬 ScriptIt v2 — Interpreter Internals
 
-This document explains how the interpreter transforms your code into output, step by step. Even if you've never built a language before, you'll understand the full pipeline by the end.
-
----
-
-## The Big Picture
-
-When you write `2 + 3.`, the interpreter runs through **4 stages** to produce `5`:
-
-```
-Source Code  →  [Tokenizer]  →  [Parser]  →  [Evaluator]  →  Output
-  "2 + 3."     Tokens          AST Tree      Walks tree       "5"
-```
-
-Let's walk through each stage.
+This document explains how the ScriptIt v2 interpreter works under the hood. It covers every stage from source code to output, including the new type system powered by `pythonic::vars::var`.
 
 ---
 
-## Stage 1: Tokenizer (Lexer)
-
-**File**: `me_doingIt.cpp` → `class Tokenizer`
-
-The tokenizer reads raw text character by character and breaks it into **tokens** — small meaningful pieces. Think of it like breaking a sentence into words.
-
-### Example
-
-Input: `var x = 10 + 3.`
-
-Tokens produced:
+## Architecture Overview
 
 ```
-[KeywordVar: "var"]  [Identifier: "x"]  [Equals: "="]  [Number: "10"]
-[Operator: "+"]  [Number: "3"]  [Dot: "."]  [Eof]
+Source Code → [Tokenizer] → [Parser] → [AST] → [Evaluator] → Output
+  "x + 1."    Tokens        Tree       Nodes    Walks tree     "result"
 ```
 
-### How It Works
+ScriptIt v2 is a **tree-walking interpreter**. It reads source, tokenizes, parses into an AST, then walks the tree to execute.
 
-The tokenizer uses a `while` loop that walks through the source string one character at a time:
+**Key difference from v1:** All values are `pythonic::vars::var` — a dynamic type that can hold int, double, string, list, set, dict, bool, None, and more. Arithmetic uses `pythonic::math` with overflow promotion.
 
-```
-Position:  0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15
-Source:    v  a  r     x     =     1  0     +     3  .
-```
+---
 
-For each character it asks:
+## Type System
 
-1. **Is it a digit?** → Keep reading digits to form a `Number` token (`10`)
-2. **Is it a letter?** → Keep reading letters to form a word, then check:
-   - Is it a keyword (`var`, `fn`, `if`, `while`, etc.)? → Keyword token
-   - Is it a logical operator (`and`, `or`, `not`)? → Operator token
-   - Otherwise? → `Identifier` token (a variable/function name)
-3. **Is it a symbol?** → Match single or double-character operators (`+`, `==`, `&&`, `<=`, etc.)
-4. **Is it `-->`?** → Skip everything until `<--` (comment)
-5. **Whitespace?** → Skip it
+### The `var` Class
 
-### Important Detail: The Dot Ambiguity
+Every value in ScriptIt is a `pythonic::vars::var`. This single type replaces v1's raw `double`:
 
-The character `.` serves **two purposes**:
+| ScriptIt Literal | `var` Type | Example        |
+| ---------------- | ---------- | -------------- |
+| `42`             | `INT`      | `var(42)`      |
+| `3.14`           | `DOUBLE`   | `var(3.14)`    |
+| `"hello"`        | `STRING`   | `var("hello")` |
+| `True` / `False` | `BOOL`     | `var(true)`    |
+| `None` (no init) | `NONE`     | `var()`        |
+| `[1, 2, 3]`      | `LIST`     | List-typed var |
+| `{1, 2, 3}`      | `SET`      | Set-typed var  |
 
-- **Statement terminator**: `x.` means "end of statement, print x"
-- **Decimal point**: `3.14` is a floating-point number
+### Overflow Promotion
 
-The tokenizer resolves this by checking: _Is the next character after `.` a digit?_ If yes → it's part of a decimal number. If no → it's a terminator.
+All arithmetic uses `pythonic::math` with `Overflow::Promote`:
 
 ```
-"3.14."  →  [Number: "3.14"]  [Dot: "."]
-"10."    →  [Number: "10"]    [Dot: "."]
+int → long → long_long → float → double → long_double
+```
+
+When an operation would overflow, the result is automatically promoted to the next wider type. For example:
+
+```
+1000000 * 1000000.    --> promoted from int to long_long, result: 1000000000000
+```
+
+---
+
+## Stage 1: Tokenizer
+
+**Class:** `Tokenizer`
+
+Reads raw source text character-by-character and produces a flat list of `Token` objects.
+
+### Token Types
+
+```
+Number, String, Identifier, Operator,
+LeftParen, RightParen, LeftBrace, RightBrace, LeftBracket, RightBracket,
+KeywordVar, KeywordFn, KeywordGive, KeywordIf, KeywordElif, KeywordElse,
+KeywordFor, KeywordIn, KeywordRange, KeywordFrom, KeywordTo,
+KeywordPass, KeywordWhile, KeywordLet, KeywordBe,
+Equals, Comma, Dot, Colon, Semicolon, At, Eof
+```
+
+### String Tokenization (New in v2)
+
+The tokenizer recognizes both `"double"` and `'single'` quoted strings:
+
+```
+Input:  "hello world"
+Token:  [String: "hello world"]
+```
+
+**Escape sequences** are processed during tokenization:
+
+| Escape | Result       |
+| ------ | ------------ |
+| `\n`   | newline      |
+| `\t`   | tab          |
+| `\\`   | backslash    |
+| `\"`   | double quote |
+| `\'`   | single quote |
+
+### Bracket Tokenization (New in v2)
+
+Square brackets `[` `]` for lists and curly braces `{` `}` for sets/dicts are tokenized as their own types, enabling container literal parsing.
+
+### The Dot Ambiguity
+
+The `.` character serves two purposes:
+
+- **Statement terminator:** `x.` means "end of statement"
+- **Decimal point:** `3.14` is a float
+
+Resolution: If the next character after `.` is a digit, it's a decimal point. Otherwise, it's a terminator.
+
+### Keyword Map (Dispatch)
+
+Keywords are recognized via a `static const std::unordered_map`:
+
+```cpp
+static const std::unordered_map<std::string, TokenType> keywords = {
+    {"var", TokenType::KeywordVar}, {"fn", TokenType::KeywordFn},
+    {"let", TokenType::KeywordLet}, {"be", TokenType::KeywordBe},
+    // ... etc
+};
+```
+
+### Implicit Multiplication
+
+When a number is immediately followed by `(`, the tokenizer inserts an implicit `*` token:
+
+```
+3(4 + 1)  →  3 * (4 + 1)  →  15
 ```
 
 ---
 
 ## Stage 2: Parser
 
-**File**: `me_doingIt.cpp` → `class Parser`
+**Class:** `Parser`
 
-The parser reads the flat list of tokens and builds a **tree structure** called an **AST** (Abstract Syntax Tree). This tree represents the logical structure of your program.
+Reads the token list and builds an **Abstract Syntax Tree (AST)**.
 
-### What the Parser Produces
+### AST Node Types
 
-For this code:
+| Node              | Purpose                            | Pattern                                 |
+| ----------------- | ---------------------------------- | --------------------------------------- |
+| `BlockStmt`       | A sequence of statements           | Multiple statements                     |
+| `AssignStmt`      | Variable declaration or assignment | `var x = expr.` or `x = expr.`          |
+| `MultiVarStmt`    | Multi-variable declaration         | `var a, b, c.`                          |
+| `ExprStmt`        | Expression with auto-print         | `expr.`                                 |
+| `IfStmt`          | Conditional branching              | `if expr: body [elif ...] [else ...] ;` |
+| `ForStmt`         | Range-based for loop               | `for i in range(from X to Y): body ;`   |
+| `ForInStmt`       | Iterable for loop (new in v2)      | `for x in iterable: body ;`             |
+| `WhileStmt`       | While loop                         | `while expr: body ;`                    |
+| `FunctionDefStmt` | Function definition                | `fn name @(params): body ;`             |
+| `ReturnStmt`      | Return from function               | `give(expr).`                           |
+| `PassStmt`        | No-op placeholder                  | `pass.`                                 |
 
-```
-if x > 10:
-    x.
-;
-```
+### Statement Parsing
 
-The parser creates this tree:
+The parser recognizes statements by their leading token:
 
-```
-IfStmt
-├── condition: Expression [x > 10]
-├── then-block: BlockStmt
-│   └── ExprStmt
-│       └── Expression [x]
-└── else-block: (none)
-```
+1. **`var`** → `parseVarDeclaration()` — checks for comma-separated names (→ `MultiVarStmt`) or single `var name = expr.` (→ `AssignStmt`)
+2. **`let`** → `parseLetBe()` — parses `let name be expr.` (→ `AssignStmt` with `isDeclaration=true`)
+3. **`fn`** → `parseFunctionDef()` — parses function definition
+4. **`if`** → `parseIf()` — parses if/elif/else chain
+5. **`while`** → `parseWhile()` — parses while loop
+6. **`for`** → checks for `range(from...to...)` pattern or iterable → `ForStmt` or `ForInStmt`
+7. **`give`** → `parseReturn()` — parses return statement
+8. **`pass`** → `parsePass()` — no-op
+9. **Identifier followed by `=`** → assignment
+10. **Anything else** → `ExprStmt` (expression, result auto-printed if non-None)
 
-### Statement Types
+### Expression Parsing: Three-Layer System
 
-The parser knows how to recognize these statement patterns:
-
-| Statement            | Pattern                                  | Produced Node                     |
-| -------------------- | ---------------------------------------- | --------------------------------- |
-| Variable declaration | `var NAME = EXPR.`                       | `AssignStmt` (isDeclaration=true) |
-| Assignment           | `NAME = EXPR.`                           | `AssignStmt`                      |
-| Function definition  | `fn NAME @(PARAMS): BODY ;`              | `FunctionDefStmt`                 |
-| If/elif/else         | `if EXPR: BODY ; [elif...] [else...]`    | `IfStmt`                          |
-| While loop           | `while EXPR: BODY ;`                     | `WhileStmt`                       |
-| For loop             | `for NAME in range(from X to Y): BODY ;` | `ForStmt`                         |
-| Return               | `give(EXPR).`                            | `ReturnStmt`                      |
-| Pass                 | `pass.`                                  | `PassStmt`                        |
-| Expression           | `EXPR.`                                  | `ExprStmt` (prints the result)    |
-
-### How Expression Parsing Works: The Shunting-Yard Algorithm
-
-This is the most complex part. Expressions like `2 + 3 * 4` need to respect operator precedence (`*` before `+`). The parser uses the **Shunting-Yard Algorithm** (invented by Edsger Dijkstra) to convert infix notation to **RPN** (Reverse Polish Notation).
-
-#### What is RPN?
-
-Normal math (infix): `2 + 3 * 4`
-RPN (postfix): `2 3 4 * +`
-
-In RPN, operators come **after** their operands. The beauty: **no parentheses needed** and evaluation is trivially simple with a stack.
-
-#### The Algorithm
-
-Uses two data structures: an **output queue** and an **operator stack**.
+Expressions are parsed via a three-layer system that handles operator precedence and short-circuit evaluation:
 
 ```
-Input tokens:  2  +  3  *  4
-
-Step 1: "2" is a number → push to output
-        Output: [2]   Stack: []
-
-Step 2: "+" is an operator → push to stack
-        Output: [2]   Stack: [+]
-
-Step 3: "3" is a number → push to output
-        Output: [2, 3]   Stack: [+]
-
-Step 4: "*" is an operator → precedence of * (6) > + (5)
-        So * goes on top, + stays
-        Output: [2, 3]   Stack: [+, *]
-
-Step 5: "4" is a number → push to output
-        Output: [2, 3, 4]   Stack: [+, *]
-
-Step 6: End of input → pop all operators to output
-        Output: [2, 3, 4, *, +]   Stack: []
+parseExpression()        → Top level: delegates to parseLogicalOr()
+  parseLogicalOr()       → Handles || with lazy evaluation
+    parseLogicalAnd()    → Handles && with lazy evaluation
+      parsePrimaryExpr() → Shunting-Yard for everything else
 ```
 
-Result RPN: `2 3 4 * +` ✓
+### The Shunting-Yard Algorithm
 
-#### How Parentheses Work
-
-`(2 + 3) * 4`:
-
-- `(` → pushed to stack as marker
-- `2 + 3` processed normally
-- `)` → pop operators until `(` is found, removing the marker
-- `*` → normal processing
-
-Result: `2 3 + 4 *` ✓ (addition happens first)
-
-#### Unary Operators
-
-`-5` is tricky because `-` could be subtraction or negation. The parser checks: was the **previous token** an operator, opening paren, or nothing? If so, it's unary.
-
-Unary `-` is renamed to `~` internally so the evaluator can distinguish:
-
-- `-` with two operands = subtraction
-- `~` with one operand = negation
-
-Unary `!` stays as `!`.
-
-### Short-Circuit Evaluation (the Tricky Part)
-
-`&&` and `||` need **lazy evaluation** — the right side shouldn't run if the left side already determines the result. But RPN evaluates everything eagerly!
-
-**Solution**: The parser has **three layers**:
+The core expression parser uses Dijkstra's Shunting-Yard algorithm to convert infix to **RPN** (Reverse Polish Notation):
 
 ```
-parseExpression()     → calls parseLogicalOr()
-parseLogicalOr()      → calls parseLogicalAnd(), handles ||
-parseLogicalAnd()     → calls parsePrimaryExpr(), handles &&
-parsePrimaryExpr()    → Shunting-Yard for everything else
+Input:  2 + 3 * 4
+RPN:    2 3 4 * +
+
+Input:  (2 + 3) * 4
+RPN:    2 3 + 4 *
 ```
 
-When `||` or `&&` appears **at the top level** (not inside parentheses), the parser **doesn't** put them in the RPN. Instead, it creates a tree node:
+Uses two data structures:
+
+- **Output queue:** collects operands and operators in RPN order
+- **Operator stack:** temporarily holds operators, respecting precedence
+
+**Operator precedence** is looked up from a dispatch map:
+
+| Precedence | Operators            |
+| ---------- | -------------------- |
+| 1          | `\|\|`               |
+| 2          | `&&`                 |
+| 3          | `==`, `!=`           |
+| 4          | `<`, `<=`, `>`, `>=` |
+| 5          | `+`, `-`             |
+| 6          | `*`, `/`, `%`        |
+| 7          | `^`                  |
+| 8          | `~` (unary neg), `!` |
+
+### Short-Circuit Evaluation
+
+`&&` and `||` at the top level are **not** placed into the RPN. Instead, the parser creates a tree with:
 
 ```
 Expression
-├── logicalOp: "||"
-├── lhs: Expression [left side - RPN]
-└── rhs: Expression [right side - RPN]
+├── logicalOp: "||" or "&&"
+├── lhs: Expression [left side]
+└── rhs: Expression [right side]
 ```
 
-The evaluator then checks the LHS first, and **only evaluates RHS if needed**:
+The evaluator checks the LHS first and **only evaluates RHS if needed**:
+
+- `&&`: If LHS is falsy → return 0, skip RHS
+- `||`: If LHS is truthy → return 1, skip RHS
+
+### Dot Forgiveness (New in v2)
+
+The parser calls `consumeDotOrForgive()` instead of strictly requiring `.`:
 
 ```cpp
-if (logicalOp == "&&") {
-    double leftVal = lhs->evaluate(scope);
-    if (leftVal == 0) return 0.0;     // Short-circuit: skip RHS!
-    return rhs->evaluate(scope);       // Only evaluate if LHS was true
+void consumeDotOrForgive() {
+    if (check(TokenType::Dot)) advance();
+    else if (check(TokenType::Eof) || check(TokenType::Semicolon)
+             || check(TokenType::KeywordElif) || check(TokenType::KeywordElse))
+        return; // forgive missing dot at boundaries
+    else
+        throw std::runtime_error("Expected '.' ...");
 }
+```
+
+This means the `.` can be omitted at:
+
+- End of file (EOF)
+- Before `;` (block terminator)
+- Before `elif` / `else`
+
+But it's **still required** between statements in the middle of a script.
+
+### Container Literal Parsing (New in v2)
+
+**Lists:** When `[` is encountered, the parser collects comma-separated expressions until `]`:
+
+```
+[1, 2, "three"]  →  ListLiteral RPN token with 3 elements
+```
+
+**Sets:** When `{` is encountered, same pattern until `}`:
+
+```
+{1, 2, 3}  →  SetLiteral RPN token with 3 elements
+```
+
+### Unary Operators
+
+The parser detects unary `-` vs binary `-` by checking the previous token. Unary minus is renamed to `~` internally:
+
+```
+-5       →  RPN: [5, ~]       (negation)
+10 - 5   →  RPN: [10, 5, -]   (subtraction)
 ```
 
 ---
 
 ## Stage 3: Evaluator
 
-**File**: `me_doingIt.cpp` → `Expression::evaluate()` and `*.execute()` methods
-
 ### Expression Evaluation (RPN Stack Machine)
 
-Evaluating RPN is beautifully simple. Use a **stack**:
+The evaluator walks the RPN queue using a stack:
 
 ```
 RPN: 2 3 4 * +
 
-Step 1: "2" → push          Stack: [2]
-Step 2: "3" → push          Stack: [2, 3]
-Step 3: "4" → push          Stack: [2, 3, 4]
-Step 4: "*" → pop 4 and 3,
-              push 3*4=12   Stack: [2, 12]
-Step 5: "+" → pop 12 and 2,
-              push 2+12=14  Stack: [14]
+Step 1: push 2          Stack: [2]
+Step 2: push 3          Stack: [2, 3]
+Step 3: push 4          Stack: [2, 3, 4]
+Step 4: * → pop 4,3     Stack: [2, 12]
+Step 5: + → pop 12,2    Stack: [14]
 
-Result: 14 ✓
+Result: var(14)
+```
+
+### Dispatch Maps (Architecture Decision)
+
+All operator and function evaluation uses **static dispatch maps** (unordered_maps) instead of if-else chains. This makes the code more maintainable and scalable:
+
+#### 1. Binary Operator Dispatch
+
+```cpp
+static const std::unordered_map<std::string,
+    std::function<var(var&, var&)>> binaryOps = {
+    {"+", [](var& a, var& b) { return pythonic::math::add(a, b, Overflow::Promote); }},
+    {"-", [](var& a, var& b) { return pythonic::math::sub(a, b, Overflow::Promote); }},
+    {"*", [](var& a, var& b) { return pythonic::math::mul(a, b, Overflow::Promote); }},
+    {"/", [](var& a, var& b) { return pythonic::math::div(a, b, Overflow::Promote); }},
+    {"%", [](var& a, var& b) { return pythonic::math::mod(a, b, Overflow::Promote); }},
+    {"^", [](var& a, var& b) { return pythonic::math::pow(a, b, Overflow::Promote); }},
+    {"==", ...}, {"!=", ...}, {"<", ...}, ...
+};
+```
+
+#### 2. Math Function Dispatch
+
+```cpp
+static const std::unordered_map<std::string,
+    std::function<var(const var&)>> mathOps = {
+    {"sin",   [](const var& x) { return pythonic::math::sin(x); }},
+    {"cos",   [](const var& x) { return pythonic::math::cos(x); }},
+    {"sqrt",  [](const var& x) { return pythonic::math::sqrt(x); }},
+    {"log",   [](const var& x) { return pythonic::math::log(x); }},
+    // ... 20 functions total
+};
+```
+
+#### 3. Built-in Function Dispatch
+
+```cpp
+static const std::unordered_map<std::string,
+    std::function<void(std::stack<var>&, int)>> builtinOps = {
+    {"print",  [](stack& s, int argc) { /* multi-arg print */ }},
+    {"len",    [](stack& s, int argc) { /* length of string/list/set */ }},
+    {"type",   [](stack& s, int argc) { /* type name */ }},
+    {"append", [](stack& s, int argc) { /* list append */ }},
+    {"read",   [](stack& s, int argc) { /* file read */ }},
+    {"write",  [](stack& s, int argc) { /* file write */ }},
+    // ... 16 functions total
+};
 ```
 
 ### Statement Execution
 
-Each AST node has an `execute()` method:
+Each AST node has an `execute(Scope& scope)` method:
 
-- **ExprStmt**: Evaluates the expression and **prints** the result
-- **AssignStmt**: Evaluates the expression, stores the result in the scope
-- **IfStmt**: Evaluates condition → if non-zero, executes the matching branch's block
-- **WhileStmt**: Evaluates condition → while non-zero, executes body, re-evaluates condition
-- **ForStmt**: Determines range → iterates, setting loop variable in scope for each iteration
-- **FunctionDefStmt**: Stores the function definition in the scope (does not run it yet)
-- **ReturnStmt**: Evaluates expression, throws `ReturnException` with the value
+| Node              | Behavior                                                                |
+| ----------------- | ----------------------------------------------------------------------- |
+| `ExprStmt`        | Evaluate expression. Print result if non-None.                          |
+| `AssignStmt`      | Evaluate expr, store in scope (declare or set).                         |
+| `MultiVarStmt`    | Define all names as `var()` (None).                                     |
+| `IfStmt`          | Evaluate condition. If truthy → execute then-block. Else try elif/else. |
+| `ForStmt`         | Evaluate from/to range, iterate with counter variable.                  |
+| `ForInStmt`       | Evaluate iterable (list/string/set), iterate with element var.          |
+| `WhileStmt`       | While condition is truthy, execute body.                                |
+| `FunctionDefStmt` | Store function definition in scope (doesn't run it yet).                |
+| `ReturnStmt`      | Evaluate expr, throw `ReturnException` with the value.                  |
+| `PassStmt`        | No-op.                                                                  |
 
-### How `give` (Return) Works
+### The `give` (Return) Mechanism
 
-`give(value)` throws a C++ exception (`ReturnException`). This exception **unwinds** through any nested loops, if-blocks, etc., until it's caught by the function call code in the evaluator. This is why `give` correctly exits from inside while loops:
+`give(value)` throws a C++ exception (`ReturnException`). This cleanly unwinds through nested loops and if-blocks:
 
 ```
 fn find @():
     var i = 0.
-    while i < 100:        ← loop running
+    while i < 100:
         if i == 42:
             give(i).      ← throws ReturnException(42)
-        ;                    ← exception flies through if-block
+        ;
         i = i + 1.
-    ;                        ← exception flies through while-loop
-;                            ← caught here by function call handler
+    ;                     ← exception unwinds through here
+;                         ← caught by function call handler
 ```
 
-### Function Calls
+### Output Formatting
 
-When the evaluator encounters a function call in an expression:
+The `format_output(var)` function converts a `var` to its display string:
 
-1. **Pop arguments** from the stack
-2. **Create a new scope** (child of caller's scope, with barrier)
-3. **Define parameters** as local variables in the new scope
-4. **Execute** the function body
-5. **Catch** any `ReturnException` → push the return value onto the stack
-6. If no `give` was used → push `0` (implicit return)
+| Type         | Format               | Example              |
+| ------------ | -------------------- | -------------------- |
+| None         | `"None"`             | (usually suppressed) |
+| String       | raw string           | `hello world`        |
+| Bool         | `"True"` / `"False"` | `True`               |
+| Int/Long/etc | integer string       | `42`                 |
+| Double/Float | decimal string       | `3.33333`            |
+
+**ExprStmt suppression:** When an expression evaluates to `None`, `ExprStmt` does not print anything. This prevents `print()` from outputting extra lines (since `print()` returns None).
 
 ---
 
 ## Stage 4: Scope System
 
-**File**: `me_doingIt.cpp` → `struct Scope`
-
-The scope system controls **which variables are visible** and **which can be modified**. It's implemented as a **linked list** of scope frames.
-
 ### Scope Chain
 
+Scopes form a linked list:
+
 ```
-Global Scope       ← defines: x=10, PI=3.14
-  │
-  ├── Function Scope (barrier=true)  ← defines: a=5 (parameter)
-  │     │
-  │     └── If-Block Scope (barrier=false)  ← defines: temp=1
-  │
-  └── For-Loop Scope (barrier=false)  ← defines: i=3 (loop var)
+Global Scope       ← PI, e, user variables
+  ├── Function Scope (barrier=true)  ← parameter locals
+  │     └── If-Block Scope (barrier=false)
+  └── For-Loop Scope (barrier=false)  ← loop variable
 ```
 
 ### The Barrier Mechanism
 
-Each scope has a `barrier` flag:
+| Scope Type     | Barrier | Can read outer? | Can write outer? |
+| -------------- | ------- | --------------- | ---------------- |
+| If/Else block  | false   | ✅ Yes          | ✅ Yes           |
+| For/While loop | false   | ✅ Yes          | ✅ Yes           |
+| Function       | true    | ✅ Yes          | ❌ No            |
 
-- **`barrier = false`** (if/else, for, while blocks): The `set()` method **propagates** writes to the parent scope. So `x = 99` inside an if-block modifies the outer `x`.
+- **`get(name)`**: Walks up the chain — no barriers for reading.
+- **`set(name, value)`**: Walks up but **stops at barriers**. Functions can't modify outer variables.
+- **`define(name, value)`**: Always defines in the **current** scope.
 
-- **`barrier = true`** (function scopes): The `set()` method **stops** at the barrier. So `x = 99` inside a function throws an error — it can't reach the outer `x`.
+### The `wipe` Command
 
-### Variable Lookup (`get`)
+In REPL mode, `wipe`:
 
-When reading variable `x`, the scope walks **up** the chain:
-
-```
-Current scope → has x? → Yes → return it
-                       → No  → check parent → has x? → Yes → return it
-                                             → No    → check parent → ...
-                                                                    → Error!
-```
-
-There's **no barrier for reading** — functions can always read outer variables. Only writing is blocked.
-
-### Variable Assignment (`set`)
-
-When writing `x = value`:
-
-```
-Current scope → has x? → Yes → update it
-                       → No  → barrier? → Yes → ERROR ("cannot mutate outer scope")
-                                         → No  → try parent.set(x, value)
-```
+1. Clears the terminal screen
+2. Resets the global scope (removes all user variables and functions)
+3. Re-defines built-in constants (`PI`, `e`, `ans`)
 
 ---
 
-## Putting It All Together
+## Built-in Functions Reference
 
-Here's the full journey of this program:
+### I/O Functions
 
-```
-var x = 5.
-fn double @(n): give(n * 2). ;
-double(x).
-```
+| Function   | Args | Description                                |
+| ---------- | ---- | ------------------------------------------ |
+| `print`    | 1+   | Print space-separated args with newline    |
+| `pprint`   | 1    | Pretty-print (detailed var representation) |
+| `input`    | 0–1  | Read line from stdin (optional prompt)     |
+| `read`     | 1    | Read entire file contents as string        |
+| `write`    | 2    | Write string to file                       |
+| `readLine` | 1    | Read file as list of lines                 |
 
-### 1. Tokenizer
+### Type Functions
 
-```
-[var] [x] [=] [5] [.] [fn] [double] [@] [(] [n] [)] [:] [give] [(] [n] [*] [2] [)] [.] [;] [double] [(] [x] [)] [.]
-```
+| Function | Args | Description                    |
+| -------- | ---- | ------------------------------ |
+| `type`   | 1    | Returns type name as string    |
+| `str`    | 1    | Convert to string              |
+| `int`    | 1    | Convert to integer (truncate)  |
+| `float`  | 1    | Convert to float               |
+| `len`    | 1    | Length of string, list, or set |
 
-### 2. Parser
+### Collection Functions
 
-```
-Program (BlockStmt)
-├── AssignStmt { name="x", expr=RPN[5], isDeclaration=true }
-├── FunctionDefStmt { name="double", params=["n"],
-│       body=BlockStmt [
-│           ReturnStmt { expr=RPN[n, 2, *] }
-│       ]
-│   }
-└── ExprStmt { expr=RPN[x, double CALL(1)] }
-```
+| Function     | Args | Description                          |
+| ------------ | ---- | ------------------------------------ |
+| `list`       | 0    | Create empty list                    |
+| `set`        | 0    | Create empty set                     |
+| `append`     | 2    | Append item to list, return new list |
+| `pop`        | 1    | Pop last item from list              |
+| `range_list` | 2    | Create list from range               |
 
-### 3. Evaluator
+### Math Functions
 
-```
-1. AssignStmt: evaluate RPN[5] → 5, store x=5 in global scope
-2. FunctionDefStmt: store "double" function definition in scope
-3. ExprStmt: evaluate RPN[x, double CALL(1)]
-   a. Push x → stack: [5]
-   b. CALL double with 1 arg
-      - Pop 5 from stack
-      - Create new scope with n=5
-      - Execute body: evaluate RPN[n, 2, *]
-        - Push n=5, push 2 → stack: [5, 2]
-        - Pop 2, pop 5, push 10 → stack: [10]
-        - ReturnStmt throws ReturnException(10)
-      - Catch → push 10 to stack
-   c. Stack: [10]
-   d. Print: 10
-```
+All math functions use `pythonic::math` and operate on `var`:
 
-**Output**: `10`
+| Function | Description      | Function | Description      |
+| -------- | ---------------- | -------- | ---------------- |
+| `sin`    | sine             | `asin`   | arc sine         |
+| `cos`    | cosine           | `acos`   | arc cosine       |
+| `tan`    | tangent          | `atan`   | arc tangent      |
+| `cot`    | cotangent        | `sec`    | secant           |
+| `csc`    | cosecant         | `sqrt`   | square root      |
+| `abs`    | absolute value   | `ceil`   | ceiling          |
+| `floor`  | floor            | `round`  | round            |
+| `log`    | natural log      | `log2`   | log base 2       |
+| `log10`  | log base 10      | `min`    | minimum (2 args) |
+| `max`    | maximum (2 args) |          |                  |
 
 ---
 
 ## Summary of Key Design Decisions
 
-| Decision                  | Choice                                  | Why                                                                                            |
-| ------------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| Expression representation | RPN (Reverse Polish Notation)           | Simple stack-based evaluation, no recursion needed                                             |
-| Short-circuit `&&`/`\|\|` | Tree nodes wrapping RPN sub-expressions | Can't lazily evaluate inside flat RPN, so logical ops are lifted to tree layer                 |
-| Scope model               | Dynamic scope with barriers             | Simple, satisfies "inner functions can read outer vars" while preventing mutation              |
-| Return mechanism          | C++ exceptions (`ReturnException`)      | Cleanly unwinds through nested loops and blocks without adding return-checking code everywhere |
-| Statement terminator      | `.` (dot)                               | Chosen by language designer as a visual alternative to `;`                                     |
-| Function syntax           | `fn NAME @(PARAMS): BODY ;`             | `@` is a visual separator, `:` and `;` delimit the body                                        |
+| Decision                  | Choice                                    | Why                                                                 |
+| ------------------------- | ----------------------------------------- | ------------------------------------------------------------------- |
+| Value type                | `pythonic::vars::var` (dynamic)           | Supports strings, lists, sets, None — much richer than raw `double` |
+| Arithmetic                | `pythonic::math` with `Overflow::Promote` | Auto-promotes on overflow (int→long→double), no silent data loss    |
+| Expression representation | RPN (Reverse Polish Notation)             | Simple stack-based evaluation, no recursion needed                  |
+| Short-circuit `&&`/`\|\|` | Tree nodes wrapping RPN sub-expressions   | Can't lazily evaluate inside flat RPN                               |
+| Scope model               | Dynamic scope with barriers               | Functions can read but not mutate outer vars                        |
+| Return mechanism          | C++ exceptions (`ReturnException`)        | Cleanly unwinds through nested control flow                         |
+| Statement terminator      | `.` (dot) with forgiveness at boundaries  | Familiar alternative to `;`, forgive-at-EOF improves ergonomics     |
+| Function dispatch         | `static const std::unordered_map`         | Scalable, maintainable, O(1) lookup vs if-else chains               |
+| Math dispatch             | `pythonic::math::*` via map               | Type-safe, overflow-aware, consistent with host library             |
+
+---
+
+## File Structure
+
+```
+REPL/
+├── ScriptIt.cpp           Main interpreter source (~1920 lines)
+├── ScriptIt_v1.cpp        Backup of v1 (double-based)
+├── README.md              User-facing language guide
+├── INTERNALS.md           This file
+├── test_interpreter.py    Test suite (200+ tests)
+├── script                 Compiled binary
+└── pythonicCalculator.hpp Legacy calculator REPL
+```
