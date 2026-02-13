@@ -554,6 +554,10 @@ body {
         <svg viewBox="0 0 16 16"><path d="M4.5 3a.5.5 0 000 1h7a.5.5 0 000-1h-7zM4 6.5a.5.5 0 01.5-.5h7a.5.5 0 010 1h-7a.5.5 0 01-.5-.5zM4.5 9a.5.5 0 000 1h7a.5.5 0 000-1h-7zM4 12.5a.5.5 0 01.5-.5h4a.5.5 0 010 1h-4a.5.5 0 01-.5-.5z"/></svg>
         <span>Reset</span>
     </button>
+    <button class="toolbar-btn" onclick="clearAllOutputs()" title="Clear all cell outputs">
+        <svg viewBox="0 0 16 16"><path d="M5.5 5.5A.5.5 0 016 6v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm2.5 0a.5.5 0 01.5.5v6a.5.5 0 01-1 0V6a.5.5 0 01.5-.5zm3 .5a.5.5 0 00-1 0v6a.5.5 0 001 0V6z"/><path fill-rule="evenodd" d="M14.5 3a1 1 0 01-1 1H13v9a2 2 0 01-2 2H5a2 2 0 01-2-2V4h-.5a1 1 0 010-2h3a1 1 0 011-1h3a1 1 0 011 1h3a1 1 0 011 1zM4.118 4L4 4.059V13a1 1 0 001 1h6a1 1 0 001-1V4.059L11.882 4H4.118z"/></svg>
+        <span>Clear</span>
+    </button>
 
     <div class="toolbar-sep"></div>
 
@@ -583,15 +587,31 @@ body {
 
 <!-- ─── Load Modal ───────────────────────────────────── -->
 <div class="modal-overlay" id="loadModal">
-    <div class="modal">
+    <div class="modal" style="max-width:540px;">
         <h2>📂 Open Notebook</h2>
-        <p class="modal-info">Enter the full path to a <code>.nsit</code> notebook file.</p>
+        <p class="modal-info">Enter a path or choose from recent <code>.nsit</code> files.</p>
         <label for="loadFilePath">File Path</label>
         <input class="modal-input" id="loadFilePath" placeholder="/path/to/notebook.nsit"
                onkeydown="if(event.key==='Enter'){loadNotebook();}" />
+        <div id="loadFileList" style="max-height:200px;overflow-y:auto;margin:10px 0 0;"></div>
         <div class="modal-actions">
             <button class="modal-btn" onclick="hideModal('loadModal')">Cancel</button>
             <button class="modal-btn primary" onclick="loadNotebook()">Open</button>
+        </div>
+    </div>
+</div>
+
+<!-- ─── Save-As Modal ────────────────────────────────── -->
+<div class="modal-overlay" id="saveAsModal">
+    <div class="modal">
+        <h2>💾 Save Notebook As</h2>
+        <p class="modal-info">Choose a file path to save the notebook.</p>
+        <label for="saveAsPath">File Path</label>
+        <input class="modal-input" id="saveAsPath" placeholder="/path/to/notebook.nsit"
+               onkeydown="if(event.key==='Enter'){doSaveAs();}" />
+        <div class="modal-actions">
+            <button class="modal-btn" onclick="hideModal('saveAsModal')">Cancel</button>
+            <button class="modal-btn primary" onclick="doSaveAs()">Save</button>
         </div>
     </div>
 </div>
@@ -1054,11 +1074,17 @@ async function saveNotebook() {
     syncAllSources();
     notebook.metadata.title = document.getElementById("notebookTitle").value.trim() || "Untitled";
 
+    // If no saved file path, prompt for one
+    if (!savedFilePath) {
+        showSaveAsModal();
+        return;
+    }
+
     try {
         var result = await api("/notebook/save", {
             cells: notebook.cells,
             metadata: notebook.metadata,
-            filepath: savedFilePath || undefined
+            filepath: savedFilePath
         });
         if (result.status === "saved") {
             savedFilePath = result.filepath;
@@ -1071,11 +1097,80 @@ async function saveNotebook() {
     }
 }
 
-function showLoadModal() {
+function showSaveAsModal() {
+    document.getElementById("saveAsModal").classList.add("visible");
+    var input = document.getElementById("saveAsPath");
+    var title = (notebook && notebook.metadata && notebook.metadata.title) || "Untitled";
+    input.value = savedFilePath || (title + ".nsit");
+    setTimeout(function() { input.focus(); input.select(); }, 100);
+}
+
+async function doSaveAs() {
+    var filepath = document.getElementById("saveAsPath").value.trim();
+    if (!filepath) {
+        toast("Please enter a file path", "error");
+        return;
+    }
+    if (!filepath.endsWith(".nsit")) filepath += ".nsit";
+    hideModal("saveAsModal");
+
+    syncAllSources();
+    notebook.metadata.title = document.getElementById("notebookTitle").value.trim() || "Untitled";
+
+    try {
+        var result = await api("/notebook/save", {
+            cells: notebook.cells,
+            metadata: notebook.metadata,
+            filepath: filepath
+        });
+        if (result.status === "saved") {
+            savedFilePath = result.filepath;
+            toast("Saved: " + result.filepath, "success");
+        } else {
+            toast("Save failed: " + (result.message || ""), "error");
+        }
+    } catch (e) {
+        toast("Save error: " + e.message, "error");
+    }
+}
+
+async function showLoadModal() {
     document.getElementById("loadModal").classList.add("visible");
     var input = document.getElementById("loadFilePath");
     input.value = "";
     setTimeout(function() { input.focus(); }, 100);
+
+    // Fetch .nsit file listing from server
+    var listDiv = document.getElementById("loadFileList");
+    listDiv.innerHTML = '<span style="color:#888;font-size:12px;">Scanning for notebooks…</span>';
+    try {
+        var result = await api("/notebook/list");
+        listDiv.innerHTML = "";
+        if (result.files && result.files.length > 0) {
+            var label = document.createElement("div");
+            label.style.cssText = "color:#888;font-size:11px;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;";
+            label.textContent = "Available notebooks in " + result.cwd;
+            listDiv.appendChild(label);
+            for (var i = 0; i < result.files.length; i++) {
+                (function(filepath) {
+                    var item = document.createElement("div");
+                    item.style.cssText = "padding:6px 10px;cursor:pointer;border-radius:4px;font-size:13px;color:#ccc;display:flex;align-items:center;gap:6px;";
+                    item.innerHTML = '<span style="opacity:0.6;">📄</span>' + escapeHtml(filepath);
+                    item.addEventListener("mouseenter", function() { item.style.background = "rgba(255,255,255,0.06)"; });
+                    item.addEventListener("mouseleave", function() { item.style.background = "none"; });
+                    item.addEventListener("click", function() {
+                        input.value = filepath;
+                        loadNotebook();
+                    });
+                    listDiv.appendChild(item);
+                })(result.files[i]);
+            }
+        } else {
+            listDiv.innerHTML = '<span style="color:#666;font-size:12px;">No .nsit files found in ' + escapeHtml(result.cwd || "") + '</span>';
+        }
+    } catch (e) {
+        listDiv.innerHTML = '<span style="color:#666;font-size:12px;">Could not list files</span>';
+    }
 }
 
 function showNewModal() {
@@ -1145,12 +1240,32 @@ async function restartKernel() {
     setKernelStatus("busy");
     try {
         await api("/kernel/restart");
+        // Clear all cell outputs on restart
+        if (notebook && notebook.cells) {
+            for (var i = 0; i < notebook.cells.length; i++) {
+                notebook.cells[i].outputs = [];
+                notebook.cells[i].execution_count = null;
+            }
+        }
         setKernelStatus("idle");
-        toast("Kernel restarted — all state cleared", "success");
+        render();
+        toast("Kernel restarted — all state and outputs cleared", "success");
     } catch (e) {
         setKernelStatus("dead");
         toast("Restart failed: " + e.message, "error");
     }
+}
+
+function clearAllOutputs() {
+    if (!notebook || !notebook.cells) return;
+    var cleared = 0;
+    for (var i = 0; i < notebook.cells.length; i++) {
+        if (notebook.cells[i].outputs && notebook.cells[i].outputs.length > 0) cleared++;
+        notebook.cells[i].outputs = [];
+        notebook.cells[i].execution_count = null;
+    }
+    render();
+    toast("Cleared outputs from " + cleared + " cell" + (cleared !== 1 ? "s" : ""), "success");
 }
 
 async function resetKernel() {
@@ -1398,6 +1513,7 @@ document.addEventListener("keydown", function(e) {
     if (e.key === "Escape") {
         hideModal("loadModal");
         hideModal("newModal");
+        hideModal("saveAsModal");
     }
 
     // Jupyter-style shortcuts when NOT focused in a textarea/input

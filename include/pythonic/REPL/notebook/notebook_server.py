@@ -32,7 +32,7 @@ class KernelManager:
 
     def __init__(self):
         self.process = None
-        self.lock = threading.Lock()
+        self.lock = threading.RLock()  # Reentrant lock for restart()
         self.execution_count = 0
 
     def start(self):
@@ -70,8 +70,34 @@ class KernelManager:
 
     def restart(self):
         """Restart the kernel."""
-        self.stop()
-        self.start()
+        with self.lock:
+            # Stop the old process directly (without re-acquiring lock)
+            if self.process and self.process.poll() is None:
+                try:
+                    self.process.stdin.write(json.dumps({"action": "shutdown"}) + "\n")
+                    self.process.stdin.flush()
+                    self.process.wait(timeout=3)
+                except:
+                    self.process.kill()
+                    self.process.wait(timeout=2)
+                print("[Kernel] Stopped for restart")
+            self.process = None
+            self.execution_count = 0
+
+            # Start a new process directly (without re-acquiring lock)
+            self.process = subprocess.Popen(
+                [SCRIPTIT_BINARY, "--kernel"],
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                bufsize=1
+            )
+            ready = self.process.stdout.readline().strip()
+            info = json.loads(ready)
+            if info.get("status") != "kernel_ready":
+                raise RuntimeError(f"Kernel failed to start: {ready}")
+            print(f"[Kernel] Restarted (PID {self.process.pid})")
 
     def execute(self, cell_id, code):
         """Execute code in the kernel and return the result."""
@@ -195,6 +221,17 @@ class NotebookHandler(http.server.BaseHTTPRequestHandler):
             self.send_json({"alive": kernel.is_alive()})
             return
 
+        if self.path == "/api/notebook/list":
+            # List all .nsit files in the notebook directory
+            files = []
+            for root, dirs, filenames in os.walk(NOTEBOOK_DIR):
+                for fn in sorted(filenames):
+                    if fn.endswith(".nsit"):
+                        full = os.path.join(root, fn)
+                        files.append(full)
+            self.send_json({"cwd": NOTEBOOK_DIR, "files": files})
+            return
+
         self.send_response(404)
         self.end_headers()
 
@@ -232,8 +269,12 @@ class NotebookHandler(http.server.BaseHTTPRequestHandler):
             return
 
         if self.path == "/api/kernel/restart":
-            kernel.restart()
-            self.send_json({"status": "restarted"})
+            try:
+                kernel.restart()
+                self.send_json({"status": "restarted"})
+            except Exception as e:
+                print(f"[Kernel] Restart error: {e}")
+                self.send_json({"status": "error", "message": str(e)}, 500)
             return
 
         if self.path == "/api/kernel/reset":

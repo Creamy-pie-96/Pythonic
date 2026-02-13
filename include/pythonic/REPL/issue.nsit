@@ -1,0 +1,30 @@
+{
+  "nsit_format": "1.0",
+  "metadata": {
+    "title": "New",
+    "created": "2026-02-13T07:10:15.793124Z",
+    "modified": "2026-02-13T07:10:50.081375Z",
+    "kernel": "scriptit",
+    "kernel_version": "2.0"
+  },
+  "cells": [
+    {
+      "id": "35ffd0e2-792a-47e2-85b5-98b21446bda7",
+      "type": "code",
+      "source": "var x =10 y\nprint(x)",
+      "outputs": [
+        {
+          "type": "stdout",
+          "text": "None\n"
+        },
+        {
+          "type": "stderr",
+          "text": "pythonic: TypeError: TypeError: unsupported operand type(s) for *: 'none' and 'none'"
+        }
+      ],
+      "execution_count": 1,
+      "metadata": {},
+      "_running": false
+    }
+  ]
+}

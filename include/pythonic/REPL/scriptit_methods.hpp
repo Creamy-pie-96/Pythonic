@@ -3,6 +3,8 @@
 // Architecture: map of dtype → supported methods, dispatched by arg count.
 
 #include "scriptit_types.hpp"
+#include <fstream>
+#include <sstream>
 
 // ─── Method Signature Types ──────────────────────────────
 
@@ -408,6 +410,135 @@ struct MethodDispatch
     }
 };
 
+// ─── Forward declarations for file I/O ──────────────────
+// FileRegistry is defined in scriptit_builtins.hpp (included after this header).
+// We use a function pointer pattern to break the circular dependency.
+// The actual file dispatch is implemented via dispatch_file_method() below,
+// which is defined inline here but uses lazy-linked FileRegistry access.
+
+// We need direct fstream access. FileRegistry stores them, but we can't
+// include scriptit_builtins.hpp here. Instead, we store a global function
+// pointer that ScriptIt.cpp sets after including all headers.
+
+// Actually, let's use a different approach: file method dispatch is done
+// inline using the fstream headers we already have, with a global map.
+
+namespace scriptit_file_internal
+{
+    struct FileStore
+    {
+        static FileStore &instance()
+        {
+            static FileStore inst;
+            return inst;
+        }
+        std::unordered_map<int, std::fstream *> streams; // non-owning — owned by FileRegistry
+    };
+}
+
+// Helper: check if a var is a file dict
+inline bool is_file_dict(const var &v, int &outId)
+{
+    if (!v.is_dict())
+        return false;
+    try
+    {
+        var &mv = const_cast<var &>(v);
+        var t = mv["__type__"];
+        if (!t.is_string() || t.as_string_unchecked() != "file")
+            return false;
+        outId = mv["__id__"].toInt();
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+// Dispatch file-specific methods. Returns {true, result} if handled.
+inline std::pair<bool, var> dispatch_file_method(var &self, const std::string &method, const std::vector<var> &args)
+{
+    int fid;
+    if (!is_file_dict(self, fid))
+        return {false, var(NoneType{})};
+
+    auto &store = scriptit_file_internal::FileStore::instance();
+    auto it = store.streams.find(fid);
+    if (it == store.streams.end() || !it->second || !it->second->is_open())
+        throw std::runtime_error("File handle " + std::to_string(fid) + " is not open");
+
+    std::fstream &fs = *it->second;
+    int argc = (int)args.size();
+
+    if (method == "read" && argc == 0)
+    {
+        // Read entire file content
+        std::ostringstream oss;
+        // Seek to beginning for full read
+        fs.clear();
+        fs.seekg(0, std::ios::beg);
+        oss << fs.rdbuf();
+        return {true, var(oss.str())};
+    }
+    if (method == "readline" && argc == 0)
+    {
+        std::string line;
+        if (std::getline(fs, line))
+            return {true, var(line)};
+        return {true, var("")};
+    }
+    if (method == "readlines" && argc == 0)
+    {
+        fs.clear();
+        fs.seekg(0, std::ios::beg);
+        List lines;
+        std::string line;
+        while (std::getline(fs, line))
+            lines.push_back(var(line));
+        return {true, var(std::move(lines))};
+    }
+    if (method == "write" && argc == 1)
+    {
+        std::string data = args[0].is_string() ? args[0].as_string_unchecked() : args[0].str();
+        fs << data;
+        fs.flush();
+        return {true, var((int)data.size())};
+    }
+    if (method == "writelines" && argc == 1)
+    {
+        if (!args[0].is_list())
+            throw std::runtime_error("writelines() requires a list");
+        int total = 0;
+        for (const auto &item : args[0])
+        {
+            std::string line = item.is_string() ? item.as_string_unchecked() : item.str();
+            fs << line << "\n";
+            total += (int)line.size() + 1;
+        }
+        fs.flush();
+        return {true, var(total)};
+    }
+    if (method == "close" && argc == 0)
+    {
+        fs.close();
+        store.streams.erase(fid);
+        return {true, var(NoneType{})};
+    }
+    if (method == "is_open" && argc == 0)
+    {
+        return {true, var(fs.is_open() ? 1 : 0)};
+    }
+    if (method == "flush" && argc == 0)
+    {
+        fs.flush();
+        return {true, var(NoneType{})};
+    }
+
+    // Not a file method — fall through to normal dispatch (dict methods)
+    return {false, var(NoneType{})};
+}
+
 // ─── Top-level dispatch function ────────────────────────
 
 // Dispatches obj.method(args...) → result
@@ -415,6 +546,13 @@ struct MethodDispatch
 // Handles overloaded arity (e.g. split with 0 or 1 arg)
 inline var dispatch_method(var &self, const std::string &method, const std::vector<var> &args)
 {
+    // 0) Try file-specific methods first (file handles are Dicts internally)
+    {
+        auto [found, result] = dispatch_file_method(self, method, args);
+        if (found)
+            return result;
+    }
+
     const auto &md = MethodDispatch::instance();
     int argc = (int)args.size();
 

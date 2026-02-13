@@ -3,10 +3,10 @@ import unittest
 
 class TestInterpreter(unittest.TestCase):
     def run_code(self, code):
-        """Runs the ./script interpreter with the given code."""
+        """Runs the scriptit interpreter with the given code."""
         formatted_code = code.strip()
         process = subprocess.Popen(
-            ['./script', '--script'],
+            ['scriptit', '--script'],
             stdin=subprocess.PIPE,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,

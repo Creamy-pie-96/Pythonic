@@ -2,6 +2,164 @@
 // scriptit_builtins.hpp — Free-function builtins and math dispatch for ScriptIt v2
 
 #include "scriptit_types.hpp"
+#include "scriptit_methods.hpp"
+#include <fstream>
+#include <sstream>
+#include <memory>
+
+// ─── File Handle Registry ───────────────────────────────
+// Stores open fstream pointers keyed by integer ID.
+// File objects in ScriptIt are Dicts with __type__="file", __id__=<handle_id>.
+
+struct FileRegistry
+{
+    static FileRegistry &instance()
+    {
+        static FileRegistry inst;
+        return inst;
+    }
+
+    int open(const std::string &path, const std::string &mode)
+    {
+        auto flags = std::ios::in; // default
+        bool truncate = false;
+        bool appendMode = false;
+
+        if (mode == "r")
+            flags = std::ios::in;
+        else if (mode == "w")
+        {
+            flags = std::ios::out;
+            truncate = true;
+        }
+        else if (mode == "a")
+        {
+            flags = std::ios::out | std::ios::app;
+            appendMode = true;
+        }
+        else if (mode == "rw" || mode == "r+")
+            flags = std::ios::in | std::ios::out;
+        else if (mode == "w+")
+        {
+            flags = std::ios::in | std::ios::out;
+            truncate = true;
+        }
+        else if (mode == "a+")
+        {
+            flags = std::ios::in | std::ios::out | std::ios::app;
+            appendMode = true;
+        }
+        else
+            throw std::runtime_error("open(): invalid mode '" + mode + "'");
+
+        if (truncate)
+            flags |= std::ios::trunc;
+
+        auto fs = std::make_unique<std::fstream>(path, flags);
+        if (!fs->is_open())
+            throw std::runtime_error("open(): cannot open file '" + path + "'");
+
+        int id = nextId_++;
+        files_[id] = std::move(fs);
+        paths_[id] = path;
+        modes_[id] = mode;
+        // Register raw pointer in FileStore so method dispatch can access it
+        scriptit_file_internal::FileStore::instance().streams[id] = files_[id].get();
+        return id;
+    }
+
+    std::fstream &get(int id)
+    {
+        auto it = files_.find(id);
+        if (it == files_.end() || !it->second)
+            throw std::runtime_error("File handle " + std::to_string(id) + " is not open");
+        return *it->second;
+    }
+
+    std::string getPath(int id)
+    {
+        auto it = paths_.find(id);
+        return (it != paths_.end()) ? it->second : "<unknown>";
+    }
+
+    std::string getMode(int id)
+    {
+        auto it = modes_.find(id);
+        return (it != modes_.end()) ? it->second : "?";
+    }
+
+    void close(int id)
+    {
+        auto it = files_.find(id);
+        if (it != files_.end() && it->second)
+        {
+            it->second->close();
+            it->second.reset();
+        }
+        files_.erase(id);
+        paths_.erase(id);
+        modes_.erase(id);
+        scriptit_file_internal::FileStore::instance().streams.erase(id);
+    }
+
+    bool isOpen(int id)
+    {
+        auto it = files_.find(id);
+        return it != files_.end() && it->second && it->second->is_open();
+    }
+
+    void closeAll()
+    {
+        for (auto &[id, fs] : files_)
+        {
+            if (fs && fs->is_open())
+                fs->close();
+        }
+        files_.clear();
+        paths_.clear();
+        modes_.clear();
+        scriptit_file_internal::FileStore::instance().streams.clear();
+    }
+
+private:
+    int nextId_ = 1;
+    std::unordered_map<int, std::unique_ptr<std::fstream>> files_;
+    std::unordered_map<int, std::string> paths_;
+    std::unordered_map<int, std::string> modes_;
+};
+
+// Helper: create a file-handle var (Dict with __type__="file", __id__=N)
+inline var make_file_var(int id)
+{
+    Dict d;
+    d["__type__"] = var("file");
+    d["__id__"] = var(id);
+    d["path"] = var(FileRegistry::instance().getPath(id));
+    d["mode"] = var(FileRegistry::instance().getMode(id));
+    return var(std::move(d));
+}
+
+// Helper: check if a var is a file handle and extract the id
+inline bool is_file_var(const var &v, int &outId)
+{
+    if (!v.is_dict())
+        return false;
+    try
+    {
+        // var operator[] with string key works on dict/ordered_dict
+        // But it's non-const — we need to work around this
+        var &mv = const_cast<var &>(v);
+        var typeVal = mv["__type__"];
+        if (!typeVal.is_string() || typeVal.as_string_unchecked() != "file")
+            return false;
+        outId = mv["__id__"].toInt();
+        return true;
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
 
 // ─── Math Function Dispatch ─────────────────────────────
 
@@ -493,6 +651,39 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
              var a = s.top();
              s.pop();
              s.push(pythonic::math::fabs(a));
+         }},
+
+        // ── File I/O free functions ──────────────────
+
+        {"open", [](std::stack<var> &s, int argc)
+         {
+             if (argc < 1 || argc > 2)
+                 throw std::runtime_error("open(path[, mode]) takes 1-2 arguments");
+             std::string mode = "r";
+             if (argc == 2)
+             {
+                 var modeArg = s.top();
+                 s.pop();
+                 mode = modeArg.is_string() ? modeArg.as_string_unchecked() : modeArg.str();
+             }
+             var pathArg = s.top();
+             s.pop();
+             std::string path = pathArg.is_string() ? pathArg.as_string_unchecked() : pathArg.str();
+             int id = FileRegistry::instance().open(path, mode);
+             s.push(make_file_var(id));
+         }},
+
+        {"close", [](std::stack<var> &s, int argc)
+         {
+             if (argc != 1)
+                 throw std::runtime_error("close(file) takes exactly 1 argument");
+             var fileArg = s.top();
+             s.pop();
+             int id;
+             if (!is_file_var(fileArg, id))
+                 throw std::runtime_error("close() requires a file handle");
+             FileRegistry::instance().close(id);
+             s.push(var(NoneType{}));
          }},
 
     };

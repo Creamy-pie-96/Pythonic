@@ -61,6 +61,7 @@ enum class TokenType
     KeywordNew,
     KeywordLet,
     KeywordBe,
+    KeywordOf,
     Equals,
     Comma,
     Dot,
@@ -69,6 +70,7 @@ enum class TokenType
     At,
     CommentStart,
     CommentEnd,
+    Newline,
     Eof
 };
 
@@ -107,7 +109,9 @@ inline bool is_builtin_function(const std::string &str)
         "sum", "sorted", "reversed", "all", "any",
         "enumerate", "zip", "map",
         // math (free-function form)
-        "abs", "min", "max"};
+        "abs", "min", "max",
+        // file I/O
+        "open", "close"};
     return funcs.count(str) || is_math_function(str);
 }
 
@@ -269,6 +273,14 @@ struct MultiVarStmt : Statement
         for (auto &a : assignments)
             a->execute(scope);
     }
+};
+
+struct LetContextStmt : Statement
+{
+    std::string name;                    // variable name for the resource
+    std::shared_ptr<Expression> expr;    // the open(...) expression
+    std::shared_ptr<BlockStmt> body;     // block of statements to execute
+    void execute(Scope &scope) override; // defined in ScriptIt.cpp
 };
 
 // ─── Environment / Scope ──────────────────────────────────
