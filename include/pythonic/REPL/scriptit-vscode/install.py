@@ -305,9 +305,61 @@ def install_scriptit():
     step("Installing ScriptIt System-Wide")
     info("(Requires sudo)")
 
+    build_abs = str(BUILD_DIR.resolve())
+    binary = BUILD_DIR / "scriptit"
+
+    # FUSE/encrypted filesystems (gocryptfs, ecryptfs) may block root access.
+    # Detect this and copy via temp location if needed.
+    import tempfile
+
+    def _needs_temp_copy():
+        """Check if sudo can't read our build dir (common with FUSE mounts)."""
+        try:
+            r = subprocess.run(
+                ["sudo", "test", "-r", str(binary)],
+                capture_output=True, timeout=5
+            )
+            return r.returncode != 0
+        except:
+            return True
+
+    use_temp = _needs_temp_copy() if binary.exists() else False
+
     try:
-        run("sudo cmake --install .", cwd=BUILD_DIR)
-        ok("ScriptIt installed system-wide!")
+        if use_temp:
+            info("Detected FUSE/encrypted mount — copying via temp directory")
+            with tempfile.TemporaryDirectory() as tmpdir:
+                # Copy the entire build dir as current user so sudo can access it
+                tmp_build = Path(tmpdir) / "build_scriptit"
+                shutil.copytree(build_abs, str(tmp_build))
+                # Also need to copy the binary into the temp build dir
+                # because cmake_install.cmake references the original binary path
+                tmp_binary = tmp_build / "scriptit"
+                if not tmp_binary.exists() and binary.exists():
+                    shutil.copy2(str(binary), str(tmp_binary))
+                # Patch the cmake_install.cmake to point to the temp binary
+                cmake_install = tmp_build / "cmake_install.cmake"
+                if cmake_install.exists():
+                    content = cmake_install.read_text()
+                    content = content.replace(build_abs, str(tmp_build))
+                    # Also replace the REPL source paths for notebook files etc.
+                    repl_abs = str(REPL_DIR.resolve())
+                    tmp_repl = Path(tmpdir) / "repl_src"
+                    if repl_abs in content:
+                        # Copy files that cmake_install references
+                        notebook_src = REPL_DIR / "notebook"
+                        if notebook_src.exists():
+                            shutil.copytree(str(notebook_src), str(tmp_repl / "notebook"), dirs_exist_ok=True)
+                        notebook_sh = REPL_DIR / "notebook.sh"
+                        if notebook_sh.exists():
+                            shutil.copy2(str(notebook_sh), str(tmp_repl / "notebook.sh"))
+                        content = content.replace(repl_abs, str(tmp_repl))
+                    cmake_install.write_text(content)
+                run(f"sudo cmake --install {tmp_build}")
+                ok("ScriptIt installed system-wide!")
+        else:
+            run(f"sudo cmake --install {build_abs}", cwd=None)
+            ok("ScriptIt installed system-wide!")
 
         # Verify
         if which("scriptit"):
@@ -319,16 +371,23 @@ def install_scriptit():
         return True
     except:
         warn("System-wide install failed — trying to copy binary manually")
-        binary = BUILD_DIR / "scriptit"
         if binary.exists():
+            binary_abs = str(binary.resolve())
             try:
-                run(f"sudo cp {binary} /usr/local/bin/scriptit")
-                run("sudo chmod +x /usr/local/bin/scriptit")
+                if use_temp:
+                    with tempfile.TemporaryDirectory() as tmpdir:
+                        tmp_bin = Path(tmpdir) / "scriptit"
+                        shutil.copy2(binary_abs, str(tmp_bin))
+                        run(f"sudo cp '{tmp_bin}' /usr/local/bin/scriptit")
+                        run("sudo chmod +x /usr/local/bin/scriptit")
+                else:
+                    run(f"sudo cp '{binary_abs}' /usr/local/bin/scriptit")
+                    run("sudo chmod +x /usr/local/bin/scriptit")
                 ok("Manually copied to /usr/local/bin/scriptit")
                 return True
             except:
                 err("Could not install binary. You can manually copy it from:")
-                err(f"  {binary}")
+                err(f"  {binary_abs}")
                 return False
         return False
 
@@ -370,7 +429,7 @@ def package_extension():
 
     # Install vsce if not present
     info("Packaging with @vscode/vsce...")
-    run("npx @vscode/vsce package --allow-missing-repository", cwd=EXT_DIR)
+    run("npx @vscode/vsce package --allow-missing-repository --skip-license", cwd=EXT_DIR)
 
     # Find the .vsix file
     vsix_files = list(EXT_DIR.glob("*.vsix"))

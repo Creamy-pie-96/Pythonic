@@ -10,6 +10,7 @@ python3 install.py
 ```
 
 This automatically:
+
 1. Installs missing dependencies (cmake, g++, Node.js 22, npm)
 2. Builds the ScriptIt binary and installs it system-wide
 3. Compiles the VS Code extension
@@ -17,6 +18,7 @@ This automatically:
 5. Installs the `.vsix` into VS Code
 
 For partial installs, use:
+
 ```bash
 python3 install.py --ext-only    # Only the VS Code extension
 python3 install.py --build-only  # Only the ScriptIt binary
@@ -29,13 +31,14 @@ After install, **restart VS Code** to activate.
 
 ## File Types
 
-| Extension | Type | What it does |
-|-----------|------|-------------|
-| `.sit`    | Script file | Full syntax highlighting, IntelliSense, diagnostics |
-| `.si`     | Script file | Same as `.sit` (shorter alias) |
+| Extension | Type          | What it does                                                   |
+| --------- | ------------- | -------------------------------------------------------------- |
+| `.sit`    | Script file   | Full syntax highlighting, IntelliSense, diagnostics            |
+| `.si`     | Script file   | Same as `.sit` (shorter alias)                                 |
 | `.nsit`   | Notebook file | Opens in VS Code's native notebook editor with ScriptIt kernel |
 
 Each file type has its own icon in the file explorer:
+
 - **`.sit`** / **`.si`** — Blue "Si" code icon
 - **`.nsit`** — Purple "NSi" notebook icon
 
@@ -67,25 +70,25 @@ True, False, None       # Constants (specific color)
 
 ### What gets colored (scope → theme color):
 
-| Element | Example | Scope | Typical Color |
-|---------|---------|-------|--------------|
-| Keywords | `fn`, `if`, `for`, `give` | `keyword.*` | Blue/Purple |
-| Function names | `fn **add**(x):` | `entity.name.function` | Yellow |
-| Parameters | `fn add(**x, y**):` | `variable.parameter` | Orange |
-| Variables | `var **x** = ...` | `variable.other.declaration` | Light blue |
-| Loop variables | `for **i** in ...` | `variable.other.loop` | Light blue |
-| Builtins | `print()`, `len()` | `support.function.builtin` | Green |
-| Math functions | `sin()`, `sqrt()` | `support.function.math` | Green |
-| Type conversions | `str()`, `double()` | `support.function.type` | Teal |
-| Strings | `"hello"` | `string.quoted` | Orange/Brown |
-| Numbers | `42`, `3.14` | `constant.numeric` | Light green |
-| Comments | `# note` | `comment.line` | Gray/Green |
-| Constants | `True`, `False`, `None` | `constant.language` | Blue |
-| Operators | `==`, `+=`, `&&` | `keyword.operator` | Light gray |
-| @ references | `@variable` | `storage.modifier.reference` | Red |
-| Method calls | `.upper()` | `entity.name.function.method` | Yellow |
-| Block end | `;` on its own line | `punctuation.terminator.block` | Gray |
-| Statement end | `.` at end of line | `punctuation.terminator.statement` | Gray |
+| Element          | Example                   | Scope                              | Typical Color |
+| ---------------- | ------------------------- | ---------------------------------- | ------------- |
+| Keywords         | `fn`, `if`, `for`, `give` | `keyword.*`                        | Blue/Purple   |
+| Function names   | `fn **add**(x):`          | `entity.name.function`             | Yellow        |
+| Parameters       | `fn add(**x, y**):`       | `variable.parameter`               | Orange        |
+| Variables        | `var **x** = ...`         | `variable.other.declaration`       | Light blue    |
+| Loop variables   | `for **i** in ...`        | `variable.other.loop`              | Light blue    |
+| Builtins         | `print()`, `len()`        | `support.function.builtin`         | Green         |
+| Math functions   | `sin()`, `sqrt()`         | `support.function.math`            | Green         |
+| Type conversions | `str()`, `double()`       | `support.function.type`            | Teal          |
+| Strings          | `"hello"`                 | `string.quoted`                    | Orange/Brown  |
+| Numbers          | `42`, `3.14`              | `constant.numeric`                 | Light green   |
+| Comments         | `# note`                  | `comment.line`                     | Gray/Green    |
+| Constants        | `True`, `False`, `None`   | `constant.language`                | Blue          |
+| Operators        | `==`, `+=`, `&&`          | `keyword.operator`                 | Light gray    |
+| @ references     | `@variable`               | `storage.modifier.reference`       | Red           |
+| Method calls     | `.upper()`                | `entity.name.function.method`      | Yellow        |
+| Block end        | `;` on its own line       | `punctuation.terminator.block`     | Gray          |
+| Statement end    | `.` at end of line        | `punctuation.terminator.statement` | Gray          |
 
 ---
 
@@ -103,6 +106,7 @@ Start typing and completions appear automatically:
 ### Method Completions
 
 Type `.` after any variable to get method suggestions:
+
 - String methods: `.upper()`, `.lower()`, `.split()`, `.replace()`, ...
 - List methods: `.append()`, `.pop()`, `.sort()`, `.index()`, ...
 - Set methods: `.add()`, `.union()`, `.intersection()`, ...
@@ -113,6 +117,7 @@ Type `.` after any variable to get method suggestions:
 ## Hover Information
 
 Hover over any keyword or function name to see:
+
 - **Signature**: `print(value1, value2, ...)`
 - **Description**: "Print one or more values to stdout, separated by spaces."
 
@@ -136,12 +141,14 @@ As you type commas, the active parameter highlights change.
 ## Diagnostics (Error Detection)
 
 ### Static Analysis (instant, no binary needed):
+
 - **Bracket matching**: Detects unclosed `(`, `[`, `{` or mismatched pairs
 - **Unterminated strings**: Missing closing `"` or `'`
 - **= vs == warning**: Warns if you use `=` inside `if`/`while` conditions
 - **fn missing colon/dot**: Warns if `fn name()` has no `:` or `.`
 
 ### Subprocess Validation (requires `scriptit` binary):
+
 - Runs your code through `scriptit --script`
 - Parses error messages with line numbers
 - Shows actual runtime errors (undefined variables, type errors, etc.)
@@ -154,37 +161,39 @@ Toggle diagnostics: Settings → `scriptit.enableLinting`
 
 Type a prefix and press Tab:
 
-| Prefix | Expands to |
-|--------|-----------|
-| `fn` | Function definition with body |
-| `fnr` | Function with give (return) |
-| `fwd` | Forward declaration |
-| `if` | If block |
-| `ife` | If-else block |
-| `ifee` | If-elif-else block |
-| `forr` | For range(N) loop |
-| `forft` | For range(from A to B) |
+| Prefix   | Expands to                    |
+| -------- | ----------------------------- |
+| `fn`     | Function definition with body |
+| `fnr`    | Function with give (return)   |
+| `fwd`    | Forward declaration           |
+| `if`     | If block                      |
+| `ife`    | If-else block                 |
+| `ifee`   | If-elif-else block            |
+| `forr`   | For range(N) loop             |
+| `forft`  | For range(from A to B)        |
 | `forfts` | For range(from A to B step S) |
-| `forin` | For item in collection |
-| `while` | While loop |
-| `var` | Variable declaration |
-| `pr` | print() call |
-| `give` | Return statement |
-| `with` | Context manager |
-| `let` | let X be Y. |
-| `new` | new X are [...]. |
-| `of` | method of object. |
+| `forin`  | For item in collection        |
+| `while`  | While loop                    |
+| `var`    | Variable declaration          |
+| `pr`     | print() call                  |
+| `give`   | Return statement              |
+| `with`   | Context manager               |
+| `let`    | let X be Y.                   |
+| `new`    | new X are [...].              |
+| `of`     | method of object.             |
 
 ---
 
 ## Running Scripts
 
 ### Run Current File
+
 - **Keyboard**: `Ctrl+Shift+R` (Mac: `Cmd+Shift+R`)
 - **Command Palette**: "ScriptIt: Run Current File"
 - **Editor title bar**: Click the ▶ Play button (on `.sit` files)
 
 ### Run Selection
+
 - Select code → Command Palette → "ScriptIt: Run Selection"
 
 ---
@@ -194,6 +203,7 @@ Type a prefix and press Tab:
 Opening any `.nsit` file in VS Code gives you a native notebook experience:
 
 ### Features:
+
 - **Code cells**: Write ScriptIt code, execute with Shift+Enter
 - **Markdown cells**: Rich text between code cells
 - **Kernel**: Runs a real ScriptIt kernel subprocess
@@ -201,20 +211,23 @@ Opening any `.nsit` file in VS Code gives you a native notebook experience:
 - **Output display**: stdout, stderr, and results shown below cells
 
 ### Keyboard Shortcuts (VS Code notebook defaults):
-| Key | Action |
-|-----|--------|
-| `Shift+Enter` | Run cell and move to next |
-| `Ctrl+Enter` | Run cell, stay in place |
-| `Escape` | Enter command mode |
-| `Enter` | Enter edit mode |
-| `A` | Insert cell above (command mode) |
-| `B` | Insert cell below (command mode) |
-| `DD` | Delete cell (command mode) |
-| `M` | Change to markdown cell |
-| `Y` | Change to code cell |
+
+| Key           | Action                           |
+| ------------- | -------------------------------- |
+| `Shift+Enter` | Run cell and move to next        |
+| `Ctrl+Enter`  | Run cell, stay in place          |
+| `Escape`      | Enter command mode               |
+| `Enter`       | Enter edit mode                  |
+| `A`           | Insert cell above (command mode) |
+| `B`           | Insert cell below (command mode) |
+| `DD`          | Delete cell (command mode)       |
+| `M`           | Change to markdown cell          |
+| `Y`           | Change to code cell              |
 
 ### Opening the Web Notebook:
+
 If you prefer the browser-based notebook:
+
 - Command Palette → "ScriptIt: Open Notebook Server"
 - This starts the Python notebook server and opens it
 
@@ -224,18 +237,19 @@ If you prefer the browser-based notebook:
 
 Open Settings (Ctrl+,) and search "scriptit":
 
-| Setting | Default | Description |
-|---------|---------|-------------|
-| `scriptit.scriptitPath` | `scriptit` | Path to binary. Use full path if not in PATH. |
-| `scriptit.maxNumberOfProblems` | `100` | Max diagnostics shown |
-| `scriptit.enableLinting` | `true` | Toggle error detection on/off |
-| `scriptit.trace.server` | `off` | Debug LSP communication |
+| Setting                        | Default    | Description                                   |
+| ------------------------------ | ---------- | --------------------------------------------- |
+| `scriptit.scriptitPath`        | `scriptit` | Path to binary. Use full path if not in PATH. |
+| `scriptit.maxNumberOfProblems` | `100`      | Max diagnostics shown                         |
+| `scriptit.enableLinting`       | `true`     | Toggle error detection on/off                 |
+| `scriptit.trace.server`        | `off`      | Debug LSP communication                       |
 
 ---
 
 ## File Icons
 
 The extension provides custom file icons:
+
 - **Enable**: Settings → "File Icon Theme" → Select "ScriptIt File Icons"
 - Note: This only adds icons for `.sit`, `.si`, and `.nsit` files. Your other files will use your existing icon theme.
 

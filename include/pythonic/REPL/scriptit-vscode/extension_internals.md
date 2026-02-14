@@ -81,25 +81,28 @@ to match as a builtin, not a generic function call.
 ### Pattern Types:
 
 #### 1. Simple Match (one line)
+
 ```json
 {
-  "name": "keyword.control.flow.scriptit",    // Scope to assign
-  "match": "\\b(if|elif|else|for|while)\\b"   // Regex pattern
+  "name": "keyword.control.flow.scriptit", // Scope to assign
+  "match": "\\b(if|elif|else|for|while)\\b" // Regex pattern
 }
 ```
 
 #### 2. Match with Captures (parts get different scopes)
+
 ```json
 {
   "match": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
   "captures": {
-    "1": { "name": "keyword.declaration.function.scriptit" },  // fn
+    "1": { "name": "keyword.declaration.function.scriptit" }, // fn
     "2": { "name": "entity.name.function.definition.scriptit" } // function name
   }
 }
 ```
 
 #### 3. Begin/End (multi-character or multi-line regions)
+
 ```json
 {
   "begin": "\"",
@@ -112,6 +115,7 @@ to match as a builtin, not a generic function call.
 ```
 
 #### 4. Begin/End with Sub-patterns (e.g., function parameters)
+
 ```json
 {
   "begin": "\\b(fn)\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s*\\(",
@@ -128,6 +132,7 @@ to match as a builtin, not a generic function call.
   ]
 }
 ```
+
 This captures everything between `fn name(` and `):` — each identifier inside
 becomes `variable.parameter`.
 
@@ -135,23 +140,24 @@ becomes `variable.parameter`.
 
 VS Code themes map scopes to colors. Use standard names:
 
-| Scope prefix | What it colors | Example |
-|-------------|---------------|---------|
-| `keyword.*` | Language keywords | `if`, `fn`, `var` |
-| `entity.name.function.*` | Function/method names | `add`, `myFunc` |
-| `variable.parameter.*` | Function parameters | `x`, `y` in `fn f(x, y)` |
-| `variable.other.*` | Variables | `x` in `var x = 10` |
-| `support.function.*` | Built-in functions | `print`, `sin` |
-| `constant.numeric.*` | Numbers | `42`, `3.14` |
-| `constant.language.*` | Language constants | `True`, `False`, `None` |
-| `string.quoted.*` | String literals | `"hello"` |
-| `comment.*` | Comments | `# note` |
-| `storage.modifier.*` | Modifiers | `@` in `@param` |
-| `punctuation.*` | Punctuation | `.`, `;`, `,` |
+| Scope prefix             | What it colors        | Example                  |
+| ------------------------ | --------------------- | ------------------------ |
+| `keyword.*`              | Language keywords     | `if`, `fn`, `var`        |
+| `entity.name.function.*` | Function/method names | `add`, `myFunc`          |
+| `variable.parameter.*`   | Function parameters   | `x`, `y` in `fn f(x, y)` |
+| `variable.other.*`       | Variables             | `x` in `var x = 10`      |
+| `support.function.*`     | Built-in functions    | `print`, `sin`           |
+| `constant.numeric.*`     | Numbers               | `42`, `3.14`             |
+| `constant.language.*`    | Language constants    | `True`, `False`, `None`  |
+| `string.quoted.*`        | String literals       | `"hello"`                |
+| `comment.*`              | Comments              | `# note`                 |
+| `storage.modifier.*`     | Modifiers             | `@` in `@param`          |
+| `punctuation.*`          | Punctuation           | `.`, `;`, `,`            |
 
 ### How Variable Highlighting Works:
 
 For `var x, b = ...`:
+
 ```json
 "var-declaration": {
   "patterns": [{
@@ -167,9 +173,11 @@ For `var x, b = ...`:
   }]
 }
 ```
+
 Result: `var` → blue keyword, `x` → light blue variable, `b` → light blue variable.
 
 For function calls like `myFunc(x)`:
+
 ```json
 "function-call": {
   "patterns": [{
@@ -180,6 +188,7 @@ For function calls like `myFunc(x)`:
   }]
 }
 ```
+
 Result: `myFunc` → yellow (function call color).
 
 ---
@@ -205,6 +214,7 @@ Result: `myFunc` → yellow (function call color).
 ```
 
 2. **Include it in the top-level patterns** (before `identifiers`!):
+
 ```json
 "patterns": [
     ...
@@ -285,6 +295,7 @@ myNewFunc: {
 ```
 
 This automatically provides:
+
 - **Hover tooltip**: Shows signature + description when hovering
 - **Signature help**: Shows parameter info when typing `myNewFunc(`
 
@@ -300,15 +311,15 @@ Edit `src/server/server.ts`, in `validateTextDocument()`:
 // After the existing static checks, add:
 // Check for deprecated function
 if (/\boldFunc\s*\(/.test(trimmed)) {
-    diagnostics.push({
-        severity: DiagnosticSeverity.Warning,
-        range: {
-            start: { line: i, character: codePart.indexOf('oldFunc') },
-            end: { line: i, character: codePart.indexOf('oldFunc') + 7 }
-        },
-        message: `'oldFunc' is deprecated. Use 'newFunc' instead.`,
-        source: 'scriptit'
-    });
+  diagnostics.push({
+    severity: DiagnosticSeverity.Warning,
+    range: {
+      start: { line: i, character: codePart.indexOf("oldFunc") },
+      end: { line: i, character: codePart.indexOf("oldFunc") + 7 },
+    },
+    message: `'oldFunc' is deprecated. Use 'newFunc' instead.`,
+    source: "scriptit",
+  });
 }
 ```
 
@@ -321,9 +332,16 @@ Edit `src/server/diagnostics.ts`, in `parseErrors()`:
 // Pattern: MyCustomError at position N: message
 match = trimmed.match(/MyCustomError\s+at\s+position\s+(\d+)\s*:\s*(.+)/i);
 if (match) {
-    const lineNum = Math.max(0, parseInt(match[1]) - 1);
-    diagnostics.push(this.createDiagnostic(lineNum, match[2], sourceLines, DiagnosticSeverity.Error));
-    continue;
+  const lineNum = Math.max(0, parseInt(match[1]) - 1);
+  diagnostics.push(
+    this.createDiagnostic(
+      lineNum,
+      match[2],
+      sourceLines,
+      DiagnosticSeverity.Error,
+    ),
+  );
+  continue;
 }
 ```
 
@@ -347,6 +365,7 @@ Edit `snippets/scriptit.json`:
 ```
 
 Snippet syntax:
+
 - `${1:placeholder}` — Tab stop 1 with default text
 - `$0` — Final cursor position
 - `${1|choice1,choice2|}` — Drop-down choice
@@ -379,6 +398,7 @@ Cell execution request
 ```
 
 The kernel protocol is JSON over stdin/stdout:
+
 ```
 Request:  {"action": "execute", "cell_id": "...", "code": "..."}
 Response: {"cell_id": "...", "status": "ok", "stdout": "...", "stderr": "..."}
@@ -405,6 +425,7 @@ VS Code (client)  ←── IPC ──→  Language Server (server.ts)
 ### Adding a new LSP feature:
 
 1. Register the capability in `connection.onInitialize()`:
+
 ```typescript
 capabilities: {
     ...
@@ -413,10 +434,11 @@ capabilities: {
 ```
 
 2. Add the handler:
+
 ```typescript
 connection.onDocumentFormatting((params) => {
-    // Return TextEdit[] with formatting changes
-    return [];
+  // Return TextEdit[] with formatting changes
+  return [];
 });
 ```
 
@@ -455,6 +477,7 @@ code --install-extension scriptit-lang-0.1.0.vsix
 
 Use `Ctrl+Shift+P` → "Developer: Inspect Editor Tokens and Scopes"
 Click on any character to see:
+
 - Token type
 - Assigned scope (e.g., `keyword.control.flow.scriptit`)
 - Theme color applied
@@ -463,17 +486,17 @@ Click on any character to see:
 
 ## File Map (quick reference)
 
-| I want to... | Edit this file |
-|-------------|---------------|
-| Add syntax highlighting for a new keyword | `syntaxes/scriptit.tmLanguage.json` |
-| Add a new auto-completion item | `src/server/completions.ts` |
-| Add hover documentation | `src/server/hover.ts` |
-| Add a new error check (static) | `src/server/server.ts` → `validateTextDocument()` |
-| Add a new error pattern (subprocess) | `src/server/diagnostics.ts` → `parseErrors()` |
-| Add a code snippet | `snippets/scriptit.json` |
-| Change bracket/comment/indent behavior | `language-configuration.json` |
-| Add a new command | `src/client/extension.ts` + `package.json` commands |
-| Change file associations | `package.json` → languages |
-| Add a new file icon | `images/` + `themes/scriptit-icon-theme.json` |
-| Modify notebook serialization | `src/client/notebookSerializer.ts` |
-| Modify kernel execution | `src/client/notebookController.ts` |
+| I want to...                              | Edit this file                                      |
+| ----------------------------------------- | --------------------------------------------------- |
+| Add syntax highlighting for a new keyword | `syntaxes/scriptit.tmLanguage.json`                 |
+| Add a new auto-completion item            | `src/server/completions.ts`                         |
+| Add hover documentation                   | `src/server/hover.ts`                               |
+| Add a new error check (static)            | `src/server/server.ts` → `validateTextDocument()`   |
+| Add a new error pattern (subprocess)      | `src/server/diagnostics.ts` → `parseErrors()`       |
+| Add a code snippet                        | `snippets/scriptit.json`                            |
+| Change bracket/comment/indent behavior    | `language-configuration.json`                       |
+| Add a new command                         | `src/client/extension.ts` + `package.json` commands |
+| Change file associations                  | `package.json` → languages                          |
+| Add a new file icon                       | `images/` + `themes/scriptit-icon-theme.json`       |
+| Modify notebook serialization             | `src/client/notebookSerializer.ts`                  |
+| Modify kernel execution                   | `src/client/notebookController.ts`                  |
