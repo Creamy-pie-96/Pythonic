@@ -242,6 +242,14 @@ public:
             }
             if (c == '-' && i + 1 < source.length() && source[i + 1] == '-')
             {
+                // Check for --- (dash operator for undirected edges) first (3 chars)
+                if (i + 2 < source.length() && source[i + 2] == '-')
+                {
+                    // But NOT if it's ---> (4 chars — not valid, treat first 3 as ---)
+                    tokens.emplace_back(TokenType::Dash, "---", i, line);
+                    i += 2;
+                    continue;
+                }
                 // But NOT if it's --> (comment start)
                 if (!(i + 2 < source.length() && source[i + 2] == '>'))
                 {
@@ -253,6 +261,14 @@ public:
             if (c == '-' && i + 1 < source.length() && source[i + 1] == '=')
             {
                 tokens.emplace_back(TokenType::MinusEquals, "-=", i, line);
+                i++;
+                continue;
+            }
+            // -> arrow (directed edge, dict key-value)
+            // Must be checked AFTER --> (comment) and -- (decrement) and -=
+            if (c == '-' && i + 1 < source.length() && source[i + 1] == '>')
+            {
+                tokens.emplace_back(TokenType::Arrow, "->", i, line);
                 i++;
                 continue;
             }
@@ -284,6 +300,13 @@ public:
             {
                 tokens.emplace_back(TokenType::Operator, "!=", i, line);
                 i++;
+                continue;
+            }
+            // <-> bidirectional arrow (must check BEFORE <= and <)
+            if (c == '<' && i + 2 < source.length() && source[i + 1] == '-' && source[i + 2] == '>')
+            {
+                tokens.emplace_back(TokenType::BiArrow, "<->", i, line);
+                i += 2;
                 continue;
             }
             if (c == '<' && i + 1 < source.length() && source[i + 1] == '=')
@@ -592,6 +615,33 @@ var Expression::evaluate(Scope &scope)
                      { return var(static_cast<bool>(a) && static_cast<bool>(b)); }},
                     {"||", [](const var &a, const var &b) -> var
                      { return var(static_cast<bool>(a) || static_cast<bool>(b)); }},
+                    {"->", [](const var &a, const var &b) -> var
+                     {
+                         // Edge spec: directed edge from a to b
+                         Dict d;
+                         d["__from__"] = a;
+                         d["__to__"] = b;
+                         d["__dir__"] = var("directed");
+                         return var(std::move(d));
+                     }},
+                    {"<->", [](const var &a, const var &b) -> var
+                     {
+                         // Edge spec: bidirectional edge between a and b
+                         Dict d;
+                         d["__from__"] = a;
+                         d["__to__"] = b;
+                         d["__dir__"] = var("bidirectional");
+                         return var(std::move(d));
+                     }},
+                    {"---", [](const var &a, const var &b) -> var
+                     {
+                         // Edge spec: undirected edge between a and b
+                         Dict d;
+                         d["__from__"] = a;
+                         d["__to__"] = b;
+                         d["__dir__"] = var("undirected");
+                         return var(std::move(d));
+                     }},
                 };
 
                 auto opIt = binaryOps.find(token.value);
@@ -642,6 +692,28 @@ var Expression::evaluate(Scope &scope)
             }
             pushVal(var(std::move(items)));
         }
+        // Dict literal {key -> value, ...}
+        else if (token.type == TokenType::LeftBrace && token.value == "DICT")
+        {
+            int count = token.position; // number of key-value pairs
+            std::vector<std::pair<var, var>> pairs;
+            for (int i = 0; i < count; ++i)
+            {
+                if (stk.size() < 2)
+                    throw std::runtime_error("Stack underflow for dict literal at line " + std::to_string(token.line));
+                var val = popVal();
+                var key = popVal();
+                pairs.push_back({key, val});
+            }
+            std::reverse(pairs.begin(), pairs.end());
+            Dict d;
+            for (auto &p : pairs)
+            {
+                std::string key = p.first.is_string() ? p.first.as_string_unchecked() : p.first.str();
+                d[key] = p.second;
+            }
+            pushVal(var(std::move(d)));
+        }
         // ── Method call via dtype dispatch ──
         else if (token.type == TokenType::At)
         {
@@ -659,9 +731,25 @@ var Expression::evaluate(Scope &scope)
 
             if (stk.empty())
                 throw std::runtime_error("Stack underflow for method call (no object) at line " + std::to_string(token.line));
+            std::string selfName = topName();
             var self = popVal();
 
-            pushVal(dispatch_method(self, method, args));
+            var result = dispatch_method(self, method, args);
+
+            // Write back mutations to the original scope variable
+            // (methods like clear(), append(), etc. mutate `self` in-place)
+            if (!selfName.empty())
+            {
+                try
+                {
+                    scope.set(selfName, self);
+                }
+                catch (...)
+                {
+                }
+            }
+
+            pushVal(result);
         }
         // ── Function calls ──
         else if (token.type == TokenType::KeywordFn)
@@ -961,6 +1049,7 @@ class Parser
 {
     const std::vector<Token> &tokens;
     size_t pos = 0;
+    int braceDepth = 0; // Track brace nesting for context-sensitive -> parsing
 
 public:
     Parser(const std::vector<Token> &t) : tokens(t) {}
@@ -1674,22 +1763,74 @@ public:
             }
             else if (token.type == TokenType::LeftBrace)
             {
+                braceDepth++;
                 int count = 0;
+                bool isDict = false;
                 if (!check(TokenType::RightBrace))
                 {
-                    do
+                    // Parse first element to detect dict vs set
+                    auto firstExpr = parseExpression();
+                    if (check(TokenType::Arrow))
                     {
-                        auto elemExpr = parseExpression();
-                        if (elemExpr->logicalOp.empty())
-                            for (auto &at : elemExpr->rpn)
+                        // Dict literal: {key -> value, ...}
+                        isDict = true;
+                        advance(); // consume ->
+                        // Push key
+                        if (firstExpr->logicalOp.empty())
+                            for (auto &at : firstExpr->rpn)
                                 out.push(at);
                         else
-                            flattenExprToQueue(elemExpr, out);
+                            flattenExprToQueue(firstExpr, out);
+                        // Parse value
+                        auto valExpr = parseExpression();
+                        if (valExpr->logicalOp.empty())
+                            for (auto &at : valExpr->rpn)
+                                out.push(at);
+                        else
+                            flattenExprToQueue(valExpr, out);
                         count++;
-                    } while (match(TokenType::Comma));
+                        while (match(TokenType::Comma))
+                        {
+                            auto keyExpr = parseExpression();
+                            consume(TokenType::Arrow, "Expected '->' in dict literal");
+                            auto vExpr = parseExpression();
+                            if (keyExpr->logicalOp.empty())
+                                for (auto &at : keyExpr->rpn)
+                                    out.push(at);
+                            else
+                                flattenExprToQueue(keyExpr, out);
+                            if (vExpr->logicalOp.empty())
+                                for (auto &at : vExpr->rpn)
+                                    out.push(at);
+                            else
+                                flattenExprToQueue(vExpr, out);
+                            count++;
+                        }
+                    }
+                    else
+                    {
+                        // Set literal
+                        if (firstExpr->logicalOp.empty())
+                            for (auto &at : firstExpr->rpn)
+                                out.push(at);
+                        else
+                            flattenExprToQueue(firstExpr, out);
+                        count++;
+                        while (match(TokenType::Comma))
+                        {
+                            auto elemExpr = parseExpression();
+                            if (elemExpr->logicalOp.empty())
+                                for (auto &at : elemExpr->rpn)
+                                    out.push(at);
+                            else
+                                flattenExprToQueue(elemExpr, out);
+                            count++;
+                        }
+                    }
                 }
-                consume(TokenType::RightBrace, "Expected } to close set");
-                out.push(Token(TokenType::LeftBrace, "SET", count, token.line));
+                consume(TokenType::RightBrace, "Expected } to close " + std::string(isDict ? "dict" : "set"));
+                braceDepth--;
+                out.push(Token(TokenType::LeftBrace, isDict ? "DICT" : "SET", count, token.line));
                 lastTokenType = TokenType::RightBrace;
                 continue;
             }
@@ -1738,6 +1879,30 @@ public:
                     }
                     opStack.push(token);
                 }
+            }
+            // Arrow operators: ->, <->, --- (treated as binary operators in shunting-yard)
+            // Inside braces {}, Arrow acts as dict key-value separator, not expression operator
+            else if (token.type == TokenType::Arrow || token.type == TokenType::BiArrow || token.type == TokenType::Dash)
+            {
+                if (braceDepth > 0 && token.type == TokenType::Arrow)
+                {
+                    // Inside braces: -> is a dict separator, not an operator
+                    // Put it back and let the brace handler deal with it
+                    pos--;
+                    break;
+                }
+                // Convert to Operator token for uniform handling
+                Token opToken(TokenType::Operator, token.value, token.position, token.line);
+                int currPrec = get_operator_precedence(token.value);
+                while (!opStack.empty() && opStack.top().type == TokenType::Operator &&
+                       get_operator_precedence(opStack.top().value) >= currPrec)
+                {
+                    out.push(opStack.top());
+                    opStack.pop();
+                }
+                opStack.push(opToken);
+                lastTokenType = TokenType::Operator;
+                continue;
             }
             else if (token.type == TokenType::LeftParen)
                 opStack.push(token);

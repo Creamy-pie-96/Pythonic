@@ -20,4 +20,4 @@ fn greet (who, me):
 if a is not b : 
 
 print(greet("ScriptIt", "hehe")).
-
+;

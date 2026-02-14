@@ -25,6 +25,7 @@
     { "include": "#builtin-functions" },
     { "include": "#math-functions" },
     { "include": "#type-functions" },
+    { "include": "#edge-operators" },
     { "include": "#comparison-operators" },
     { "include": "#compound-assignment" },
     { "include": "#increment-operators" },
@@ -326,8 +327,17 @@
       "patterns": [
         {
           "name": "support.type.conversion.scriptit",
-          "match": "\\b(str|int|float|double|long|long_long|long_double|uint|ulong|ulong_long|auto_numeric|bool|list|set|dict|range_list)\\b(?=\\s*\\()"
+          "match": "\\b(str|int|float|double|long|long_long|long_double|uint|ulong|ulong_long|auto_numeric|bool|list|set|dict|graph|range_list)\\b(?=\\s*\\()"
         }
+      ]
+    },
+
+    "edge-operators": {
+      "comment": "Edge/arrow operators for graph and dict syntax",
+      "patterns": [
+        { "name": "keyword.operator.edge.scriptit", "match": "<->" },
+        { "name": "keyword.operator.edge.scriptit", "match": "---" },
+        { "name": "keyword.operator.edge.scriptit", "match": "->(?!-)" }
       ]
     },
 

@@ -490,6 +490,7 @@ const TOKEN_GROUPS = [
             { id: "op_arith", scope: "keyword.operator.arithmetic.scriptit", color: "#c678dd", bold: false, italic: false, label: "Arithmetic (+, -, *, /)", example: "+" },
             { id: "op_assign", scope: "keyword.operator.assignment.scriptit", color: "#c678dd", bold: false, italic: false, label: "Assignment (=)", example: "=" },
             { id: "op_logic", scope: "keyword.operator.logical.scriptit", color: "#c678dd", bold: false, italic: false, label: "Logical (and, or, not)", example: "and" },
+            { id: "op_edge", scope: "keyword.operator.edge.scriptit", color: "#61afef", bold: true, italic: false, label: "Edge / Arrow (->, <->, ---)", example: "->" },
         ]
     },
     {
@@ -944,9 +945,13 @@ async function saveToExtensionStream(payload) {
                     finishBuildLog(finalResult && finalResult.status === 'ok');
                     if (finalResult && finalResult.status === 'ok') {
                         showToast(finalResult.message || 'Done!');
+                        // Re-sync UI with saved rules so user can edit & save again
+                        await loadCurrentRules();
                     } else {
                         showToast(finalResult?.message || 'Build finished with errors', true);
                     }
+                    // Break out of the read loop — stream is done
+                    break;
                 } else if (eventType === 'error') {
                     addBuildLine('❌ ' + eventData);
                     finishBuildLog(false);

@@ -1,4 +1,4 @@
-// ScriptIt v2 — A scripting language powered by pythonic::vars::var
+// ScriptIt v0.3.0 — A scripting language powered by pythonic::vars::var
 // Extension: .sit | Run: scriptit <file.sit> | REPL: scriptit
 
 #include "scriptit_types.hpp"
@@ -209,6 +209,27 @@ int main(int argc, char *argv[])
         return 0;
     }
 
+    if (argc > 1 && std::string(argv[1]) == "--check")
+    {
+        // Parse-only mode for diagnostics / linting — no execution
+        std::string content((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
+        if (content.empty())
+            return 0;
+        try
+        {
+            Tokenizer tokenizer;
+            auto tokens = tokenizer.tokenize(content);
+            Parser parser(tokens);
+            auto program = parser.parseProgram();
+            // Parse succeeded — no errors
+        }
+        catch (std::exception &e)
+        {
+            std::cout << "Error: " << e.what() << std::endl;
+        }
+        return 0;
+    }
+
     if (argc > 1 && std::string(argv[1]) == "--script")
     {
         std::string content((std::istreambuf_iterator<char>(std::cin)), std::istreambuf_iterator<char>());
@@ -231,7 +252,7 @@ int main(int argc, char *argv[])
     }
 
     // ── Interactive REPL ──
-    std::cout << "ScriptIt REPL v2 (powered by pythonic::var)" << std::endl;
+    std::cout << "ScriptIt REPL v0.3.0 (powered by pythonic::var)" << std::endl;
     std::cout << "Type 'exit' to quit, 'clear' to clear screen, 'wipe' for fresh start." << std::endl;
     std::string line;
     Scope globalScope;

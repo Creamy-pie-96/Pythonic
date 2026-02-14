@@ -129,6 +129,16 @@ namespace pythonic
         using GraphPtr = std::shared_ptr<VarGraphWrapper>;
         // TODO: Later I will add std::forward_list as llist() and std::list as dllist() in this just like I have vector container like list I will add linked lists too.
 
+        // TODO: Add pair and tuple as data structures in var.
+        //   - Pair: A 2-element fixed-size container (like Python tuple of 2, or C++ std::pair).
+        //     Useful for key-value returns, coordinate pairs, edge endpoints, dict .items() iteration, etc.
+        //   - Tuple: An N-element fixed-size immutable container (like Python's tuple).
+        //     Critical for: multiple return values, loop unpacking (for a, b in ...),
+        //     dict .items() / enumerate() iteration, hashable compound keys for sets/dicts,
+        //     and any scenario needing a lightweight immutable sequence.
+        //   Both should be first-class TypeTag variants so the language can pattern-match on them,
+        //   destructure them in for-loops, and use them as dict/set keys (since they're hashable).
+
         // TypeTag enum for fast type dispatch (avoids repeated var_get_if/holds_alternative calls)
         // Using uint8_t as underlying type to minimize memory overhead (1 byte)
         enum class TypeTag : uint8_t

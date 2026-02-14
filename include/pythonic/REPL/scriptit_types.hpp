@@ -29,6 +29,7 @@ using pythonic::vars::List;
 using pythonic::vars::NoneType;
 using pythonic::vars::Set;
 using pythonic::vars::var;
+using pythonic::vars::VarGraphWrapper;
 
 // ─── Token Types ──────────────────────────────────────────
 
@@ -73,6 +74,9 @@ enum class TokenType
     PercentEquals, // %=
     PlusPlus,      // ++
     MinusMinus,    // --
+    Arrow,         // ->  (directed edge, dict key-value)
+    BiArrow,       // <-> (bidirectional edge)
+    Dash,          // -   used contextually for undirected edge in add_edge(A - B)
     Comma,
     Dot,
     Colon,
@@ -115,7 +119,7 @@ inline bool is_builtin_function(const std::string &str)
         "len", "type", "str", "int", "float", "double", "bool", "repr", "isinstance",
         "long", "long_long", "long_double", "uint", "ulong", "ulong_long", "auto_numeric",
         // containers
-        "append", "pop", "list", "set", "dict", "range_list",
+        "append", "pop", "list", "set", "dict", "range_list", "graph",
         // functional / iteration
         "sum", "sorted", "reversed", "all", "any",
         "enumerate", "zip", "map",
@@ -129,7 +133,7 @@ inline bool is_builtin_function(const std::string &str)
 inline int get_operator_precedence(const std::string &op)
 {
     static const std::unordered_map<std::string, int> precedence = {
-        {"||", 1}, {"&&", 2}, {"is", 3}, {"is not", 3}, {"points", 3}, {"not points", 3}, {"==", 3}, {"!=", 3}, {"<", 4}, {"<=", 4}, {">", 4}, {">=", 4}, {"+", 5}, {"-", 5}, {"*", 6}, {"/", 6}, {"%", 6}, {"^", 7}, {"~", 8}, {"!", 8}};
+        {"||", 1}, {"&&", 2}, {"is", 3}, {"is not", 3}, {"points", 3}, {"not points", 3}, {"==", 3}, {"!=", 3}, {"<", 4}, {"<=", 4}, {">", 4}, {">=", 4}, {"->", 4}, {"<->", 4}, {"---", 4}, {"+", 5}, {"-", 5}, {"*", 6}, {"/", 6}, {"%", 6}, {"^", 7}, {"~", 8}, {"!", 8}};
     auto it = precedence.find(op);
     return it != precedence.end() ? it->second : 0;
 }

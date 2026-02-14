@@ -2,7 +2,7 @@
   "name": "scriptit-lang",
   "displayName": "ScriptIt Language Support",
   "description": "Syntax highlighting, IntelliSense, error diagnostics, notebook support, and file icons for the ScriptIt programming language",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "publisher": "pythonic",
   "license": "MIT",
   "engines": {
@@ -308,6 +308,10 @@
         {
           "scope": "keyword.operator.logical.symbol.scriptit",
           "settings": { "foreground": "#c678dd" }
+        },
+        {
+          "scope": "keyword.operator.edge.scriptit",
+          "settings": { "foreground": "#61afef", "fontStyle": "bold" }
         },
         {
           "scope": "punctuation.bracket.round.scriptit",

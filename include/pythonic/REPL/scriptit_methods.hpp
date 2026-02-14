@@ -338,8 +338,9 @@ inline MethodTable make_dict_methods()
     t.m1["get"] = [](var &s, const var &a) -> var
     {
         // dict.get(key) → value or None
-        if (s.contains(a))
-            return s[a];
+        std::string key = a.is_string() ? a.as_string_unchecked() : a.str();
+        if (s.contains(var(key)))
+            return s[key];
         return var(NoneType{});
     };
 
@@ -347,9 +348,483 @@ inline MethodTable make_dict_methods()
     t.m2["get"] = [](var &s, const var &a, const var &b) -> var
     {
         // dict.get(key, default) → value or default
-        if (s.contains(a))
-            return s[a];
+        std::string key = a.is_string() ? a.as_string_unchecked() : a.str();
+        if (s.contains(var(key)))
+            return s[key];
         return b;
+    };
+
+    return t;
+}
+
+// ─── Helper: resolve a var to a graph node ID ───────────
+// Supports: int → direct ID, or search by node data value
+inline size_t resolve_node_id(VarGraphWrapper &g, const var &v)
+{
+    if (v.is_any_integral())
+    {
+        size_t id = (size_t)var_to_double(v);
+        if (id >= g.node_count())
+            throw std::runtime_error("Node ID " + std::to_string(id) + " out of range (graph has " + std::to_string(g.node_count()) + " nodes)");
+        return id;
+    }
+    // Search by node data
+    for (size_t i = 0; i < g.node_count(); ++i)
+    {
+        try
+        {
+            if (g.get_node_data(i) == v)
+                return i;
+        }
+        catch (...)
+        {
+        }
+    }
+    throw std::runtime_error("Node not found in graph: " + v.str());
+}
+
+// Helper: check if a var is an edge spec dict (created by -> or <->)
+inline bool is_edge_spec(const var &v)
+{
+    if (!v.is_dict())
+        return false;
+    var &mv = const_cast<var &>(v);
+    try
+    {
+        var t = mv["__dir__"];
+        return t.is_string() && (t.as_string_unchecked() == "directed" || t.as_string_unchecked() == "bidirectional" || t.as_string_unchecked() == "undirected");
+    }
+    catch (...)
+    {
+        return false;
+    }
+}
+
+// ─── Graph Methods ──────────────────────────────────────
+
+inline MethodTable make_graph_methods()
+{
+    MethodTable t;
+
+    // ── 0-arg methods ──
+    t.m0["node_count"] = [](var &s) -> var
+    {
+        return var((long long)s.as_graph_unchecked()->node_count());
+    };
+    t.m0["edge_count"] = [](var &s) -> var
+    {
+        return var((long long)s.as_graph_unchecked()->edge_count());
+    };
+    t.m0["size"] = [](var &s) -> var
+    {
+        return var((long long)s.as_graph_unchecked()->size());
+    };
+    t.m0["is_connected"] = [](var &s) -> var
+    {
+        return var(s.as_graph_unchecked()->is_connected());
+    };
+    t.m0["has_cycle"] = [](var &s) -> var
+    {
+        return var(s.as_graph_unchecked()->has_cycle());
+    };
+    t.m0["nodes"] = [](var &s) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        List result;
+        for (size_t i = 0; i < g.node_count(); ++i)
+            result.push_back(var((long long)i));
+        return var(std::move(result));
+    };
+    t.m0["add_node"] = [](var &s) -> var
+    {
+        return var((long long)s.as_graph_unchecked()->add_node());
+    };
+    t.m0["topological_sort"] = [](var &s) -> var
+    {
+        auto order = s.as_graph_unchecked()->topological_sort();
+        List result;
+        for (auto id : order)
+            result.push_back(var((long long)id));
+        return var(std::move(result));
+    };
+    t.m0["connected_components"] = [](var &s) -> var
+    {
+        auto comps = s.as_graph_unchecked()->connected_components();
+        List result;
+        for (auto &comp : comps)
+        {
+            List inner;
+            for (auto id : comp)
+                inner.push_back(var((long long)id));
+            result.push_back(var(std::move(inner)));
+        }
+        return var(std::move(result));
+    };
+    t.m0["strongly_connected_components"] = [](var &s) -> var
+    {
+        auto comps = s.as_graph_unchecked()->strongly_connected_components();
+        List result;
+        for (auto &comp : comps)
+        {
+            List inner;
+            for (auto id : comp)
+                inner.push_back(var((long long)id));
+            result.push_back(var(std::move(inner)));
+        }
+        return var(std::move(result));
+    };
+    t.m0["prim_mst"] = [](var &s) -> var
+    {
+        auto [cost, edges] = s.as_graph_unchecked()->prim_mst();
+        Dict result;
+        result["cost"] = var(cost);
+        List edge_list;
+        for (auto &[u, v, w] : edges)
+        {
+            List e;
+            e.push_back(var((long long)u));
+            e.push_back(var((long long)v));
+            e.push_back(var(w));
+            edge_list.push_back(var(std::move(e)));
+        }
+        result["edges"] = var(std::move(edge_list));
+        return var(std::move(result));
+    };
+    t.m0["pretty_str"] = [](var &s) -> var
+    {
+        return var(s.as_graph_unchecked()->pretty_str());
+    };
+    t.m0["show"] = [](var &s) -> var
+    {
+#ifdef PYTHONIC_ENABLE_GRAPH_VIEWER
+        s.show(true);
+        return var(NoneType{});
+#else
+        throw std::runtime_error("Graph viewer not available. Build with PYTHONIC_ENABLE_GRAPH_VIEWER=ON (requires ImGui).\nUse .to_dot(filename) for Graphviz export or .pretty_str() for terminal output.");
+#endif
+    };
+    t.m0["draw"] = [](var &s) -> var
+    {
+        // 2D ASCII drawing of the graph
+        return var(s.as_graph_unchecked()->pretty_str());
+    };
+
+    // ── 1-arg methods ──
+
+    // add_node(data) — add a node with data
+    t.m1["add_node"] = [](var &s, const var &a) -> var
+    {
+        return var((long long)s.as_graph_unchecked()->add_node(a));
+    };
+
+    // add_edge(edge_spec) — add edge from edge spec (A -> B or A <-> B)
+    t.m1["add_edge"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        if (is_edge_spec(a))
+        {
+            var &ma = const_cast<var &>(a);
+            var from_v = ma["__from__"];
+            var to_v = ma["__to__"];
+            std::string dir = ma["__dir__"].as_string_unchecked();
+            size_t from_id = resolve_node_id(g, from_v);
+            size_t to_id = resolve_node_id(g, to_v);
+            bool directed = (dir == "directed");
+            g.add_edge(from_id, to_id, directed);
+        }
+        else
+        {
+            throw std::runtime_error("add_edge expects an edge spec (use A -> B or A <-> B) or two node arguments");
+        }
+        return var(NoneType{});
+    };
+
+    // neighbors(node) — get neighbors of a node
+    t.m1["neighbors"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        size_t id = resolve_node_id(g, a);
+        auto nbrs = g.neighbors(id);
+        List result;
+        for (auto nid : nbrs)
+            result.push_back(var((long long)nid));
+        return var(std::move(result));
+    };
+
+    // out_degree(node)
+    t.m1["out_degree"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        return var((long long)g.out_degree(resolve_node_id(g, a)));
+    };
+
+    // in_degree(node)
+    t.m1["in_degree"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        return var((long long)g.in_degree(resolve_node_id(g, a)));
+    };
+
+    // remove_node(node)
+    t.m1["remove_node"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        g.remove_node(resolve_node_id(g, a));
+        return var(NoneType{});
+    };
+
+    // dfs(start) — depth-first search from node
+    t.m1["dfs"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        auto order = g.dfs(resolve_node_id(g, a));
+        List result;
+        for (auto id : order)
+            result.push_back(var((long long)id));
+        return var(std::move(result));
+    };
+
+    // bfs(start) — breadth-first search from node
+    t.m1["bfs"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        auto order = g.bfs(resolve_node_id(g, a));
+        List result;
+        for (auto id : order)
+            result.push_back(var((long long)id));
+        return var(std::move(result));
+    };
+
+    // bellman_ford(src) — returns dict with "distances" and "predecessors"
+    t.m1["bellman_ford"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        auto [distances, predecessors] = g.bellman_ford(resolve_node_id(g, a));
+        Dict result;
+        List dist_list, pred_list;
+        for (auto d : distances)
+            dist_list.push_back(var(d));
+        for (auto p : predecessors)
+            pred_list.push_back(var((long long)p));
+        result["distances"] = var(std::move(dist_list));
+        result["predecessors"] = var(std::move(pred_list));
+        return var(std::move(result));
+    };
+
+    // floyd_warshall() is 0-arg but returns a 2D list
+    t.m0["floyd_warshall"] = [](var &s) -> var
+    {
+        auto matrix = s.as_graph_unchecked()->floyd_warshall();
+        List result;
+        for (auto &row : matrix)
+        {
+            List inner;
+            for (auto d : row)
+                inner.push_back(var(d));
+            result.push_back(var(std::move(inner)));
+        }
+        return var(std::move(result));
+    };
+
+    // has_edge(node) — check if an edge spec or node pair exists
+    t.m1["has_edge"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        if (is_edge_spec(a))
+        {
+            var &ma = const_cast<var &>(a);
+            size_t from_id = resolve_node_id(g, ma["__from__"]);
+            size_t to_id = resolve_node_id(g, ma["__to__"]);
+            return var(g.has_edge(from_id, to_id));
+        }
+        throw std::runtime_error("has_edge expects an edge spec (A -> B) or two arguments");
+    };
+
+    // get_edge_weight(edge_spec)
+    t.m1["get_edge_weight"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        if (is_edge_spec(a))
+        {
+            var &ma = const_cast<var &>(a);
+            size_t from_id = resolve_node_id(g, ma["__from__"]);
+            size_t to_id = resolve_node_id(g, ma["__to__"]);
+            auto w = g.get_edge_weight(from_id, to_id);
+            if (w.has_value())
+                return var(w.value());
+            return var(NoneType{});
+        }
+        throw std::runtime_error("get_edge_weight expects an edge spec (A -> B) or two arguments");
+    };
+
+    // set_node_data(node, data)
+    t.m1["set_node_data"] = [](var &s, const var &a) -> var
+    {
+        throw std::runtime_error("set_node_data requires 2 arguments: node and data");
+    };
+
+    // get_node_data(node)
+    t.m1["get_node_data"] = [](var &s, const var &a) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        return g.get_node_data(resolve_node_id(g, a));
+    };
+
+    // save(filename) — save graph
+    t.m1["save"] = [](var &s, const var &a) -> var
+    {
+        s.as_graph_unchecked()->save(a.as_string_unchecked());
+        return var(NoneType{});
+    };
+
+    // to_dot(filename)
+    t.m1["to_dot"] = [](var &s, const var &a) -> var
+    {
+        s.as_graph_unchecked()->to_dot(a.as_string_unchecked());
+        return var(NoneType{});
+    };
+
+    // ── 2-arg methods ──
+
+    // add_edge(from, to) — undirected edge
+    t.m2["add_edge"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        if (is_edge_spec(a))
+        {
+            // add_edge(A -> B, weight)
+            var &ma = const_cast<var &>(a);
+            size_t from_id = resolve_node_id(g, ma["__from__"]);
+            size_t to_id = resolve_node_id(g, ma["__to__"]);
+            std::string dir = ma["__dir__"].as_string_unchecked();
+            bool directed = (dir == "directed");
+            double weight = var_to_double(b);
+            g.add_edge(from_id, to_id, directed, weight);
+        }
+        else
+        {
+            // add_edge(from, to) — undirected, no weight
+            size_t from_id = resolve_node_id(g, a);
+            size_t to_id = resolve_node_id(g, b);
+            g.add_edge(from_id, to_id, false);
+        }
+        return var(NoneType{});
+    };
+
+    // has_edge(from, to)
+    t.m2["has_edge"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        return var(g.has_edge(resolve_node_id(g, a), resolve_node_id(g, b)));
+    };
+
+    // get_edge_weight(from, to)
+    t.m2["get_edge_weight"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        auto w = g.get_edge_weight(resolve_node_id(g, a), resolve_node_id(g, b));
+        if (w.has_value())
+            return var(w.value());
+        return var(NoneType{});
+    };
+
+    // remove_edge(from, to)
+    t.m2["remove_edge"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        return var(g.remove_edge(resolve_node_id(g, a), resolve_node_id(g, b)));
+    };
+
+    // get_shortest_path(src, dest)
+    t.m2["get_shortest_path"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        auto [path, cost] = g.get_shortest_path(resolve_node_id(g, a), resolve_node_id(g, b));
+        Dict result;
+        List path_list;
+        for (auto id : path)
+            path_list.push_back(var((long long)id));
+        result["path"] = var(std::move(path_list));
+        result["cost"] = var(cost);
+        return var(std::move(result));
+    };
+
+    // set_node_data(node, data)
+    t.m2["set_node_data"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        g.set_node_data(resolve_node_id(g, a), b);
+        return var(NoneType{});
+    };
+
+    // set_edge_weight(edge_spec, weight) — using edge spec
+    t.m2["set_edge_weight"] = [](var &s, const var &a, const var &b) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        if (is_edge_spec(a))
+        {
+            var &ma = const_cast<var &>(a);
+            size_t from_id = resolve_node_id(g, ma["__from__"]);
+            size_t to_id = resolve_node_id(g, ma["__to__"]);
+            g.set_edge_weight(from_id, to_id, var_to_double(b));
+        }
+        else
+        {
+            // set_edge_weight(from, to) — need 3 args
+            throw std::runtime_error("set_edge_weight needs 3 args (from, to, weight) or (edge_spec, weight)");
+        }
+        return var(NoneType{});
+    };
+
+    // to_dot(filename, show_weights)
+    t.m2["to_dot"] = [](var &s, const var &a, const var &b) -> var
+    {
+        s.as_graph_unchecked()->to_dot(a.as_string_unchecked(), static_cast<bool>(b));
+        return var(NoneType{});
+    };
+
+    // ── 3-arg methods ──
+
+    // add_edge(from, to, directed)
+    t.m3["add_edge"] = [](var &s, const var &a, const var &b, const var &c) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        if (is_edge_spec(a))
+        {
+            // add_edge(A -> B, weight, reverse_weight) — directed with two weights
+            var &ma = const_cast<var &>(a);
+            size_t from_id = resolve_node_id(g, ma["__from__"]);
+            size_t to_id = resolve_node_id(g, ma["__to__"]);
+            std::string dir = ma["__dir__"].as_string_unchecked();
+            bool directed = (dir == "directed");
+            double w1 = var_to_double(b);
+            double w2 = var_to_double(c);
+            g.add_edge(from_id, to_id, directed, w1, w2);
+        }
+        else
+        {
+            // add_edge(from, to, weight_or_directed)
+            size_t from_id = resolve_node_id(g, a);
+            size_t to_id = resolve_node_id(g, b);
+            if (c.is_bool())
+            {
+                g.add_edge(from_id, to_id, c.as_bool_unchecked());
+            }
+            else
+            {
+                double weight = var_to_double(c);
+                g.add_edge(from_id, to_id, false, weight);
+            }
+        }
+        return var(NoneType{});
+    };
+
+    // set_edge_weight(from, to, weight)
+    t.m3["set_edge_weight"] = [](var &s, const var &a, const var &b, const var &c) -> var
+    {
+        auto &g = *s.as_graph_unchecked();
+        g.set_edge_weight(resolve_node_id(g, a), resolve_node_id(g, b), var_to_double(c));
+        return var(NoneType{});
     };
 
     return t;
@@ -376,6 +851,7 @@ struct MethodDispatch
     MethodTable set_m;
     MethodTable dict_m;
     MethodTable numeric_m;
+    MethodTable graph_m;
 
     static const MethodDispatch &instance()
     {
@@ -388,6 +864,7 @@ struct MethodDispatch
             d.set_m = make_set_methods();
             d.dict_m = make_dict_methods();
             d.numeric_m = make_numeric_methods();
+            d.graph_m = make_graph_methods();
             return d;
         }();
         return inst;
@@ -404,9 +881,11 @@ struct MethodDispatch
             return &set_m;
         if (v.is_dict() || v.is_ordered_dict())
             return &dict_m;
+        if (v.is_graph())
+            return &graph_m;
         if (v.is_any_numeric() || v.is_bool())
             return &numeric_m;
-        return nullptr; // none, graph, etc.
+        return nullptr; // none, etc.
     }
 };
 
@@ -443,11 +922,17 @@ inline bool is_file_dict(const var &v, int &outId)
         return false;
     try
     {
-        var &mv = const_cast<var &>(v);
-        var t = mv["__type__"];
-        if (!t.is_string() || t.as_string_unchecked() != "file")
+        // Use const-safe access to avoid auto-inserting keys into the dict
+        const auto *dp = v.var_get_if<Dict>();
+        if (!dp)
             return false;
-        outId = mv["__id__"].toInt();
+        auto it = dp->find("__type__");
+        if (it == dp->end() || !it->second.is_string() || it->second.as_string_unchecked() != "file")
+            return false;
+        auto it2 = dp->find("__id__");
+        if (it2 == dp->end())
+            return false;
+        outId = it2->second.toInt();
         return true;
     }
     catch (...)

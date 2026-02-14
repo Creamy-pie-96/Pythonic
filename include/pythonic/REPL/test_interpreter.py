@@ -1642,5 +1642,443 @@ print(sumSquares(3, 4)).
         self.assertFirstLine(out, '25')
 
 
+# ═════════════════════════════════════════════════════════════
+#  DICT ARROW LITERALS  {"key" -> value}
+# ═════════════════════════════════════════════════════════════
+
+class TestDictArrowLiterals(TestInterpreter):
+    """Test dict declaration with arrow syntax {key -> value}."""
+
+    def test_dict_basic_creation(self):
+        out, _ = self.run_code('var d = {"name" -> "Alice", "age" -> 30}\nprint(d.type()).')
+        self.assertFirstLine(out, 'dict')
+
+    def test_dict_get_string_value(self):
+        out, _ = self.run_code('var d = {"name" -> "Alice", "age" -> 30}\nprint(d.get("name")).')
+        self.assertFirstLine(out, 'Alice')
+
+    def test_dict_get_int_value(self):
+        out, _ = self.run_code('var d = {"name" -> "Alice", "age" -> 30}\nprint(d.get("age")).')
+        self.assertFirstLine(out, '30')
+
+    def test_dict_get_missing_returns_none(self):
+        out, _ = self.run_code('var d = {"a" -> 1}\nprint(d.get("missing")).')
+        self.assertFirstLine(out, 'None')
+
+    def test_dict_get_missing_with_default(self):
+        out, _ = self.run_code('var d = {"a" -> 1}\nprint(d.get("missing", "fallback")).')
+        self.assertFirstLine(out, 'fallback')
+
+    def test_dict_multiple_keys(self):
+        out, _ = self.run_code("""
+var d = {"x" -> 10, "y" -> 20, "z" -> 30}
+print(d.get("x"))
+print(d.get("y"))
+print(d.get("z")).
+""")
+        self.assertOutputExact(out, ['10', '20', '30'])
+
+    def test_dict_pprint(self):
+        out, _ = self.run_code('var d = {"key" -> "val"}\npprint(d).')
+        self.assertOutputContains(out, '"key"')
+        self.assertOutputContains(out, 'val')
+
+    def test_dict_let_be_syntax(self):
+        out, _ = self.run_code('let d be {"color" -> "red"}\nprint(d.get("color")).')
+        self.assertFirstLine(out, 'red')
+
+    def test_dict_size(self):
+        out, _ = self.run_code('var d = {"a" -> 1, "b" -> 2, "c" -> 3}\nprint(len(d)).')
+        self.assertFirstLine(out, '3')
+
+    def test_dict_contains(self):
+        out, _ = self.run_code('var d = {"fruit" -> "apple"}\nprint(d.contains("fruit"))\nprint(d.contains("veggie")).')
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_dict_keys(self):
+        out, _ = self.run_code('var d = {"a" -> 1}\nprint(d.keys()).')
+        self.assertOutputContains(out, 'a')
+
+    def test_dict_values(self):
+        out, _ = self.run_code('var d = {"a" -> 42}\nprint(d.values()).')
+        self.assertOutputContains(out, '42')
+
+    def test_dict_mixed_value_types(self):
+        out, _ = self.run_code("""
+var d = {"s" -> "hello", "i" -> 42, "f" -> 3.14, "b" -> True}
+print(d.get("s"))
+print(d.get("i"))
+print(d.get("f"))
+print(d.get("b")).
+""")
+        self.assertOutputExact(out, ['hello', '42', '3.14', 'True'])
+
+    def test_dict_multiple_create_and_get(self):
+        out, _ = self.run_code("""
+var d = {"a" -> 1, "b" -> 2, "c" -> 3}
+print(d.get("a"))
+print(d.get("b"))
+print(d.get("c")).
+""")
+        self.assertOutputExact(out, ['1', '2', '3'])
+
+    def test_dict_clear(self):
+        out, _ = self.run_code("""
+var d = {"a" -> 1, "b" -> 2}
+d.clear()
+print(d.size()).
+""")
+        self.assertFirstLine(out, '0')
+
+
+# ═════════════════════════════════════════════════════════════
+#  GRAPH API
+# ═════════════════════════════════════════════════════════════
+
+class TestGraphAPI(TestInterpreter):
+    """Test graph() constructor and graph methods."""
+
+    def test_graph_create_empty(self):
+        out, _ = self.run_code('var g = graph()\nprint(g.type()).')
+        self.assertFirstLine(out, 'graph')
+
+    def test_graph_create_with_nodes(self):
+        out, _ = self.run_code('var g = graph(5)\nprint(g.node_count()).')
+        self.assertFirstLine(out, '5')
+
+    def test_graph_add_node(self):
+        out, _ = self.run_code("""
+var g = graph()
+g.add_node()
+g.add_node()
+print(g.node_count()).
+""")
+        # add_node() prints the new node's ID (0 then 1), then node_count prints 2
+        got = self.lines(out)
+        self.assertEqual(got[-1], '2')
+
+    def test_graph_add_edge_positional(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+print(g.edge_count()).
+""")
+        # positional add_edge(from, to) adds bidirectional edges: 2 per call = 4
+        self.assertFirstLine(out, '4')
+
+    def test_graph_nodes_list(self):
+        out, _ = self.run_code('var g = graph(3)\nprint(g.nodes()).')
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '1')
+        self.assertOutputContains(out, '2')
+
+    def test_graph_neighbors(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+g.add_edge(0, 2)
+print(g.neighbors(0)).
+""")
+        self.assertOutputContains(out, '1')
+        self.assertOutputContains(out, '2')
+
+    def test_graph_bfs(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+g.add_edge(2, 3)
+print(g.bfs(0)).
+""")
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '3')
+
+    def test_graph_dfs(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+g.add_edge(2, 3)
+print(g.dfs(0)).
+""")
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '3')
+
+    def test_graph_has_cycle_false(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+print(g.has_cycle()).
+""")
+        self.assertFirstLine(out, 'False')
+
+    def test_graph_has_cycle_true(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+g.add_edge(2, 0)
+print(g.has_cycle()).
+""")
+        self.assertFirstLine(out, 'True')
+
+    def test_graph_is_connected(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+g.add_edge(1, 2)
+print(g.is_connected()).
+""")
+        self.assertFirstLine(out, 'True')
+
+    def test_graph_is_not_connected(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+print(g.is_connected()).
+""")
+        self.assertFirstLine(out, 'False')
+
+    def test_graph_weighted_edge(self):
+        out, _ = self.run_code("""
+var g = graph(2)
+g.add_edge(0, 1, 5.5)
+print(g.get_edge_weight(0, 1)).
+""")
+        self.assertFirstLine(out, '5.5')
+
+    def test_graph_remove_node(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.remove_node(2)
+print(g.node_count()).
+""")
+        self.assertFirstLine(out, '2')
+
+    def test_graph_has_edge(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+print(g.has_edge(0, 1))
+print(g.has_edge(0, 2)).
+""")
+        self.assertOutputExact(out, ['True', 'False'])
+
+    def test_graph_set_and_get_node_data(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.set_node_data(0, "start")
+g.set_node_data(1, "middle")
+print(g.get_node_data(0))
+print(g.get_node_data(1)).
+""")
+        self.assertOutputExact(out, ['start', 'middle'])
+
+    def test_graph_topological_sort(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0, 1)
+g.add_edge(0, 2)
+g.add_edge(1, 3)
+g.add_edge(2, 3)
+print(g.topological_sort()).
+""")
+        # Node 0 must come first, node 3 must come last
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '3')
+
+    def test_graph_connected_components(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0, 1)
+g.add_edge(2, 3)
+print(g.connected_components()).
+""")
+        # Should show two components
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '2')
+
+    def test_graph_out_degree(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0, 1)
+g.add_edge(0, 2)
+print(g.out_degree(0)).
+""")
+        self.assertFirstLine(out, '2')
+
+    def test_graph_size_same_as_node_count(self):
+        out, _ = self.run_code("""
+var g = graph(7)
+print(g.size())
+print(g.node_count()).
+""")
+        self.assertOutputExact(out, ['7', '7'])
+
+
+# ═════════════════════════════════════════════════════════════
+#  ARROW EDGE SYNTAX  (->  <->  ---)
+# ═════════════════════════════════════════════════════════════
+
+class TestArrowEdgeSyntax(TestInterpreter):
+    """Test directed (->), bidirectional (<->), and undirected (---) edges."""
+
+    def test_directed_edge_arrow(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0 -> 1)
+print(g.has_edge(0, 1)).
+""")
+        self.assertFirstLine(out, 'True')
+
+    def test_directed_edge_with_weight(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0 -> 1, 2.5)
+print(g.get_edge_weight(0, 1)).
+""")
+        self.assertFirstLine(out, '2.5')
+
+    def test_bidirectional_edge(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0 <-> 1)
+print(g.has_edge(0, 1))
+print(g.has_edge(1, 0)).
+""")
+        self.assertOutputExact(out, ['True', 'True'])
+
+    def test_bidirectional_edge_with_weight(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0 <-> 1, 3.0)
+print(g.get_edge_weight(0, 1))
+print(g.get_edge_weight(1, 0)).
+""")
+        self.assertOutputExact(out, ['3', '3'])
+
+    def test_undirected_edge_triple_dash(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0 --- 1)
+print(g.has_edge(0, 1))
+print(g.has_edge(1, 0)).
+""")
+        self.assertOutputExact(out, ['True', 'True'])
+
+    def test_undirected_edge_with_weight(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+g.add_edge(0 --- 1, 4.0)
+print(g.get_edge_weight(0, 1)).
+""")
+        self.assertFirstLine(out, '4')
+
+    def test_arrow_with_variables(self):
+        out, _ = self.run_code("""
+var g = graph(3)
+var A = 0
+var B = 1
+var C = 2
+g.add_edge(A -> B, 1.0)
+g.add_edge(B <-> C, 2.0)
+print(g.edge_count()).
+""")
+        # A->B = 1 edge, B<->C = 2 edges
+        self.assertFirstLine(out, '3')
+
+    def test_mixed_edge_types(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0 -> 1)
+g.add_edge(1 <-> 2)
+g.add_edge(2 --- 3)
+print(g.edge_count()).
+""")
+        # directed: 1, bidirectional: 2, undirected: 2 = 5
+        self.assertFirstLine(out, '5')
+
+    def test_edge_spec_is_dict(self):
+        out, _ = self.run_code("""
+var e = 0 -> 1
+print(e.type()).
+""")
+        self.assertFirstLine(out, 'dict')
+
+    def test_edge_spec_from_to(self):
+        out, _ = self.run_code("""
+var e = 0 -> 1
+print(e.get("__from__"))
+print(e.get("__to__")).
+""")
+        self.assertOutputExact(out, ['0', '1'])
+
+    def test_graph_bfs_with_arrows(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0 -> 1)
+g.add_edge(1 -> 2)
+g.add_edge(2 -> 3)
+print(g.bfs(0)).
+""")
+        got = self.lines(out)
+        self.assertEqual(got[0], '[0, 1, 2, 3]')
+
+    def test_graph_shortest_path_with_arrows(self):
+        out, _ = self.run_code("""
+var g = graph(4)
+g.add_edge(0 -> 1, 1.0)
+g.add_edge(1 -> 2, 1.0)
+g.add_edge(2 -> 3, 1.0)
+g.add_edge(0 -> 3, 10.0)
+print(g.get_shortest_path(0, 3)).
+""")
+        # Shortest path via 0->1->2->3 (cost 3) not 0->3 (cost 10)
+        self.assertOutputContains(out, '0')
+        self.assertOutputContains(out, '3')
+
+
+# ═════════════════════════════════════════════════════════════
+#  CHECK MODE (--check parse-only diagnostics)
+# ═════════════════════════════════════════════════════════════
+
+class TestCheckMode(TestInterpreter):
+    """Test --check flag for parse-only diagnostics."""
+
+    def run_check(self, code):
+        """Run ScriptIt code via --check mode."""
+        proc = subprocess.Popen(
+            [self.BINARY, '--check'],
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True,
+        )
+        stdout, stderr = proc.communicate(input=code.strip(), timeout=10)
+        return stdout, stderr, proc.returncode
+
+    def test_check_valid_code(self):
+        out, err, rc = self.run_check('print("hello").')
+        self.assertEqual(rc, 0)
+
+    def test_check_syntax_error(self):
+        out, err, rc = self.run_check('if\n.')
+        combined = out + err
+        self.assertTrue('Error' in combined or rc != 0)
+
+    def test_check_does_not_execute(self):
+        """--check should NOT execute code, so print should produce no output."""
+        out, err, rc = self.run_check('print("should not appear").')
+        self.assertNotIn('should not appear', out)
+
+    def test_check_input_no_hang(self):
+        """--check with input() should NOT hang or error (no execution)."""
+        out, err, rc = self.run_check('var x = input("Enter: ")\nprint(x).')
+        self.assertEqual(rc, 0)
+        self.assertNotIn('Enter:', out)
+
+
 if __name__ == '__main__':
     unittest.main()

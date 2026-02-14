@@ -2,8 +2,8 @@
 // ScriptIt Subprocess Diagnostics
 // ═══════════════════════════════════════════════════════════
 //
-// Runs `scriptit --script` to validate code and parses
-// error messages into LSP Diagnostic objects.
+// Runs `scriptit --check` to validate code (parse-only, no execution)
+// and parses error messages into LSP Diagnostic objects.
 //
 // ═══════════════════════════════════════════════════════════
 
@@ -53,7 +53,7 @@ export class ScriptItDiagnostics {
         return new Promise((resolve, reject) => {
             if (signal.aborted) { reject(new Error('Aborted')); return; }
 
-            const proc = spawn(scriptitPath, ['--script'], {
+            const proc = spawn(scriptitPath, ['--check'], {
                 stdio: ['pipe', 'pipe', 'pipe'],
                 timeout: 5000,       // 5s timeout
                 windowsHide: true,

@@ -583,6 +583,29 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
              s.push(a);
          }},
 
+        // ── Graph Constructor ────────────────────────
+        {"graph", [](std::stack<var> &s, int argc)
+         {
+             if (argc == 0)
+             {
+                 // graph() — empty graph with 0 nodes
+                 s.push(var(std::make_shared<pythonic::vars::VarGraphWrapper>(0)));
+                 return;
+             }
+             if (argc == 1)
+             {
+                 // graph(n) — graph with n nodes
+                 var a = s.top();
+                 s.pop();
+                 int n = a.toInt();
+                 if (n < 0)
+                     throw std::runtime_error("graph() node count cannot be negative");
+                 s.push(var(std::make_shared<pythonic::vars::VarGraphWrapper>((size_t)n)));
+                 return;
+             }
+             throw std::runtime_error("graph() takes 0 or 1 argument (node count)");
+         }},
+
         {"range_list", [](std::stack<var> &s, int argc)
          {
              if (argc != 2)
