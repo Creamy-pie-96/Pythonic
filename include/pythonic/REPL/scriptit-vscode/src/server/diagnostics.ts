@@ -46,7 +46,8 @@ export class ScriptItDiagnostics {
 
     /**
      * Spawn the scriptit process, pipe source code to stdin,
-     * and collect stderr output.
+     * and collect error output from both stdout and stderr.
+     * (ScriptIt may write errors to either stream.)
      */
     private runScriptIt(text: string, scriptitPath: string, signal: AbortSignal): Promise<string> {
         return new Promise((resolve, reject) => {
@@ -63,7 +64,6 @@ export class ScriptItDiagnostics {
 
             proc.stderr.on('data', (chunk: Buffer) => {
                 stderr += chunk.toString();
-                // Cap at 64KB to avoid memory issues
                 if (stderr.length > 65536) {
                     proc.kill();
                 }
@@ -71,10 +71,33 @@ export class ScriptItDiagnostics {
 
             proc.stdout.on('data', (chunk: Buffer) => {
                 stdout += chunk.toString();
+                if (stdout.length > 65536) {
+                    proc.kill();
+                }
             });
 
             proc.on('close', (_code) => {
-                resolve(stderr);
+                // ScriptIt may write errors to stdout or stderr — check both.
+                // Filter stdout to only include lines that look like errors.
+                const errorLines = stdout.split('\n').filter(line => {
+                    const t = line.trim().toLowerCase();
+                    return t.startsWith('error') ||
+                           t.includes('at line') ||
+                           t.includes('[line') ||
+                           t.startsWith('runtime error') ||
+                           t.startsWith('warning') ||
+                           t.includes('undefined') ||
+                           t.includes('unexpected') ||
+                           t.includes('invalid') ||
+                           t.includes('cannot') ||
+                           t.includes('unknown');
+                }).join('\n');
+
+                // Combine stderr and filtered stdout error lines
+                const combined = [stderr.trim(), errorLines.trim()]
+                    .filter(s => s.length > 0)
+                    .join('\n');
+                resolve(combined);
             });
 
             proc.on('error', (err) => {
@@ -144,7 +167,16 @@ export class ScriptItDiagnostics {
                 continue;
             }
 
-            // Pattern 5: line N — message (some other format)
+            // Pattern 5: message at line N  (ScriptIt format: "Error: ... at line 1")
+            match = trimmed.match(/^(.+?)\s+at\s+line\s+(\d+)\s*$/i);
+            if (match) {
+                const message = match[1].trim();
+                const lineNum = Math.max(0, parseInt(match[2]) - 1);
+                diagnostics.push(this.createDiagnostic(lineNum, message, sourceLines, this.getSeverity(message)));
+                continue;
+            }
+
+            // Pattern 6: line N — message (some other format)
             match = trimmed.match(/line\s+(\d+)\s*[-—:]\s*(.+)/i);
             if (match) {
                 const lineNum = Math.max(0, parseInt(match[1]) - 1);

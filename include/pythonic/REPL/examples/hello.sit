@@ -13,9 +13,11 @@ for n in nums:
 ;
 print("Sum: " + str(total)).
 
-fn greet @(who, me):
-    give("Welcome, " + who + "!" + me).
+fn greet (who, me):
+    give("Welcome, " + who + "!" + me)
 ;
+
+if a is not b : 
 
 print(greet("ScriptIt", "hehe")).
 
