@@ -151,8 +151,22 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
     for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
 
-        // Skip comments
-        const commentIdx = line.indexOf('#');
+        // Skip comments (but respect strings — # inside "..." is NOT a comment)
+        let commentIdx = -1;
+        {
+            let inStr = false;
+            let strCh = '';
+            for (let k = 0; k < line.length; k++) {
+                const ch = line[k];
+                if (inStr) {
+                    if (ch === '\\') { k++; continue; }
+                    if (ch === strCh) inStr = false;
+                    continue;
+                }
+                if (ch === '"' || ch === "'") { inStr = true; strCh = ch; continue; }
+                if (ch === '#') { commentIdx = k; break; }
+            }
+        }
         const codePart = commentIdx >= 0 ? line.substring(0, commentIdx) : line;
 
         // Track brackets (outside strings)

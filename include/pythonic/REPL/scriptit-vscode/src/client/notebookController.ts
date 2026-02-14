@@ -97,6 +97,13 @@ export class ScriptItNotebookController {
         this.rl.on('line', (line) => {
             try {
                 const resp: KernelResponse = JSON.parse(line);
+
+                // Handle input_request: kernel is asking for user input
+                if (resp.status === 'input_request') {
+                    this.handleInputRequest(resp);
+                    return;
+                }
+
                 const key = resp.cell_id || resp.status || '';
                 const cb = this.responseBuffer.get(key);
                 if (cb) {
@@ -107,6 +114,24 @@ export class ScriptItNotebookController {
                 // ignore malformed lines
             }
         });
+    }
+
+    private async handleInputRequest(req: KernelResponse) {
+        const prompt = (req as any).prompt || 'Input:';
+        const cellId = req.cell_id || '';
+
+        const userInput = await vscode.window.showInputBox({
+            prompt: prompt,
+            placeHolder: 'Enter value...',
+            title: `ScriptIt Input (${cellId})`
+        });
+
+        // Send the reply back to the kernel via stdin
+        const reply = JSON.stringify({
+            action: 'input_reply',
+            text: userInput ?? ''  // empty string if cancelled
+        });
+        this.sendToKernel(JSON.parse(reply));
     }
 
     private stopKernel() {

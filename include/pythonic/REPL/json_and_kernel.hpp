@@ -137,12 +137,32 @@ inline std::string make_json_response(const std::string &cellId, const std::stri
 // ──── Kernel Mode ──────────────────────────────────────────
 // ═══════════════════════════════════════════════════════════
 
+// Global kernel state for the input() override
+// These are `extern`-declared in scriptit_builtins.hpp so input() can access them
+bool _scriptit_kernel_mode = false;
+std::streambuf *_scriptit_kernel_real_stdout = nullptr;
+std::string _scriptit_kernel_cell_id;
+
+namespace kernel_io
+{
+    static std::streambuf *realStdoutBuf = nullptr; // original cout buffer
+    static std::string currentCellId;               // currently executing cell
+    static bool inKernelMode = false;
+}
+
 void runKernel()
 {
     Scope globalScope;
     globalScope.define("PI", var(3.14159265));
     globalScope.define("e", var(2.7182818));
     int executionCount = 0;
+
+    kernel_io::inKernelMode = true;
+    kernel_io::realStdoutBuf = std::cout.rdbuf(); // save the real stdout
+
+    // Set the extern globals so input() builtin can access them
+    _scriptit_kernel_mode = true;
+    _scriptit_kernel_real_stdout = std::cout.rdbuf();
 
     // Signal ready
     std::cout << "{\"status\":\"kernel_ready\",\"version\":\"2.0\"}" << std::endl;
@@ -181,6 +201,9 @@ void runKernel()
             std::string code = cmd["code"];
             executionCount++;
 
+            kernel_io::currentCellId = cellId;
+            _scriptit_kernel_cell_id = cellId;
+
             // Capture stdout
             std::ostringstream capturedOut;
             std::streambuf *oldBuf = std::cout.rdbuf(capturedOut.rdbuf());
@@ -214,6 +237,14 @@ void runKernel()
             std::string status = errorStr.empty() ? "ok" : "error";
             std::cout << make_json_response(cellId, status, stdoutStr, errorStr, resultStr, executionCount) << std::endl;
             std::cout.flush();
+            continue;
+        }
+
+        if (action == "input_reply")
+        {
+            // This arrives as a response to an input_request we sent.
+            // It's handled inline in the input() override via readLine,
+            // so we shouldn't normally reach here. Ignore it.
             continue;
         }
 

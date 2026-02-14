@@ -1,0 +1,20 @@
+{
+  "nsit_format": "1.0",
+  "metadata": {
+    "title": "Untitled",
+    "created": "2026-02-14T02:29:06.844439Z",
+    "modified": "2026-02-14T02:29:35.575456Z",
+    "kernel": "scriptit",
+    "kernel_version": "2.0"
+  },
+  "cells": [
+    {
+      "id": "95e13544-4987-4983-88ef-45ca1ff017ab",
+      "type": "code",
+      "source": "",
+      "outputs": [],
+      "execution_count": null,
+      "metadata": {}
+    }
+  ]
+}

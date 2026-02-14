@@ -8,6 +8,7 @@ Usage: python3 notebook_server.py [notebook.nsit] [--port PORT]
 import json
 import os
 import sys
+import shutil
 import subprocess
 import threading
 import time
@@ -21,7 +22,22 @@ from datetime import datetime
 # ─── Configuration ───────────────────────────────────────
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
-SCRIPTIT_BINARY = os.path.join(SCRIPT_DIR, "..", "scriptit")
+
+# Find the scriptit binary — check PATH first, then relative locations
+SCRIPTIT_BINARY = shutil.which("scriptit")
+if not SCRIPTIT_BINARY:
+    # Try relative to this script
+    candidates = [
+        os.path.join(SCRIPT_DIR, "..", "scriptit"),         # REPL layout
+        os.path.join(SCRIPT_DIR, "..", "..", "bin", "scriptit"),  # share -> bin
+        "/usr/local/bin/scriptit",
+    ]
+    for c in candidates:
+        if os.path.isfile(c) and os.access(c, os.X_OK):
+            SCRIPTIT_BINARY = c
+            break
+if not SCRIPTIT_BINARY:
+    SCRIPTIT_BINARY = "scriptit"  # hope it's in PATH
 DEFAULT_PORT = 8888
 NOTEBOOK_DIR = SCRIPT_DIR
 
@@ -266,8 +282,10 @@ class NotebookHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         global current_notebook
 
-        if self.path == "/" or self.path == "/index.html":
-            gui_path = os.path.join(SCRIPT_DIR, "index.html")
+        if self.path == "/" or self.path == "/index.html" or self.path == "/notebook.html":
+            gui_path = os.path.join(SCRIPT_DIR, "notebook.html")
+            if not os.path.exists(gui_path):
+                gui_path = os.path.join(SCRIPT_DIR, "index.html")  # fallback
             if os.path.exists(gui_path):
                 with open(gui_path, "r") as f:
                     self.send_html(f.read())

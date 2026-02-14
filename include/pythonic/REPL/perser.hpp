@@ -71,6 +71,17 @@ public:
                 continue;
             }
 
+            // Single-line comments: # ... (skip to end of line)
+            if (c == '#')
+            {
+                while (i < source.length() && source[i] != '\n')
+                    i++;
+                // Don't consume the \n — let the normal newline handler emit it
+                if (i < source.length())
+                    i--; // back up so the main loop's i++ lands on \n
+                continue;
+            }
+
             // String literals: "..." or '...'
             if (c == '"' || c == '\'')
             {

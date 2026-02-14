@@ -6,6 +6,7 @@
 #include "scriptit_builtins.hpp"
 #include "perser.hpp"
 #include "json_and_kernel.hpp"
+#include <unistd.h> // readlink for --notebook and --customize
 // ═══════════════════════════════════════════════════════════
 // ──── Execute Script Helper ────────────────────────────────
 // ═══════════════════════════════════════════════════════════
@@ -46,6 +47,132 @@ int main(int argc, char *argv[])
     {
         runKernel();
         return 0;
+    }
+
+    if (argc > 1 && std::string(argv[1]) == "--notebook")
+    {
+        // Launch the web notebook server
+        // Try the installed scriptit-notebook launcher first, then fallback to local notebook.sh
+        std::string notebookCmd;
+        // Check for system-installed launcher
+        if (std::system("command -v scriptit-notebook >/dev/null 2>&1") == 0)
+        {
+            notebookCmd = "scriptit-notebook";
+        }
+        else
+        {
+            // Fallback: find notebook.sh relative to this binary
+            // argv[0] might be a path or just "scriptit" from PATH
+            std::string selfPath;
+            // Try /proc/self/exe on Linux
+            char buf[4096] = {};
+            ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+            if (len > 0)
+            {
+                buf[len] = '\0';
+                selfPath = std::string(buf);
+            }
+            if (!selfPath.empty())
+            {
+                std::string dir = selfPath.substr(0, selfPath.rfind('/'));
+                // If installed to /usr/local/bin, notebook files are in /usr/local/share/scriptit/notebook/
+                std::string shareNotebook = dir + "/../share/scriptit/notebook/notebook_server.py";
+                std::string localNotebook = dir + "/notebook.sh";
+                // Also check REPL layout
+                std::string replNotebook = dir + "/notebook/notebook_server.py";
+                if (std::ifstream(shareNotebook).good())
+                {
+                    notebookCmd = "python3 \"" + shareNotebook + "\"";
+                }
+                else if (std::ifstream(replNotebook).good())
+                {
+                    notebookCmd = "python3 \"" + replNotebook + "\"";
+                }
+                else if (std::ifstream(localNotebook).good())
+                {
+                    notebookCmd = "bash \"" + localNotebook + "\"";
+                }
+            }
+        }
+
+        if (notebookCmd.empty())
+        {
+            std::cerr << "Error: Could not find notebook server.\n";
+            std::cerr << "Make sure ScriptIt is installed system-wide (sudo cmake --install build_scriptit)\n";
+            return 1;
+        }
+
+        // Forward remaining args (e.g. --port, notebook file)
+        for (int i = 2; i < argc; i++)
+        {
+            notebookCmd += " ";
+            notebookCmd += argv[i];
+        }
+        return std::system(notebookCmd.c_str());
+    }
+
+    if (argc > 1 && std::string(argv[1]) == "--customize")
+    {
+        // Launch the color customizer web server
+        std::string customizerScript;
+        std::string selfPath;
+        char buf[4096] = {};
+        ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf) - 1);
+        if (len > 0)
+        {
+            buf[len] = '\0';
+            selfPath = std::string(buf);
+        }
+        if (!selfPath.empty())
+        {
+            std::string dir = selfPath.substr(0, selfPath.rfind('/'));
+            // Check various locations
+            std::string paths[] = {
+                dir + "/../share/scriptit/color_customizer/customizer_server.py", // system install
+                dir + "/scriptit-vscode/color_customizer/customizer_server.py",   // REPL layout
+                dir + "/color_customizer/customizer_server.py",                   // local
+            };
+            for (auto &p : paths)
+            {
+                if (std::ifstream(p).good())
+                {
+                    customizerScript = p;
+                    break;
+                }
+            }
+        }
+        // Also try relative to CWD
+        if (customizerScript.empty())
+        {
+            std::string cwdPaths[] = {
+                "scriptit-vscode/color_customizer/customizer_server.py",
+                "color_customizer/customizer_server.py",
+            };
+            for (auto &p : cwdPaths)
+            {
+                if (std::ifstream(p).good())
+                {
+                    customizerScript = p;
+                    break;
+                }
+            }
+        }
+
+        if (customizerScript.empty())
+        {
+            std::cerr << "Error: Could not find the color customizer.\n";
+            std::cerr << "Make sure ScriptIt is installed with the VS Code extension files.\n";
+            return 1;
+        }
+
+        std::string cmd = "python3 \"" + customizerScript + "\"";
+        // Forward --port if provided
+        for (int i = 2; i < argc; i++)
+        {
+            cmd += " ";
+            cmd += argv[i];
+        }
+        return std::system(cmd.c_str());
     }
 
     if (argc > 1 && std::string(argv[1]) == "--test")

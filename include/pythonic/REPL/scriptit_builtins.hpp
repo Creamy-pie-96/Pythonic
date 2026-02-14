@@ -274,11 +274,67 @@ inline const std::unordered_map<std::string, BuiltinFn> &get_builtins()
                  s.pop();
                  prompt = pv.is_string() ? pv.as_string_unchecked() : pv.str();
              }
-             std::cout << prompt;
-             std::cout.flush();
-             std::string inputLine;
-             std::getline(std::cin, inputLine);
-             s.push(var(inputLine));
+
+             // In kernel mode, use the JSON input_request protocol
+             // (kernel_io is declared in json_and_kernel.hpp but we check a simple flag)
+             extern bool _scriptit_kernel_mode;
+             extern std::streambuf *_scriptit_kernel_real_stdout;
+             extern std::string _scriptit_kernel_cell_id;
+
+             if (_scriptit_kernel_mode)
+             {
+                 // Temporarily write to the REAL stdout (not the captured one)
+                 std::ostream realOut(_scriptit_kernel_real_stdout);
+                 realOut << "{\"status\":\"input_request\",\"prompt\":\""
+                         << prompt << "\",\"cell_id\":\""
+                         << _scriptit_kernel_cell_id << "\"}" << std::endl;
+                 realOut.flush();
+
+                 // Read the reply from stdin (controller will send {"action":"input_reply","text":"..."})
+                 std::string replyLine;
+                 std::getline(std::cin, replyLine);
+
+                 // Parse the reply JSON to extract "text"
+                 std::string inputText;
+                 auto pos = replyLine.find("\"text\"");
+                 if (pos != std::string::npos)
+                 {
+                     pos = replyLine.find('"', pos + 6);
+                     if (pos != std::string::npos)
+                     {
+                         pos++; // skip opening "
+                         while (pos < replyLine.size() && replyLine[pos] != '"')
+                         {
+                             if (replyLine[pos] == '\\' && pos + 1 < replyLine.size())
+                             {
+                                 pos++;
+                                 if (replyLine[pos] == 'n')
+                                     inputText += '\n';
+                                 else if (replyLine[pos] == 't')
+                                     inputText += '\t';
+                                 else if (replyLine[pos] == '\\')
+                                     inputText += '\\';
+                                 else if (replyLine[pos] == '"')
+                                     inputText += '"';
+                                 else
+                                     inputText += replyLine[pos];
+                             }
+                             else
+                                 inputText += replyLine[pos];
+                             pos++;
+                         }
+                     }
+                 }
+                 s.push(var(inputText));
+             }
+             else
+             {
+                 std::cout << prompt;
+                 std::cout.flush();
+                 std::string inputLine;
+                 std::getline(std::cin, inputLine);
+                 s.push(var(inputLine));
+             }
          }},
 
         {"read", [](std::stack<var> &s, int argc)

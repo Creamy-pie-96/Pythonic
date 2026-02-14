@@ -353,6 +353,10 @@ def install_scriptit():
                         notebook_sh = REPL_DIR / "notebook.sh"
                         if notebook_sh.exists():
                             shutil.copy2(str(notebook_sh), str(tmp_repl / "notebook.sh"))
+                        # Copy color customizer
+                        customizer_src = EXT_DIR / "color_customizer"
+                        if customizer_src.exists():
+                            shutil.copytree(str(customizer_src), str(tmp_repl / "scriptit-vscode" / "color_customizer"), dirs_exist_ok=True)
                         content = content.replace(repl_abs, str(tmp_repl))
                     cmake_install.write_text(content)
                 run(f"sudo cmake --install {tmp_build}")
@@ -468,6 +472,85 @@ def install_extension(vsix_path):
         return False
 
 # ══════════════════════════════════════════════════════════
+# Clean: Remove all build artifacts for a fresh start
+# ══════════════════════════════════════════════════════════
+
+def clean_all():
+    step("Cleaning All Build Artifacts")
+
+    # 1. Remove CMake build directory
+    if BUILD_DIR.exists():
+        info(f"Removing {BUILD_DIR}")
+        shutil.rmtree(str(BUILD_DIR), ignore_errors=True)
+        ok("Removed build_scriptit/")
+    else:
+        info("build_scriptit/ not found — skipping")
+
+    # 2. Remove compiled JS output
+    out_dir = EXT_DIR / "out"
+    if out_dir.exists():
+        info(f"Removing {out_dir}")
+        shutil.rmtree(str(out_dir), ignore_errors=True)
+        ok("Removed out/")
+    else:
+        info("out/ not found — skipping")
+
+    # 3. Remove node_modules
+    nm_dir = EXT_DIR / "node_modules"
+    if nm_dir.exists():
+        info(f"Removing {nm_dir}")
+        shutil.rmtree(str(nm_dir), ignore_errors=True)
+        ok("Removed node_modules/")
+    else:
+        info("node_modules/ not found — skipping")
+
+    # 4. Remove .vsix files
+    vsix_files = list(EXT_DIR.glob("*.vsix"))
+    for v in vsix_files:
+        info(f"Removing {v.name}")
+        v.unlink()
+    if vsix_files:
+        ok(f"Removed {len(vsix_files)} .vsix file(s)")
+
+    # 5. Uninstall the VS Code extension
+    vscode_cmd = None
+    for cmd in ["code", "code-insiders", "codium"]:
+        if which(cmd):
+            vscode_cmd = cmd
+            break
+    if vscode_cmd:
+        info("Uninstalling ScriptIt extension from VS Code...")
+        try:
+            run(f"{vscode_cmd} --uninstall-extension pythonic.scriptit-lang", check=False)
+            ok("Extension uninstalled")
+        except:
+            warn("Extension uninstall failed (may not be installed)")
+    else:
+        warn("VS Code not found — skipping extension uninstall")
+
+    # 6. Remove system-wide binary
+    scriptit_bin = Path("/usr/local/bin/scriptit")
+    if scriptit_bin.exists():
+        info("Removing /usr/local/bin/scriptit...")
+        try:
+            run("sudo rm -f /usr/local/bin/scriptit")
+            ok("System binary removed")
+        except:
+            warn("Could not remove system binary")
+    else:
+        info("System binary not found — skipping")
+
+    # 7. Remove package-lock.json (for truly fresh npm install)
+    lock_file = EXT_DIR / "package-lock.json"
+    if lock_file.exists():
+        lock_file.unlink()
+        ok("Removed package-lock.json")
+
+    ok("Clean complete! Ready for fresh install.")
+    print()
+
+
+# ══════════════════════════════════════════════════════════
 # Main
 # ══════════════════════════════════════════════════════════
 
@@ -484,6 +567,8 @@ def main():
                         help="Just check dependencies, don't install anything")
     parser.add_argument("--no-install", action="store_true",
                         help="Build everything but don't install system-wide or into VS Code")
+    parser.add_argument("--clean", action="store_true",
+                        help="Remove all build artifacts, uninstall extension, then do a fresh install")
     args = parser.parse_args()
 
     print(f"""
@@ -498,6 +583,10 @@ def main():
   Extension dir: {EXT_DIR}
   Build dir:     {BUILD_DIR}
 """)
+
+    # ── Clean (if requested) ──
+    if args.clean:
+        clean_all()
 
     # ── Check Dependencies ──
     deps = check_dependencies()
@@ -560,6 +649,7 @@ def main():
         install_extension(vsix)
 
     # ── Done ──
+    bin_loc = which("scriptit") or "/usr/local/bin/scriptit"
     print(f"""
 {C.BOLD}{C.GREEN}
   ╔═══════════════════════════════════════════════════╗
@@ -567,19 +657,28 @@ def main():
   ╚═══════════════════════════════════════════════════╝
 {C.RESET}
   What was installed:
-    ✓ ScriptIt binary → /usr/local/bin/scriptit
-    ✓ VS Code extension → scriptit-lang
+    ✓ ScriptIt binary       → {bin_loc}
+    ✓ Notebook server       → /usr/local/share/scriptit/notebook/
+    ✓ Color customizer      → /usr/local/share/scriptit/color_customizer/
+    ✓ Notebook launcher     → /usr/local/bin/scriptit-notebook
+    ✓ VS Code extension     → scriptit-lang
   
   Quick start:
     • Create a file with .sit extension and open in VS Code
     • Open any .nsit file for notebook experience
     • Press Ctrl+Shift+R to run a ScriptIt file
     • Type 'fn' + Tab for function snippet
+  
+  CLI commands:
+    • scriptit                   → Interactive REPL
+    • scriptit myfile.sit        → Run a script
+    • scriptit --notebook        → Open web notebook
+    • scriptit --customize       → Open color customizer
 
   Files:
-    • Extension: {EXT_DIR}
-    • VSIX:      {vsix or 'not packaged'}
-    • Binary:    {BUILD_DIR / 'scriptit'}
+    • Extension source: {EXT_DIR}
+    • VSIX:             {vsix or 'not packaged'}
+    • Binary:           {bin_loc}
 """)
 
 if __name__ == "__main__":

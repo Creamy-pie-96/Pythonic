@@ -1349,14 +1349,12 @@ async function showServerBrowser(mode) {
 }
 
 function browseForSaveLocation() {
-    // Only reload browse results if the list is empty or shows an error
-    var listDiv = document.getElementById("saveDirList");
-    if (listDiv && listDiv.children.length > 1) {
-        // Results already loaded — scroll into view
-        listDiv.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        return;
-    }
+    // Always refresh the directory browser when Browse is clicked
     showServerBrowser("save");
+    var listDiv = document.getElementById("saveDirList");
+    if (listDiv) {
+        setTimeout(function() { listDiv.scrollIntoView({ behavior: "smooth", block: "nearest" }); }, 200);
+    }
 }
 
 function downloadNotebook() {

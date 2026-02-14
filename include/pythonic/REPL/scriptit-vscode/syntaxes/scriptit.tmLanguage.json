@@ -45,7 +45,7 @@
     "block-comment": {
       "name": "comment.block.arrow.scriptit",
       "begin": "-->",
-      "end": "<--|$",
+      "end": "<--",
       "beginCaptures": { "0": { "name": "punctuation.definition.comment.begin.scriptit" } },
       "endCaptures":   { "0": { "name": "punctuation.definition.comment.end.scriptit" } }
     },
@@ -369,8 +369,8 @@
 
     "numbers": {
       "patterns": [
-        { "name": "constant.numeric.float.scriptit", "match": "\\b\\d+\\.\\d+\\b" },
-        { "name": "constant.numeric.integer.scriptit", "match": "\\b\\d+\\b" }
+        { "name": "constant.numeric.float.scriptit", "match": "(?<![a-zA-Z_\\.])\\d+\\.\\d+" },
+        { "name": "constant.numeric.integer.scriptit", "match": "(?<![a-zA-Z_\\.])\\d+(?!\\.\\d)" }
       ]
     },
 

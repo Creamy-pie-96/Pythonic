@@ -12,12 +12,27 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-NOTEBOOK_DIR="$SCRIPT_DIR/notebook"
+
+# Try multiple locations for notebook files
+# 1. Local REPL layout: $SCRIPT_DIR/notebook/
+# 2. System install: /usr/local/share/scriptit/notebook/
+# 3. Prefix-based: $SCRIPT_DIR/../share/scriptit/notebook/
+if [ -f "$SCRIPT_DIR/notebook/notebook_server.py" ]; then
+    NOTEBOOK_DIR="$SCRIPT_DIR/notebook"
+elif [ -f "$SCRIPT_DIR/../share/scriptit/notebook/notebook_server.py" ]; then
+    NOTEBOOK_DIR="$(cd "$SCRIPT_DIR/../share/scriptit/notebook" && pwd)"
+elif [ -f "/usr/local/share/scriptit/notebook/notebook_server.py" ]; then
+    NOTEBOOK_DIR="/usr/local/share/scriptit/notebook"
+else
+    echo -e "\033[0;31mError: Cannot find notebook_server.py\033[0m"
+    echo "  Tried: $SCRIPT_DIR/notebook/"
+    echo "  Tried: $SCRIPT_DIR/../share/scriptit/notebook/"
+    echo "  Tried: /usr/local/share/scriptit/notebook/"
+    exit 1
+fi
+
 SERVER="$NOTEBOOK_DIR/notebook_server.py"
-BINARY="$SCRIPT_DIR/scriptit"
-CPP_SOURCE="$SCRIPT_DIR/ScriptIt.cpp"
-INCLUDE_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)/include"
-STUBS_DIR="$(cd "$SCRIPT_DIR/../../.." && pwd)/src/pythonicDispatchStubs.cpp"
+BINARY="$(command -v scriptit 2>/dev/null || echo "$SCRIPT_DIR/scriptit")"
 
 # Colors
 RED='\033[0;31m'
@@ -29,15 +44,18 @@ NC='\033[0m'
 
 # ─── Check / Build binary ────────────────────────────────
 
-if [ ! -f "$BINARY" ]; then
-    echo -e "${CYAN}Building ScriptIt...${NC}"
+if ! command -v "$BINARY" &>/dev/null && [ ! -f "$BINARY" ]; then
+    # Try building from source if we're in the dev tree
+    CPP_SOURCE="$SCRIPT_DIR/ScriptIt.cpp"
+    INCLUDE_DIR="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)/include"
+    STUBS_DIR="$(cd "$SCRIPT_DIR/../../.." 2>/dev/null && pwd)/src/pythonicDispatchStubs.cpp"
     if [ -f "$CPP_SOURCE" ] && [ -f "$STUBS_DIR" ]; then
-        g++ -std=c++20 -I"$INCLUDE_DIR" -O2 -o "$BINARY" "$CPP_SOURCE" "$STUBS_DIR"
+        echo -e "${CYAN}Building ScriptIt...${NC}"
+        g++ -std=c++20 -I"$INCLUDE_DIR" -O2 -o "$SCRIPT_DIR/scriptit" "$CPP_SOURCE" "$STUBS_DIR"
+        BINARY="$SCRIPT_DIR/scriptit"
         echo -e "${GREEN}✓ Built successfully${NC}"
     else
-        echo -e "${RED}Error: Cannot find source files to build ScriptIt.${NC}"
-        echo "  Expected: $CPP_SOURCE"
-        echo "  Expected: $STUBS_DIR"
+        echo -e "${RED}Error: scriptit binary not found. Install ScriptIt first.${NC}"
         exit 1
     fi
 fi

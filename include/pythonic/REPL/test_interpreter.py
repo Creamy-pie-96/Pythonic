@@ -16,7 +16,7 @@ import os
 class TestInterpreter(unittest.TestCase):
     """Base test harness for the ScriptIt interpreter."""
 
-    BINARY = './scriptit'
+    BINARY = 'scriptit'
     CWD = '/home/DATA/CODE/code/test'
 
     def run_code(self, code):
@@ -1023,6 +1023,21 @@ class TestSyntax(TestInterpreter):
     def test_comments(self):
         out, _ = self.run_code('--> This is a comment <--\nprint("visible").')
         self.assertFirstLine(out, 'visible')
+
+    def test_hash_comment(self):
+        """Single-line # comment should be ignored."""
+        out, _ = self.run_code('# This is a comment\nprint("hello").')
+        self.assertFirstLine(out, 'hello')
+
+    def test_hash_comment_after_code(self):
+        """# comment at end of line (after code) should be ignored."""
+        out, _ = self.run_code('var x = 42  # set x\nprint(x).')
+        self.assertFirstLine(out, '42')
+
+    def test_hash_comment_multiple_lines(self):
+        """Multiple consecutive # comments."""
+        out, _ = self.run_code('# line 1\n# line 2\n# line 3\nprint("ok").')
+        self.assertFirstLine(out, 'ok')
 
     def test_multiline_comment(self):
         out, _ = self.run_code("""--> This is a
