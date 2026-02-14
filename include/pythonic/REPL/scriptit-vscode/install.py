@@ -301,6 +301,57 @@ def build_scriptit():
 
     return True
 
+
+def _install_extension_project(use_temp=False):
+    """Copy the VS Code extension project to /usr/local/share/scriptit/extension/
+    so the color customizer can always find extension.ts for Save & Install."""
+    import tempfile
+
+    info("Installing extension project for customizer...")
+    dest = "/usr/local/share/scriptit/extension"
+    ext_src = EXT_DIR
+
+    # Files to copy (only what's needed to rebuild)
+    files = ["install.py", "package.json", "package-lock.json", "tsconfig.json",
+             "language-configuration.json", ".vscodeignore", "LICENSE", "README.md"]
+    dirs  = ["src", "syntaxes", "snippets", "themes", "images"]
+
+    try:
+        if use_temp:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_ext = Path(tmpdir) / "extension"
+                tmp_ext.mkdir()
+                for f in files:
+                    src = ext_src / f
+                    if src.exists():
+                        shutil.copy2(str(src), str(tmp_ext / f))
+                for d in dirs:
+                    src = ext_src / d
+                    if src.exists():
+                        shutil.copytree(str(src), str(tmp_ext / d), dirs_exist_ok=True)
+                run(f"sudo rm -rf {dest}")
+                run(f"sudo cp -r '{tmp_ext}' '{dest}'")
+                run(f"sudo chmod -R a+rw {dest}")
+        else:
+            with tempfile.TemporaryDirectory() as tmpdir:
+                tmp_ext = Path(tmpdir) / "extension"
+                tmp_ext.mkdir()
+                for f in files:
+                    src = ext_src / f
+                    if src.exists():
+                        shutil.copy2(str(src), str(tmp_ext / f))
+                for d in dirs:
+                    src = ext_src / d
+                    if src.exists():
+                        shutil.copytree(str(src), str(tmp_ext / d), dirs_exist_ok=True)
+                run(f"sudo rm -rf {dest}")
+                run(f"sudo cp -r '{tmp_ext}' '{dest}'")
+                run(f"sudo chmod -R a+rw {dest}")
+        ok(f"Extension project → {dest}")
+    except Exception as e:
+        warn(f"Could not install extension project: {e}")
+
+
 def install_scriptit():
     step("Installing ScriptIt System-Wide")
     info("(Requires sudo)")
@@ -371,6 +422,9 @@ def install_scriptit():
             ok(f"scriptit in PATH: {ver}")
         else:
             warn("'scriptit' not in PATH — you may need to restart your shell or add /usr/local/bin to PATH")
+
+        # Copy extension project so customizer can always find extension.ts
+        _install_extension_project(use_temp)
 
         return True
     except:
@@ -660,6 +714,7 @@ def main():
     ✓ ScriptIt binary       → {bin_loc}
     ✓ Notebook server       → /usr/local/share/scriptit/notebook/
     ✓ Color customizer      → /usr/local/share/scriptit/color_customizer/
+    ✓ Extension project     → /usr/local/share/scriptit/extension/
     ✓ Notebook launcher     → /usr/local/bin/scriptit-notebook
     ✓ VS Code extension     → scriptit-lang
   
