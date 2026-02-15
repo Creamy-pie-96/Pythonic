@@ -70,6 +70,8 @@ endif()
 # --> Replace 'demoapp' with your project executable name
 # --> Add all your .cpp files here if you have multiple
 add_executable(demoapp demo.cpp)
+target_compile_definitions(demoapp PRIVATE HAVE_READLINE)
+target_link_libraries(demoapp PRIVATE readline)
 # For multi-file projects:
 # add_executable(demoapp main.cpp file1.cpp file2.cpp)
 # or use file(GLOB SOURCES *.cpp) and then add_executable(demoapp ${SOURCES})

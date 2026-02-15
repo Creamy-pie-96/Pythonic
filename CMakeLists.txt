@@ -1,5 +1,10 @@
+
 cmake_minimum_required(VERSION 3.10)
 project(Pythonic)
+
+# Exclude any .cpp file in the REPL directory from build
+file(GLOB_RECURSE REPL_CPP_FILES "include/pythonic/REPL/*.cpp")
+set_source_files_properties(${REPL_CPP_FILES} PROPERTIES HEADER_FILE_ONLY TRUE)
 
 # Require C++20 for concepts, ranges, and other features
 set(CMAKE_CXX_STANDARD 20)
@@ -130,6 +135,8 @@ endif()
 
 # Create a library
 add_library(pythonic src/pythonicDispatchStubs.cpp)
+target_compile_definitions(pythonic PUBLIC HAVE_READLINE)
+target_link_libraries(pythonic PUBLIC readline)
 
 # Find and require threading support (needed for std::thread in video export)
 set(THREADS_PREFER_PTHREAD_FLAG ON)
