@@ -1,4 +1,3 @@
-// test: var a = PI * 2, b = sin(a) + e. var c = a^2 + b^2. sqrt(c) + deg
 
 #pragma once
 
@@ -26,6 +25,15 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #endif
+
+// namespace pythonic {
+//     namespace print {
+//         enum class Mode;
+//         struct TextConfig;
+//         enum class PrintType;
+//         void print(PrintType, const std::string&, const TextConfig&);
+//     }
+// }
 
 namespace pythonic
 {
@@ -70,22 +78,22 @@ namespace pythonic
             ;
         }
 
-        std::unordered_map<std::string, std::pair<Token, long double>> constant;
+        inline std::unordered_map<std::string, std::pair<Token, long double>> reserved_constant;
 
         static void set_constants()
         {
             // Initialize defaults only once so user-updated values (e.g. ans) persist.
-            if (!constant.empty())
+            if (!reserved_constant.empty())
                 return;
 
-            constant["PI"] = std::make_pair(Token(TokenType::Identifier, "PI"), 3.14159265358979323846264338327950288419716939937510L);
-            constant["e"] = std::make_pair(Token(TokenType::Identifier, "e"), 2.71828182845904523536028747135266249775724709369995L);
-            constant["tau"] = std::make_pair(Token(TokenType::Identifier, "tau"), 6.28318530717958647692528676655900576839433879875021L); // 2*PI
-            constant["inf"] = std::make_pair(Token(TokenType::Identifier, "inf"), std::numeric_limits<long double>::infinity());
-            constant["infinity"] = std::make_pair(Token(TokenType::Identifier, "infinity"), std::numeric_limits<long double>::infinity());
-            constant["nan"] = std::make_pair(Token(TokenType::Identifier, "nan"), std::numeric_limits<long double>::quiet_NaN());
-            constant["ans"] = std::make_pair(Token(TokenType::Identifier, "ans"), 0.0L);                                                 // Placeholder, update after each calculation
-            constant["deg"] = std::make_pair(Token(TokenType::Identifier, "deg"), 57.295779513082320876798154814105170332405472466564L); // 180/PI
+            reserved_constant["PI"] = std::make_pair(Token(TokenType::Identifier, "PI"), 3.14159265358979323846264338327950288419716939937510L);
+            reserved_constant["e"] = std::make_pair(Token(TokenType::Identifier, "e"), 2.71828182845904523536028747135266249775724709369995L);
+            reserved_constant["tau"] = std::make_pair(Token(TokenType::Identifier, "tau"), 6.28318530717958647692528676655900576839433879875021L); // 2*PI
+            reserved_constant["inf"] = std::make_pair(Token(TokenType::Identifier, "inf"), std::numeric_limits<long double>::infinity());
+            reserved_constant["infinity"] = std::make_pair(Token(TokenType::Identifier, "infinity"), std::numeric_limits<long double>::infinity());
+            reserved_constant["nan"] = std::make_pair(Token(TokenType::Identifier, "nan"), std::numeric_limits<long double>::quiet_NaN());
+            reserved_constant["ans"] = std::make_pair(Token(TokenType::Identifier, "ans"), 0.0L);                                                 // Placeholder, update after each calculation
+            reserved_constant["deg"] = std::make_pair(Token(TokenType::Identifier, "deg"), 57.295779513082320876798154814105170332405472466564L); // 180/PI
         }
         // Precedence:
         // 1: + -
@@ -723,7 +731,7 @@ namespace pythonic
                                 result = evaluateExpression(exprTokens);
                                 result = auto_promote(result);
                                 std::cout << "Ans: " << std::setprecision(std::numeric_limits<long double>::digits10 + 1) << result << std::endl;
-                                constant["ans"] = std::make_pair(Token(TokenType::Identifier, "ans"), result);
+                                reserved_constant["ans"] = std::make_pair(Token(TokenType::Identifier, "ans"), result);
                             }
                         }
                         history[history_index].second = result;
@@ -845,7 +853,7 @@ namespace pythonic
                         else if (is_constant(t.value))
                         {
                             t.type = TokenType::Number;
-                            t.value = longDoubleToString(constant[t.value].second);
+                            t.value = longDoubleToString(reserved_constant[t.value].second);
                         }
                         else
                         {
@@ -866,7 +874,7 @@ namespace pythonic
             inline void wipe()
             {
                 variables.clear();
-                constant.clear();
+                reserved_constant.clear();
                 set_constants();
                 history.clear();
                 history_index = 0;
@@ -990,56 +998,68 @@ namespace pythonic
             Calculator calc;
             std::string line;
             print_title();
-           while (true) {
+            while (true)
+            {
 #ifdef HAVE_READLINE
-        char* input = readline(">> ");
-        if (!input) break; // Ctrl+D
-        line = input;
-        free(input);
-        if (!line.empty()) add_history(line.c_str());
+                char *input = readline(">> ");
+                if (!input)
+                    break; // Ctrl+D
+                line = input;
+                free(input);
+                if (!line.empty())
+                    add_history(line.c_str());
 #else
-        std::cout << ">> ";
-        if (!std::getline(std::cin, line)) break;
+                std::cout << ">> ";
+                if (!std::getline(std::cin, line))
+                    break;
 #endif
 
-        if (line == "exit" || line == "quit") break;
-        else if (line == "help") {
-            help();
-            continue;
-        }
-        else if (line == "clear") {
+                if (line == "exit" || line == "quit")
+                    break;
+                else if (line == "help")
+                {
+                    help();
+                    continue;
+                }
+                else if (line == "clear")
+                {
 #ifdef WIN_32
-            system("cls");
+                    system("cls");
 #else
-            system("clear");
+                    system("clear");
 #endif
-            print_title();
-            continue;
-        }
-        else if (line == "wipe") {
-            calc.wipe();
+                    print_title();
+                    continue;
+                }
+                else if (line == "wipe")
+                {
+                    calc.wipe();
 #ifdef WIN_32
-            system("cls");
+                    system("cls");
 #else
-            system("clear");
+                    system("clear");
 #endif
-            print_title();
-            continue;
-        }
-        else if (line == "history") {
-            calc.show_history();
-            continue;
-        }
+                    print_title();
+                    continue;
+                }
+                else if (line == "history")
+                {
+                    calc.show_history();
+                    continue;
+                }
 
-        if (line.empty()) continue;
+                if (line.empty())
+                    continue;
 
-        try {
-            calc.process(line);
-        }
-        catch (const std::exception& e) {
-            std::cout << "Error: " << e.what() << std::endl;
-        }
-    }
+                try
+                {
+                    calc.process(line);
+                }
+                catch (const std::exception &e)
+                {
+                    std::cout << "Error: " << e.what() << std::endl;
+                }
+            }
 
             return;
         }
