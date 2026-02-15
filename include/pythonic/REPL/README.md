@@ -1,4 +1,4 @@
-# 📜 ScriptIt v2 — Language Guide
+# 📜 ScriptIt v0.3.0 — Language Guide
 
 A dynamic scripting language powered by [pythonic](https://github.com/BenCaunt/pythonic)'s `var` type system. Write expressive scripts with strings, lists, sets, math, file I/O, functions, and more — all with a clean dot-terminated syntax.
 

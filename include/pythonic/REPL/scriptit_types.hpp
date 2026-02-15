@@ -1,5 +1,5 @@
 #pragma once
-// scriptit_types.hpp — Token types, AST nodes, Scope, helpers for ScriptIt v2
+// scriptit_types.hpp — Token types, AST nodes, Scope, helpers for ScriptIt v0.3.0
 
 #include <iostream>
 #include <vector>

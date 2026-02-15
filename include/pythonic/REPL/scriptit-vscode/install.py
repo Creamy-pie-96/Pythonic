@@ -5,6 +5,7 @@
 ═══════════════════════════════════════════════════════════════
 
   This script installs EVERYTHING from zero:
+    0. Runs gen_grammar.py to auto-generate grammar & extension files
     1. Checks & installs system dependencies (cmake, g++, node, npm)
     2. Builds ScriptIt via CMake and installs system-wide
     3. Installs npm dependencies for the VS Code extension
@@ -12,11 +13,15 @@
     5. Packages the extension into a .vsix file
     6. Installs the .vsix into VS Code
 
+  Just update the language and run:
+    python3 install.py
+
   Usage:
     python3 install.py              # Full install (needs sudo for system-wide)
     python3 install.py --ext-only   # Only build & install the VS Code extension
     python3 install.py --build-only # Only build ScriptIt binary
     python3 install.py --check      # Just check what's installed / missing
+    python3 install.py --with-graph-viewer  # Enable interactive graph viewer
 
 ═══════════════════════════════════════════════════════════════
 """
@@ -51,6 +56,10 @@ else:
 CMAKE_DIR = REPL_DIR  # CMakeLists.txt lives here
 BUILD_DIR = REPL_DIR / "build_scriptit"
 NOTEBOOK_DIR = REPL_DIR / "notebook"
+
+# Project root (contains scripts/, include/, etc.)
+PROJECT_ROOT = REPL_DIR.parent.parent.parent  # include/pythonic/REPL → project root
+GEN_GRAMMAR = PROJECT_ROOT / "scripts" / "gen_grammar.py"
 
 # ── Colors ────────────────────────────────────────────────
 
@@ -102,6 +111,27 @@ def get_version(cmd):
         return r.stdout.strip() or r.stderr.strip()
     except:
         return None
+
+# ══════════════════════════════════════════════════════════
+# Step 0: Generate Grammar & Extension Files
+# ══════════════════════════════════════════════════════════
+
+def generate_grammar():
+    step("Generating Grammar & Extension Files")
+
+    if not GEN_GRAMMAR.exists():
+        err(f"gen_grammar.py not found at {GEN_GRAMMAR}")
+        warn("Skipping grammar generation — using existing files")
+        return True
+
+    try:
+        run(f"{sys.executable} {GEN_GRAMMAR}", cwd=PROJECT_ROOT)
+        ok("Grammar, token data, and package.json updated from C++ source of truth")
+        return True
+    except Exception as e:
+        err(f"Grammar generation failed: {e}")
+        warn("Continuing with existing grammar files...")
+        return True  # Non-fatal — existing files may still work
 
 # ══════════════════════════════════════════════════════════
 # Step 1: Check & Install System Dependencies
@@ -270,7 +300,7 @@ def install_deps_brew(deps, missing):
 # Step 2: Build ScriptIt via CMake
 # ══════════════════════════════════════════════════════════
 
-def build_scriptit():
+def build_scriptit(cmake_flags=None):
     step("Building ScriptIt via CMake")
 
     cmake_file = CMAKE_DIR / "CMakeLists.txt"
@@ -280,8 +310,11 @@ def build_scriptit():
 
     BUILD_DIR.mkdir(exist_ok=True)
 
-    # Configure
-    run(f"cmake .. -DCMAKE_BUILD_TYPE=Release", cwd=BUILD_DIR)
+    # Configure with optional flags
+    cmake_cmd = "cmake .. -DCMAKE_BUILD_TYPE=Release"
+    if cmake_flags:
+        cmake_cmd += " " + " ".join(cmake_flags)
+    run(cmake_cmd, cwd=BUILD_DIR)
 
     # Build
     run(f"cmake --build . --config Release -j{os.cpu_count() or 4}", cwd=BUILD_DIR)
@@ -623,6 +656,10 @@ def main():
                         help="Build everything but don't install system-wide or into VS Code")
     parser.add_argument("--clean", action="store_true",
                         help="Remove all build artifacts, uninstall extension, then do a fresh install")
+    parser.add_argument("--with-graph-viewer", action="store_true",
+                        help="Enable interactive graph viewer (requires GLFW, OpenGL, ImGui)")
+    parser.add_argument("--skip-grammar", action="store_true",
+                        help="Skip grammar generation from C++ sources")
     args = parser.parse_args()
 
     print(f"""
@@ -633,9 +670,11 @@ def main():
   ║  Language + VS Code Extension + Notebook          ║
   ╚═══════════════════════════════════════════════════╝
 {C.RESET}
+  Project root:  {PROJECT_ROOT}
   REPL dir:      {REPL_DIR}
   Extension dir: {EXT_DIR}
   Build dir:     {BUILD_DIR}
+  gen_grammar:   {GEN_GRAMMAR}
 """)
 
     # ── Clean (if requested) ──
@@ -668,10 +707,17 @@ def main():
         # Re-check
         deps = check_dependencies()
 
+    # ── Generate Grammar (Step 0) ──
+    if not args.skip_grammar:
+        generate_grammar()
+
     # ── Build ScriptIt ──
     if not args.ext_only:
+        cmake_flags = []
+        if args.with_graph_viewer:
+            cmake_flags.append("-DSCRIPTIT_ENABLE_GRAPH_VIEWER=ON")
         try:
-            build_scriptit()
+            build_scriptit(cmake_flags=cmake_flags or None)
             if not args.no_install:
                 install_scriptit()
         except Exception as e:

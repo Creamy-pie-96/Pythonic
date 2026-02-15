@@ -89,24 +89,31 @@ def extract_builtin_functions(src):
 
 
 def extract_operators(src):
-    """Extract operators from get_operator_precedence()."""
-    match = re.search(r'get_operator_precedence.*?precedence\s*=\s*\{([^}]+)\}', src, re.DOTALL)
+    """Extract operators from get_operator_precedence().
+    The precedence map has nested braces like {{"||", 1}, {"&&", 2}, ...}
+    so we need to match the full outer brace pair."""
+    # Find the line(s) containing the precedence map
+    match = re.search(r'get_operator_precedence.*?precedence\s*=\s*\{(.*?)\};', src, re.DOTALL)
     if not match:
         return []
     block = match.group(1)
-    ops = re.findall(r'"([^"]+)"', block)
+    # Extract the first element of each {key, value} pair — these are the operators
+    ops = []
+    for m in re.finditer(r'\{\s*"([^"]+)"\s*,\s*\d+\s*\}', block):
+        ops.append(m.group(1))
     return ops
 
 
 def extract_builtins_from_map(src):
     """Extract builtin names from the get_builtins() function in scriptit_builtins.hpp.
-    Matches {"name", ...} entries in the map."""
+    Matches {"name", [](std::stack<var>...) entries in the map (not JSON strings in comments)."""
     match = re.search(r'get_builtins\(\).*?builtins\s*=\s*\{(.*?)\};\s*return', src, re.DOTALL)
     if not match:
         return []
     block = match.group(1)
     names = []
-    for m in re.finditer(r'\{\s*"(\w+)"', block):
+    # Match builtin entries: {"name", [](std::stack<var>...
+    for m in re.finditer(r'\{\s*"(\w+)"\s*,\s*\[\]', block):
         names.append(m.group(1))
     return sorted(set(names))
 
@@ -485,9 +492,17 @@ def build_tmlanguage(keywords, math_fns, builtins, type_fns, edge_ops, comp_ops,
             repo["edge-operators"]["patterns"].append(
                 {"name": "keyword.operator.edge.scriptit", "match": "->(?!-)"}
             )
+        elif op == "<->":
+            repo["edge-operators"]["patterns"].append(
+                {"name": "keyword.operator.edge.scriptit", "match": "<->"}
+            )
+        elif op == "---":
+            repo["edge-operators"]["patterns"].append(
+                {"name": "keyword.operator.edge.scriptit", "match": "---"}
+            )
         else:
             repo["edge-operators"]["patterns"].append(
-                {"name": "keyword.operator.edge.scriptit", "match": re.escape(op).replace("\\", "\\\\")}
+                {"name": "keyword.operator.edge.scriptit", "match": op}
             )
 
     repo["comparison-operators"] = {
@@ -648,13 +663,16 @@ SCOPE_DEFAULTS = {
 
 
 def collect_scopes_from_grammar(grammar):
-    """Walk the grammar and collect all unique scope names."""
+    """Walk the grammar and collect all unique scope names.
+    Skips meta.* scopes (they're container scopes, not for coloring)."""
     scopes = set()
 
     def walk(obj):
         if isinstance(obj, dict):
             if "name" in obj and obj["name"].endswith(".scriptit"):
-                scopes.add(obj["name"])
+                # Skip meta scopes — they're structural, not colorable
+                if not obj["name"].startswith("meta."):
+                    scopes.add(obj["name"])
             for v in obj.values():
                 walk(v)
         elif isinstance(obj, list):
