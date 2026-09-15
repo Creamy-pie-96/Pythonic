@@ -1,0 +1,7 @@
+
+var g = graph(2)
+g.add_node("A")
+g.add_node("B")
+g.add_edge(0->1,1.2)
+g.add_edge("A"<->"B",0.33,9)
+ pprint(g)

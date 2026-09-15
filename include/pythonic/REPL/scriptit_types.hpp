@@ -76,7 +76,7 @@ enum class TokenType
     MinusMinus,    // --
     Arrow,         // ->  (directed edge, dict key-value)
     BiArrow,       // <-> (bidirectional edge)
-    Dash,          // -   used contextually for undirected edge in add_edge(A - B)
+    Dash,          // ---   used contextually for undirected edge in add_edge(A - B)
     Comma,
     Dot,
     Colon,
@@ -130,6 +130,8 @@ inline bool is_builtin_function(const std::string &str)
     return funcs.count(str) || is_math_function(str);
 }
 
+// TODO: Refactor get_operator_precedence for better flexibility and extensibility (e.g. grammar-driven precedence, operator overloading support)
+
 inline int get_operator_precedence(const std::string &op)
 {
     static const std::unordered_map<std::string, int> precedence = {
@@ -138,6 +140,7 @@ inline int get_operator_precedence(const std::string &op)
     return it != precedence.end() ? it->second : 0;
 }
 
+// TODO: Maybe later I will enhace the dynamic typing
 inline double var_to_double(const var &v)
 {
     if (v.is_int())
@@ -164,6 +167,7 @@ inline double var_to_double(const var &v)
 }
 
 // Format var for output — backward compatible with old double-based output
+// TODO: need to refractore this too. It seems old and restricting
 inline std::string format_output(const var &v)
 {
     if (v.is_none())
@@ -219,7 +223,7 @@ struct IfStmt : Statement
         std::shared_ptr<BlockStmt> block;
     };
     std::vector<Branch> branches;
-    std::shared_ptr<BlockStmt> elseBlock;
+    std::shared_ptr<BlockStmt> elseBlock; // NOTE: as else does not have any branch or conditions it does not fall in brach struct
     void execute(Scope &scope) override;
 };
 
@@ -314,6 +318,14 @@ struct FunctionDef
     std::vector<std::string> params;
     std::vector<bool> isRefParam; // true if param is pass-by-reference (@param)
     std::shared_ptr<BlockStmt> body;
+
+    // TODO: Refactor parameter handling:
+    //   - Replace parallel params/isRefParam vectors with a struct Param { std::string name; bool isRef; and a pointer to the var object }
+    //   - Consider adding var* value for each parameter for direct reference/value passing.
+    //   - In function call logic, if isRef is true, pass the var pointer (shallow copy, just address).
+    //   - If isRef is false, pass a deep copy (new var with same value).
+    //   - Add deep and shallow copy methods to var class to support this cleanly.
+    //   - This will make parameter passing more robust, extensible, and Pythonic.
 };
 
 struct Scope
