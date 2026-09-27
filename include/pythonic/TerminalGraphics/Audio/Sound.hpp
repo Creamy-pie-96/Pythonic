@@ -46,7 +46,8 @@ namespace sdl_audio
         std::vector<Uint8> samples;
         size_t playOffset = 0;
         float volume = 1.0f;
-        bool playing = false;
+        std::atomic<bool> playing{false};
+        std::atomic<bool> loop{false};
     };
 
     inline std::atomic<bool> g_sdlInitialized{false};
@@ -55,7 +56,7 @@ namespace sdl_audio
     inline std::vector<std::shared_ptr<AudioData>> g_playingSounds;
     inline std::mutex g_audioMutex;
 
-    // Audio callback - mixes all playing sounds
+    // Audio callback - mixes all playing sounds with boundary wrapping for seamless loop
     inline void audioCallback(void *userdata, Uint8 *stream, int len)
     {
         (void)userdata;
@@ -65,21 +66,40 @@ namespace sdl_audio
 
         for (auto &sound : g_playingSounds)
         {
-            if (!sound->playing)
+            if (!sound->playing.load() || sound->samples.empty())
                 continue;
 
-            size_t remaining = sound->samples.size() - sound->playOffset;
-            size_t toCopy = std::min(remaining, static_cast<size_t>(len));
-
-            // Mix with volume
-            const Uint8 *src = sound->samples.data() + sound->playOffset;
             Uint8 volume = static_cast<Uint8>(sound->volume * SDL_MIX_MAXVOLUME);
-            SDL_MixAudioFormat(stream, src, g_audioSpec.format, toCopy, volume);
+            int bytesNeeded = len;
+            int streamOffset = 0;
 
-            sound->playOffset += toCopy;
-            if (sound->playOffset >= sound->samples.size())
+            while (bytesNeeded > 0 && sound->playing.load())
             {
-                sound->playing = false;
+                size_t remaining = sound->samples.size() - sound->playOffset;
+                size_t toCopy = std::min(remaining, static_cast<size_t>(bytesNeeded));
+
+                if (toCopy > 0)
+                {
+                    const Uint8 *src = sound->samples.data() + sound->playOffset;
+                    SDL_MixAudioFormat(stream + streamOffset, src, g_audioSpec.format, toCopy, volume);
+
+                    sound->playOffset += toCopy;
+                    streamOffset += toCopy;
+                    bytesNeeded -= toCopy;
+                }
+
+                if (sound->playOffset >= sound->samples.size())
+                {
+                    if (sound->loop.load())
+                    {
+                        sound->playOffset = 0; // Seamless loop rewind
+                    }
+                    else
+                    {
+                        sound->playing.store(false);
+                        break;
+                    }
+                }
             }
         }
 
@@ -87,7 +107,7 @@ namespace sdl_audio
         g_playingSounds.erase(
             std::remove_if(g_playingSounds.begin(), g_playingSounds.end(),
                            [](const auto &s)
-                           { return !s->playing; }),
+                           { return !s->playing.load(); }),
             g_playingSounds.end());
     }
 
@@ -138,12 +158,12 @@ namespace sdl_audio
     }
 
     // Play pre-loaded samples directly (instant, no file I/O)
-    inline void playSamples(const int16_t *samples, size_t sampleCount,
-                            unsigned int channels, unsigned int sampleRate,
-                            float volume)
+    inline std::shared_ptr<AudioData> playSamples(const int16_t *samples, size_t sampleCount,
+                                                  unsigned int channels, unsigned int sampleRate,
+                                                  float volume, bool loop = false)
     {
         if (!init() || !samples || sampleCount == 0)
-            return;
+            return nullptr;
 
         // Convert to device format if needed
         SDL_AudioCVT cvt;
@@ -154,7 +174,8 @@ namespace sdl_audio
         auto audioData = std::make_shared<AudioData>();
         audioData->volume = volume;
         audioData->playOffset = 0;
-        audioData->playing = true;
+        audioData->playing.store(true);
+        audioData->loop.store(loop);
 
         if (needsConversion > 0)
         {
@@ -162,7 +183,7 @@ namespace sdl_audio
             cvt.len = static_cast<int>(inputLen);
             cvt.buf = static_cast<Uint8 *>(SDL_malloc(inputLen * cvt.len_mult));
             if (!cvt.buf)
-                return;
+                return nullptr;
 
             SDL_memcpy(cvt.buf, samples, inputLen);
 
@@ -181,10 +202,11 @@ namespace sdl_audio
 
         std::lock_guard<std::mutex> lock(g_audioMutex);
         g_playingSounds.push_back(audioData);
+        return audioData;
     }
 
     // Fallback: play from file (slower, used when no sample data available)
-    inline void playFile(const std::string &filePath, int volume)
+    inline void playFile(const std::string &filePath, int volume, bool loop = false)
     {
         if (!init())
             return;
@@ -201,7 +223,7 @@ namespace sdl_audio
         size_t sampleCount = wavLength / sizeof(int16_t);
         playSamples(reinterpret_cast<const int16_t *>(wavBuffer),
                     sampleCount, wavSpec.channels, wavSpec.freq,
-                    volume / 100.0f);
+                    volume / 100.0f, loop);
 
         SDL_FreeWAV(wavBuffer);
     }
@@ -260,31 +282,33 @@ namespace audio_detail
 {
 
     // Play from pre-loaded sample data (fast path)
-    inline void playSamples(const int16_t *samples, size_t sampleCount,
-                            unsigned int channels, unsigned int sampleRate,
-                            float volume)
+    inline std::shared_ptr<void> playSamples(const int16_t *samples, size_t sampleCount,
+                                             unsigned int channels, unsigned int sampleRate,
+                                             float volume, bool loop = false)
     {
 #ifdef PYTHONIC_ENABLE_SDL2_AUDIO
-        sdl_audio::playSamples(samples, sampleCount, channels, sampleRate, volume);
+        return sdl_audio::playSamples(samples, sampleCount, channels, sampleRate, volume, loop);
 #else
         // Fallback: can't play samples directly without SDL2
-        // Would need to write to temp file - not worth it
         (void)samples;
         (void)sampleCount;
         (void)channels;
         (void)sampleRate;
         (void)volume;
+        (void)loop;
+        return nullptr;
 #endif
     }
 
     // Play from file (slow path, fallback)
-    inline void playAudioFile(const std::string &filePath, float volume)
+    inline void playAudioFile(const std::string &filePath, float volume, bool loop = false)
     {
         int vol = static_cast<int>(std::clamp(volume, 0.0f, 100.0f));
 
 #ifdef PYTHONIC_ENABLE_SDL2_AUDIO
-        sdl_audio::playFile(filePath, vol);
+        sdl_audio::playFile(filePath, vol, loop);
 #else
+        (void)loop;
         fallback_audio::playFile(filePath, vol);
 #endif
     }
@@ -369,7 +393,7 @@ public:
         stop();
         m_status = SoundStatus::Playing;
 
-        // Use non-blocking fork for faster playback
+        // Use non-blocking playback
         playAsync();
     }
 
@@ -379,7 +403,15 @@ public:
     void pause()
     {
         if (m_status == SoundStatus::Playing)
+        {
             m_status = SoundStatus::Paused;
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+            if (m_activeSound)
+            {
+                m_activeSound->playing.store(false);
+            }
+#endif
+        }
     }
 
     /**
@@ -389,8 +421,13 @@ public:
     {
         m_status = SoundStatus::Stopped;
         m_playingOffset = 0;
-        // Note: SDL2 audio handles playback in its own callback thread
-        // so no thread management is needed here
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+        if (m_activeSound)
+        {
+            m_activeSound->playing.store(false);
+            m_activeSound = nullptr;
+        }
+#endif
     }
 
     /**
@@ -416,6 +453,12 @@ public:
     void setLoop(bool loop)
     {
         m_loop = loop;
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+        if (m_activeSound)
+        {
+            m_activeSound->loop.store(loop);
+        }
+#endif
     }
 
     /**
@@ -437,6 +480,12 @@ public:
                 offset.asSeconds() * m_buffer->getSampleRate() *
                 m_buffer->getChannelCount());
             m_playingOffset = std::min(sample, m_buffer->getSampleCount());
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+            if (m_activeSound)
+            {
+                m_activeSound->playOffset = m_playingOffset * sizeof(int16_t);
+            }
+#endif
         }
     }
 
@@ -448,6 +497,16 @@ public:
         if (!m_buffer || m_buffer->getSampleRate() == 0)
             return Time::Zero;
 
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+        if (m_activeSound)
+        {
+            size_t currentSample = m_activeSound->playOffset / sizeof(int16_t);
+            return Time::seconds(
+                static_cast<float>(currentSample) /
+                (m_buffer->getSampleRate() * m_buffer->getChannelCount()));
+        }
+#endif
+
         return Time::seconds(
             static_cast<float>(m_playingOffset) /
             (m_buffer->getSampleRate() * m_buffer->getChannelCount()));
@@ -458,6 +517,12 @@ public:
      */
     SoundStatus getStatus() const
     {
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+        if (m_activeSound && !m_activeSound->playing.load())
+        {
+            return SoundStatus::Stopped;
+        }
+#endif
         return m_status;
     }
 
@@ -467,6 +532,12 @@ public:
     void setVolume(float volume)
     {
         m_volume = std::max(0.0f, std::min(100.0f, volume));
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+        if (m_activeSound)
+        {
+            m_activeSound->volume = m_volume / 100.0f;
+        }
+#endif
     }
 
     /**
@@ -501,6 +572,10 @@ private:
     bool m_loop;
     std::atomic<size_t> m_playingOffset;
 
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+    std::shared_ptr<sdl_audio::AudioData> m_activeSound;
+#endif
+
     /**
      * @brief Play audio asynchronously
      */
@@ -518,11 +593,19 @@ private:
 
         if (samples && sampleCount > 0)
         {
+#ifdef PYTHONIC_ENABLE_SDL2_AUDIO
+            m_activeSound = sdl_audio::playSamples(samples, sampleCount,
+                                                   m_buffer->getChannelCount(),
+                                                   m_buffer->getSampleRate(),
+                                                   m_volume / 100.0f,
+                                                   m_loop);
+#else
             audio_detail::playSamples(samples, sampleCount,
                                       m_buffer->getChannelCount(),
                                       m_buffer->getSampleRate(),
-                                      m_volume / 100.0f);
-            m_status = SoundStatus::Stopped;
+                                      m_volume / 100.0f,
+                                      m_loop);
+#endif
             return;
         }
 
@@ -530,7 +613,7 @@ private:
         const std::string &filePath = m_buffer->getFilePath();
         if (!filePath.empty())
         {
-            audio_detail::playAudioFile(filePath, m_volume);
+            audio_detail::playAudioFile(filePath, m_volume, m_loop);
         }
         m_status = SoundStatus::Stopped;
     }
